@@ -1,0 +1,14 @@
+add-global-variants = true
+no-hooks = true
+no-tests = true
+output = "./internal/app/server/model"
+pkgname = "model"
+wipe = true
+
+[mysql]
+dbname = ""
+host = ""
+pass = ""
+port = 3306
+sslmode = ""
+user = ""
