@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"time"
 
+	"gitlab.bianjie.ai/irita-nftp/nftp-open-api/internal/pkg/types"
+
 	"github.com/go-kit/kit/endpoint"
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/go-playground/validator/v10"
@@ -192,9 +194,36 @@ func (c Controller) serverOptions(
 
 	//format error
 	errorEncoderOption := func(ctx context.Context, err error, w http.ResponseWriter) {
+		appErr, ok := err.(types.IError)
+		if !ok {
+			w.WriteHeader(http.StatusInternalServerError)
+		} else {
+			switch appErr {
+			case types.ErrInternal, types.ErrMysqlConn, types.ErrChainConn, types.ErrRedisConn:
+				w.WriteHeader(http.StatusInternalServerError)
+			case types.ErrAuthenticate:
+				w.WriteHeader(http.StatusForbidden)
+			case types.ErrParams, types.ErrAccountCreate,
+				types.ErrGetAccountDetails,
+				types.ErrNftClassCreate,
+				types.ErrNftClassesGet,
+				types.ErrNftClassDetailsGet,
+				types.ErrNftCreate,
+				types.ErrNftGet,
+				types.ErrNftDetailsGet,
+				types.ErrNftOptionHistoryGet,
+				types.ErrNftEdit,
+				types.ErrNftBatchEdit,
+				types.ErrNftBurn,
+				types.ErrNftBatchBurn,
+				types.ErrTxResult:
+				w.WriteHeader(http.StatusBadRequest)
+			}
+		}
+
 		response := Response{
-			Code:    Failed,
-			Message: err.Error(),
+			Code:    appErr.Code(),
+			Message: appErr.Error(),
 		}
 		bz, _ := json.Marshal(response)
 		_, _ = w.Write(bz)
