@@ -1,0 +1,19 @@
+[server]
+address = ":8080"
+log_format = "text"
+log_level = "debug"
+
+[mysql]
+db_name = ""
+host = ""
+max_idle_conns = 10
+max_life_time = "1h"
+max_open_conns = 100
+password = ""
+port = ""
+user = ""
+
+[redis]
+address = "127.0.0.1:6379"
+db = 0
+password = ""
