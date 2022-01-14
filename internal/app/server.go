@@ -9,10 +9,10 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"gitlab.bianjie.ai/irita-nftp/nftp-open-api/config"
-	"gitlab.bianjie.ai/irita-nftp/nftp-open-api/internal/app/nftp"
-	"gitlab.bianjie.ai/irita-nftp/nftp-open-api/internal/pkg/kit"
-	"gitlab.bianjie.ai/irita-nftp/nftp-open-api/internal/pkg/log"
+	"gitlab.bianjie.ai/irita-paas/open-api/config"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/kit"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 )
 
 //Server define a http Server

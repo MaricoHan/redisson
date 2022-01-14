@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"gitlab.bianjie.ai/irita-nftp/nftp-open-api/internal/pkg/types"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 
 	"github.com/go-kit/kit/endpoint"
 	httptransport "github.com/go-kit/kit/transport/http"
@@ -15,14 +15,14 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 
-	"gitlab.bianjie.ai/irita-nftp/nftp-open-api/internal/pkg/log"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 )
 
 // TimeLayout time format
 const TimeLayout = "2006-01-02"
 
 type (
-	//Router define a router for http Handler
+	// Endpoint Router define a router for http Handler
 	Endpoint struct {
 		URI     string
 		Method  string
@@ -54,7 +54,7 @@ func NewController() Controller {
 	return Controller{validator.New()}
 }
 
-// makeHandler create a http hander for request
+// MakeHandler create a http hander for request
 func (c Controller) MakeHandler(handler endpoint.Endpoint, request interface{},
 	before []httptransport.RequestFunc,
 	mid []httptransport.ServerOption,
@@ -149,9 +149,7 @@ func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFu
 func (c Controller) encodeResponse(ctx context.Context, w http.ResponseWriter, resp interface{}) error {
 	log.Debug("Execute encode response", "method", "encodeResponse")
 	response := Response{
-		Code:    OK,
-		Message: "success",
-		Data:    resp,
+		Data: resp,
 	}
 	return httptransport.EncodeJSONResponse(ctx, w, response)
 }
@@ -222,8 +220,10 @@ func (c Controller) serverOptions(
 		}
 
 		response := Response{
-			Code:    appErr.Code(),
-			Message: appErr.Error(),
+			ErrorResp: ErrorResp{
+				Code:    appErr.Code(),
+				Message: appErr.Error(),
+			},
 		}
 		bz, _ := json.Marshal(response)
 		_, _ = w.Write(bz)

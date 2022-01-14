@@ -1,12 +1,12 @@
 package nftp
 
 import (
-	"gitlab.bianjie.ai/irita-nftp/nftp-open-api/config"
-	"gitlab.bianjie.ai/irita-nftp/nftp-open-api/internal/app/nftp/controller"
-	"gitlab.bianjie.ai/irita-nftp/nftp-open-api/internal/pkg/kit"
-	"gitlab.bianjie.ai/irita-nftp/nftp-open-api/internal/pkg/log"
-	"gitlab.bianjie.ai/irita-nftp/nftp-open-api/internal/pkg/mysql"
-	"gitlab.bianjie.ai/irita-nftp/nftp-open-api/internal/pkg/redis"
+	"gitlab.bianjie.ai/irita-paas/open-api/config"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/controller"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/kit"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/mysql"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/redis"
 )
 
 type NFTPServer struct {

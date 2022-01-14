@@ -6,8 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"gitlab.bianjie.ai/irita-nftp/nftp-open-api/config"
-	"gitlab.bianjie.ai/irita-nftp/nftp-open-api/internal/app"
+	"gitlab.bianjie.ai/irita-paas/open-api/config"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app"
 )
 
 var (
