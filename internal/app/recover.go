@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
+
 	"net/http"
 	"runtime/debug"
 
-	"gitlab.bianjie.ai/irita-nftp/nftp-open-api/internal/pkg/kit"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/kit"
 )
 
 // RecoverMiddleware recover the panic error
@@ -24,10 +26,12 @@ func (h panicHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if e := recover(); e != nil {
 			fmt.Println(e, string(debug.Stack()))
 			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(500)
+			w.WriteHeader(http.StatusInternalServerError)
 			bz, _ := json.Marshal(kit.Response{
-				Code:    kit.Failed,
-				Message: "system panic",
+				ErrorResp: kit.ErrorResp{
+					Code:    types.ErrInternal.Code(),
+					Message: types.ErrInternal.Error(),
+				},
 			})
 			_, _ = w.Write(bz)
 		}

@@ -1,4 +1,4 @@
-module gitlab.bianjie.ai/irita-nftp/nftp-open-api
+module gitlab.bianjie.ai/irita-paas/open-api
 
 go 1.17
 

@@ -3,8 +3,8 @@ package controller
 import (
 	"context"
 
-	"gitlab.bianjie.ai/irita-nftp/nftp-open-api/internal/pkg/kit"
-	"gitlab.bianjie.ai/irita-nftp/nftp-open-api/internal/pkg/log"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/kit"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 )
 
 const namespace = "nftp"
