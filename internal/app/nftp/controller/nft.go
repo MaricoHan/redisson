@@ -1,18 +1,20 @@
 package controller
 
 import (
-	"context"
 	"net/http"
+
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/controller/handlers"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/kit"
 )
 
 type NftController struct {
 	BaseController
+	handler handlers.INft
 }
 
-func NewNftController(bc BaseController) kit.IController {
-	return NftController{bc}
+func NewNftController(bc BaseController, handler handlers.INft) kit.IController {
+	return NftController{bc, handler}
 }
 
 // GetEndpoints implement the method GetRouter of the interfce IController
@@ -22,86 +24,43 @@ func (c NftController) GetEndpoints() []kit.Endpoint {
 		kit.Endpoint{
 			URI:     "/nft/nfts/{class_id}",
 			Method:  http.MethodPost,
-			Handler: c.makeHandler(c.CreateNft, nil),
+			Handler: c.makeHandler(c.handler.CreateNft, nil),
 		},
 		kit.Endpoint{
 			URI:     "/nft/nfts/{class_id}/{owner}/{index}",
 			Method:  http.MethodPatch,
-			Handler: c.makeHandler(c.EditNftByIndex, nil),
+			Handler: c.makeHandler(c.handler.EditNftByIndex, nil),
 		},
 		kit.Endpoint{
 			URI:     "/nft/nfts/{class_id}/{owner}",
 			Method:  http.MethodPatch,
-			Handler: c.makeHandler(c.EditNftByBatch, nil),
+			Handler: c.makeHandler(c.handler.EditNftByBatch, nil),
 		},
 		kit.Endpoint{
 			URI:     "/nft/nfts/{class_id}/{owner}/{index}",
 			Method:  http.MethodDelete,
-			Handler: c.makeHandler(c.DeleteNftByIndex, nil),
+			Handler: c.makeHandler(c.handler.DeleteNftByIndex, nil),
 		},
 		kit.Endpoint{
 			URI:     "/nft/nfts/{class_id}/{owner}",
 			Method:  http.MethodPatch,
-			Handler: c.makeHandler(c.DeleteNftByBatch, nil),
+			Handler: c.makeHandler(c.handler.DeleteNftByBatch, nil),
 		},
 		kit.Endpoint{
 			URI:     "/nft/nfts",
 			Method:  http.MethodGet,
-			Handler: c.makeHandler(c.Nfts, nil),
+			Handler: c.makeHandler(c.handler.Nfts, nil),
 		},
 		kit.Endpoint{
 			URI:     "/nft/nfts/{class_id}/{index}",
 			Method:  http.MethodGet,
-			Handler: c.makeHandler(c.NftByIndex, nil),
+			Handler: c.makeHandler(c.handler.NftByIndex, nil),
 		},
 		kit.Endpoint{
 			URI:     "/nft/nfts/{class_id}/{index}/history",
 			Method:  http.MethodGet,
-			Handler: c.makeHandler(c.NftOperationHistoryByIndex, nil),
+			Handler: c.makeHandler(c.handler.NftOperationHistoryByIndex, nil),
 		},
 	)
 	return ends
-}
-
-// CreateNft Create one or more nft class
-// return creation result
-func (c NftController) CreateNft(ctx context.Context, _ interface{}) (interface{}, error) {
-	panic("not yet implemented")
-}
-
-// EditNftByIndex Edit an nft and return the edited result
-func (c NftController) EditNftByIndex(ctx context.Context, _ interface{}) (interface{}, error) {
-	panic("not yet implemented")
-}
-
-// EditNftByBatch Edit multiple nfts and
-// return the deleted results
-func (c NftController) EditNftByBatch(ctx context.Context, _ interface{}) (interface{}, error) {
-	panic("not yet implemented")
-}
-
-// DeleteNftByIndex Delete an nft and return the edited result
-func (c NftController) DeleteNftByIndex(ctx context.Context, _ interface{}) (interface{}, error) {
-	panic("not yet implemented")
-}
-
-// DeleteNftByBatch Delete multiple nfts and
-// return the deleted results
-func (c NftController) DeleteNftByBatch(ctx context.Context, _ interface{}) (interface{}, error) {
-	panic("not yet implemented")
-}
-
-// Nfts return class list
-func (c NftController) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
-	panic("not yet implemented")
-}
-
-// NftByIndex return class details
-func (c NftController) NftByIndex(ctx context.Context, _ interface{}) (interface{}, error) {
-	panic("not yet implemented")
-}
-
-// NftOperationHistoryByIndex return class details
-func (c NftController) NftOperationHistoryByIndex(ctx context.Context, _ interface{}) (interface{}, error) {
-	panic("not yet implemented")
 }

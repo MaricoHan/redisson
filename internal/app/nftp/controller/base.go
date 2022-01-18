@@ -3,6 +3,8 @@ package controller
 import (
 	"context"
 
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/controller/handlers"
+
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/kit"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 )
@@ -23,12 +25,12 @@ func GetAllControllers() []kit.IController {
 	}
 
 	controllers := []kit.IController{
-		NewDemoController(bc),
-		NewAccountsController(bc),
-		NewTxController(bc),
-		NewNftClassController(bc),
-		NewNftController(bc),
-		NewNftTransferController(bc),
+		NewDemoController(bc, handlers.NewDemo()),
+		NewAccountsController(bc, handlers.NewAccount()),
+		NewNftClassController(bc, handlers.NewNftClass()),
+		NewNftController(bc, handlers.NewNft()),
+		NewNftTransferController(bc, handlers.NewNftTransfer()),
+		NewTxController(bc, handlers.NewTx()),
 	}
 
 	return controllers
