@@ -16,13 +16,20 @@ type (
 	}
 )
 
-//return all the controllers of the app server
+// GetAllControllers return all the controllers of the app server
 func GetAllControllers() []kit.IController {
-	_ = BaseController{
+	bc := BaseController{
 		Controller: kit.NewController(),
 	}
 
-	controllers := []kit.IController{}
+	controllers := []kit.IController{
+		NewDemoController(bc),
+		NewAccountsController(bc),
+		NewTxController(bc),
+		NewNftClassController(bc),
+		NewNftController(bc),
+		NewNftTransferController(bc),
+	}
 
 	return controllers
 }

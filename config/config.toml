@@ -4,14 +4,14 @@ log_format = "text"
 log_level = "debug"
 
 [mysql]
-db_name = ""
-host = ""
+db_name = "nft_platform"
+host = "127.0.0.1"
+port = "3306"
+user = "root"
+password = "123456"
 max_idle_conns = 10
 max_life_time = "1h"
 max_open_conns = 100
-password = ""
-port = ""
-user = ""
 
 [redis]
 address = "127.0.0.1:6379"

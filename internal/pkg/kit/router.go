@@ -187,6 +187,10 @@ func (c Controller) serverOptions(
 			ctx = context.WithValue(ctx, k, v)
 		}
 
+		for k, v := range request.Header {
+			ctx = context.WithValue(ctx, k, v)
+		}
+
 		return ctx
 	}
 
@@ -220,7 +224,7 @@ func (c Controller) serverOptions(
 		}
 
 		response := Response{
-			ErrorResp: ErrorResp{
+			ErrorResp: &ErrorResp{
 				Code:    appErr.Code(),
 				Message: appErr.Error(),
 			},

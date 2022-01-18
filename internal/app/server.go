@@ -7,6 +7,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/mw"
+
 	"github.com/gorilla/mux"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/config"
@@ -19,12 +21,14 @@ import (
 type Server struct {
 	svr         *http.Server
 	router      *mux.Router
-	middlewares []Middleware
+	middlewares []mw.Middleware
 }
 
 //Start a instance of the http server
 func Start() {
 	app := nftp.NewNFTPServer()
+
+	log.Info("Initialize nftp server ")
 	app.Initialize()
 
 	s := NewServer()
@@ -36,7 +40,7 @@ func Start() {
 	if err != nil {
 		panic(err)
 	}
-
+	log.Info("Start nftp server")
 	//启动http服务
 	go func() {
 		_ = s.svr.Serve(lis)
@@ -48,13 +52,14 @@ func Start() {
 
 	//释放所有资源
 	app.Stop()
-	log.Info("Stop the dapp server", "sig", int(sig.(syscall.Signal))+128)
+	log.Info("Stop the nftp server", "sig", int(sig.(syscall.Signal))+128)
 }
 
 func NewServer() Server {
-	middlewares := []Middleware{
+	middlewares := []mw.Middleware{
 		//should be last one
-		RecoverMiddleware,
+		mw.RecoverMiddleware,
+		mw.AuthMiddleware,
 	}
 
 	r := mux.NewRouter()
