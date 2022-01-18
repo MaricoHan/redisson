@@ -1,4 +1,4 @@
-package app
+package mw
 
 import (
 	"encoding/json"
@@ -28,7 +28,7 @@ func (h panicHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusInternalServerError)
 			bz, _ := json.Marshal(kit.Response{
-				ErrorResp: kit.ErrorResp{
+				ErrorResp: &kit.ErrorResp{
 					Code:    types.ErrInternal.Code(),
 					Message: types.ErrInternal.Error(),
 				},

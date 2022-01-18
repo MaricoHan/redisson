@@ -1,4 +1,4 @@
-package app
+package mw
 
 import (
 	"net/http"

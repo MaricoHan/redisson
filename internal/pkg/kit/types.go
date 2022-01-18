@@ -9,7 +9,7 @@ const (
 
 // Response define a struct for http request
 type Response struct {
-	ErrorResp ErrorResp   `json:"error,omitempty"`
+	ErrorResp *ErrorResp  `json:"error,omitempty"`
 	Data      interface{} `json:"data,omitempty"`
 }
 
