@@ -196,9 +196,16 @@ func (c Controller) serverOptions(
 
 	//format error
 	errorEncoderOption := func(ctx context.Context, err error, w http.ResponseWriter) {
+		var response Response
 		appErr, ok := err.(types.IError)
 		if !ok {
 			w.WriteHeader(http.StatusInternalServerError)
+			response = Response{
+				ErrorResp: &ErrorResp{
+					Code:    types.ErrInternal.Code(),
+					Message: types.ErrInternal.Error(),
+				},
+			}
 		} else {
 			switch appErr {
 			case types.ErrInternal, types.ErrMysqlConn, types.ErrChainConn, types.ErrRedisConn:
@@ -221,14 +228,14 @@ func (c Controller) serverOptions(
 				types.ErrTxResult:
 				w.WriteHeader(http.StatusBadRequest)
 			}
+			response = Response{
+				ErrorResp: &ErrorResp{
+					Code:    appErr.Code(),
+					Message: appErr.Error(),
+				},
+			}
 		}
 
-		response := Response{
-			ErrorResp: &ErrorResp{
-				Code:    appErr.Code(),
-				Message: appErr.Error(),
-			},
-		}
 		bz, _ := json.Marshal(response)
 		_, _ = w.Write(bz)
 	}
