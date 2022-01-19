@@ -60,6 +60,7 @@ func NewServer() Server {
 		//should be last one
 		mw.RecoverMiddleware,
 		mw.AuthMiddleware,
+		mw.IdempotentMiddleware,
 	}
 
 	r := mux.NewRouter()

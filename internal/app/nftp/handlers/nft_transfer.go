@@ -9,12 +9,11 @@ type INftTransfer interface {
 }
 
 func NewNftTransfer() INftTransfer {
-	return &NftTransferValidator{
-		next: newNftTransfer(),
-	}
+	return newNftTransfer()
 }
 
 type nftTransfer struct {
+	base
 }
 
 func newNftTransfer() *nftTransfer {

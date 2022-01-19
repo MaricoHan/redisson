@@ -1,7 +1,12 @@
 package mw
 
 import (
+	"context"
+	"fmt"
 	"net/http"
+
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 )
 
 // 误差时间
@@ -17,7 +22,18 @@ type authHandler struct {
 }
 
 func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	r.Header.Set("X-App-ID", "sheldon test")
+
+	appKey := r.Header.Get("X-Api-Key")
+	appKeyResult, err := models.TAppKeys(
+		qm.Select(models.TAppKeyColumns.AppID),
+		models.TAppKeyWhere.APIKey.EQ(appKey),
+	).OneG(context.Background())
+	if err != nil {
+		writeForbiddenResp(w)
+		return
+	}
+
+	r.Header.Set("X-App-ID", fmt.Sprintf("%d", appKeyResult.AppID))
 	//// 1. 获取 header 中的时间戳
 	//reqTimestampStr := r.Header.Get("X-Timestamp")
 	//reqTimestampInt, err := strconv.ParseInt(reqTimestampStr, 10, 64)
@@ -52,8 +68,6 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//	w.WriteHeader(http.StatusNotFound)
 	//	return
 	//}
-	//// 增加
-	//w.Header().Add("X-App-ID", "")
 
 	h.next.ServeHTTP(w, r)
 }

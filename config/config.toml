@@ -4,7 +4,7 @@ log_format = "text"
 log_level = "debug"
 
 [mysql]
-db_name = "nft_platform"
+db_name = "nft_p"
 host = "127.0.0.1"
 port = "3306"
 user = "root"

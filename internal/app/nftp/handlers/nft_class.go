@@ -11,12 +11,11 @@ type INftClass interface {
 }
 
 func NewNftClass() INftClass {
-	return &NftClassValidator{
-		next: newNftClass(),
-	}
+	return newNftClass()
 }
 
 type nftClass struct {
+	base
 }
 
 func newNftClass() *nftClass {

@@ -3,7 +3,7 @@ package controller
 import (
 	"net/http"
 
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/controller/handlers"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/handlers"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/kit"
 )
