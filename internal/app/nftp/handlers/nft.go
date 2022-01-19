@@ -14,12 +14,11 @@ type INft interface {
 }
 
 func NewNft() INft {
-	return nftValidator{
-		next: newNft(),
-	}
+	return newNft()
 }
 
 type nft struct {
+	base
 }
 
 func newNft() *nft {

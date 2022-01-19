@@ -7,12 +7,11 @@ type ITx interface {
 }
 
 func NewTx() ITx {
-	return &txValidator{
-		next: newTx(),
-	}
+	return newTx()
 }
 
 type tx struct {
+	base
 }
 
 func newTx() *tx {

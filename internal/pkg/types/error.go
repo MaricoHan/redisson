@@ -25,6 +25,7 @@ var (
 	ErrNftBurn             = Register(RootCodeSpace, "18", "failed to burn nft")
 	ErrNftBatchBurn        = Register(RootCodeSpace, "19", "failed to batch burn nft")
 	ErrTxResult            = Register(RootCodeSpace, "20", "failed to get tx result")
+	ErrIdempotent          = Register(RootCodeSpace, "21", "failed to idempotent")
 )
 
 var usedErrorCodes = map[string]*AppError{}

@@ -3,7 +3,7 @@ package controller
 import (
 	"net/http"
 
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/controller/handlers"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/handlers"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/kit"
 )
@@ -25,11 +25,6 @@ func (d DemoController) GetEndpoints() []kit.Endpoint {
 			URI:     "/demo",
 			Method:  http.MethodGet,
 			Handler: d.bc.makeHandler(d.handler.Demo, nil),
-		},
-		kit.Endpoint{
-			URI:     "/demo/{id}",
-			Method:  http.MethodGet,
-			Handler: d.bc.makeHandler(d.handler.DemoByID, nil),
 		},
 	)
 	return ends
