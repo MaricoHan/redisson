@@ -13,10 +13,10 @@ type AccountsP struct {
 
 type AccountsRes struct {
 	PageRes
-	Accounts []*accountP `json:"accounts"`
+	Accounts []*Account `json:"accounts"`
 }
 
-type accountP struct {
+type Account struct {
 	Account string `json:"account"`
 	Gas     uint64 `json:"gas"`
 }

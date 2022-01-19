@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+
 	"github.com/irisnet/core-sdk-go/common/crypto/hd"
 
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -25,7 +27,6 @@ const algo = "secp256k1"
 const hdPathPrefix = hd.BIP44Prefix + "0'/0/"
 
 type Account struct {
-	keyManager sdkcrypto.KeyManager
 }
 
 func NewAccount() *Account {
@@ -90,5 +91,58 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 }
 
 func (svc *Account) Accounts(params dto.AccountsP) (*dto.AccountsRes, error) {
-	return nil, nil
+	queryMod := []qm.QueryMod{
+		qm.Select(models.TAccountColumns.Address, models.TAccountColumns.Gas),
+		models.TAccountWhere.AppID.EQ(params.AppID),
+	}
+	if params.Account != "" {
+		queryMod = append(queryMod, models.TAccountWhere.Address.EQ(params.Account))
+	}
+
+	if params.StartDate != nil {
+		queryMod = append(queryMod, models.TAccountWhere.CreateAt.EQ(*params.StartDate))
+	}
+	if params.EndDate != nil {
+		queryMod = append(queryMod, models.TAccountWhere.CreateAt.EQ(*params.EndDate))
+	}
+	if params.SortBy != "" {
+		orderBy := ""
+		switch params.SortBy {
+		case "DATE_DESC":
+			orderBy = fmt.Sprintf("%s desc", models.TAccountColumns.CreateAt)
+		case "DATE_ASC":
+			orderBy = fmt.Sprintf("%s ASC", models.TAccountColumns.CreateAt)
+		}
+		queryMod = append(queryMod, qm.OrderBy(orderBy))
+
+	}
+
+	var modelResults []*models.TAccount
+	total, err := modext.PageQuery(
+		context.Background(),
+		orm.GetDB(),
+		queryMod,
+		&modelResults,
+		params.Offset,
+		params.Limit,
+	)
+	if err != nil {
+		return nil, types.ErrMysqlConn
+	}
+	result := &dto.AccountsRes{}
+	result.Offset = params.Offset
+	result.Limit = params.Limit
+	result.TotalCount = total
+	var accounts []*dto.Account
+
+	for _, modelResult := range modelResults {
+		account := &dto.Account{
+			Account: modelResult.Address,
+			Gas:     modelResult.Gas.Uint64,
+		}
+		accounts = append(accounts, account)
+	}
+	result.Accounts = accounts
+
+	return result, nil
 }
