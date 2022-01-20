@@ -59,8 +59,8 @@ func NewServer() Server {
 	middlewares := []mw.Middleware{
 		//should be last one
 		mw.RecoverMiddleware,
-		mw.AuthMiddleware,
 		mw.IdempotentMiddleware,
+		mw.AuthMiddleware,
 	}
 
 	r := mux.NewRouter()

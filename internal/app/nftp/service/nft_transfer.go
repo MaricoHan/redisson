@@ -12,6 +12,10 @@ func NewNftTransfer() *NftTransfer {
 }
 
 func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (string, error) {
+	//db, err := orm.GetDB().Begin()
+	//if err != nil {
+	//	return "", types.ErrMysqlConn
+	//}
 
 	return "", nil
 }

@@ -196,6 +196,7 @@ func (c Controller) serverOptions(
 
 	//format error
 	errorEncoderOption := func(ctx context.Context, err error, w http.ResponseWriter) {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		var response Response
 		appErr, ok := err.(types.IError)
 		if !ok {
@@ -207,11 +208,17 @@ func (c Controller) serverOptions(
 				},
 			}
 		} else {
+			errResp := &ErrorResp{}
 			switch appErr {
 			case types.ErrInternal, types.ErrMysqlConn, types.ErrChainConn, types.ErrRedisConn:
 				w.WriteHeader(http.StatusInternalServerError)
+				errResp.Message = types.ErrInternal.Error()
+				errResp.Code = types.ErrInternal.Code()
+
 			case types.ErrAuthenticate:
 				w.WriteHeader(http.StatusForbidden)
+				errResp.Message = appErr.Error()
+				errResp.Code = appErr.Code()
 			case types.ErrParams, types.ErrAccountCreate,
 				types.ErrGetAccountDetails,
 				types.ErrNftClassCreate,
@@ -227,13 +234,10 @@ func (c Controller) serverOptions(
 				types.ErrNftBatchBurn,
 				types.ErrTxResult:
 				w.WriteHeader(http.StatusBadRequest)
+				errResp.Message = appErr.Error()
+				errResp.Code = appErr.Code()
 			}
-			response = Response{
-				ErrorResp: &ErrorResp{
-					Code:    appErr.Code(),
-					Message: appErr.Error(),
-				},
-			}
+			response = Response{ErrorResp: errResp}
 		}
 
 		bz, _ := json.Marshal(response)
