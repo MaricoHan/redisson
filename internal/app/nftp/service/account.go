@@ -47,6 +47,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 	}
 
 	tAccounts := modext.TAccounts{}
+
 	var addresses []string
 	var i int64
 	accOffsetStart := tAppOneObj.AccOffset
