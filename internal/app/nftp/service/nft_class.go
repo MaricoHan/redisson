@@ -120,13 +120,16 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 	for _, modelResult := range modelResults {
 		classIds = append(classIds, modelResult.ClassID)
 	}
-	//q1 := []qm.QueryMod{
-	//	qm.From(models.TableNames.TNFTS),
-	//	qm.Select(models.TNFTColumns.ClassID),
-	//	qm.Select("count(class_id) as class_id_count"),
-	//	qm.GroupBy(models.TNFTColumns.ClassID),
-	//	//SELECT sex,COUNT(sex) FROM employee GROUP BY sex;
-	//}
+	q1 := []qm.QueryMod{
+		qm.From(models.TableNames.TNFTS),
+		qm.Select(models.TNFTColumns.ClassID),
+		qm.Select("count(class_id) as count AND class_id"),
+		qm.GroupBy(models.TNFTColumns.ClassID),
+		//SELECT sex,COUNT(sex) FROM employee GROUP BY sex;
+	}
+	q1 = append(q1, models.TNFTWhere.ClassID.IN(classIds))
+	var countRes []*dto.NftCount
+	models.NewQuery(q1...).Bind(context.Background(), orm.GetDB(), &countRes)
 
 	var nftClasses []*dto.NftClass
 	for _, modelResult := range modelResults {
@@ -134,11 +137,16 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 			Id:        modelResult.ClassID,
 			Name:      modelResult.Name.String,
 			Symbol:    modelResult.Symbol.String,
-			NftCount:  modelResult.Offset, //待修改
+			NftCount:  uint64(0),
 			Uri:       modelResult.URI.String,
 			Owner:     modelResult.Owner,
 			TxHash:    modelResult.TXHash,
 			Timestamp: modelResult.Timestamp.Time.String(),
+		}
+		for _, r := range countRes {
+			if r.ClassId == modelResult.ClassID {
+				nftClass.NftCount = uint64(r.Count)
+			}
 		}
 		nftClasses = append(nftClasses, nftClass)
 	}

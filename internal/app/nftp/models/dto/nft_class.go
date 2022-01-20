@@ -49,3 +49,8 @@ type NftClassRes struct {
 	Data        string `json:"data"`
 	Description string `json:"description"`
 }
+
+type NftCount struct {
+	Count   int64  `json:"count"`
+	ClassId string `json:"class_id"`
+}
