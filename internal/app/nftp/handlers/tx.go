@@ -27,11 +27,11 @@ func newTx(svc *service.Tx) *tx {
 func (h tx) TxResultByTxHash(ctx context.Context, _ interface{}) (interface{}, error) {
 	// 校验参数 start
 	params := dto.TxResultByTxHashP{
-		Txhash: h.TxHash(ctx),
-		AppID:  h.AppID(ctx),
+		Hash:  h.Hash(ctx),
+		AppID: h.AppID(ctx),
 	}
-	if params.Txhash == "" {
-		params.Txhash = ""
+	if params.Hash == "" {
+		params.Hash = ""
 	}
 
 	// 校验参数 end
@@ -39,10 +39,10 @@ func (h tx) TxResultByTxHash(ctx context.Context, _ interface{}) (interface{}, e
 	return h.svc.TxResultByTxHash(params)
 }
 
-func (h tx) TxHash(ctx context.Context) string {
-	tx_hash := ctx.Value("tx_hash")
-	if tx_hash == nil {
+func (h tx) Hash(ctx context.Context) string {
+	hash := ctx.Value("hash")
+	if hash == nil {
 		return ""
 	}
-	return tx_hash.(string)
+	return hash.(string)
 }

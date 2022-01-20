@@ -1,6 +1,6 @@
 package vo
 
-import "go/types"
+import "gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 
 type TransferNftClassByID struct {
 	Base
@@ -14,5 +14,5 @@ type TransferNftByIndex struct {
 
 type TransferNftByBatch struct {
 	Base
-	Recipients types.Object[] `json:"recipients{index,recipient}" validate:"required"`
+	Recipients []*dto.Recipient `json:"recipients" validate:"required"`
 }

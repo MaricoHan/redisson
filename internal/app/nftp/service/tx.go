@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
@@ -17,16 +16,15 @@ func NewTx() *Tx {
 
 func (svc *Tx) TxResultByTxHash(params dto.TxResultByTxHashP) (*dto.TxResultByTxHashRes, error) {
 	//验证
-	if params.Txhash == "" {
+	if params.Hash == "" {
 		return nil, types.ErrTxResult
 	}
 
 	//query
-	txinfo, err := models.TTXS([]qm.QueryMod{
-		qm.Select(models.TTXColumns.ID),
-		models.TTXWhere.Hash.EQ(params.Txhash),
+	txinfo, err := models.TTXS(
+		models.TTXWhere.Hash.EQ(params.Hash),
 		models.TTXWhere.AppID.EQ(params.AppID),
-	}...).OneG(context.Background())
+	).OneG(context.Background())
 
 	if err != nil {
 		return nil, types.ErrTxResult
