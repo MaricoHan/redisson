@@ -1,9 +1,17 @@
 package mw
 
 import (
+	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"sort"
+
+	"github.com/gorilla/mux"
 
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
@@ -25,6 +33,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	appKey := r.Header.Get("X-Api-Key")
 	appKeyResult, err := models.TAppKeys(
+		qm.Select(models.TAppKeyColumns.APIKey),
 		qm.Select(models.TAppKeyColumns.AppID),
 		models.TAppKeyWhere.APIKey.EQ(appKey),
 	).OneG(context.Background())
@@ -32,46 +41,130 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		writeForbiddenResp(w)
 		return
 	}
+	// 1. 获取 header 中的时间戳
+	reqTimestampStr := r.Header.Get("X-Timestamp")
 
-	r.Header.Set("X-App-Id", fmt.Sprintf("%d", appKeyResult.AppID))
-	//// 1. 获取 header 中的时间戳
-	//reqTimestampStr := r.Header.Get("X-Timestamp")
+	//// 1.1 判断时间误差
 	//reqTimestampInt, err := strconv.ParseInt(reqTimestampStr, 10, 64)
 	//if err != nil {
 	//	w.WriteHeader(http.StatusBadRequest)
 	//	return
 	//}
 	//
-	//// 1.1 判断时间误差
 	//curTimestamp := time.Now().Unix()
 	//if curTimestamp-reqTimestampInt > timeInterval || curTimestamp < reqTimestampInt {
 	//	w.WriteHeader(http.StatusBadRequest)
 	//	return
 	//}
-	//// 如果时间误差超过
-	////2. 获取 header 中的 app_id
-	//// 	从数据中查询用户的信息
-	//// params + reqTimestampStr + appKey
-	//// appID := r.Header.Get("X-App-Id")
-	//switch r.Method {
-	//case http.MethodGet:
-	//case http.MethodPost:
-	//case http.MethodPatch:
-	//case http.MethodDelete:
-	//	//defer r.Body.Close()
-	//	//body, err := ioutil.ReadAll(r.Body)
-	//	//if err != nil {
-	//	//	w.WriteHeader(http.StatusBadRequest)
-	//	//	return
-	//	//}
-	//default:
-	//	w.WriteHeader(http.StatusNotFound)
-	//	return
-	//}
+
+	reqSignature := r.Header.Get("X-Signature")
+	// 2. 验证签名
+	// todo
+	fmt.Println(h.Signature(r, appKeyResult.APIKey, reqTimestampStr, reqSignature))
+
+	r.Header.Set("X-App-Id", fmt.Sprintf("%d", appKeyResult.AppID))
 
 	h.next.ServeHTTP(w, r)
 }
 
-func (h authHandler) Signature() {
+func (h authHandler) Signature(r *http.Request, appKey string, timestamp string, signature string) bool {
+	switch r.Method {
+	case http.MethodGet:
+		i := 0
+		paramsMap := map[string]interface{}{}
+		for k, v := range r.URL.Query() {
+			paramsMap[k] = v[0]
+			i++
+		}
 
+		for k, v := range mux.Vars(r) {
+			paramsMap[k] = v
+			i++
+		}
+		paramsMap = sortMapParams(paramsMap)
+
+		hexHash := hash(timestamp + appKey)
+		if i != 0 {
+			sourParamsBytes, _ := json.Marshal(paramsMap)
+			hexHash = hash(string(sourParamsBytes) + timestamp + appKey)
+		}
+		if hexHash != signature {
+			return false
+		}
+	case http.MethodPost:
+		// 把request的内容读取出来
+		var bodyBytes []byte
+		if r.Body != nil {
+			bodyBytes, _ = ioutil.ReadAll(r.Body)
+		}
+		// 把刚刚读出来的再写进去
+		r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+
+		params := map[string]interface{}{}
+		_ = json.Unmarshal(bodyBytes, &params)
+		hexHash := hash(timestamp + appKey)
+
+		sourParams := sortMapParams(params)
+		if sourParams != nil {
+			sourParamsBytes, _ := json.Marshal(sourParams)
+			hexHash = hash(string(sourParamsBytes) + timestamp + appKey)
+		}
+		if hexHash != signature {
+			return false
+		}
+	case http.MethodDelete:
+	case http.MethodPatch:
+		// 把request的内容读取出来
+		var bodyBytes []byte
+		if r.Body != nil {
+			bodyBytes, _ = ioutil.ReadAll(r.Body)
+		}
+		// 把刚刚读出来的再写进去
+		r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+
+		params := map[string]interface{}{}
+		_ = json.Unmarshal(bodyBytes, &params)
+		hexHash := hash(timestamp + appKey)
+
+		i := 0
+		for k, v := range mux.Vars(r) {
+			params[k] = v
+			i++
+		}
+		sortParams := sortMapParams(params)
+
+		if sortParams != nil {
+			sortParamsBytes, _ := json.Marshal(sortParams)
+			hexHash = hash(string(sortParamsBytes) + timestamp + appKey)
+		}
+		if hexHash != signature {
+			return false
+		}
+	}
+
+	return true
+
+}
+
+func hash(oriText string) string {
+	oriTextHashBytes := sha256.Sum256([]byte(oriText))
+	return hex.EncodeToString(oriTextHashBytes[:])
+}
+
+func sortMapParams(params map[string]interface{}) map[string]interface{} {
+	keys := make([]string, len(params))
+	i := 0
+	for k, _ := range params {
+		keys[i] = k
+		i++
+	}
+	if i == 0 {
+		return nil
+	}
+	sort.Strings(keys)
+	sortMap := map[string]interface{}{}
+	for _, k := range keys {
+		sortMap[k] = params[k]
+	}
+	return sortMap
 }
