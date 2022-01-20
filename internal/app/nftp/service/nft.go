@@ -32,12 +32,11 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (int64, error) {
 		return 0, types.ErrInternal
 	}
 
-	//!!!not sure the error msg
 	if tNft == nil || tNft.Status == "burned" {
-		return 0, types.ErrNftDetailsGet
+		return 0, types.ErrNftMissing
 	}
 
-	//assignment
+	//assign
 	tNft.URI = null.StringFrom(params.Uri)
 	tNft.Metadata = null.StringFrom(params.Data)
 
@@ -51,8 +50,37 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (int64, error) {
 
 func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (int64, error) {
 
-	rowsAff := int64((0))
-	return rowsAff, nil
+	// get database object
+	db, err := orm.GetDB().Begin()
+	if err != nil {
+		return 0, types.ErrMysqlConn
+	}
+	var rowsAff int64
+	for _, EditNft := range params.EditNfts { //edit every NFT
+		//get NFT by app_id,class_id and index
+		tNft, err := models.TNFTS(qm.Where("app_id=? AND class_id=? AND index=?", params.AppID, params.ClassId, EditNft.Index)).One(context.Background(), db)
+
+		if err != nil {
+			return rowsAff, types.ErrInternal
+		}
+
+		if tNft == nil || tNft.Status == "burned" {
+			return rowsAff, types.ErrNftMissing
+		}
+
+		//assign
+		tNft.URI = null.StringFrom(EditNft.Uri)
+		tNft.Metadata = null.StringFrom(EditNft.Data)
+
+		//update database
+		i, err := tNft.Update(context.Background(), db, boil.Infer())
+		rowsAff += i
+
+		if err != nil {
+			return rowsAff, err
+		}
+	}
+	return rowsAff, err
 }
 
 func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (int64, error) {
@@ -65,14 +93,16 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (int64, error) {
 
 	//get NFT by app_id,class_id and index
 	tNft, err := models.TNFTS(qm.Where("app_id=? AND class_id=? AND index=?", params.AppID, params.ClassId, params.Index)).One(context.Background(), db)
-	//!!!not sure the error msg
+	if err != nil {
+		return 0, err
+	}
 	if tNft == nil || tNft.Status == "burned" {
-		return 0, types.ErrNftDetailsGet
+		return 0, types.ErrNftMissing
 	}
 	if tNft.Status == "pendding" {
-		return 0, types.ErrNftDetailsGet
+		return 0, types.ErrNftBurnPend
 	}
-	//just burn
+	//just burn 🔥
 	tNft.Status = "burned"
 	rowsAff, err := tNft.Update(context.Background(), db, boil.Infer())
 
@@ -81,7 +111,36 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (int64, error) {
 }
 func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (int64, error) {
 
-	rowsAff := int64((0))
+	// get database object
+	db, err := orm.GetDB().Begin()
+	if err != nil {
+		return 0, types.ErrMysqlConn
+	}
+	var rowsAff int64
+	for _, index := range params.Indices { //burn every NFT
+		//get NFT by app_id,class_id and index
+		tNft, err := models.TNFTS(qm.Where("app_id=? AND class_id=? AND index=?", params.AppID, params.ClassId, index)).One(context.Background(), db)
+		if err != nil {
+			return rowsAff, err
+		}
+		if tNft == nil || tNft.Status == "burned" {
+			return rowsAff, types.ErrNftMissing
+		}
+		if tNft.Status == "pendding" {
+			return rowsAff, types.ErrNftBurnPend
+		}
+
+		//just burn
+		tNft.Status = "burned"
+		i, err := tNft.Update(context.Background(), db, boil.Infer())
+		rowsAff += i
+
+		if err != nil {
+			return rowsAff, err
+		}
+	}
+
+	//return the affected rows amount
 	return rowsAff, nil
 }
 

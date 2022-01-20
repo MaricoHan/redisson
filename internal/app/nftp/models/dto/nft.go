@@ -1,17 +1,6 @@
 package dto
 
 type EditNftByIndexP struct {
-	Name string `json:"name"`
-	Uri  string `json:"uri"`
-	Data string `json:"data"`
-
-	AppID   uint64 `json:"app_id"`
-	ClassId string `json:"class_id"`
-	Owner   string `json:"owner"`
-	Index   uint64 `json:"index"`
-}
-
-type EditNftByBatchP struct {
 	Index uint64 `json:"index"`
 	Name  string `json:"name"`
 	Uri   string `json:"uri"`
@@ -22,6 +11,21 @@ type EditNftByBatchP struct {
 	Owner   string `json:"owner"`
 }
 
+type EditNftByBatchP struct {
+	EditNfts []*EditNft `json:"edit_nfts"`
+
+	AppID   uint64 `json:"app_id"`
+	ClassId string `json:"class_id"`
+	Owner   string `json:"owner"`
+}
+
+type EditNft struct {
+	Index uint64 `json:"index"`
+	Name  string `json:"name"`
+	Uri   string `json:"uri"`
+	Data  string `json:"data"`
+}
+
 type DeleteNftByIndexP struct {
 	AppID   uint64 `json:"app_id"`
 	ClassId string `json:"class_id"`
@@ -30,6 +34,10 @@ type DeleteNftByIndexP struct {
 }
 
 type DeleteNftByBatchP struct {
+	AppID   uint64   `json:"app_id"`
+	ClassId string   `json:"class_id"`
+	Owner   string   `json:"owner"`
+	Indices []uint64 `json:"indices"`
 }
 type NftByIndexP struct {
 	Id          string `json:"id"`
