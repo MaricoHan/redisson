@@ -1,0 +1,49 @@
+package service
+
+import (
+	"context"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
+	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
+)
+
+type Tx struct {
+}
+
+func NewTx() *Tx {
+	return &Tx{}
+}
+
+func (svc *Tx) TxResultByTxHash(params dto.TxResultByTxHashP) (*dto.TxResultByTxHashRes, error) {
+	//验证
+	if params.Txhash == "" {
+		return nil, types.ErrTxResult
+	}
+
+	//query
+	txinfo, err := models.TTXS([]qm.QueryMod{
+		qm.Select(models.TTXColumns.ID),
+		models.TTXWhere.Hash.EQ(params.Txhash),
+		models.TTXWhere.AppID.EQ(params.AppID),
+	}...).OneG(context.Background())
+
+	if err != nil {
+		return nil, types.ErrTxResult
+	}
+
+	//result
+	result := &dto.TxResultByTxHashRes{}
+	result.Type = txinfo.OperationType
+
+	if txinfo.Status == "pendding" {
+		result.Status = 0
+	} else if txinfo.Status == "success" {
+		result.Status = 1
+	} else {
+		result.Status = 2 // tx.Status == "failed"
+	}
+	result.Message = txinfo.ErrMSG.String
+
+	return result, nil
+}

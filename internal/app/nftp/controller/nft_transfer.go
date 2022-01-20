@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
 	"net/http"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/handlers"
@@ -24,17 +25,17 @@ func (c NftTransferController) GetEndpoints() []kit.Endpoint {
 		kit.Endpoint{
 			URI:     "/nft/class-transfers/{class_id}/{owner}",
 			Method:  http.MethodPost,
-			Handler: c.makeHandler(c.handler.TransferNftClassByID, nil),
+			Handler: c.makeHandler(c.handler.TransferNftClassByID, &vo.TransferNftClassByID{}),
 		},
 		kit.Endpoint{
 			URI:     "/nft/nft-transfers/{class_id}/{owner}/{index}",
 			Method:  http.MethodPost,
-			Handler: c.makeHandler(c.handler.TransferNftByIndex, nil),
+			Handler: c.makeHandler(c.handler.TransferNftByIndex, &vo.TransferNftByIndex{}),
 		},
 		kit.Endpoint{
 			URI:     "/nft/nft-transfers/{class_id}/{owner}",
 			Method:  http.MethodPost,
-			Handler: c.makeHandler(c.handler.TransferNftByBatch, nil),
+			Handler: c.makeHandler(c.handler.TransferNftByBatch, &vo.TransferNftByBatch{}),
 		},
 	)
 	return ends

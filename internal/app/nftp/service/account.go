@@ -114,7 +114,6 @@ func (svc *Account) Accounts(params dto.AccountsP) (*dto.AccountsRes, error) {
 			orderBy = fmt.Sprintf("%s ASC", models.TAccountColumns.CreateAt)
 		}
 		queryMod = append(queryMod, qm.OrderBy(orderBy))
-
 	}
 
 	var modelResults []*models.TAccount
