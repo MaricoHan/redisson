@@ -13,6 +13,7 @@ type (
 		Mysql  Mysql  `mapstructure:"mysql"`
 		Server Server `mapstructure:"server"`
 		Redis  Redis  `mapstructure:"redis"`
+		Chain  Chain  `mapstructure:"chain"`
 	}
 
 	// Mysql define a struct for mysql connect
@@ -32,6 +33,21 @@ type (
 		Address  string `mapstructure:"address"`
 		Password string `mapstructure:"password"`
 		DB       int    `mapstructure:"db"`
+	}
+
+	// Chain define a struct for Chain server
+	Chain struct {
+		RcpAddr          string `mapstructure:"rpc_address"`
+		GrpcAddr         string `mapstructure:"grpc_address"`
+		WsAddr           string `mapstructure:"ws_addr"`
+		ChainID          string `mapstructure:"chain_id"`
+		ProjectID        string `mapstructure:"project_id"`
+		ProjectKey       string `mapstructure:"project_key"`
+		ChainAccountAddr string `mapstructure:"chain_account_addr"`
+
+		Gas    uint64 `mapstructure:"gas"`
+		Denom  string `mapstructure:"denom"`
+		Amount int64  `mapstructure:"amount"`
 	}
 
 	// Server define a struct for http server
