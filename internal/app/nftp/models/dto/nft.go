@@ -16,10 +16,17 @@ type EditNftByBatchP struct {
 	Name  string `json:"name"`
 	Uri   string `json:"uri"`
 	Data  string `json:"data"`
-	AppID uint64 `json:"app_id"`
+
+	AppID   uint64 `json:"app_id"`
+	ClassId string `json:"class_id"`
+	Owner   string `json:"owner"`
 }
 
 type DeleteNftByIndexP struct {
+	AppID   uint64 `json:"app_id"`
+	ClassId string `json:"class_id"`
+	Owner   string `json:"owner"`
+	Index   uint64 `json:"index"`
 }
 
 type DeleteNftByBatchP struct {

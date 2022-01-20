@@ -11,7 +11,7 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-const prefix = "dapp"
+const prefix = "nftp"
 
 var (
 	rdb    *redis.Client
@@ -42,9 +42,13 @@ func Set(key string, value interface{}, expiration time.Duration) error {
 }
 
 // Has return a bool value
-func Has(key string) bool {
-	err := rdb.Exists(context.Background(), keyPrefix(key)).Err()
-	return err == nil
+func Has(key string) (bool, error) {
+	result, err := rdb.Exists(context.Background(), keyPrefix(key)).Result()
+	if err != nil {
+		return false, err
+	}
+
+	return result == 1, nil
 }
 
 // GetString return a string value from redis by specisal key
@@ -146,5 +150,5 @@ func Subscribe(channel string,
 }
 
 func keyPrefix(key string) string {
-	return fmt.Sprintf("%s/%s", prefix, key)
+	return fmt.Sprintf("%s:%s", prefix, key)
 }

@@ -2,7 +2,9 @@ package service
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
+	"strings"
 
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
@@ -21,6 +23,7 @@ import (
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 
 	sdkcrypto "github.com/irisnet/core-sdk-go/common/crypto"
+	sdktype "github.com/irisnet/core-sdk-go/types"
 )
 
 const algo = "secp256k1"
@@ -63,12 +66,14 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 			return nil, types.ErrAccountCreate
 		}
 		_, prv := res.Generate()
-		tmpAddress := prv.PubKey().Address().String()
+
+		tmpAddress := sdktype.AccAddress(prv.PubKey().Address().Bytes()).String()
 		tmp := &models.TAccount{
-			AppID:   params.AppID,
-			Address: tmpAddress,
-			PriKey:  string(prv.Bytes()),
-			PubKey:  string(prv.PubKey().Bytes()),
+			AppID:    params.AppID,
+			Address:  tmpAddress,
+			AccIndex: uint64(index),
+			PriKey:   base64.StdEncoding.EncodeToString(prv.Bytes()),
+			PubKey:   base64.StdEncoding.EncodeToString(prv.PubKey().Bytes()),
 		}
 
 		tAccounts = append(tAccounts, tmp)
@@ -92,7 +97,13 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 }
 
 func (svc *Account) Accounts(params dto.AccountsP) (*dto.AccountsRes, error) {
+
+	result := &dto.AccountsRes{}
+	result.Offset = params.Offset
+	result.Limit = params.Limit
+	result.Accounts = []*dto.Account{}
 	queryMod := []qm.QueryMod{
+		qm.From(models.TableNames.TAccounts),
 		qm.Select(models.TAccountColumns.Address, models.TAccountColumns.Gas),
 		models.TAccountWhere.AppID.EQ(params.AppID),
 	}
@@ -101,10 +112,10 @@ func (svc *Account) Accounts(params dto.AccountsP) (*dto.AccountsRes, error) {
 	}
 
 	if params.StartDate != nil {
-		queryMod = append(queryMod, models.TAccountWhere.CreateAt.EQ(*params.StartDate))
+		queryMod = append(queryMod, models.TAccountWhere.CreateAt.GTE(*params.StartDate))
 	}
 	if params.EndDate != nil {
-		queryMod = append(queryMod, models.TAccountWhere.CreateAt.EQ(*params.EndDate))
+		queryMod = append(queryMod, models.TAccountWhere.CreateAt.LTE(*params.EndDate))
 	}
 	if params.SortBy != "" {
 		orderBy := ""
@@ -128,14 +139,16 @@ func (svc *Account) Accounts(params dto.AccountsP) (*dto.AccountsRes, error) {
 		params.Limit,
 	)
 	if err != nil {
+		// records not exist
+		if strings.Contains(err.Error(), "records not exist") {
+			return result, nil
+		}
+
 		return nil, types.ErrMysqlConn
 	}
-	result := &dto.AccountsRes{}
-	result.Offset = params.Offset
-	result.Limit = params.Limit
+
 	result.TotalCount = total
 	var accounts []*dto.Account
-
 	for _, modelResult := range modelResults {
 		account := &dto.Account{
 			Account: modelResult.Address,

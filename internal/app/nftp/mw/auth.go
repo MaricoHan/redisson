@@ -33,7 +33,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	r.Header.Set("X-App-ID", fmt.Sprintf("%d", appKeyResult.AppID))
+	r.Header.Set("X-App-Id", fmt.Sprintf("%d", appKeyResult.AppID))
 	//// 1. 获取 header 中的时间戳
 	//reqTimestampStr := r.Header.Get("X-Timestamp")
 	//reqTimestampInt, err := strconv.ParseInt(reqTimestampStr, 10, 64)
@@ -52,7 +52,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	////2. 获取 header 中的 app_id
 	//// 	从数据中查询用户的信息
 	//// params + reqTimestampStr + appKey
-	//// appID := r.Header.Get("X-App-ID")
+	//// appID := r.Header.Get("X-App-Id")
 	//switch r.Method {
 	//case http.MethodGet:
 	//case http.MethodPost:
