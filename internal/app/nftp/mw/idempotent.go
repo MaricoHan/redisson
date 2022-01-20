@@ -1,9 +1,12 @@
 package mw
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 
@@ -25,22 +28,34 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		h.next.ServeHTTP(w, r)
 		return
 	}
-
-	defer r.Body.Close()
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		writeBadRequestResp(w, types.ErrParams)
-		return
+	// 把request的内容读取出来
+	var bodyBytes []byte
+	if r.Body != nil {
+		bodyBytes, _ = ioutil.ReadAll(r.Body)
 	}
+	// 把刚刚读出来的再写进去
+	r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+
 	req := &vo.Base{}
-	err = json.Unmarshal(body, req)
+	err := json.Unmarshal(bodyBytes, req)
 	if err != nil {
 		writeBadRequestResp(w, types.ErrParams)
 		return
 	}
-
-	if redis.Has(req.OperationID) {
+	appID := r.Header.Get("X-App-Id")
+	key := fmt.Sprintf("%s:%s", appID, req.OperationID)
+	ok, err := redis.Has(key)
+	if err != nil {
+		writeInternalResp(w)
+		return
+	}
+	if ok {
 		writeBadRequestResp(w, types.ErrIdempotent)
+		return
+	}
+
+	if err := redis.Set(key, "1", time.Second*60); err != nil {
+		writeBadRequestResp(w, types.ErrRedisConn)
 		return
 	}
 

@@ -36,13 +36,17 @@ func newAccount(svc *service.Account) *account {
 // return creation result
 func (h account) CreateAccount(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
-	req := request.(vo.CreateAccountRequest)
+	req := request.(*vo.CreateAccountRequest)
 	params := dto.CreateAccountP{
 		AppID: h.AppID(ctx),
 		Count: req.Count,
 	}
 	if params.Count == 0 {
 		params.Count = 1
+	}
+
+	if params.Count > 1000 {
+		return nil, types.ErrParams
 	}
 	// 校验参数 end
 	return h.svc.CreateAccount(params)
@@ -54,11 +58,20 @@ func (h account) Accounts(ctx context.Context, _ interface{}) (interface{}, erro
 	params := dto.AccountsP{
 		AppID:   h.AppID(ctx),
 		Account: h.Account(ctx),
-		PageP: dto.PageP{
-			Offset: h.Offset(ctx),
-			Limit:  h.Limit(ctx),
-		},
 	}
+
+	offset, err := h.Offset(ctx)
+	if err != nil {
+		return nil, types.ErrParams
+	}
+	params.Offset = offset
+
+	limit, err := h.Limit(ctx)
+	if err != nil {
+		return nil, types.ErrParams
+	}
+	params.Limit = limit
+
 	if params.Offset == 0 {
 		params.Offset = 1
 	}
@@ -85,7 +98,7 @@ func (h account) Accounts(ctx context.Context, _ interface{}) (interface{}, erro
 	}
 
 	if params.EndDate != nil && params.StartDate != nil {
-		if params.EndDate.After(*params.StartDate) {
+		if !params.EndDate.After(*params.StartDate) {
 			return nil, types.ErrParams
 		}
 	}
