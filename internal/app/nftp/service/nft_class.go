@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/volatiletech/null/v8"
-	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
@@ -12,7 +11,6 @@ import (
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"
 	"strings"
-	"time"
 )
 
 type NftClass struct {
@@ -24,32 +22,32 @@ func NewNftClass() *NftClass {
 
 func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error) {
 
-	// 写入数据库
-	// sdk 创建账户
-	db, err := orm.GetDB().Begin()
-	if err != nil {
-		return nil, types.ErrMysqlConn
-	}
-
-	tClass := &models.TClass{
-		AppID:       params.AppID,
-		Name:        null.StringFromPtr(&params.Name),
-		Symbol:      null.StringFromPtr(&params.Symbol),
-		URI:         null.StringFromPtr(&params.Uri),
-		URIHash:     null.StringFromPtr(&params.UriHash),
-		Description: null.StringFromPtr(&params.Description),
-		Metadata:    null.StringFromPtr(&params.Data),
-		Owner:       params.Owner,
-
-		ClassID:   "",
-		TXHash:    "",
-		Timestamp: null.NewTime(time.Now(), true),
-	}
-
-	err = tClass.Insert(context.Background(), db, boil.Infer())
-	if err != nil {
-		return nil, types.ErrAccountCreate
-	}
+	//// 写入数据库
+	//// sdk 创建账户
+	//db, err := orm.GetDB().Begin()
+	//if err != nil {
+	//	return nil, types.ErrMysqlConn
+	//}
+	//
+	//tClass := &models.TClass{
+	//	AppID:       params.AppID,
+	//	Name:        null.StringFromPtr(&params.Name),
+	//	Symbol:      null.StringFromPtr(&params.Symbol),
+	//	URI:         null.StringFromPtr(&params.Uri),
+	//	URIHash:     null.StringFromPtr(&params.UriHash),
+	//	Description: null.StringFromPtr(&params.Description),
+	//	Metadata:    null.StringFromPtr(&params.Data),
+	//	Owner:       params.Owner,
+	//
+	//	ClassID:   "",
+	//	TXHash:    "",
+	//	Timestamp: null.NewTime(time.Now(), true),
+	//}
+	//
+	//err = tClass.Insert(context.Background(), db, boil.Infer())
+	//if err != nil {
+	//	return nil, types.ErrAccountCreate
+	//}
 
 	return nil, nil
 }
@@ -123,9 +121,8 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 	q1 := []qm.QueryMod{
 		qm.From(models.TableNames.TNFTS),
 		qm.Select(models.TNFTColumns.ClassID),
-		qm.Select("count(class_id) as count AND class_id"),
+		qm.Select("count(class_id) as count, class_id"),
 		qm.GroupBy(models.TNFTColumns.ClassID),
-		//SELECT sex,COUNT(sex) FROM employee GROUP BY sex;
 	}
 	q1 = append(q1, models.TNFTWhere.ClassID.IN(classIds))
 	var countRes []*dto.NftCount
