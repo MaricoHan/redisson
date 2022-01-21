@@ -6,6 +6,8 @@ import (
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -47,7 +49,7 @@ func (h nft) EditNftByIndex(ctx context.Context, request interface{}) (interface
 	params := dto.EditNftByIndexP{
 		AppID:   h.AppID(ctx),
 		ClassId: h.ClassId(ctx),
-		Owner:   h.Owner(ctx),
+		Sender:  h.Owner(ctx),
 		Index:   h.Index(ctx),
 
 		Name: req.Name,
@@ -72,7 +74,7 @@ func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface
 		EditNfts: req.EditNftsR,
 		AppID:    h.AppID(ctx),
 		ClassId:  h.ClassId(ctx),
-		Owner:    h.Owner(ctx),
+		Sender:   h.Owner(ctx),
 	}
 	//check start
 
@@ -94,7 +96,7 @@ func (h nft) DeleteNftByIndex(ctx context.Context, _ interface{}) (interface{}, 
 	params := dto.DeleteNftByIndexP{
 		AppID:   h.AppID(ctx),
 		ClassId: h.ClassId(ctx),
-		Owner:   h.Owner(ctx),
+		Sender:  h.Owner(ctx),
 		Index:   h.Index(ctx),
 	}
 	//check start
@@ -114,7 +116,7 @@ func (h nft) DeleteNftByBatch(ctx context.Context, _ interface{}) (interface{}, 
 	params := dto.DeleteNftByBatchP{
 		AppID:   h.AppID(ctx),
 		ClassId: h.ClassId(ctx),
-		Owner:   h.Owner(ctx),
+		Sender:  h.Owner(ctx),
 		Indices: h.Indices(ctx),
 	}
 
@@ -216,7 +218,7 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, request interface{}
 	return h.svc.NftOperationHistoryByIndex(params), nil
 }
 
-func (h nft) Signer(ctx context.Context) (string) {
+func (h nft) Signer(ctx context.Context) string {
 	signer := ctx.Value("signer")
 	if signer == nil {
 		return ""
@@ -265,7 +267,14 @@ func (h nft) Index(ctx context.Context) uint64 {
 	return index.(uint64)
 }
 func (h nft) Indices(ctx context.Context) []uint64 {
-	indices := ctx.Value("indices")
-	//!!!not sure the type of indices
-	return indices.([]uint64)
+	rec := ctx.Value("indices")
+
+	//"1,2,3,4,..." to {1,2,3,4,...}
+	var indices []uint64
+	strArr := strings.Split(rec.(string), ",")
+	for i, s := range strArr {
+		indices[i], _ = strconv.ParseUint(s, 10, 64)
+	}
+
+	return indices
 }

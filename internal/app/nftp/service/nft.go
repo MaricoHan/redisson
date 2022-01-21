@@ -25,15 +25,8 @@ func NewNft() *Nft {
 	return &Nft{}
 }
 func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
-	// get database object
-	db, err := orm.GetDB().Begin()
-	if err != nil {
-		return "", types.ErrMysqlConn
-	}
-
 	// get NFT by app_id,class_id and index
-	tNft, err := models.TNFTS(qm.Where("app_id=? AND class_id=? AND index=?", params.AppID, params.ClassId, params.Index)).One(context.Background(), db)
-
+	tNft, err := models.TNFTS(qm.Where("app_id=? AND class_id=? AND index=?", params.AppID, params.ClassId, params.Index)).One(context.Background(), boil.GetContextDB())
 	if err != nil {
 		return "", types.ErrInternal
 	}
@@ -50,34 +43,26 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
 		Data:    params.Data,
 		Sender:  params.Sender,
 	}
-
-	// lock the NFT
-	tNft.Status = "undo"
-	_, err = tNft.Update(context.Background(), db, boil.Infer())
-	if err != nil {
-		return "", err
-	}
-
 	// build and sign transaction
 	baseTx := svc.base.CreateBaseTx(params.Sender, "")
 	signedData, txHash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgEditNFT}, baseTx)
 
 	// Tx into database
-	ttx := models.TTX{
-		AppID:         params.AppID,
-		Hash:          txHash,
-		OriginData:    null.BytesFrom(signedData),
-		OperationType: "edit_nft",
-		Status:        "undo",
+	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, "edit_nft", "undo")
+	if err != nil {
+		return "", err
 	}
-	err = ttx.Insert(context.Background(), db, boil.Infer())
+
+	// lock the NFT
+	tNft.Status = "pendding"
+	tNft.LockedBy = null.Uint64From(txId)
+	_, err = tNft.UpdateG(context.Background(), boil.Infer())
 	if err != nil {
 		return "", err
 	}
 
 	// return the txHash
-	return txHash, err
-
+	return txHash, nil
 }
 
 func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
@@ -105,13 +90,6 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 			Sender:  params.Sender,
 		}
 		msgEditNFTs = append(msgEditNFTs, &msgEditNFT)
-
-		// lock the NFT
-		tNft.Status = "undo"
-		_, err = tNft.Update(context.Background(), db, boil.Infer())
-		if err != nil {
-			return "", err
-		}
 	}
 
 	// build and sign transaction
@@ -119,32 +97,36 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 	signedData, txHash, err := svc.base.BuildAndSign(msgEditNFTs, baseTx)
 
 	// Tx into database
-	ttx := models.TTX{
-		AppID:         params.AppID,
-		Hash:          txHash,
-		OriginData:    null.BytesFrom(signedData),
-		OperationType: "edit_nft_batch",
-		Status:        "undo",
-	}
-	err = ttx.Insert(context.Background(), db, boil.Infer())
+	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, "edit_nft_batch", "undo")
 	if err != nil {
 		return "", err
 	}
 
+	// lock the NFTs
+	for _, EditNft := range params.EditNfts { // create every rawMsg
+		tNft, err := models.TNFTS(qm.Where("app_id=? AND class_id=? AND index=?", params.AppID, params.ClassId, EditNft.Index)).One(context.Background(), db)
+		tNft.Status = "pendding"
+		tNft.LockedBy = null.Uint64From(txId)
+		// update
+		_, err = tNft.Update(context.Background(), db, boil.Infer())
+		if err != nil {
+			return "", err
+		}
+	}
+
+	// commit
+	err = db.Commit()
+	if err != nil {
+		return "", types.ErrInternal
+	}
+
 	// return the txHash
-	return txHash, err
+	return txHash, nil
 }
 
 func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (string, error) {
-
-	// get database object
-	db, err := orm.GetDB().Begin()
-	if err != nil {
-		return "", types.ErrMysqlConn
-	}
-
-	//get NFT by app_id,class_id and index
-	tNft, err := models.TNFTS(qm.Where("app_id=? AND class_id=? AND index=?", params.AppID, params.ClassId, params.Index)).One(context.Background(), db)
+	// get NFT by app_id,class_id and index
+	tNft, err := models.TNFTS(qm.Where("app_id=? AND class_id=? AND index=?", params.AppID, params.ClassId, params.Index)).One(context.Background(), boil.GetContextDB())
 	if err != nil {
 		return "", err
 	}
@@ -154,87 +136,109 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (string, error) {
 	if tNft.Status == "pendding" {
 		return "", types.ErrNftBurnPend
 	}
+
 	// create rawMsg
 	msgBurnNFT := nft.MsgBurnNFT{
 		Id:      tNft.NFTID,
 		DenomId: tNft.ClassID,
-		Sender:  params.Owner,
+		Sender:  params.Sender,
 	}
 
 	// build and sign transaction
-	baseTx := svc.base.CreateBaseTx(params.Owner, "")
+	baseTx := svc.base.CreateBaseTx(params.Sender, "")
 	signedData, txHash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgBurnNFT}, baseTx)
 
 	// Tx into database
-	ttx := models.TTX{
-		AppID:         params.AppID,
-		Hash:          txHash,
-		OriginData:    null.BytesFrom(signedData),
-		OperationType: "burn_nft",
-		Status:        "undo",
-	}
-
-	err = ttx.Insert(context.Background(), db, boil.Infer())
+	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, "burn_nft", "undo")
 	if err != nil {
 		return "", err
 	}
 
 	// lock the NFT
-	tNft.Status = "undo"
-	_, err = tNft.Update(context.Background(), db, boil.Infer())
+	tNft.Status = "pendding"
+	tNft.LockedBy = null.Uint64From(txId)
+	_, err = tNft.UpdateG(context.Background(), boil.Infer())
+
 	if err != nil {
 		return "", err
 	}
 
 	// return the txHash
-	return txHash, err
-}
-func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (int64, error) {
 
+	return txHash, nil
+}
+func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 	// get database object
 	db, err := orm.GetDB().Begin()
 	if err != nil {
-		return 0, types.ErrMysqlConn
+		return "", types.ErrMysqlConn
 	}
-	var rowsAff int64
-	for _, index := range params.Indices { //burn every NFT
+
+	var msgBurnNFTs sdktype.Msgs
+
+	// create rawMsgs
+	for _, index := range params.Indices { // create every rawMsg
 		//get NFT by app_id,class_id and index
 		tNft, err := models.TNFTS(qm.Where("app_id=? AND class_id=? AND index=?", params.AppID, params.ClassId, index)).One(context.Background(), db)
 		if err != nil {
-			return rowsAff, err
+			return "", err
 		}
 		if tNft == nil || tNft.Status == "burned" {
-			return rowsAff, types.ErrNftMissing
+			return "", types.ErrNftMissing
 		}
 		if tNft.Status == "pendding" {
-			return rowsAff, types.ErrNftBurnPend
+			return "", types.ErrNftBurnPend
 		}
 
-		//just burn
-		tNft.Status = "burned"
-		i, err := tNft.Update(context.Background(), db, boil.Infer())
-		rowsAff += i
-
-		if err != nil {
-			return rowsAff, err
+		// create rawMsg
+		msgBurnNFT := nft.MsgBurnNFT{
+			Id:      tNft.NFTID,
+			DenomId: tNft.ClassID,
+			Sender:  params.Sender,
 		}
+		msgBurnNFTs = append(msgBurnNFTs, &msgBurnNFT)
 	}
 
-	//return the affected rows amount
-	return rowsAff, nil
+	// build and sign transaction
+	baseTx := svc.base.CreateBaseTx(params.Sender, "")
+	signedData, txHash, err := svc.base.BuildAndSign(msgBurnNFTs, baseTx)
+
+	// Tx into database
+	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, "burn_nft_batch", "undo")
+	if err != nil {
+		return "", err
+	}
+
+	// lock the NFT
+	for _, index := range params.Indices { // create every rawMsg
+		tNft, err := models.TNFTS(qm.Where("app_id=? AND class_id=? AND index=?", params.AppID, params.ClassId, index)).One(context.Background(), db)
+		tNft.Status = "pendding"
+		tNft.LockedBy = null.Uint64From(txId)
+		_, err = tNft.Update(context.Background(), db, boil.Infer())
+		if err != nil {
+			return "", err
+		}
+	}
+	// commit
+	err = db.Commit()
+	if err != nil {
+		return "", types.ErrInternal
+	}
+
+	// return the txHash
+	return txHash, nil
 }
 
 func (svc *Nft) NftByIndex(params dto.NftByIndexP) (*dto.NftByIndexP, error) {
 
-	// get database object
-	db, err := orm.GetDB().Begin()
-	if err != nil {
-		return nil, types.ErrMysqlConn
-	}
 	//get NFT by app_id,class_id and index
-	tNft, err := models.TNFTS(qm.Where("app_id=? AND class_id=? AND index=?", params.AppID, params.ClassId, params.Index)).One(context.Background(), db)
+	tNft, err := models.TNFTS(qm.Where("app_id=? AND class_id=? AND index=?", params.AppID, params.ClassId, params.Index)).One(context.Background(), boil.GetContextDB())
+	if err != nil {
+		return nil, err
+	}
+
 	//get class by class_id
-	class, err := models.TClasses(qm.Where("class_id=?", params.ClassId)).One(context.Background(), db)
+	class, err := models.TClasses(qm.Where("class_id=?", params.ClassId)).One(context.Background(), boil.GetContextDB())
 	result := &dto.NftByIndexP{
 		Id:          strconv.FormatInt(int64(tNft.ID), 10),
 		Index:       tNft.Index,
