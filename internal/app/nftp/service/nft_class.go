@@ -69,10 +69,6 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 		return nil, err
 	}
 
-	db, err := orm.GetDB().Begin()
-	if err != nil {
-		return nil, types.ErrMysqlConn
-	}
 	//transferInfo
 	ttx := models.TTX{
 		AppID:         params.AppID,
@@ -82,13 +78,10 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 		OperationType: "issue_class",
 		Status:        "undo",
 	}
-	ttx.InsertG(context.Background(), boil.Infer())
-
-	err = db.Commit()
+	err = ttx.InsertG(context.Background(), boil.Infer())
 	if err != nil {
-		return nil, types.ErrInternal
+		return nil, err
 	}
-
 	var hashs []string
 	hashs = append(hashs, txHash)
 	return hashs, nil
