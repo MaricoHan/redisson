@@ -6,6 +6,7 @@ import (
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
+	"time"
 )
 
 type INft interface {
@@ -25,6 +26,7 @@ func NewNft(svc *service.Nft) INft {
 
 type nft struct {
 	base
+	pageBasic
 	svc *service.Nft
 }
 
@@ -155,8 +157,87 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, request interface{}
 		Index:   h.Index(ctx),
 		AppID:   h.AppID(ctx),
 	}
+	params.Signer = h.Signer(ctx)
+	params.Operation = h.Operation(ctx)
+	params.Txhash = h.Txhash(ctx)
+
+	offset, err := h.Offset(ctx)
+	if err != nil {
+		return nil, types.ErrParams
+	}
+	params.Offset = offset
+
+	limit, err := h.Limit(ctx)
+	if err != nil {
+		return nil, types.ErrParams
+	}
+	params.Limit = limit
+
+	if params.Offset == 0 {
+		params.Offset = 1
+	}
+
+	if params.Limit == 0 {
+		params.Limit = 10
+	}
+	startDateR := h.StartDate(ctx)
+	if startDateR != "" {
+		startDateTime, err := time.Parse(timeLayout, startDateR)
+		if err != nil {
+			return nil, types.ErrParams
+		}
+		params.StartDate = &startDateTime
+	}
+
+	endDateR := h.EndDate(ctx)
+	if endDateR != "" {
+		endDateTime, err := time.Parse(timeLayout, endDateR)
+		if err != nil {
+			return nil, types.ErrParams
+		}
+		params.EndDate = &endDateTime
+	}
+
+	if params.EndDate != nil && params.StartDate != nil {
+		if !params.EndDate.After(*params.StartDate) {
+			return nil, types.ErrParams
+		}
+	}
+	switch h.SortBy(ctx) {
+	case "DATE_ASC":
+		params.SortBy = "DATE_ASC"
+	case "DATE_DESC":
+		params.SortBy = "DATE_DESC"
+	default:
+		return nil, types.ErrParams
+	}
+
 	// 校验参数 end
 	return h.svc.NftOperationHistoryByIndex(params), nil
+}
+
+func (h nft) Signer(ctx context.Context) (string) {
+	signer := ctx.Value("signer")
+	if signer == nil {
+		return ""
+	}
+	return signer.(string)
+}
+
+func (h nft) Operation(ctx context.Context) string {
+	operation := ctx.Value("operation")
+	if operation == nil {
+		return ""
+	}
+	return operation.(string)
+}
+
+func (h nft) Txhash(ctx context.Context) string {
+	txhash := ctx.Value("tx_hash")
+	if txhash == nil {
+		return ""
+	}
+	return txhash.(string)
 }
 
 func (h nft) ClassId(ctx context.Context) string {

@@ -61,7 +61,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 		return "", types.ErrTxResult
 	}
 	class.Status = "pendding"
-
+	class.LockedBy = txs.ID
 	_, err = class.UpdateG(context.Background(), boil.Infer())
 	if err != nil {
 		return "", types.ErrNftClassTransfer
@@ -128,6 +128,7 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 	}
 
 	nft.Status = "pendding"
+	nft.LockedBy = null.Uint64From(txs.ID)
 	_, err = nft.UpdateG(context.Background(), boil.Infer())
 	if err != nil {
 		return "", types.ErrNftClassTransfer
@@ -169,22 +170,6 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			Recipient: recipient.Recipient,
 		}
 		msgs = append(sdktype.Msgs{&msg})
-
-		//nft status = pendding && lockby = txs.id
-		nft, err := models.TNFTS(
-			models.TNFTWhere.ClassID.EQ(string(params.ClassID)),
-			models.TNFTWhere.ClassID.EQ(res.NFTID),
-			models.TNFTWhere.AppID.EQ(params.AppID),
-			models.TNFTWhere.Owner.EQ(params.Owner),
-		).OneG(context.Background())
-		if err != nil {
-			return "", types.ErrTxResult
-		}
-		nft.Status = "pendding"
-		_, err = nft.UpdateG(context.Background(), boil.Infer())
-		if err != nil {
-			return "", types.ErrNftClassTransfer
-		}
 	}
 
 	//sign
@@ -204,6 +189,34 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 	err = txs.InsertG(context.Background(), boil.Infer())
 	if err != nil {
 		return "", types.ErrNftClassTransfer
+	}
+
+	for _, modelResultR := range params.Recipients {
+		recipient := &dto.Recipient{
+			Index:     modelResultR.Index,
+			Recipient: modelResultR.Recipient,
+		}
+		res, err := models.TNFTS(models.TNFTWhere.Index.EQ(recipient.Index),
+			models.TNFTWhere.ClassID.EQ(string(params.ClassID)),
+			models.TNFTWhere.AppID.EQ(params.AppID),
+			models.TNFTWhere.Owner.EQ(params.Owner),
+		).OneG(context.Background())
+		//nft status = pendding && lockby = txs.id
+		nft, err := models.TNFTS(
+			models.TNFTWhere.ClassID.EQ(string(params.ClassID)),
+			models.TNFTWhere.ClassID.EQ(res.NFTID),
+			models.TNFTWhere.AppID.EQ(params.AppID),
+			models.TNFTWhere.Owner.EQ(params.Owner),
+		).OneG(context.Background())
+		if err != nil {
+			return "", types.ErrTxResult
+		}
+		nft.Status = "pendding"
+		nft.LockedBy = null.Uint64From(txs.ID)
+		_, err = nft.UpdateG(context.Background(), boil.Infer())
+		if err != nil {
+			return "", types.ErrNftClassTransfer
+		}
 	}
 
 	err = db.Commit()

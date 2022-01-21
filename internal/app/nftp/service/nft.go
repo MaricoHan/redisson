@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	sdktype "github.com/irisnet/core-sdk-go/types"
 	"github.com/irisnet/irismod-sdk-go/nft"
 	"github.com/volatiletech/null/v8"
@@ -11,7 +12,9 @@ import (
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
+	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"
 	"strconv"
+	"strings"
 )
 
 type Nft struct {
@@ -251,6 +254,89 @@ func (svc *Nft) NftByIndex(params dto.NftByIndexP) (*dto.NftByIndexP, error) {
 	return result, nil
 }
 
-func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndexP) *dto.NftOperationHistoryByIndexRes {
-	return nil
+func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndexP) (*dto.BNftOperationHistoryByIndexRes, error) {
+	result := &dto.BNftOperationHistoryByIndexRes{}
+	result.Offset = params.Offset
+	result.Limit = params.Limit
+	result.OperationRecords = []*dto.OperationRecord{}
+	//nft, err := models.TNFTS(
+	//	models.TNFTWhere.AppID.EQ(params.AppID),
+	//	models.TNFTWhere.ClassID.EQ(params.ClassID),
+	//	models.TNFTWhere.Index.EQ(params.Index),
+	//	).OneG(context.Background())
+	//if err != nil {
+	//	return nil, types.ErrMysqlConn
+	//}
+
+	queryMod := []qm.QueryMod{
+		qm.From(models.TableNames.TMSGS),
+		qm.Select(models.TMSGColumns.TXHash,
+			models.TMSGColumns.Operation,
+			models.TMSGColumns.Signer,
+			models.TMSGColumns.Recipient,
+			models.TMSGColumns.Timestamp),
+		models.TMSGWhere.AppID.EQ(params.AppID),
+	}
+	//if params.Txhash != "" {
+	//	queryMod = append(queryMod, models.TMSGWhere.TXHash.EQ(params.Txhash))
+	//}else {
+	//	queryMod = append(queryMod, models.TMSGWhere.TXHash.EQ(nft.TXHash))
+	//}
+	////否则查询该nft的所有hash
+	if params.Signer != "" {
+		queryMod = append(queryMod, models.TMSGWhere.Signer.EQ(params.Signer))
+	}
+	if params.Operation != "" {
+		queryMod = append(queryMod, models.TMSGWhere.Operation.EQ(params.Operation))
+	}
+	if params.StartDate != nil {
+		queryMod = append(queryMod, models.TMSGWhere.CreateAt.GTE(*params.StartDate))
+	}
+	if params.EndDate != nil {
+		queryMod = append(queryMod, models.TMSGWhere.CreateAt.LTE(*params.EndDate))
+	}
+	if params.SortBy != "" {
+		orderBy := ""
+		switch params.SortBy {
+		case "DATE_DESC":
+			orderBy = fmt.Sprintf("%s desc", models.TMSGWhere.CreateAt)
+		case "DATE_ASC":
+			orderBy = fmt.Sprintf("%s ASC", models.TMSGWhere.CreateAt)
+		}
+		queryMod = append(queryMod, qm.OrderBy(orderBy))
+	}
+
+	var modelResults []*models.TMSG
+	total, err := modext.PageQuery(
+		context.Background(),
+		orm.GetDB(),
+		queryMod,
+		&modelResults,
+		params.Offset,
+		params.Limit,
+	)
+	if err != nil {
+		// records not exist
+		if strings.Contains(err.Error(), "records not exist") {
+			return result, nil
+		}
+
+		return nil, types.ErrMysqlConn
+	}
+
+	result.TotalCount = total
+	var operationRecords []*dto.OperationRecord
+	for _, modelResult := range modelResults {
+		var operationRecord = &dto.OperationRecord{
+			Txhash:    modelResult.TXHash,
+			Operation: modelResult.Operation,
+			Signer:    modelResult.Signer,
+			Recipient: modelResult.Recipient.String,
+			Timestamp: modelResult.Timestamp.Time.String(),
+		}
+		operationRecords = append(operationRecords, operationRecord)
+	}
+	result.OperationRecords = operationRecords
+
+	return result, nil
 }

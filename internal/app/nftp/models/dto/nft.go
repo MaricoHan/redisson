@@ -67,12 +67,12 @@ type NftOperationHistoryByIndexP struct {
 	AppID     uint64 `json:"app_id"`
 }
 
-type NftOperationHistoryByIndexRes struct {
+type BNftOperationHistoryByIndexRes struct {
 	PageRes
-	operation_records []*operation_records
+	OperationRecords []*OperationRecord
 }
 
-type operation_records struct {
+type OperationRecord struct {
 	Txhash    string `json:"tx_hash"`
 	Operation string `json:"operation"`
 	Signer    string `json:"signer"`
