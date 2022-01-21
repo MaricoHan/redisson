@@ -2,7 +2,13 @@ package service
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
+	sdktype "github.com/irisnet/core-sdk-go/types"
+	"github.com/irisnet/irismod-sdk-go/nft"
+	"github.com/tendermint/tendermint/crypto/tmhash"
+	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
@@ -10,43 +16,57 @@ import (
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"
 	"strings"
+	"time"
 )
 
 type NftClass struct {
+	base *Base
 }
 
-func NewNftClass() *NftClass {
-	return &NftClass{}
+func NewNftClass(base *Base) *NftClass {
+	return &NftClass{base: base}
 }
 
 func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error) {
+	var data []byte = []byte(params.Owner)
+	data = append(data, []byte(params.Name)...)
+	data = append(data, []byte(string(time.Now().Unix()))...)
+	str := strings.ToUpper(hex.EncodeToString(tmhash.Sum(data)))
+	classId := fmt.Sprintf("nftp%d", str)
+	baseTx := svc.base.CreateBaseTx("iaa", "")
+	msg := nft.MsgIssueDenom{
+		//nftClassID := nftp + sha256(createrAddress + className + time.now().unix())
+		Id:               classId,
+		Name:             params.Name,
+		Sender:           params.Owner,
+		Symbol:           params.Symbol,
+		MintRestricted:   true,
+		UpdateRestricted: false,
+	}
+	//params.UriHash
+	originData, txHash, err := svc.base.BuildAndSign(sdktype.Msgs{&msg}, baseTx)
 
-	//db, err := orm.GetDB().Begin()
-	//if err != nil {
-	//	return nil, types.ErrMysqlConn
-	//}
-	//
-	//tClass := &models.TClass{
-	//	AppID:       params.AppID,
-	//	Name:        null.StringFromPtr(&params.Name),
-	//	Symbol:      null.StringFromPtr(&params.Symbol),
-	//	URI:         null.StringFromPtr(&params.Uri),
-	//	URIHash:     null.StringFromPtr(&params.UriHash),
-	//	Description: null.StringFromPtr(&params.Description),
-	//	Metadata:    null.StringFromPtr(&params.Data),
-	//	Owner:       params.Owner,
-	//
-	//	ClassID:   "",
-	//	TXHash:    "",
-	//	Timestamp: null.NewTime(time.Now(), true),
-	//}
-	//
-	//err = tClass.Insert(context.Background(), db, boil.Infer())
-	//if err != nil {
-	//	return nil, types.ErrAccountCreate
-	//}
+	db, err := orm.GetDB().Begin()
+	if err != nil {
+		return nil, types.ErrMysqlConn
+	}
+	ttx := models.TTX{
+		AppID:         params.AppID,
+		Hash:          txHash,
+		Timestamp:     null.Time{Time: time.Now()},
+		OriginData:    null.BytesFromPtr(&originData),
+		OperationType: "issue_class",
+		Status:        "undo",
+	}
+	ttx.InsertG(context.Background(), boil.Infer())
+	err = db.Commit()
+	if err != nil {
+		return nil, types.ErrInternal
+	}
 
-	return nil, nil
+	var hashs []string
+	hashs = append(hashs, txHash)
+	return hashs, nil
 }
 
 func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, error) {
@@ -61,8 +81,8 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 	if params.Id != "" {
 		queryMod = append(queryMod, models.TClassWhere.ClassID.EQ(params.Id))
 	}
-	if params.Name != "" { //支持模糊查询
-		//queryMod = append(queryMod, models.TClassWhere.Name.NEQ(null.StringFromPtr(&params.Name)))
+	if params.Name != "" {
+		//Fuzzy query support
 		queryMod = append(queryMod, qm.Where("name_contains=?", params.Name))
 	}
 	if params.Owner != "" {
