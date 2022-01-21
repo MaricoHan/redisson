@@ -37,7 +37,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	baseTx := svc.base.CreateBaseTx(params.Owner, "")
 	data, hash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
 	if err != nil {
-		return "", types.ErrTxResult
+		return "", types.ErrBuildAndSign
 	}
 
 	//txs status = undo
@@ -113,7 +113,7 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 	}
 	err = txs.InsertG(context.Background(), boil.Infer())
 	if err != nil {
-		return "", types.ErrNftClassTransfer
+		return "", types.ErrNftTransfer
 	}
 
 	//nft status = pendding && lockby = txs.id
@@ -124,14 +124,14 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 		models.TNFTWhere.Owner.EQ(params.Owner),
 	).OneG(context.Background())
 	if err != nil {
-		return "", types.ErrNftClassTransfer
+		return "", types.ErrNftTransfer
 	}
 
 	nft.Status = "pendding"
 	nft.LockedBy = null.Uint64From(txs.ID)
 	_, err = nft.UpdateG(context.Background(), boil.Infer())
 	if err != nil {
-		return "", types.ErrNftClassTransfer
+		return "", types.ErrNftTransfer
 	}
 
 	err = db.Commit()
@@ -161,7 +161,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			models.TNFTWhere.Owner.EQ(params.Owner),
 		).OneG(context.Background())
 		if err != nil {
-			return "", types.ErrNftClassTransfer
+			return "", types.ErrNftBatchTransfer
 		}
 		msg := nft.MsgTransferNFT{
 			Id:        res.NFTID,
@@ -176,7 +176,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 	baseTx := svc.base.CreateBaseTx("", "")
 	data, hash, err := svc.base.BuildAndSign(msgs, baseTx)
 	if err != nil {
-		return "", types.ErrTxResult
+		return "", types.ErrBuildAndSign
 	}
 
 	//写入txs status = undo
@@ -188,7 +188,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 	}
 	err = txs.InsertG(context.Background(), boil.Infer())
 	if err != nil {
-		return "", types.ErrNftClassTransfer
+		return "", types.ErrNftBatchTransfer
 	}
 
 	for _, modelResultR := range params.Recipients {
@@ -215,7 +215,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 		nft.LockedBy = null.Uint64From(txs.ID)
 		_, err = nft.UpdateG(context.Background(), boil.Infer())
 		if err != nil {
-			return "", types.ErrNftClassTransfer
+			return "", types.ErrNftBatchTransfer
 		}
 	}
 

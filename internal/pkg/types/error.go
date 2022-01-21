@@ -30,6 +30,9 @@ var (
 	ErrNftMissing          = Register(RootCodeSpace, "23", "Cannot find the NFT")
 	ErrNftBurnPend         = Register(RootCodeSpace, "24", "The platform has received the destruction request and put it on the chain, but it has not been packaged and confirmed")
 	ErrNftClassTransfer    = Register(RootCodeSpace, "25", "failed to transfer nft class")
+	ErrBuildAndSign        = Register(RootCodeSpace, "26", "failed to build and sign")
+	ErrNftTransfer         = Register(RootCodeSpace, "26", "failed to transfer nft")
+	ErrNftBatchTransfer    = Register(RootCodeSpace, "26", "failed to batch transfer nft")
 )
 
 var usedErrorCodes = map[string]*AppError{}
