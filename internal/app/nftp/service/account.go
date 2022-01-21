@@ -130,13 +130,13 @@ func (svc *Account) Accounts(params dto.AccountsP) (*dto.AccountsRes, error) {
 	}
 
 	var modelResults []*models.TAccount
-	total, err := modext.PageQuery(
+	total, err := modext.PageQueryByOffset(
 		context.Background(),
 		orm.GetDB(),
 		queryMod,
 		&modelResults,
-		params.Offset,
-		params.Limit,
+		int(params.Offset),
+		int(params.Limit),
 	)
 	if err != nil {
 		// records not exist
