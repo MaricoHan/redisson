@@ -44,6 +44,10 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 		Symbol:           params.Symbol,
 		MintRestricted:   true,
 		UpdateRestricted: false,
+		Description:      params.Description,
+		Uri:              params.Uri,
+		UriHash:          params.UriHash,
+		Data:             params.Data,
 	}
 	//params.UriHash
 	originData, txHash, err := svc.base.BuildAndSign(sdktype.Msgs{&msg}, baseTx)
