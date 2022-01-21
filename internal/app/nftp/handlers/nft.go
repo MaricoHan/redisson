@@ -45,7 +45,7 @@ func (h nft) EditNftByIndex(ctx context.Context, request interface{}) (interface
 	params := dto.EditNftByIndexP{
 		AppID:   h.AppID(ctx),
 		ClassId: h.ClassId(ctx),
-		Owner:   h.Owner(ctx),
+		Sender:  h.Owner(ctx),
 		Index:   h.Index(ctx),
 
 		Name: req.Name,
@@ -70,7 +70,7 @@ func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface
 		EditNfts: req.EditNftsR,
 		AppID:    h.AppID(ctx),
 		ClassId:  h.ClassId(ctx),
-		Owner:    h.Owner(ctx),
+		Sender:   h.Owner(ctx),
 	}
 	//check start
 
@@ -92,7 +92,7 @@ func (h nft) DeleteNftByIndex(ctx context.Context, _ interface{}) (interface{}, 
 	params := dto.DeleteNftByIndexP{
 		AppID:   h.AppID(ctx),
 		ClassId: h.ClassId(ctx),
-		Owner:   h.Owner(ctx),
+		Sender:  h.Owner(ctx),
 		Index:   h.Index(ctx),
 	}
 	//check start
@@ -112,7 +112,7 @@ func (h nft) DeleteNftByBatch(ctx context.Context, _ interface{}) (interface{}, 
 	params := dto.DeleteNftByBatchP{
 		AppID:   h.AppID(ctx),
 		ClassId: h.ClassId(ctx),
-		Owner:   h.Owner(ctx),
+		Sender:  h.Owner(ctx),
 		Indices: h.Indices(ctx),
 	}
 

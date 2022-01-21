@@ -8,7 +8,7 @@ type EditNftByIndexP struct {
 
 	AppID   uint64 `json:"app_id"`
 	ClassId string `json:"class_id"`
-	Owner   string `json:"owner"`
+	Sender  string `json:"owner"`
 }
 
 type EditNftByBatchP struct {
@@ -16,12 +16,12 @@ type EditNftByBatchP struct {
 
 	AppID   uint64 `json:"app_id"`
 	ClassId string `json:"class_id"`
-	Owner   string `json:"owner"`
+	Sender  string `json:"owner"`
 }
 
 type EditNft struct {
-	Index uint64 `json:"index"`
-	Name  string `json:"name"`
+	Index uint64 `json:"index" validate:"required"`
+	Name  string `json:"name" validate:"required"`
 	Uri   string `json:"uri"`
 	Data  string `json:"data"`
 }
@@ -29,14 +29,14 @@ type EditNft struct {
 type DeleteNftByIndexP struct {
 	AppID   uint64 `json:"app_id"`
 	ClassId string `json:"class_id"`
-	Owner   string `json:"owner"`
+	Sender  string `json:"owner"`
 	Index   uint64 `json:"index"`
 }
 
 type DeleteNftByBatchP struct {
 	AppID   uint64   `json:"app_id"`
 	ClassId string   `json:"class_id"`
-	Owner   string   `json:"owner"`
+	Sender  string   `json:"owner"`
 	Indices []uint64 `json:"indices"`
 }
 type NftByIndexP struct {

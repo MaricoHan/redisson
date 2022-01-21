@@ -1,8 +1,14 @@
 package service
 
 import (
+	"context"
 	sdk "github.com/irisnet/core-sdk-go"
 	sdktype "github.com/irisnet/core-sdk-go/types"
+	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
+	"gitlab.bianjie.ai/irita-paas/orms/orm-nft"
+	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 )
 
 type Base struct {
@@ -39,4 +45,26 @@ func (m Base) BuildAndSign(msgs sdktype.Msgs, baseTx sdktype.BaseTx) ([]byte, st
 		return nil, "", nil
 	}
 	return sigData, txHash, nil
+}
+
+// operationType (issue_class,mint_nft,edit_nft,edit_nft_batch,burn_nft,burn_nft_batch)
+func (m Base) TxIntoDataBase(AppID uint64, txHash string, signedData []byte, operationType string, status string) error {
+	// get database object
+	db, err := orm.GetDB().Begin()
+	if err != nil {
+		return types.ErrMysqlConn
+	}
+	// Tx into database
+	ttx := models.TTX{
+		AppID:         AppID,
+		Hash:          txHash,
+		OriginData:    null.BytesFrom(signedData),
+		OperationType: operationType,
+		Status:        status,
+	}
+	err = ttx.Insert(context.Background(), db, boil.Infer())
+	if err != nil {
+		return err
+	}
+	return nil
 }
