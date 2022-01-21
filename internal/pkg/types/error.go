@@ -26,6 +26,13 @@ var (
 	ErrNftBatchBurn        = Register(RootCodeSpace, "19", "failed to batch burn nft")
 	ErrTxResult            = Register(RootCodeSpace, "20", "failed to get tx result")
 	ErrIdempotent          = Register(RootCodeSpace, "21", "failed to idempotent")
+	ErrNftParams           = Register(RootCodeSpace, "22", "The maximum number of NFTs to edit is 50")
+	ErrNftMissing          = Register(RootCodeSpace, "23", "Cannot find the NFT")
+	ErrNftBurnPend         = Register(RootCodeSpace, "24", "The platform has received the destruction request and put it on the chain, but it has not been packaged and confirmed")
+	ErrNftClassTransfer    = Register(RootCodeSpace, "25", "failed to transfer nft class")
+	ErrBuildAndSign        = Register(RootCodeSpace, "26", "failed to build and sign")
+	ErrNftTransfer         = Register(RootCodeSpace, "27", "failed to transfer nft")
+	ErrNftBatchTransfer    = Register(RootCodeSpace, "28", "failed to batch transfer nft")
 )
 
 var usedErrorCodes = map[string]*AppError{}
