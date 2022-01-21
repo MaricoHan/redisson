@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/handlers"
-
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/kit"
 )
 
@@ -29,7 +29,7 @@ func (c NftClassController) GetEndpoints() []kit.Endpoint {
 		kit.Endpoint{
 			URI:     "/nft/classes",
 			Method:  http.MethodPost,
-			Handler: c.makeHandler(c.handler.CreateNftClass, nil),
+			Handler: c.makeHandler(c.handler.CreateNftClass, &vo.CreateNftClassRequest{}),
 		},
 		kit.Endpoint{
 			URI:     "/nft/classes/{id}",

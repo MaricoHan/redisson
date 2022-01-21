@@ -16,8 +16,8 @@ type NftTransfer struct {
 	base *Base
 }
 
-func NewNftTransfer(base *Base) *NftTransfer {
-	return &NftTransfer{base: base}
+func NewNftTransfer() *NftTransfer {
+	return &NftTransfer{}
 }
 
 func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (string, error) {
