@@ -52,7 +52,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 		return "", types.ErrNftClassTransfer
 	}
 
-	//class status = undo && lockby = txs.id
+	//class status = pendding && lockby = txs.id
 	class, err := models.TClasses(
 		models.TClassWhere.ClassID.EQ(string(params.ClassID)),
 		models.TClassWhere.AppID.EQ(params.AppID),
@@ -60,7 +60,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	if err != nil {
 		return "", types.ErrTxResult
 	}
-	class.Status = "undo"
+	class.Status = "pendding"
 
 	_, err = class.UpdateG(context.Background(), boil.Infer())
 	if err != nil {
@@ -116,7 +116,7 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 		return "", types.ErrNftClassTransfer
 	}
 
-	//nft status = undo && lockby = txs.id
+	//nft status = pendding && lockby = txs.id
 	nft, err := models.TNFTS(
 		models.TNFTWhere.ClassID.EQ(string(params.ClassID)),
 		models.TNFTWhere.ClassID.EQ(res.NFTID),
@@ -127,7 +127,7 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 		return "", types.ErrNftClassTransfer
 	}
 
-	nft.Status = "undo"
+	nft.Status = "pendding"
 	_, err = nft.UpdateG(context.Background(), boil.Infer())
 	if err != nil {
 		return "", types.ErrNftClassTransfer
@@ -180,7 +180,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 		if err != nil {
 			return "", types.ErrTxResult
 		}
-		nft.Status = "undo"
+		nft.Status = "pendding"
 		_, err = nft.UpdateG(context.Background(), boil.Infer())
 		if err != nil {
 			return "", types.ErrNftClassTransfer

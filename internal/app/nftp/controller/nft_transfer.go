@@ -25,17 +25,17 @@ func (c NftTransferController) GetEndpoints() []kit.Endpoint {
 		kit.Endpoint{
 			URI:     "/nft/class-transfers/{class_id}/{owner}",
 			Method:  http.MethodPost,
-			Handler: c.makeHandler(c.handler.TransferNftClassByID, &vo.TransferNftClassByID{}),
+			Handler: c.makeHandler(c.handler.TransferNftClassByID, &vo.TransferNftClassByIDRequest{}),
 		},
 		kit.Endpoint{
 			URI:     "/nft/nft-transfers/{class_id}/{owner}/{index}",
 			Method:  http.MethodPost,
-			Handler: c.makeHandler(c.handler.TransferNftByIndex, &vo.TransferNftByIndex{}),
+			Handler: c.makeHandler(c.handler.TransferNftByIndex, &vo.TransferNftByIndexRequest{}),
 		},
 		kit.Endpoint{
 			URI:     "/nft/nft-transfers/{class_id}/{owner}",
 			Method:  http.MethodPost,
-			Handler: c.makeHandler(c.handler.TransferNftByBatch, &vo.TransferNftByBatch{}),
+			Handler: c.makeHandler(c.handler.TransferNftByBatch, &vo.TransferNftByBatchRequest{}),
 		},
 	)
 	return ends

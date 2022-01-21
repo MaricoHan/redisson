@@ -27,6 +27,7 @@ var (
 	ErrTxResult            = Register(RootCodeSpace, "20", "failed to get tx result")
 	ErrIdempotent          = Register(RootCodeSpace, "21", "failed to idempotent")
 	ErrNftClassTransfer    = Register(RootCodeSpace, "22", "failed to transfer nft class")
+	ErrNftParams           = Register(RootCodeSpace, "23", "failed to get nft class")
 )
 
 var usedErrorCodes = map[string]*AppError{}

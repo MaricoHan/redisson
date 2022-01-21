@@ -2,17 +2,17 @@ package vo
 
 import "gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 
-type TransferNftClassByID struct {
+type TransferNftClassByIDRequest struct {
 	Base
 	Recipient string `json:"recipient" validate:"required"`
 }
 
-type TransferNftByIndex struct {
+type TransferNftByIndexRequest struct {
 	Base
 	Recipient string `json:"recipient" validate:"required"`
 }
 
-type TransferNftByBatch struct {
+type TransferNftByBatchRequest struct {
 	Base
 	Recipients []*dto.Recipient `json:"recipients" validate:"required"`
 }

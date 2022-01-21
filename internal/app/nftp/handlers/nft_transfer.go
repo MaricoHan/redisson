@@ -32,7 +32,7 @@ func newNftTransfer(svc *service.NftTransfer) *nftTransfer {
 // TransferNftClassByID transfer an nft class by id
 func (h nftTransfer) TransferNftClassByID(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
-	req := request.(vo.TransferNftClassByID)
+	req := request.(vo.TransferNftClassByIDRequest)
 	params := dto.TransferNftClassByIDP{
 		ClassID:   h.ClassID(ctx),
 		Owner:     h.Owner(ctx),
@@ -46,7 +46,7 @@ func (h nftTransfer) TransferNftClassByID(ctx context.Context, request interface
 // TransferNftByIndex transfer an nft class by index
 func (h nftTransfer) TransferNftByIndex(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
-	req := request.(vo.TransferNftByIndex)
+	req := request.(vo.TransferNftByIndexRequest)
 
 	params := dto.TransferNftByIndexP{
 		ClassID:   h.ClassID(ctx),
@@ -62,7 +62,7 @@ func (h nftTransfer) TransferNftByIndex(ctx context.Context, request interface{}
 // TransferNftByBatch return class list
 func (h nftTransfer) TransferNftByBatch(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
-	req := request.(vo.TransferNftByBatch)
+	req := request.(vo.TransferNftByBatchRequest)
 	params := dto.TransferNftByBatchP{
 		ClassID:    h.ClassID(ctx),
 		Owner:      h.Owner(ctx),
