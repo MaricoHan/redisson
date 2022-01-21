@@ -208,7 +208,7 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 	signedData, txHash, err := svc.base.BuildAndSign(msgBurnNFTs, baseTx)
 
 	// Tx into database
-	err = svc.base.TxIntoDataBase(params.AppID, txHash, signedData, "edit_nft_batch", "undo")
+	err = svc.base.TxIntoDataBase(params.AppID, txHash, signedData, "burn_nft_batch", "undo")
 	if err != nil {
 		return "", err
 	}

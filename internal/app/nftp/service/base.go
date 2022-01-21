@@ -51,6 +51,7 @@ func (m Base) BuildAndSign(msgs sdktype.Msgs, baseTx sdktype.BaseTx) ([]byte, st
 func (m Base) TxIntoDataBase(AppID uint64, txHash string, signedData []byte, operationType string, status string) error {
 	// get database object
 	db, err := orm.GetDB().Begin()
+
 	if err != nil {
 		return types.ErrMysqlConn
 	}
