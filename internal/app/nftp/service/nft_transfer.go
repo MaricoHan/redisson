@@ -9,7 +9,7 @@ import (
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft"
-	models "gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
+	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 )
 
 type NftTransfer struct {
@@ -35,11 +35,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 
 	//sign
 	baseTx := svc.base.CreateBaseTx(params.Owner, "")
-	hash, err := svc.base.sdkClient.BuildTxHash(sdktype.Msgs{&msgs}, baseTx)
-	if err != nil {
-		return "", types.ErrChainConn
-	}
-	data, err := svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
+	data, hash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
 	if err != nil {
 		return "", types.ErrTxResult
 	}
@@ -48,7 +44,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	txs := models.TTX{
 		AppID:      params.AppID,
 		Hash:       hash,
-		Status:     "pendding",
+		Status:     "undo",
 		OriginData: null.BytesFrom(data),
 	}
 	err = txs.InsertG(context.Background(), boil.Infer())
@@ -64,7 +60,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	if err != nil {
 		return "", types.ErrTxResult
 	}
-	class.Status = "pendding"
+	class.Status = "undo"
 
 	_, err = class.UpdateG(context.Background(), boil.Infer())
 	if err != nil {
@@ -103,20 +99,16 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 
 	//sign
 	baseTx := svc.base.CreateBaseTx(params.Owner, "")
-	hash, err := svc.base.sdkClient.BuildTxHash(sdktype.Msgs{&msgs}, baseTx)
-	if err != nil {
-		return "", types.ErrChainConn
-	}
-	data, err := svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
+	data, hash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
 	if err != nil {
 		return "", types.ErrTxResult
 	}
 
-	//写入txs status = pendding
+	//写入txs status = undo
 	txs := models.TTX{
 		AppID:      params.AppID,
 		Hash:       hash,
-		Status:     "pendding",
+		Status:     "undo",
 		OriginData: null.BytesFrom(data),
 	}
 	err = txs.InsertG(context.Background(), boil.Infer())
@@ -124,7 +116,7 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 		return "", types.ErrNftClassTransfer
 	}
 
-	//nft status = pendding && lockby = txs.id
+	//nft status = undo && lockby = txs.id
 	nft, err := models.TNFTS(
 		models.TNFTWhere.ClassID.EQ(string(params.ClassID)),
 		models.TNFTWhere.ClassID.EQ(res.NFTID),
@@ -135,7 +127,7 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 		return "", types.ErrNftClassTransfer
 	}
 
-	nft.Status = "pendding"
+	nft.Status = "undo"
 	_, err = nft.UpdateG(context.Background(), boil.Infer())
 	if err != nil {
 		return "", types.ErrNftClassTransfer
@@ -155,7 +147,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 		return "", types.ErrMysqlConn
 	}
 
-	var msgs *sdktype.Msgs
+	var msgs sdktype.Msgs
 	for _, modelResult := range params.Recipients {
 		recipient := &dto.Recipient{
 			Index:     modelResult.Index,
@@ -188,7 +180,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 		if err != nil {
 			return "", types.ErrTxResult
 		}
-		nft.Status = "pendding"
+		nft.Status = "undo"
 		_, err = nft.UpdateG(context.Background(), boil.Infer())
 		if err != nil {
 			return "", types.ErrNftClassTransfer
@@ -197,20 +189,16 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 
 	//sign
 	baseTx := svc.base.CreateBaseTx("", "")
-	hash, err := svc.base.sdkClient.BuildTxHash(msgs, baseTx)
-	if err != nil {
-		return "", types.ErrChainConn
-	}
-	data, err := svc.base.BuildAndSign(msgs, baseTx)
+	data, hash, err := svc.base.BuildAndSign(msgs, baseTx)
 	if err != nil {
 		return "", types.ErrTxResult
 	}
 
-	//写入txs status = pendding
+	//写入txs status = undo
 	txs := models.TTX{
 		AppID:      params.AppID,
 		Hash:       hash,
-		Status:     "pendding",
+		Status:     "undo",
 		OriginData: null.BytesFrom(data),
 	}
 	err = txs.InsertG(context.Background(), boil.Infer())
