@@ -64,9 +64,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 		Sender:    pAddress,
 		Recipient: params.Owner,
 	}
-	//params.UriHash
-	cData, cTxHash, err := svc.base.BuildAndSign(sdktype.Msgs{&createDenomMsg}, baseTx)
-	tData, tTxHash, err := svc.base.BuildAndSign(sdktype.Msgs{&transferDenomMsg}, baseTx)
+	originData, txHash, err := svc.base.BuildAndSign(sdktype.Msgs{&createDenomMsg, &transferDenomMsg}, baseTx)
 	if err != nil {
 		return nil, err
 	}
@@ -76,28 +74,15 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 		return nil, types.ErrMysqlConn
 	}
 	//transferInfo
-	ttxs := []*models.TTX{}
-	ttx1 := models.TTX{
+	ttx := models.TTX{
 		AppID:         params.AppID,
-		Hash:          cTxHash,
+		Hash:          txHash,
 		Timestamp:     null.Time{Time: time.Now()},
-		OriginData:    null.BytesFromPtr(&cData),
+		OriginData:    null.BytesFromPtr(&originData),
 		OperationType: "issue_class",
 		Status:        "undo",
 	}
-	ttx2 := models.TTX{
-		AppID:         params.AppID,
-		Hash:          tTxHash,
-		Timestamp:     null.Time{Time: time.Now()},
-		OriginData:    null.BytesFromPtr(&tData),
-		OperationType: "issue_class",
-		Status:        "undo",
-	}
-	ttxs = append(ttxs, &ttx1)
-	ttxs = append(ttxs, &ttx2)
-	for _, m := range ttxs {
-		m.InsertG(context.Background(), boil.Infer())
-	}
+	ttx.InsertG(context.Background(), boil.Infer())
 
 	err = db.Commit()
 	if err != nil {
@@ -105,8 +90,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 	}
 
 	var hashs []string
-	hashs = append(hashs, cTxHash)
-	hashs = append(hashs, tTxHash)
+	hashs = append(hashs, txHash)
 	return hashs, nil
 }
 
