@@ -29,6 +29,14 @@ func (m Base) CreateBaseTx(keyName, keyPassword string) sdktype.BaseTx {
 	}
 }
 
-func (m Base) BuildAndSign(msgs sdktype.Msgs, baseTx sdktype.BaseTx) ([]byte, error) {
-	return m.sdkClient.BuildAndSign(msgs, baseTx)
+func (m Base) BuildAndSign(msgs sdktype.Msgs, baseTx sdktype.BaseTx) ([]byte, string, error) {
+	sigData, err := m.sdkClient.BuildAndSign(msgs, baseTx)
+	if err != nil {
+		return nil, "", nil
+	}
+	txHash, err := m.sdkClient.BuildTxHash(msgs, baseTx)
+	if err != nil {
+		return nil, "", nil
+	}
+	return sigData, txHash, nil
 }
