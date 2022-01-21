@@ -6,6 +6,8 @@ import (
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
+	"strconv"
+	"strings"
 )
 
 type INft interface {
@@ -177,7 +179,14 @@ func (h nft) Index(ctx context.Context) uint64 {
 	return index.(uint64)
 }
 func (h nft) Indices(ctx context.Context) []uint64 {
-	indices := ctx.Value("indices")
-	//!!!not sure the type of indices
-	return indices.([]uint64)
+	rec := ctx.Value("indices")
+
+	//"1,2,3,4,..." to {1,2,3,4,...}
+	var indices []uint64
+	strArr := strings.Split(rec.(string), ",")
+	for i, s := range strArr {
+		indices[i], _ = strconv.ParseUint(s, 10, 64)
+	}
+
+	return indices
 }

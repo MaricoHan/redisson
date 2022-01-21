@@ -6,8 +6,7 @@ import (
 	sdktype "github.com/irisnet/core-sdk-go/types"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
-	"gitlab.bianjie.ai/irita-paas/orms/orm-nft"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 )
 
@@ -48,13 +47,8 @@ func (m Base) BuildAndSign(msgs sdktype.Msgs, baseTx sdktype.BaseTx) ([]byte, st
 }
 
 // operationType (issue_class,mint_nft,edit_nft,edit_nft_batch,burn_nft,burn_nft_batch)
-func (m Base) TxIntoDataBase(AppID uint64, txHash string, signedData []byte, operationType string, status string) error {
-	// get database object
-	db, err := orm.GetDB().Begin()
+func (m Base) TxIntoDataBase(AppID uint64, txHash string, signedData []byte, operationType string, status string) (uint64, error) {
 
-	if err != nil {
-		return types.ErrMysqlConn
-	}
 	// Tx into database
 	ttx := models.TTX{
 		AppID:         AppID,
@@ -63,9 +57,9 @@ func (m Base) TxIntoDataBase(AppID uint64, txHash string, signedData []byte, ope
 		OperationType: operationType,
 		Status:        status,
 	}
-	err = ttx.Insert(context.Background(), db, boil.Infer())
-	if err != nil {
-		return err
-	}
-	return nil
+	err := ttx.InsertG(context.Background(), boil.Infer())
+
+	tx, err := models.TTXS(qm.Where("hash=?", txHash)).One(context.Background(), boil.GetContextDB())
+
+	return tx.ID, err
 }
