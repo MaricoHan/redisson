@@ -1,11 +1,10 @@
 package controller
 
 import (
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
 	"net/http"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/handlers"
-
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/kit"
 )
 
