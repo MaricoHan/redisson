@@ -26,6 +26,11 @@ func (d DemoController) GetEndpoints() []kit.Endpoint {
 			Method:  http.MethodGet,
 			Handler: d.bc.makeHandler(d.handler.Demo, nil),
 		},
+		kit.Endpoint{
+			URI:     "/demo/{id}",
+			Method:  http.MethodGet,
+			Handler: d.bc.makeHandler(d.handler.Demo, nil),
+		},
 	)
 	return ends
 }
