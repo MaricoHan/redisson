@@ -40,7 +40,6 @@ func newNft(svc *service.Nft) *nft {
 // return creation result
 func (h nft) CreateNft(ctx context.Context, _ interface{}) (interface{}, error) {
 	panic("not yet implemented")
-
 }
 
 // EditNftByIndex Edit an nft and return the edited result
