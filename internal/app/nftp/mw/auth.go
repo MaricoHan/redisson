@@ -68,67 +68,45 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h authHandler) Signature(r *http.Request, appKey string, timestamp string, signature string) bool {
-	switch r.Method {
-	case http.MethodGet:
 
-		paramsMap := map[string]interface{}{}
+	// 获取 path params
+	params := map[string]interface{}{}
+	for k, v := range mux.Vars(r) {
+		params[k] = v
+	}
 
-		// 获取 path params
-		for k, v := range mux.Vars(r) {
-			paramsMap[k] = v
-		}
-		// 获取 query params
-		for k, v := range r.URL.Query() {
-			paramsMap[k] = v[0]
-		}
+	// 获取 query params
+	for k, v := range r.URL.Query() {
+		params[k] = v[0]
+	}
 
-		paramsMap = sortMapParams(paramsMap)
-
-		hexHash := hash(timestamp + appKey)
-		if paramsMap != nil {
-			sourParamsBytes, _ := json.Marshal(paramsMap)
-			hexHash = hash(string(sourParamsBytes) + timestamp + appKey)
-		}
-		if hexHash != signature {
-			return false
-		}
-	case http.MethodPost:
-	case http.MethodDelete:
-	case http.MethodPatch:
-
-		// 获取 path params
-		params := map[string]interface{}{}
-		for k, v := range mux.Vars(r) {
-			params[k] = v
-		}
-
-		// 获取 body params
-		// 把request的内容读取出来
-		var bodyBytes []byte
-		if r.Body != nil {
-			bodyBytes, _ = ioutil.ReadAll(r.Body)
-		}
-		// 把刚刚读出来的再写进去
-
+	// 获取 body params
+	// 把request的内容读取出来
+	var bodyBytes []byte
+	if r.Body != nil {
+		bodyBytes, _ = ioutil.ReadAll(r.Body)
+	}
+	// 把刚刚读出来的再写进去
+	if bodyBytes != nil {
 		r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
-		paramsBody := map[string]interface{}{}
-		_ = json.Unmarshal(bodyBytes, &paramsBody)
-		hexHash := hash(timestamp + appKey)
+	}
+	paramsBody := map[string]interface{}{}
+	_ = json.Unmarshal(bodyBytes, &paramsBody)
+	hexHash := hash(timestamp + appKey)
 
-		for k, v := range paramsBody {
-			params[k] = v
-		}
+	for k, v := range paramsBody {
+		params[k] = v
+	}
 
-		// sort params
-		sortParams := sortMapParams(params)
+	// sort params
+	sortParams := sortMapParams(params)
 
-		if sortParams != nil {
-			sortParamsBytes, _ := json.Marshal(sortParams)
-			hexHash = hash(string(sortParamsBytes) + timestamp + appKey)
-		}
-		if hexHash != signature {
-			return false
-		}
+	if sortParams != nil {
+		sortParamsBytes, _ := json.Marshal(sortParams)
+		hexHash = hash(string(sortParamsBytes) + timestamp + appKey)
+	}
+	if hexHash != signature {
+		return false
 	}
 
 	return true
