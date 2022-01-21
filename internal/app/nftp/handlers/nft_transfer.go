@@ -39,7 +39,6 @@ func (h nftTransfer) TransferNftClassByID(ctx context.Context, request interface
 		Recipient: req.Recipient,
 		AppID:     h.AppID(ctx),
 	}
-
 	// 校验参数 end
 	return h.svc.TransferNftClassByID(params), nil
 }
