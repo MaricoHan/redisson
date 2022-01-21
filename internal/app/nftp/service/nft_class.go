@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
@@ -22,8 +21,6 @@ func NewNftClass() *NftClass {
 
 func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error) {
 
-	//// 写入数据库
-	//// sdk 创建账户
 	//db, err := orm.GetDB().Begin()
 	//if err != nil {
 	//	return nil, types.ErrMysqlConn
@@ -59,16 +56,14 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 	result.NftClasses = []*dto.NftClass{}
 	queryMod := []qm.QueryMod{
 		qm.From(models.TableNames.TClasses),
-		qm.Select(models.TClassColumns.ID, models.TClassColumns.Name, models.TClassColumns.Symbol,
-			models.TClassColumns.Offset, models.TClassColumns.URI, models.TClassColumns.Owner,
-			models.TClassColumns.TXHash, models.TClassColumns.Timestamp),
 		models.TClassWhere.AppID.EQ(params.AppID),
 	}
 	if params.Id != "" {
 		queryMod = append(queryMod, models.TClassWhere.ClassID.EQ(params.Id))
 	}
 	if params.Name != "" { //支持模糊查询
-		queryMod = append(queryMod, models.TClassWhere.Name.NEQ(null.StringFromPtr(&params.Name)))
+		//queryMod = append(queryMod, models.TClassWhere.Name.NEQ(null.StringFromPtr(&params.Name)))
+		queryMod = append(queryMod, qm.Where("name_contains=?", params.Name))
 	}
 	if params.Owner != "" {
 		queryMod = append(queryMod, models.TClassWhere.Owner.EQ(params.Owner))
