@@ -25,22 +25,32 @@ type NftClass struct {
 	base *Base
 }
 
-func NewNftClass(base *Base) *NftClass {
-	return &NftClass{base: base}
+func NewNftClass() *NftClass {
+	return &NftClass{}
 }
 
 func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error) {
+	//platform address
+	classOne, err := models.TAccounts(
+		models.TAccountWhere.ID.EQ(uint64(0)),
+	).OneG(context.Background())
+	if err != nil {
+		return nil, types.ErrGetAccountDetails
+	}
+	pAddress := classOne.Address
+	//new classId
 	var data []byte = []byte(params.Owner)
 	data = append(data, []byte(params.Name)...)
 	data = append(data, []byte(string(time.Now().Unix()))...)
 	str := strings.ToUpper(hex.EncodeToString(tmhash.Sum(data)))
 	classId := fmt.Sprintf("nftp%d", str)
+	//txMsg, Platform side created
 	baseTx := svc.base.CreateBaseTx("iaa", "")
-	msg := nft.MsgIssueDenom{
+	createDenomMsg := nft.MsgIssueDenom{
 		//nftClassID := nftp + sha256(createrAddress + className + time.now().unix())
 		Id:               classId,
 		Name:             params.Name,
-		Sender:           params.Owner,
+		Sender:           pAddress,
 		Symbol:           params.Symbol,
 		MintRestricted:   true,
 		UpdateRestricted: false,
@@ -49,29 +59,54 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 		UriHash:          params.UriHash,
 		Data:             params.Data,
 	}
+	transferDenomMsg := nft.MsgTransferDenom{
+		Id:        classId,
+		Sender:    pAddress,
+		Recipient: params.Owner,
+	}
 	//params.UriHash
-	originData, txHash, err := svc.base.BuildAndSign(sdktype.Msgs{&msg}, baseTx)
+	cData, cTxHash, err := svc.base.BuildAndSign(sdktype.Msgs{&createDenomMsg}, baseTx)
+	tData, tTxHash, err := svc.base.BuildAndSign(sdktype.Msgs{&transferDenomMsg}, baseTx)
+	if err != nil {
+		return nil, err
+	}
 
 	db, err := orm.GetDB().Begin()
 	if err != nil {
 		return nil, types.ErrMysqlConn
 	}
-	ttx := models.TTX{
+	//transferInfo
+	ttxs := []*models.TTX{}
+	ttx1 := models.TTX{
 		AppID:         params.AppID,
-		Hash:          txHash,
+		Hash:          cTxHash,
 		Timestamp:     null.Time{Time: time.Now()},
-		OriginData:    null.BytesFromPtr(&originData),
+		OriginData:    null.BytesFromPtr(&cData),
 		OperationType: "issue_class",
 		Status:        "undo",
 	}
-	ttx.InsertG(context.Background(), boil.Infer())
+	ttx2 := models.TTX{
+		AppID:         params.AppID,
+		Hash:          tTxHash,
+		Timestamp:     null.Time{Time: time.Now()},
+		OriginData:    null.BytesFromPtr(&tData),
+		OperationType: "issue_class",
+		Status:        "undo",
+	}
+	ttxs = append(ttxs, &ttx1)
+	ttxs = append(ttxs, &ttx2)
+	for _, m := range ttxs {
+		m.InsertG(context.Background(), boil.Infer())
+	}
+
 	err = db.Commit()
 	if err != nil {
 		return nil, types.ErrInternal
 	}
 
 	var hashs []string
-	hashs = append(hashs, txHash)
+	hashs = append(hashs, cTxHash)
+	hashs = append(hashs, tTxHash)
 	return hashs, nil
 }
 
