@@ -70,21 +70,22 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (h authHandler) Signature(r *http.Request, appKey string, timestamp string, signature string) bool {
 	switch r.Method {
 	case http.MethodGet:
-		i := 0
-		paramsMap := map[string]interface{}{}
-		for k, v := range r.URL.Query() {
-			paramsMap[k] = v[0]
-			i++
-		}
 
+		paramsMap := map[string]interface{}{}
+
+		// 获取 path params
 		for k, v := range mux.Vars(r) {
 			paramsMap[k] = v
-			i++
 		}
+		// 获取 query params
+		for k, v := range r.URL.Query() {
+			paramsMap[k] = v[0]
+		}
+
 		paramsMap = sortMapParams(paramsMap)
 
 		hexHash := hash(timestamp + appKey)
-		if i != 0 {
+		if paramsMap != nil {
 			sourParamsBytes, _ := json.Marshal(paramsMap)
 			hexHash = hash(string(sourParamsBytes) + timestamp + appKey)
 		}
@@ -92,45 +93,33 @@ func (h authHandler) Signature(r *http.Request, appKey string, timestamp string,
 			return false
 		}
 	case http.MethodPost:
-		// 把request的内容读取出来
-		var bodyBytes []byte
-		if r.Body != nil {
-			bodyBytes, _ = ioutil.ReadAll(r.Body)
-		}
-		// 把刚刚读出来的再写进去
-		r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
-
-		params := map[string]interface{}{}
-		_ = json.Unmarshal(bodyBytes, &params)
-		hexHash := hash(timestamp + appKey)
-
-		sourParams := sortMapParams(params)
-		if sourParams != nil {
-			sourParamsBytes, _ := json.Marshal(sourParams)
-			hexHash = hash(string(sourParamsBytes) + timestamp + appKey)
-		}
-		if hexHash != signature {
-			return false
-		}
 	case http.MethodDelete:
 	case http.MethodPatch:
+
+		// 获取 path params
+		params := map[string]interface{}{}
+		for k, v := range mux.Vars(r) {
+			params[k] = v
+		}
+
+		// 获取 body params
 		// 把request的内容读取出来
 		var bodyBytes []byte
 		if r.Body != nil {
 			bodyBytes, _ = ioutil.ReadAll(r.Body)
 		}
 		// 把刚刚读出来的再写进去
-		r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 
-		params := map[string]interface{}{}
-		_ = json.Unmarshal(bodyBytes, &params)
+		r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+		paramsBody := map[string]interface{}{}
+		_ = json.Unmarshal(bodyBytes, &paramsBody)
 		hexHash := hash(timestamp + appKey)
 
-		i := 0
-		for k, v := range mux.Vars(r) {
+		for k, v := range paramsBody {
 			params[k] = v
-			i++
 		}
+
+		// sort params
 		sortParams := sortMapParams(params)
 
 		if sortParams != nil {
