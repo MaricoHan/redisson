@@ -4,19 +4,19 @@ log_format = "text"
 log_level = "debug"
 
 [mysql]
-db_name = "nft_p"
-host = "127.0.0.1"
-port = "3306"
-user = "root"
-password = "123456"
+db_name = "nftp_open_api"
+host = "192.168.150.40"
+port = "23306"
+user = "nftp"
+password = "nftppassword"
 max_idle_conns = 10
 max_life_time = "1h"
 max_open_conns = 100
 
 [chain]
 chain_id = "dev"
-grpc_address = "127.0.0.1:9090"
-rpc_address = "tcp://127.0.0.1:26657"
+grpc_address = "192.168.150.42:9090"
+rpc_address = "tcp://192.168.150.42:26657"
 project_id = "a36dc219dbdd4dbe809766accbed0ac6"
 project_key = ""
 chain_account_addr = ""
