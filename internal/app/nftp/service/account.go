@@ -29,6 +29,8 @@ import (
 const algo = "secp256k1"
 const hdPathPrefix = hd.BIP44Prefix + "0'/0/"
 
+const keyPassword = "12345678"
+
 type Account struct {
 }
 
@@ -66,14 +68,19 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 			return nil, types.ErrAccountCreate
 		}
 		_, prv := res.Generate()
+		privStr, err := res.ExportPrivKey(keyPassword)
+		if err != nil {
+			return nil, types.ErrAccountCreate
+		}
 
 		tmpAddress := sdktype.AccAddress(prv.PubKey().Address().Bytes()).String()
+
 		tmp := &models.TAccount{
 			AppID:    params.AppID,
 			Address:  tmpAddress,
 			AccIndex: uint64(index),
-			PriKey:   base64.StdEncoding.EncodeToString(prv.Bytes()),
-			PubKey:   base64.StdEncoding.EncodeToString(prv.PubKey().Bytes()),
+			PriKey:   privStr,
+			PubKey:   base64.StdEncoding.EncodeToString(res.ExportPubKey().Bytes()),
 		}
 
 		tAccounts = append(tAccounts, tmp)
