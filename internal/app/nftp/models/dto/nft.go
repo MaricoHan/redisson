@@ -1,10 +1,11 @@
 package dto
 
 type EditNftByIndexP struct {
-	Index   uint64 `json:"index"`
-	Name    string `json:"name"`
-	Uri     string `json:"uri"`
-	Data    string `json:"data"`
+	Index uint64 `json:"index"`
+	Name  string `json:"name"`
+	Uri   string `json:"uri"`
+	Data  string `json:"data"`
+
 	AppID   uint64 `json:"app_id"`
 	ClassId string `json:"class_id"`
 	Sender  string `json:"owner"`

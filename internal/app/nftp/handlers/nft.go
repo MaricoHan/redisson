@@ -155,25 +155,25 @@ func (h nft) NftByIndex(ctx context.Context, _ interface{}) (interface{}, error)
 func (h nft) NftOperationHistoryByIndex(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
 	params := dto.NftOperationHistoryByIndexP{
-		ClassID: h.ClassId(ctx),
-		Index:   h.Index(ctx),
-		AppID:   h.AppID(ctx),
+		//ClassID: h.ClassId(ctx),
+		//Index:   h.Index(ctx),
+		AppID: h.AppID(ctx),
 	}
-	params.Signer = h.Signer(ctx)
-	params.Operation = h.Operation(ctx)
-	params.Txhash = h.Txhash(ctx)
+	//params.Signer = h.Signer(ctx)
+	//params.Operation = h.Operation(ctx)
+	//params.Txhash = h.Txhash(ctx)
+	//
+	//offset, err := h.Offset(ctx)
+	//if err != nil {
+	//	return nil, types.ErrParams
+	//}
+	//params.Offset = offset
 
-	offset, err := h.Offset(ctx)
-	if err != nil {
-		return nil, types.ErrParams
-	}
-	params.Offset = offset
-
-	limit, err := h.Limit(ctx)
-	if err != nil {
-		return nil, types.ErrParams
-	}
-	params.Limit = limit
+	//limit, err := h.Limit(ctx)
+	//if err != nil {
+	//	return nil, types.ErrParams
+	//}
+	//params.Limit = limit
 
 	if params.Offset == 0 {
 		params.Offset = 1
