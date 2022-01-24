@@ -37,16 +37,16 @@ func (m Base) CreateBaseTx(keyName, keyPassword string) sdktype.BaseTx {
 func (m Base) BuildAndSign(msgs sdktype.Msgs, baseTx sdktype.BaseTx) ([]byte, string, error) {
 	sigData, err := m.sdkClient.BuildAndSign(msgs, baseTx)
 	if err != nil {
-		return nil, "", nil
+		return nil, "", err
 	}
 	txHash, err := m.sdkClient.BuildTxHash(msgs, baseTx)
 	if err != nil {
-		return nil, "", nil
+		return nil, "", err
 	}
 	return sigData, txHash, nil
 }
 
-// operationType (issue_class,mint_nft,edit_nft,edit_nft_batch,burn_nft,burn_nft_batch)
+// TxIntoDataBase operationType : issue_class,mint_nft,edit_nft,edit_nft_batch,burn_nft,burn_nft_batch
 func (m Base) TxIntoDataBase(AppID uint64, txHash string, signedData []byte, operationType string, status string) (uint64, error) {
 
 	// Tx into database

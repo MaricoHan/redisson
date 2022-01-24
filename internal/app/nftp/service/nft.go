@@ -105,6 +105,9 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
 	// build and sign transaction
 	baseTx := svc.base.CreateBaseTx(params.Sender, "")
 	signedData, txHash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgEditNFT}, baseTx)
+	if err != nil {
+		return "", err
+	}
 
 	// Tx into database
 	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, "edit_nft", "undo")
@@ -132,12 +135,13 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 	if err != nil {
 		return "", types.ErrMysqlConn
 	}
-	var msgEditNFTs sdktype.Msgs
 
 	// create rawMsgs
+	var msgEditNFTs sdktype.Msgs
 	for _, EditNft := range params.EditNfts { // create every rawMsg
 		// get NFT by app_id,class_id and index
-		tNft, err := models.TNFTS(qm.Where("app_id=? AND class_id=? AND index=?", params.AppID, params.ClassId, EditNft.Index)).One(context.Background(), db)
+		tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(EditNft.Index)).One(context.Background(), boil.GetContextDB())
+
 		if err != nil {
 			return "", err
 		}
@@ -156,6 +160,9 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 	// build and sign transaction
 	baseTx := svc.base.CreateBaseTx(params.Sender, "")
 	signedData, txHash, err := svc.base.BuildAndSign(msgEditNFTs, baseTx)
+	if err != nil {
+		return "", err
+	}
 
 	// Tx into database
 	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, "edit_nft_batch", "undo")
@@ -165,7 +172,7 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 
 	// lock the NFTs
 	for _, EditNft := range params.EditNfts { // create every rawMsg
-		tNft, err := models.TNFTS(qm.Where("app_id=? AND class_id=? AND index=?", params.AppID, params.ClassId, EditNft.Index)).One(context.Background(), db)
+		tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(EditNft.Index)).One(context.Background(), boil.GetContextDB())
 		tNft.Status = "pendding"
 		tNft.LockedBy = null.Uint64From(txId)
 		// update
@@ -188,7 +195,7 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (string, error) {
 
 	// get NFT by app_id,class_id and index
-	tNft, err := models.TNFTS(qm.Where("app_id=? AND class_id=? AND index=?", params.AppID, params.ClassId, params.Index)).One(context.Background(), boil.GetContextDB())
+	tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(params.Index)).One(context.Background(), boil.GetContextDB())
 	if err != nil {
 		return "", err
 	}
@@ -209,6 +216,9 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (string, error) {
 	// build and sign transaction
 	baseTx := svc.base.CreateBaseTx(params.Sender, "")
 	signedData, txHash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgBurnNFT}, baseTx)
+	if err != nil {
+		return "", err
+	}
 
 	// Tx into database
 	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, "burn_nft", "undo")
@@ -235,12 +245,11 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 		return "", types.ErrMysqlConn
 	}
 
-	var msgBurnNFTs sdktype.Msgs
-
 	// create rawMsgs
+	var msgBurnNFTs sdktype.Msgs
 	for _, index := range params.Indices { // create every rawMsg
 		//get NFT by app_id,class_id and index
-		tNft, err := models.TNFTS(qm.Where("app_id=? AND class_id=? AND index=?", params.AppID, params.ClassId, index)).One(context.Background(), db)
+		tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(index)).One(context.Background(), boil.GetContextDB())
 		if err != nil {
 			return "", err
 		}
@@ -272,7 +281,7 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 
 	// lock the NFT
 	for _, index := range params.Indices { // create every rawMsg
-		tNft, err := models.TNFTS(qm.Where("app_id=? AND class_id=? AND index=?", params.AppID, params.ClassId, index)).One(context.Background(), db)
+		tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(index)).One(context.Background(), boil.GetContextDB())
 		tNft.Status = "pendding"
 		tNft.LockedBy = null.Uint64From(txId)
 		_, err = tNft.Update(context.Background(), db, boil.Infer())
@@ -292,14 +301,15 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 
 func (svc *Nft) NftByIndex(params dto.NftByIndexP) (*dto.NftByIndexP, error) {
 
-	//get NFT by app_id,class_id and index
-	tNft, err := models.TNFTS(qm.Where("app_id=? AND class_id=? AND index=?", params.AppID, params.ClassId, params.Index)).One(context.Background(), boil.GetContextDB())
+	// get NFT by app_id,class_id and index
+	tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(params.Index)).One(context.Background(), boil.GetContextDB())
 	if err != nil {
 		return nil, err
 	}
 
-	//get class by class_id
-	class, err := models.TClasses(qm.Where("class_id=?", params.ClassId)).One(context.Background(), boil.GetContextDB())
+	// get class by class_id
+	class, err := models.TClasses(models.TClassWhere.ClassID.EQ(params.ClassId)).One(context.Background(), boil.GetContextDB())
+
 	result := &dto.NftByIndexP{
 		Id:          strconv.FormatInt(int64(tNft.ID), 10),
 		Index:       tNft.Index,
@@ -315,6 +325,93 @@ func (svc *Nft) NftByIndex(params dto.NftByIndexP) (*dto.NftByIndexP, error) {
 		TxHash:      tNft.TXHash,
 		TimeStamp:   tNft.Timestamp.Time.String(),
 	}
+
+	return result, nil
+}
+
+func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndexP) (*dto.BNftOperationHistoryByIndexRes, error) {
+	result := &dto.BNftOperationHistoryByIndexRes{}
+	result.Offset = params.Offset
+	result.Limit = params.Limit
+	result.OperationRecords = []*dto.OperationRecord{}
+	//nft, err := models.TNFTS(
+	//	models.TNFTWhere.AppID.EQ(params.AppID),
+	//	models.TNFTWhere.ClassID.EQ(params.ClassID),
+	//	models.TNFTWhere.Index.EQ(params.Index),
+	//	).OneG(context.Background())
+	//if err != nil {
+	//	return nil, types.ErrMysqlConn
+	//}
+
+	queryMod := []qm.QueryMod{
+		qm.From(models.TableNames.TMSGS),
+		qm.Select(models.TMSGColumns.TXHash,
+			models.TMSGColumns.Operation,
+			models.TMSGColumns.Signer,
+			models.TMSGColumns.Recipient,
+			models.TMSGColumns.Timestamp),
+		models.TMSGWhere.AppID.EQ(params.AppID),
+	}
+	//if params.Txhash != "" {
+	//	queryMod = append(queryMod, models.TMSGWhere.TXHash.EQ(params.Txhash))
+	//}else {
+	//	queryMod = append(queryMod, models.TMSGWhere.TXHash.EQ(nft.TXHash))
+	//}
+	////否则查询该nft的所有hash
+	if params.Signer != "" {
+		queryMod = append(queryMod, models.TMSGWhere.Signer.EQ(params.Signer))
+	}
+	if params.Operation != "" {
+		queryMod = append(queryMod, models.TMSGWhere.Operation.EQ(params.Operation))
+	}
+	if params.StartDate != nil {
+		queryMod = append(queryMod, models.TMSGWhere.CreateAt.GTE(*params.StartDate))
+	}
+	if params.EndDate != nil {
+		queryMod = append(queryMod, models.TMSGWhere.CreateAt.LTE(*params.EndDate))
+	}
+	if params.SortBy != "" {
+		orderBy := ""
+		switch params.SortBy {
+		case "DATE_DESC":
+			orderBy = fmt.Sprintf("%s desc", models.TMSGWhere.CreateAt)
+		case "DATE_ASC":
+			orderBy = fmt.Sprintf("%s ASC", models.TMSGWhere.CreateAt)
+		}
+		queryMod = append(queryMod, qm.OrderBy(orderBy))
+	}
+
+	var modelResults []*models.TMSG
+	total, err := modext.PageQuery(
+		context.Background(),
+		orm.GetDB(),
+		queryMod,
+		&modelResults,
+		params.Offset,
+		params.Limit,
+	)
+	if err != nil {
+		// records not exist
+		if strings.Contains(err.Error(), "records not exist") {
+			return result, nil
+		}
+
+		return nil, types.ErrMysqlConn
+	}
+
+	result.TotalCount = total
+	var operationRecords []*dto.OperationRecord
+	for _, modelResult := range modelResults {
+		var operationRecord = &dto.OperationRecord{
+			Txhash:    modelResult.TXHash,
+			Operation: modelResult.Operation,
+			Signer:    modelResult.Signer,
+			Recipient: modelResult.Recipient.String,
+			Timestamp: modelResult.Timestamp.Time.String(),
+		}
+		operationRecords = append(operationRecords, operationRecord)
+	}
+	result.OperationRecords = operationRecords
 
 	return result, nil
 }

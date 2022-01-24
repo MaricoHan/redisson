@@ -101,4 +101,28 @@ type CreateNftsRequest struct {
 	Data      string `json:"data"`
 	Amount    int    `json:"amount"`
 	Recipient string `json:"recipient"`
+	AppID       uint64 `json:"app_id"`
+}
+
+type NftOperationHistoryByIndexP struct {
+	PageP
+	ClassID   string `json:"class_id"`
+	Index     uint64 `json:"index"`
+	Signer    string `json:"signer"`
+	Txhash    string `json:"tx_hash"`
+	Operation string `json:"operation"`
+	AppID     uint64 `json:"app_id"`
+}
+
+type BNftOperationHistoryByIndexRes struct {
+	PageRes
+	OperationRecords []*OperationRecord
+}
+
+type OperationRecord struct {
+	Txhash    string `json:"tx_hash"`
+	Operation string `json:"operation"`
+	Signer    string `json:"signer"`
+	Recipient string `json:"recipient"`
+	Timestamp string `json:"timestamp"`
 }
