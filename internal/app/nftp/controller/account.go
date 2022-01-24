@@ -33,6 +33,11 @@ func (c AccountController) GetEndpoints() []kit.Endpoint {
 			Method:  http.MethodGet,
 			Handler: c.makeHandler(c.handler.Accounts, nil),
 		},
+		kit.Endpoint{
+			URI:     "/accounts/history",
+			Method:  http.MethodGet,
+			Handler: c.makeHandler(c.handler.AccountsHistory, nil),
+		},
 	)
 	return ends
 }
