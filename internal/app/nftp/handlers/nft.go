@@ -51,6 +51,13 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 		Amount:    req.Amount,
 		Recipient: req.Recipient,
 	}
+	if params.Amount == 0 {
+		params.Amount = 1
+	}
+	if params.Amount > 100 {
+		return nil, types.ErrParams
+	}
+
 	return h.svc.CreateNfts(params)
 }
 
@@ -312,43 +319,6 @@ func (h nft) Txhash(ctx context.Context) string {
 		return ""
 	}
 	return txhash.(string)
-}
-
-func (h nft) ClassId(ctx context.Context) string {
-	class_id := ctx.Value("class_id")
-
-	if class_id == nil {
-		return ""
-	}
-	return class_id.(string)
-
-}
-
-func (h nft) Owner(ctx context.Context) string {
-	owner := ctx.Value("owner")
-
-	if owner == nil {
-		return ""
-	}
-	return owner.(string)
-
-}
-func (h nft) Index(ctx context.Context) uint64 {
-	index := ctx.Value("index")
-
-	return index.(uint64)
-}
-func (h nft) Indices(ctx context.Context) []uint64 {
-	rec := ctx.Value("indices")
-
-	//"1,2,3,4,..." to {1,2,3,4,...}
-	var indices []uint64
-	strArr := strings.Split(rec.(string), ",")
-	for i, s := range strArr {
-		indices[i], _ = strconv.ParseUint(s, 10, 64)
-	}
-
-	return indices
 }
 
 func (h nft) Id(ctx context.Context) string {
