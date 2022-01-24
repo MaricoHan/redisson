@@ -12,6 +12,8 @@ import (
 	keystore "github.com/irisnet/core-sdk-go/types/store"
 )
 
+const algo = "secp256k1"
+
 type MysqlKeyDao struct {
 	db *sql.DB
 }
@@ -43,11 +45,15 @@ func (k MysqlKeyDao) Read(name, password string) (keystore.KeyInfo, error) {
 	if err != nil {
 		return keystore.KeyInfo{}, err
 	}
+	priKey, err := base64.StdEncoding.DecodeString(tAccountOneObj.PriKey)
+	if err != nil {
+		return keystore.KeyInfo{}, err
+	}
 
 	store := keystore.KeyInfo{
 		Name:         name,
-		Algo:         "secp256k1",
-		PrivKeyArmor: tAccountOneObj.PriKey,
+		Algo:         algo,
+		PrivKeyArmor: string(priKey),
 		PubKey:       pubKeyBytes,
 	}
 
