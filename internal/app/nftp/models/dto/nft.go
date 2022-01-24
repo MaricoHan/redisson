@@ -101,7 +101,6 @@ type CreateNftsRequest struct {
 	Data      string `json:"data"`
 	Amount    int    `json:"amount"`
 	Recipient string `json:"recipient"`
-	AppID       uint64 `json:"app_id"`
 }
 
 type NftOperationHistoryByIndexP struct {
