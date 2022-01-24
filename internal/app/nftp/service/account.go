@@ -159,3 +159,80 @@ func (svc *Account) Accounts(params dto.AccountsP) (*dto.AccountsRes, error) {
 
 	return result, nil
 }
+
+func (svc *Account) AccountsHistory(params dto.AccountsP) (*dto.AccountOperationRecordRes, error) {
+	result := &dto.AccountOperationRecordRes{
+		PageRes: dto.PageRes{
+			Offset:     params.Offset,
+			Limit:      params.Limit,
+			TotalCount: 0,
+		},
+		OperationRecords: nil,
+	}
+
+	queryMod := []qm.QueryMod{
+		qm.From(models.TableNames.TMSGS),
+		models.TMSGWhere.AppID.EQ(params.AppID),
+	}
+
+	if params.Account != "" {
+		queryMod = append(queryMod, models.TMSGWhere.Signer.EQ(params.Account))
+	}
+	if params.Module != "" {
+		queryMod = append(queryMod, models.TMSGWhere.Module.EQ(params.Module))
+	}
+	if params.Operation != "" {
+		queryMod = append(queryMod, models.TMSGWhere.Operation.EQ(params.Operation))
+	}
+	if params.StartDate != nil {
+		queryMod = append(queryMod, models.TMSGWhere.CreateAt.GTE(*params.StartDate))
+	}
+	if params.EndDate != nil {
+		queryMod = append(queryMod, models.TMSGWhere.CreateAt.LTE(*params.EndDate))
+	}
+	if params.SortBy != "" {
+		orderBy := ""
+		switch params.SortBy {
+		case "DATE_DESC":
+			orderBy = fmt.Sprintf("%s desc", models.TMSGColumns.CreateAt)
+		case "DATE_ASC":
+			orderBy = fmt.Sprintf("%s ASC", models.TMSGColumns.CreateAt)
+		}
+		queryMod = append(queryMod, qm.OrderBy(orderBy))
+	}
+
+	var modelResults []*models.TMSG
+	total, err := modext.PageQueryByOffset(
+		context.Background(),
+		orm.GetDB(),
+		queryMod,
+		&modelResults,
+		int(params.Offset),
+		int(params.Limit),
+	)
+	if err != nil {
+		// records not exist
+		if strings.Contains(err.Error(), "records not exist") {
+			return result, nil
+		}
+
+		return nil, types.ErrMysqlConn
+	}
+
+	result.TotalCount = total
+	var accountOperationRecords []*dto.AccountOperationRecords
+	for _, modelResult := range modelResults {
+		accountOperationRecord := &dto.AccountOperationRecords{
+			TxHash:    modelResult.TXHash,
+			Module:    modelResult.Module,
+			Operation: modelResult.Operation,
+			Signer:    modelResult.Signer,
+			Timestamp: modelResult.Timestamp.Time.String(),
+			Message:   modelResult.Message,
+		}
+		accountOperationRecords = append(accountOperationRecords, accountOperationRecord)
+	}
+	result.OperationRecords = accountOperationRecords
+
+	return result, nil
+}
