@@ -76,7 +76,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 		Timestamp:     null.Time{Time: time.Now()},
 		OriginData:    null.BytesFromPtr(&originData),
 		OperationType: "issue_class",
-		Status:        "undo",
+		Status:        models.TTXSStatusUndo,
 	}
 	err = ttx.InsertG(context.Background(), boil.Infer())
 	if err != nil {
