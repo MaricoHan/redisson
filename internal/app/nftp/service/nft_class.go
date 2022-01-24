@@ -75,7 +75,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 		Hash:          txHash,
 		Timestamp:     null.Time{Time: time.Now()},
 		OriginData:    null.BytesFromPtr(&originData),
-		OperationType: "issue_class",
+		OperationType: models.TTXSOperationTypeIssueClass,
 		Status:        models.TTXSStatusUndo,
 	}
 	err = ttx.InsertG(context.Background(), boil.Infer())
