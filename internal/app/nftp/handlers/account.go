@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
@@ -16,6 +17,7 @@ import (
 type IAccount interface {
 	CreateAccount(ctx context.Context, _ interface{}) (interface{}, error)
 	Accounts(ctx context.Context, _ interface{}) (interface{}, error)
+	AccountsHistory(ctx context.Context, _ interface{}) (interface{}, error)
 }
 
 func NewAccount(svc *service.Account) IAccount {
@@ -122,4 +124,90 @@ func (h account) Account(ctx context.Context) string {
 		return ""
 	}
 	return accountR.(string)
+}
+
+func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{}, error) {
+	// 校验参数 start
+	params := dto.AccountsP{
+		AppID:   h.AppID(ctx),
+		Account: h.Account(ctx),
+	}
+
+	offset, err := h.Offset(ctx)
+	if err != nil {
+		return nil, types.ErrParams
+	}
+	params.Offset = offset
+
+	limit, err := h.Limit(ctx)
+	if err != nil {
+		return nil, types.ErrParams
+	}
+	params.Limit = limit
+
+	if params.Offset == 0 {
+		params.Offset = 1
+	}
+
+	if params.Limit == 0 {
+		params.Limit = 10
+	}
+	startDateR := h.StartDate(ctx)
+	if startDateR != "" {
+		startDateTime, err := time.Parse(timeLayout, startDateR)
+		if err != nil {
+			return nil, types.ErrParams
+		}
+		params.StartDate = &startDateTime
+	}
+
+	endDateR := h.EndDate(ctx)
+	if endDateR != "" {
+		endDateTime, err := time.Parse(timeLayout, endDateR)
+		if err != nil {
+			return nil, types.ErrParams
+		}
+		params.EndDate = &endDateTime
+	}
+
+	if params.EndDate != nil && params.StartDate != nil {
+		if !params.EndDate.After(*params.StartDate) {
+			return nil, types.ErrParams
+		}
+	}
+	switch h.SortBy(ctx) {
+	case "DATE_ASC":
+		params.SortBy = "DATE_ASC"
+	case "DATE_DESC":
+		params.SortBy = "DATE_DESC"
+	default:
+		return nil, types.ErrParams
+	}
+
+	params.Module = h.module(ctx)
+	params.Operation = h.operation(ctx)
+	if params.Module != "" && params.Operation != "" {
+		if params.Module == "account" && params.Operation != "add_gas" {
+			return nil, types.ErrParams
+		} else if params.Module == "nft" && !strings.Contains("transfer_class/mint/edit/transfer/burn", params.Operation) {
+			return nil, types.ErrParams
+		}
+	}
+	return h.svc.AccountsHistory(params)
+}
+
+func (h account) module(ctx context.Context) string {
+	module := ctx.Value("module")
+	if module == nil {
+		return ""
+	}
+	return module.(string)
+}
+
+func (h account) operation(ctx context.Context) string {
+	operation := ctx.Value("operation")
+	if operation == nil {
+		return ""
+	}
+	return operation.(string)
 }

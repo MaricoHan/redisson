@@ -40,7 +40,7 @@ func (h nftTransfer) TransferNftClassByID(ctx context.Context, request interface
 		AppID:     h.AppID(ctx),
 	}
 	// 校验参数 end
-	return h.svc.TransferNftClassByID(params), nil
+	return h.svc.TransferNftClassByID(params)
 }
 
 // TransferNftByIndex transfer an nft class by index
@@ -56,7 +56,7 @@ func (h nftTransfer) TransferNftByIndex(ctx context.Context, request interface{}
 		AppID:     h.AppID(ctx),
 	}
 	// 校验参数 end
-	return h.svc.TransferNftByIndex(params), nil
+	return h.svc.TransferNftByIndex(params)
 }
 
 // TransferNftByBatch return class list
@@ -70,7 +70,7 @@ func (h nftTransfer) TransferNftByBatch(ctx context.Context, request interface{}
 		AppID:      h.AppID(ctx),
 	}
 	// 校验参数 end
-	return h.svc.TransferNftByBatch(params), nil
+	return h.svc.TransferNftByBatch(params)
 }
 
 func (h nftTransfer) ClassID(ctx context.Context) uint64 {

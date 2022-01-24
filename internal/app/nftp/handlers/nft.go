@@ -2,13 +2,14 @@ package handlers
 
 import (
 	"context"
+	"strconv"
+	"strings"
+	"time"
+
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
-	"strconv"
-	"strings"
-	"time"
 )
 
 type INft interface {
@@ -294,7 +295,7 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, request interface{}
 	}
 
 	// 校验参数 end
-	return h.svc.NftOperationHistoryByIndex(params), nil
+	return h.svc.NftOperationHistoryByIndex(params)
 }
 
 func (h nft) Signer(ctx context.Context) string {

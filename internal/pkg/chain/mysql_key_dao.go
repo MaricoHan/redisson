@@ -38,10 +38,7 @@ func (k MysqlKeyDao) Read(name, password string) (keystore.KeyInfo, error) {
 	if err != nil {
 		return keystore.KeyInfo{}, err
 	}
-	privKeyBytes, err := base64.StdEncoding.DecodeString(tAccountOneObj.PriKey)
-	if err != nil {
-		return keystore.KeyInfo{}, err
-	}
+
 	pubKeyBytes, err := base64.StdEncoding.DecodeString(tAccountOneObj.PubKey)
 	if err != nil {
 		return keystore.KeyInfo{}, err
@@ -50,7 +47,7 @@ func (k MysqlKeyDao) Read(name, password string) (keystore.KeyInfo, error) {
 	store := keystore.KeyInfo{
 		Name:         name,
 		Algo:         "secp256k1",
-		PrivKeyArmor: string(privKeyBytes),
+		PrivKeyArmor: tAccountOneObj.PriKey,
 		PubKey:       pubKeyBytes,
 	}
 
