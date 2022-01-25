@@ -35,7 +35,7 @@ var (
 	ErrNftBatchTransfer    = Register(RootCodeSpace, "28", "failed to batch transfer nft")
 	ErrNftClassesSet       = Register(RootCodeSpace, "29", "failed to set nft class")
 	ErrTxMsgInsert         = Register(RootCodeSpace, "30", "failed to insert ttx")
-	ErrTxMsgGet            = Register(RootCodeSpace, "30", "failed to get ttx")
+	ErrTxMsgGet            = Register(RootCodeSpace, "31", "failed to get ttx")
 )
 
 var usedErrorCodes = map[string]*AppError{}
