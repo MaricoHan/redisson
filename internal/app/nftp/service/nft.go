@@ -272,17 +272,22 @@ func (svc *Nft) NftByIndex(params dto.NftByIndexP) (*dto.NftByIndexP, error) {
 }
 
 func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndexP) (*dto.BNftOperationHistoryByIndexRes, error) {
-	result := &dto.BNftOperationHistoryByIndexRes{}
-	result.Offset = params.Offset
-	result.Limit = params.Limit
-	result.OperationRecords = []*dto.OperationRecord{}
+	result := &dto.BNftOperationHistoryByIndexRes{
+		PageRes: dto.PageRes{
+			Offset:     params.Offset,
+			Limit:      params.Limit,
+			TotalCount: 0,
+		},
+		OperationRecords: nil,
+	}
+
 	nft, err := models.TNFTS(
 		models.TNFTWhere.AppID.EQ(params.AppID),
 		models.TNFTWhere.ClassID.EQ(params.ClassID),
 		models.TNFTWhere.Index.EQ(params.Index),
 	).OneG(context.Background())
 	if err != nil {
-		return nil, types.ErrMysqlConn
+		return nil, ErrGetNftOperationDetails
 	}
 
 	queryMod := []qm.QueryMod{
@@ -316,21 +321,21 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 		orderBy := ""
 		switch params.SortBy {
 		case "DATE_DESC":
-			orderBy = fmt.Sprintf("%s desc", models.TMSGWhere.CreateAt)
+			orderBy = fmt.Sprintf("%s desc", models.TMSGColumns.CreateAt)
 		case "DATE_ASC":
-			orderBy = fmt.Sprintf("%s ASC", models.TMSGWhere.CreateAt)
+			orderBy = fmt.Sprintf("%s ASC", models.TMSGColumns.CreateAt)
 		}
 		queryMod = append(queryMod, qm.OrderBy(orderBy))
 	}
 
 	var modelResults []*models.TMSG
-	total, err := modext.PageQuery(
+	total, err := modext.PageQueryByOffset(
 		context.Background(),
 		orm.GetDB(),
 		queryMod,
 		&modelResults,
-		params.Offset,
-		params.Limit,
+		int(params.Offset),
+		int(params.Limit),
 	)
 	if err != nil {
 		// records not exist
@@ -338,7 +343,7 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 			return result, nil
 		}
 
-		return nil, types.ErrMysqlConn
+		return nil, ErrGetNftOperationDetails
 	}
 
 	result.TotalCount = total
@@ -354,6 +359,6 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 		operationRecords = append(operationRecords, operationRecord)
 	}
 	result.OperationRecords = operationRecords
-
+	fmt.Println(result)
 	return result, nil
 }

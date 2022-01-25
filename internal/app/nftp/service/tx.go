@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
@@ -15,9 +16,9 @@ func NewTx() *Tx {
 }
 
 func (svc *Tx) TxResultByTxHash(params dto.TxResultByTxHashP) (*dto.TxResultByTxHashRes, error) {
-	//验证
+	//验证不为空
 	if params.Hash == "" {
-		return nil, types.ErrTxResult
+		return nil, types.ErrParams
 	}
 
 	//query
@@ -25,22 +26,22 @@ func (svc *Tx) TxResultByTxHash(params dto.TxResultByTxHashP) (*dto.TxResultByTx
 		models.TTXWhere.Hash.EQ(params.Hash),
 		models.TTXWhere.AppID.EQ(params.AppID),
 	).OneG(context.Background())
-
 	if err != nil {
-		return nil, types.ErrTxResult
+		return nil, types.ErrGetTx
 	}
 
 	//result
 	result := &dto.TxResultByTxHashRes{}
 	result.Type = txinfo.OperationType
 
-	if txinfo.Status == "pendding" {
+	if txinfo.Status == "pending" {
 		result.Status = 0
 	} else if txinfo.Status == "success" {
 		result.Status = 1
 	} else {
 		result.Status = 2 // tx.Status == "failed"
 	}
+
 	result.Message = txinfo.ErrMSG.String
 
 	return result, nil

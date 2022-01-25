@@ -30,7 +30,6 @@ type authHandler struct {
 }
 
 func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
 	appKey := r.Header.Get("X-Api-Key")
 	appKeyResult, err := models.TAppKeys(
 		qm.Select(models.TAppKeyColumns.APIKey),

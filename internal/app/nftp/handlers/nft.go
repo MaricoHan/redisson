@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -155,10 +156,11 @@ func (h nft) NftByIndex(ctx context.Context, _ interface{}) (interface{}, error)
 // NftOperationHistoryByIndex return class details
 func (h nft) NftOperationHistoryByIndex(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
+	fmt.Println("3333333333333")
 	params := dto.NftOperationHistoryByIndexP{
-		//ClassID: h.ClassId(ctx),
-		//Index:   h.Index(ctx),
-		AppID: h.AppID(ctx),
+		ClassID: h.ClassId(ctx),
+		Index:   h.Index(ctx),
+		AppID:   h.AppID(ctx),
 	}
 	//params.Signer = h.Signer(ctx)
 	//params.Operation = h.Operation(ctx)
@@ -265,7 +267,14 @@ func (h nft) Owner(ctx context.Context) string {
 func (h nft) Index(ctx context.Context) uint64 {
 	index := ctx.Value("index")
 
-	return index.(uint64)
+	if index == nil {
+		return 0
+	}
+	parseUint, err := strconv.ParseUint(index.(string), 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	return parseUint
 }
 func (h nft) Indices(ctx context.Context) []uint64 {
 	rec := ctx.Value("indices")

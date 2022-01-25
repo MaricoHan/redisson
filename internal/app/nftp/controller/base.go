@@ -34,7 +34,7 @@ func GetAllControllers() []kit.IController {
 		NewAccountsController(bc, handlers.NewAccount(service.NewAccount())),
 		NewNftClassController(bc, handlers.NewNftClass(service.NewNftClass(baseSvc))),
 		NewNftController(bc, handlers.NewNft(service.NewNft())),
-		NewNftTransferController(bc, handlers.NewNftTransfer(service.NewNftTransfer())),
+		NewNftTransferController(bc, handlers.NewNftTransfer(service.NewNftTransfer(baseSvc))),
 		NewTxController(bc, handlers.NewTx(service.NewTx())),
 	}
 

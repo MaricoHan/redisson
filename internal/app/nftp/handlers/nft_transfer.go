@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"strconv"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 
@@ -32,21 +33,21 @@ func newNftTransfer(svc *service.NftTransfer) *nftTransfer {
 // TransferNftClassByID transfer an nft class by id
 func (h nftTransfer) TransferNftClassByID(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
-	req := request.(vo.TransferNftClassByIDRequest)
+	req := request.(*vo.TransferNftClassByIDRequest)
 	params := dto.TransferNftClassByIDP{
 		ClassID:   h.ClassID(ctx),
 		Owner:     h.Owner(ctx),
 		Recipient: req.Recipient,
 		AppID:     h.AppID(ctx),
 	}
-	// 校验参数 end
+	//校验参数 end
 	return h.svc.TransferNftClassByID(params)
 }
 
 // TransferNftByIndex transfer an nft class by index
 func (h nftTransfer) TransferNftByIndex(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
-	req := request.(vo.TransferNftByIndexRequest)
+	req := request.(*vo.TransferNftByIndexRequest)
 
 	params := dto.TransferNftByIndexP{
 		ClassID:   h.ClassID(ctx),
@@ -62,7 +63,7 @@ func (h nftTransfer) TransferNftByIndex(ctx context.Context, request interface{}
 // TransferNftByBatch return class list
 func (h nftTransfer) TransferNftByBatch(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
-	req := request.(vo.TransferNftByBatchRequest)
+	req := request.(*vo.TransferNftByBatchRequest)
 	params := dto.TransferNftByBatchP{
 		ClassID:    h.ClassID(ctx),
 		Owner:      h.Owner(ctx),
@@ -73,12 +74,17 @@ func (h nftTransfer) TransferNftByBatch(ctx context.Context, request interface{}
 	return h.svc.TransferNftByBatch(params)
 }
 
-func (h nftTransfer) ClassID(ctx context.Context) uint64 {
+func (h nftTransfer) ClassID(ctx context.Context) string {
 	class_id := ctx.Value("class_id")
 	if class_id == nil {
-		return 0
+		return ""
 	}
-	return class_id.(uint64)
+	return class_id.(string)
+	//parseUint, err := strconv.ParseUint(class_id.(string), 10, 64)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//return parseUint
 }
 
 func (h nftTransfer) Owner(ctx context.Context) string {
@@ -94,5 +100,9 @@ func (h nftTransfer) Index(ctx context.Context) uint64 {
 	if index == nil {
 		return 0
 	}
-	return index.(uint64)
+	parseUint, err := strconv.ParseUint(index.(string), 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	return parseUint
 }
