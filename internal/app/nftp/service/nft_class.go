@@ -25,14 +25,14 @@ type NftClass struct {
 	base *Base
 }
 
-func NewNftClass() *NftClass {
-	return &NftClass{}
+func NewNftClass(base *Base) *NftClass {
+	return &NftClass{base: base}
 }
 
 func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error) {
 	//platform address
 	classOne, err := models.TAccounts(
-		models.TAccountWhere.ID.EQ(uint64(0)),
+		models.TAccountWhere.AppID.EQ(uint64(0)),
 	).OneG(context.Background())
 	if err != nil {
 		return nil, types.ErrGetAccountDetails
@@ -45,7 +45,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 	str := strings.ToUpper(hex.EncodeToString(tmhash.Sum(data)))
 	classId := fmt.Sprintf("nftp%d", str)
 	//txMsg, Platform side created
-	baseTx := svc.base.CreateBaseTx(pAddress, "")
+	baseTx := svc.base.CreateBaseTx(pAddress, defultKeyPassword)
 	createDenomMsg := nft.MsgIssueDenom{
 		//nftClassID := nftp + sha256(createrAddress + className + time.now().unix())
 		Id:               classId,
