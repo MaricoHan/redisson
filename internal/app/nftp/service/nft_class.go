@@ -129,13 +129,15 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 	}
 
 	var modelResults []*models.TClass
-	total, err := modext.PageQueryByOffset(
+	total, err := modext.PageQuery(
 		context.Background(),
 		db,
 		queryMod,
 		&modelResults,
-		int(params.Offset),
-		int(params.Limit),
+		//int(params.Offset),
+		//int(params.Limit),
+		params.Offset,
+		params.Limit,
 	)
 	if err != nil {
 		// records not exist

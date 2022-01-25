@@ -58,7 +58,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) ([]string, error) {
 		}
 		msgs = append(msgs, &createNft)
 	}
-	baseTx := svc.base.CreateBaseTx(classOne.Owner, defultKeyPassword)
+	baseTx := svc.base.CreateBaseTx(classOne.Owner, "")
 	originData, txHash, err := svc.base.BuildAndSign(msgs, baseTx)
 	if err != nil {
 		return nil, err
@@ -89,13 +89,13 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) ([]string, error) {
 		return nil, types.ErrTxMsgInsert
 	}
 
-	tx, err := models.TTXS(qm.Where("hash=?", txHash)).One(context.Background(), boil.GetContextDB())
+	tx, err := models.TTXS(qm.Where("hash=?", txHash)).One(context.Background(), db)
 	if err != nil {
 		db.Rollback()
 		return nil, types.ErrTxMsgGet
 	}
 
-	tClass.LockedBy = tx.ID
+	tClass.LockedBy = null.Uint64FromPtr(&tx.ID)
 	_, err = tClass.Update(context.Background(), db, boil.Infer())
 	if err != nil {
 		db.Rollback()

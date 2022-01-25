@@ -61,7 +61,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 		return "", types.ErrTxResult
 	}
 	class.Status = "pendding"
-	class.LockedBy = txs.ID
+	class.LockedBy = null.Uint64FromPtr(&txs.ID)
 	_, err = class.UpdateG(context.Background(), boil.Infer())
 	if err != nil {
 		return "", types.ErrNftClassTransfer
