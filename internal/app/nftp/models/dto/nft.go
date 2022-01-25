@@ -51,7 +51,7 @@ type NftByIndexP struct {
 	Owner       string `json:"owner"`
 	Status      string `json:"status"`
 	TxHash      string `json:"tx_hash"`
-	TimeStamp   string `json:"time_stamp"`
+	TimeStamp   string `json:"timestamp"`
 	AppID       uint64 `json:"app_id"`
 }
 
