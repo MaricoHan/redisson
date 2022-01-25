@@ -26,16 +26,18 @@ type Nft struct {
 	base *Base
 }
 
-func NewNft() *Nft {
-	return &Nft{}
+func NewNft(base *Base) *Nft {
+	return &Nft{base: base}
 }
 
 func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) ([]string, error) {
+	db, err := orm.GetDB().Begin()
 	//platform address
 	classOne, err := models.TClasses(
 		models.TClassWhere.ClassID.EQ(params.ClassId),
-	).OneG(context.Background())
+	).One(context.Background(), db)
 	if err != nil {
+		db.Rollback()
 		return nil, types.ErrGetAccountDetails
 	}
 	offSet := classOne.Offset
@@ -56,11 +58,20 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) ([]string, error) {
 		}
 		msgs = append(msgs, &createNft)
 	}
-	baseTx := svc.base.CreateBaseTx(classOne.Owner, "")
+	baseTx := svc.base.CreateBaseTx(classOne.Owner, defultKeyPassword)
 	originData, txHash, err := svc.base.BuildAndSign(msgs, baseTx)
 	if err != nil {
 		return nil, err
 	}
+
+	//modify t_class offset
+	tClass, err := models.TClasses(models.TClassWhere.AppID.EQ(params.AppID), models.TClassWhere.ClassID.EQ(params.ClassId)).One(context.Background(), db)
+	if err != nil {
+		db.Rollback()
+		return nil, types.ErrNftClassesGet
+	}
+	tClass.Status = models.TTXSStatusPending
+	tClass.Offset = tClass.Offset + uint64(params.Amount)
 
 	//transferInfo
 	ttx := models.TTX{
@@ -71,10 +82,30 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) ([]string, error) {
 		OperationType: models.TTXSOperationTypeMintNFT,
 		Status:        models.TTXSStatusUndo,
 	}
-	err = ttx.InsertG(context.Background(), boil.Infer())
+
+	err = ttx.Insert(context.Background(), db, boil.Infer())
 	if err != nil {
-		return nil, err
+		db.Rollback()
+		return nil, types.ErrTxMsgInsert
 	}
+
+	tx, err := models.TTXS(qm.Where("hash=?", txHash)).One(context.Background(), boil.GetContextDB())
+	if err != nil {
+		db.Rollback()
+		return nil, types.ErrTxMsgGet
+	}
+
+	tClass.LockedBy = tx.ID
+	_, err = tClass.Update(context.Background(), db, boil.Infer())
+	if err != nil {
+		db.Rollback()
+		return nil, types.ErrNftClassesSet
+	}
+	err = db.Commit()
+	if err != nil {
+		return nil, types.ErrInternal
+	}
+
 	var hashs []string
 	hashs = append(hashs, txHash)
 	return hashs, nil
@@ -416,6 +447,7 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 }
 
 func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
+	db, err := orm.GetDB().Begin()
 	result := &dto.NftsRes{}
 	result.Offset = params.Offset
 	result.Limit = params.Limit
@@ -460,13 +492,14 @@ func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
 	var modelResults []*models.TNFT
 	total, err := modext.PageQueryByOffset(
 		context.Background(),
-		orm.GetDB(),
+		db,
 		queryMod,
 		&modelResults,
 		int(params.Offset),
 		int(params.Limit),
 	)
 	if err != nil {
+		db.Rollback()
 		// records not exist
 		if strings.Contains(err.Error(), "records not exist") {
 			return result, nil
@@ -489,7 +522,15 @@ func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
 	}
 	q1 = append(q1, models.TClassWhere.ClassID.IN(classIds))
 	var classByIds []*dto.NftClassByIds
-	models.NewQuery(q1...).Bind(context.Background(), orm.GetDB(), &classByIds)
+	err = models.NewQuery(q1...).Bind(context.Background(), db, &classByIds)
+	if err != nil {
+		db.Rollback()
+		return nil, types.ErrInternal
+	}
+	err = db.Commit()
+	if err != nil {
+		return nil, types.ErrInternal
+	}
 
 	result.TotalCount = total
 	var nfts []*dto.Nft
