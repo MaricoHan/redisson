@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/irisnet/core-sdk-go/common/crypto/codec"
+
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
 	"github.com/irisnet/core-sdk-go/common/crypto/hd"
@@ -29,7 +31,7 @@ import (
 const algo = "secp256k1"
 const hdPathPrefix = hd.BIP44Prefix + "0'/0/"
 
-const keyPassword = "12345678"
+const defultKeyPassword = "12345678"
 
 type Account struct {
 }
@@ -66,20 +68,21 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 		if err != nil {
 			return nil, types.ErrAccountCreate
 		}
-		_, prv := res.Generate()
-		privStr, err := res.ExportPrivKey(keyPassword)
-		if err != nil {
-			return nil, types.ErrAccountCreate
-		}
+		_, priv := res.Generate()
 
-		tmpAddress := sdktype.AccAddress(prv.PubKey().Address().Bytes()).String()
+		//privStr, err := res.ExportPrivKey(keyPassword)
+		//if err != nil {
+		//	return nil, types.ErrAccountCreate
+		//}
+
+		tmpAddress := sdktype.AccAddress(priv.PubKey().Address().Bytes()).String()
 
 		tmp := &models.TAccount{
 			AppID:    params.AppID,
 			Address:  tmpAddress,
 			AccIndex: uint64(index),
-			PriKey:   privStr,
-			PubKey:   base64.StdEncoding.EncodeToString(res.ExportPubKey().Bytes()),
+			PriKey:   base64.StdEncoding.EncodeToString(codec.MarshalPrivKey(priv)),
+			PubKey:   base64.StdEncoding.EncodeToString(codec.MarshalPubkey(res.ExportPubKey())),
 		}
 
 		tAccounts = append(tAccounts, tmp)
