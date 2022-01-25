@@ -3,6 +3,9 @@ package service
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
+
 	sdktype "github.com/irisnet/core-sdk-go/types"
 	"github.com/irisnet/irismod-sdk-go/nft"
 	"github.com/volatiletech/null/v8"
@@ -13,8 +16,6 @@ import (
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"
-	"strconv"
-	"strings"
 )
 
 type Nft struct {
@@ -275,14 +276,14 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 	result.Offset = params.Offset
 	result.Limit = params.Limit
 	result.OperationRecords = []*dto.OperationRecord{}
-	//nft, err := models.TNFTS(
-	//	models.TNFTWhere.AppID.EQ(params.AppID),
-	//	models.TNFTWhere.ClassID.EQ(params.ClassID),
-	//	models.TNFTWhere.Index.EQ(params.Index),
-	//	).OneG(context.Background())
-	//if err != nil {
-	//	return nil, types.ErrMysqlConn
-	//}
+	nft, err := models.TNFTS(
+		models.TNFTWhere.AppID.EQ(params.AppID),
+		models.TNFTWhere.ClassID.EQ(params.ClassID),
+		models.TNFTWhere.Index.EQ(params.Index),
+	).OneG(context.Background())
+	if err != nil {
+		return nil, types.ErrMysqlConn
+	}
 
 	queryMod := []qm.QueryMod{
 		qm.From(models.TableNames.TMSGS),
@@ -293,12 +294,12 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 			models.TMSGColumns.Timestamp),
 		models.TMSGWhere.AppID.EQ(params.AppID),
 	}
-	//if params.Txhash != "" {
-	//	queryMod = append(queryMod, models.TMSGWhere.TXHash.EQ(params.Txhash))
-	//}else {
-	//	queryMod = append(queryMod, models.TMSGWhere.TXHash.EQ(nft.TXHash))
-	//}
-	////否则查询该nft的所有hash
+	if params.Txhash != "" {
+		queryMod = append(queryMod, models.TMSGWhere.TXHash.EQ(params.Txhash))
+	} else {
+		queryMod = append(queryMod, models.TMSGWhere.NFTID.EQ(null.StringFrom(nft.NFTID)))
+	} //否则查询该nft的所有hash
+
 	if params.Signer != "" {
 		queryMod = append(queryMod, models.TMSGWhere.Signer.EQ(params.Signer))
 	}
