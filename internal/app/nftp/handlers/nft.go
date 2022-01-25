@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -156,7 +155,6 @@ func (h nft) NftByIndex(ctx context.Context, _ interface{}) (interface{}, error)
 // NftOperationHistoryByIndex return class details
 func (h nft) NftOperationHistoryByIndex(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
-	fmt.Println("3333333333333")
 	params := dto.NftOperationHistoryByIndexP{
 		ClassID: h.ClassId(ctx),
 		Index:   h.Index(ctx),
