@@ -128,20 +128,19 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 	}
 
 	var modelResults []*models.TClass
-	total, err := modext.PageQuery(
+	total, err := modext.PageQueryByOffset(
 		context.Background(),
 		orm.GetDB(),
 		queryMod,
 		&modelResults,
-		params.Offset,
-		params.Limit,
+		int(params.Offset),
+		int(params.Limit),
 	)
 	if err != nil {
 		// records not exist
 		if strings.Contains(err.Error(), "records not exist") {
 			return result, nil
 		}
-
 		return nil, types.ErrMysqlConn
 	}
 

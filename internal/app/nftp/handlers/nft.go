@@ -353,17 +353,24 @@ func (h nft) Owner(ctx context.Context) string {
 }
 func (h nft) Index(ctx context.Context) uint64 {
 	index := ctx.Value("index")
-
+	if index == nil {
+		return 0
+	}
 	return index.(uint64)
 }
 func (h nft) TxHash(ctx context.Context) string {
 	txHash := ctx.Value("tx_hash")
+	if txHash == nil {
+		return ""
+	}
 
 	return txHash.(string)
 }
 func (h nft) Status(ctx context.Context) string {
 	status := ctx.Value("status")
-
+	if status == nil {
+		return ""
+	}
 	return status.(string)
 }
 func (h nft) Indices(ctx context.Context) []uint64 {
