@@ -39,7 +39,6 @@ func NewAccount() *Account {
 }
 
 func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
-
 	// 写入数据库
 	// sdk 创建账户
 	db, err := orm.GetDB().Begin()
@@ -174,7 +173,7 @@ func (svc *Account) AccountsHistory(params dto.AccountsP) (*dto.AccountOperation
 			Limit:      params.Limit,
 			TotalCount: 0,
 		},
-		OperationRecords: nil,
+		OperationRecords: []*dto.AccountOperationRecords{},
 	}
 
 	queryMod := []qm.QueryMod{

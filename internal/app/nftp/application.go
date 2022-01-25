@@ -1,6 +1,7 @@
 package nftp
 
 import (
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/chain"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/config"
@@ -48,7 +49,7 @@ func (s NFTPServer) Initialize() {
 		orm.WriteOption(log.Log),
 	)
 	// 链客户端初始化
-	//chain.NewSdkClient(conf.Chain, orm.GetDB())
+	chain.NewSdkClient(conf.Chain, orm.GetDB())
 }
 
 func (s NFTPServer) Stop() {
