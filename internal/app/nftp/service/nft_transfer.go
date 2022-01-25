@@ -118,7 +118,7 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 	}
 	err = txs.InsertG(context.Background(), boil.Infer())
 	if err != nil {
-		return "", ErrNftTransfer
+		return "", types.ErrNftTransfer
 	}
 
 	res.Status = "pending"

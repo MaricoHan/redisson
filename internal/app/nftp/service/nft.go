@@ -287,7 +287,7 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 		models.TNFTWhere.Index.EQ(params.Index),
 	).OneG(context.Background())
 	if err != nil {
-		return nil, ErrGetNftOperationDetails
+		return nil, types.ErrGetNftOperationDetails
 	}
 
 	queryMod := []qm.QueryMod{
@@ -343,7 +343,7 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 			return result, nil
 		}
 
-		return nil, ErrGetNftOperationDetails
+		return nil, types.ErrGetNftOperationDetails
 	}
 
 	result.TotalCount = total
