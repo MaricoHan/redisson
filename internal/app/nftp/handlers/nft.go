@@ -45,7 +45,8 @@ func (h nft) CreateNft(ctx context.Context, _ interface{}) (interface{}, error) 
 
 // EditNftByIndex Edit an nft and return the edited result
 func (h nft) EditNftByIndex(ctx context.Context, request interface{}) (interface{}, error) {
-	req := request.(vo.EditNftByIndexRequest)
+	req := request.(*vo.EditNftByIndexRequest)
+
 	params := dto.EditNftByIndexP{
 		AppID:   h.AppID(ctx),
 		ClassId: h.ClassId(ctx),
@@ -56,38 +57,29 @@ func (h nft) EditNftByIndex(ctx context.Context, request interface{}) (interface
 		Uri:  req.Uri,
 		Data: req.Data,
 	}
-	//check start
-	//1. judge whether the Caller is the owner
 
-	//2. judge whether the Caller is the APP's address
-
-	//check end
 	return h.svc.EditNftByIndex(params)
 }
 
 // EditNftByBatch Edit multiple nfts and
 // return the deleted results
 func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface{}, error) {
-	req := request.(vo.EditNftByBatchRequest)
-
+	req := request.(*vo.EditNftByBatchRequest)
 	params := dto.EditNftByBatchP{
 		EditNfts: req.EditNftsR,
 		AppID:    h.AppID(ctx),
 		ClassId:  h.ClassId(ctx),
 		Sender:   h.Owner(ctx),
 	}
-	//check start
 
+	//check start
 	//1. count limit :50
 	if len(params.EditNfts) > 50 {
-		return nil, types.ErrNftParams
+		return nil, types.ErrNftTooMany
 	}
 
-	//2. judge whether the Caller is the owner
-
-	//3. judge whether the Caller is the APP's address
-
 	//check end
+
 	return h.svc.EditNftByBatch(params)
 }
 
@@ -99,12 +91,6 @@ func (h nft) DeleteNftByIndex(ctx context.Context, _ interface{}) (interface{}, 
 		Sender:  h.Owner(ctx),
 		Index:   h.Index(ctx),
 	}
-	//check start
-	//1. judge whether the Caller is the owner
-
-	//2. judge whether the Caller is the APP's address
-
-	//check end
 
 	return h.svc.DeleteNftByIndex(params)
 }
@@ -119,13 +105,6 @@ func (h nft) DeleteNftByBatch(ctx context.Context, _ interface{}) (interface{}, 
 		Sender:  h.Owner(ctx),
 		Indices: h.Indices(ctx),
 	}
-
-	//check start
-	//1. judge whether the Caller is the owner
-
-	//2. judge whether the Caller is the APP's address
-
-	//check end
 
 	return h.svc.DeleteNftByBatch(params)
 }
@@ -142,10 +121,6 @@ func (h nft) NftByIndex(ctx context.Context, _ interface{}) (interface{}, error)
 		ClassId: h.ClassId(ctx),
 		Index:   h.Index(ctx),
 	}
-
-	//check start
-	//...
-	//check end
 
 	return h.svc.NftByIndex(params)
 
@@ -243,12 +218,12 @@ func (h nft) Txhash(ctx context.Context) string {
 }
 
 func (h nft) ClassId(ctx context.Context) string {
-	class_id := ctx.Value("class_id")
+	classId := ctx.Value("class_id")
 
-	if class_id == nil {
+	if classId == nil {
 		return ""
 	}
-	return class_id.(string)
+	return classId.(string)
 
 }
 
@@ -262,18 +237,31 @@ func (h nft) Owner(ctx context.Context) string {
 
 }
 func (h nft) Index(ctx context.Context) uint64 {
-	index := ctx.Value("index")
+	rec := ctx.Value("index")
+	if rec == nil {
+		return 0
+	}
+	index, err := strconv.ParseUint(rec.(string), 10, 64)
+	if err != nil {
+		panic(err)
+	}
 
-	return index.(uint64)
+	// return index
+	return index
 }
 func (h nft) Indices(ctx context.Context) []uint64 {
 	rec := ctx.Value("indices")
 
-	//"1,2,3,4,..." to {1,2,3,4,...}
+	// "1,2,3,4,..." to {1,2,3,4,...}
 	var indices []uint64
 	strArr := strings.Split(rec.(string), ",")
-	for i, s := range strArr {
-		indices[i], _ = strconv.ParseUint(s, 10, 64)
+
+	for _, s := range strArr {
+		tmp, err := strconv.ParseUint(s, 10, 64)
+		if err != nil {
+			panic(err)
+		}
+		indices = append(indices, tmp)
 	}
 
 	return indices

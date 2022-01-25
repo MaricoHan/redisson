@@ -232,7 +232,10 @@ func (c Controller) serverOptions(
 				types.ErrNftBatchEdit,
 				types.ErrNftBurn,
 				types.ErrNftBatchBurn,
-				types.ErrTxResult:
+				types.ErrTxResult,
+				types.ErrNftBurnPend,
+				types.ErrNotOwner,
+				types.ErrNoPermission, types.ErrNftMissing:
 				w.WriteHeader(http.StatusBadRequest)
 				errResp.Message = appErr.Error()
 				errResp.Code = appErr.Code()
