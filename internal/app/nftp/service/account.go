@@ -178,7 +178,6 @@ func (svc *Account) AccountsHistory(params dto.AccountsP) (*dto.AccountOperation
 		},
 		OperationRecords: []*dto.AccountOperationRecords{},
 	}
-
 	queryMod := []qm.QueryMod{
 		qm.From(models.TableNames.TMSGS),
 		models.TMSGWhere.AppID.EQ(params.AppID),
@@ -241,7 +240,7 @@ func (svc *Account) AccountsHistory(params dto.AccountsP) (*dto.AccountOperation
 		}
 		accountOperationRecords = append(accountOperationRecords, accountOperationRecord)
 	}
-	result.OperationRecords = accountOperationRecords
 
+	result.OperationRecords = accountOperationRecords
 	return result, nil
 }

@@ -2,6 +2,9 @@ package service
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"strings"
 
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -41,16 +44,14 @@ func (m Base) BuildAndSign(msgs sdktype.Msgs, baseTx sdktype.BaseTx) ([]byte, st
 	if err != nil {
 		return nil, "", err
 	}
-	txHash, err := m.sdkClient.BuildTxHash(msgs, baseTx)
-	if err != nil {
-		return nil, "", err
-	}
-	return sigData, txHash, nil
+
+	hashBz := sha256.Sum256(sigData)
+	hash := strings.ToUpper(hex.EncodeToString(hashBz[:]))
+	return sigData, hash, nil
 }
 
 // TxIntoDataBase operationType : issue_class,mint_nft,edit_nft,edit_nft_batch,burn_nft,burn_nft_batch
 func (m Base) TxIntoDataBase(AppID uint64, txHash string, signedData []byte, operationType string, status string) (uint64, error) {
-
 	// Tx into database
 	ttx := models.TTX{
 		AppID:         AppID,
@@ -60,8 +61,8 @@ func (m Base) TxIntoDataBase(AppID uint64, txHash string, signedData []byte, ope
 		Status:        status,
 	}
 	err := ttx.InsertG(context.Background(), boil.Infer())
-
-	tx, err := models.TTXS(qm.Where("hash=?", txHash)).One(context.Background(), boil.GetContextDB())
-
-	return tx.ID, err
+	if err != nil {
+		return 0, err
+	}
+	return ttx.ID, err
 }

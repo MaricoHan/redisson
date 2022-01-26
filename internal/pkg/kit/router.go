@@ -130,7 +130,6 @@ func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFu
 		if req == nil {
 			return nil, err
 		}
-
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			log.Error("Execute decode request failed", "error", err.Error())
 			return nil, err
@@ -140,7 +139,6 @@ func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFu
 		if err := c.validate.Struct(req); err != nil {
 			return nil, err
 		}
-
 		return req, nil
 	}
 }
@@ -232,7 +230,10 @@ func (c Controller) serverOptions(
 				types.ErrNftBatchEdit,
 				types.ErrNftBurn,
 				types.ErrNftBatchBurn,
-				types.ErrTxResult:
+				types.ErrTxResult,
+				types.ErrNftBurnPend,
+				types.ErrNotOwner,
+				types.ErrNoPermission, types.ErrNftMissing:
 				w.WriteHeader(http.StatusBadRequest)
 				errResp.Message = appErr.Error()
 				errResp.Code = appErr.Code()
