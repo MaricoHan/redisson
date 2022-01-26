@@ -46,7 +46,7 @@ func (h nft) CreateNft(ctx context.Context, _ interface{}) (interface{}, error) 
 
 // EditNftByIndex Edit an nft and return the edited result
 func (h nft) EditNftByIndex(ctx context.Context, request interface{}) (interface{}, error) {
-	req := request.(vo.EditNftByIndexRequest)
+	req := request.(*vo.EditNftByIndexRequest)
 	params := dto.EditNftByIndexP{
 		AppID:   h.AppID(ctx),
 		ClassId: h.ClassId(ctx),

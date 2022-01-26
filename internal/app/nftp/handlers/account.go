@@ -143,13 +143,10 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 	}
 	params.Limit = limit
 
-	if params.Offset == 0 {
-		params.Offset = 1
-	}
-
 	if params.Limit == 0 {
 		params.Limit = 10
 	}
+
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
 		startDateTime, err := time.Parse(timeLayout, startDateR)

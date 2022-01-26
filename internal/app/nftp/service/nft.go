@@ -22,8 +22,8 @@ type Nft struct {
 	base *Base
 }
 
-func NewNft() *Nft {
-	return &Nft{}
+func NewNft(base *Base) *Nft {
+	return &Nft{base: base}
 }
 func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
 
