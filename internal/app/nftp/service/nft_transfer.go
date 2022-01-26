@@ -12,6 +12,7 @@ import (
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
+	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"
 )
 
 type NftTransfer struct {
@@ -51,7 +52,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	if err != nil {
 		return "", types.ErrBuildAndSign
 	}
-
+	modext.Transaction
 	//txs status = undo
 	txs := models.TTX{
 		AppID:         params.AppID,
@@ -62,6 +63,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	}
 	err = txs.InsertG(context.Background(), boil.Infer())
 	if err != nil {
+		db.Rollback()
 		return "", types.ErrNftClassTransfer
 	}
 
@@ -70,6 +72,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	class.LockedBy = txs.ID
 	_, err = class.UpdateG(context.Background(), boil.Infer())
 	if err != nil {
+		db.Rollback()
 		return "", types.ErrNftClassTransfer
 	}
 

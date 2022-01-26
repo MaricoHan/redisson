@@ -34,9 +34,9 @@ func (svc *Tx) TxResultByTxHash(params dto.TxResultByTxHashP) (*dto.TxResultByTx
 	result := &dto.TxResultByTxHashRes{}
 	result.Type = txinfo.OperationType
 
-	if txinfo.Status == "pending" {
+	if txinfo.Status == models.TTXSStatusPending {
 		result.Status = 0
-	} else if txinfo.Status == "success" {
+	} else if txinfo.Status == TTXSStatusSuccess {
 		result.Status = 1
 	} else {
 		result.Status = 2 // tx.Status == "failed"
