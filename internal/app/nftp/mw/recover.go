@@ -29,8 +29,9 @@ func (h panicHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 			bz, _ := json.Marshal(kit.Response{
 				ErrorResp: &kit.ErrorResp{
-					Code:    types.ErrInternal.Code(),
-					Message: types.ErrInternal.Error(),
+					CodeSpace: types.ErrInternal.CodeSpace(),
+					Code:      types.ErrInternal.Code(),
+					Message:   types.ErrInternal.Error(),
 				},
 			})
 			_, _ = w.Write(bz)
