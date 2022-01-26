@@ -23,6 +23,16 @@ func NewNftTransfer(base *Base) *NftTransfer {
 }
 
 func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (string, error) {
+	acc, err := models.TAccounts(
+		models.TAccountWhere.AppID.EQ(params.AppID),
+		models.TAccountWhere.Address.EQ(params.Recipient)).OneG(context.Background())
+	if err != nil {
+		return "", types.ErrParams
+	}
+	if acc == nil {
+		return "", types.ErrParams
+	}
+
 	class, err := models.TClasses(
 		models.TClassWhere.ClassID.EQ(string(params.ClassID)),
 		models.TClassWhere.AppID.EQ(params.AppID),
@@ -82,6 +92,16 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 }
 
 func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (string, error) {
+	acc, err := models.TAccounts(
+		models.TAccountWhere.AppID.EQ(params.AppID),
+		models.TAccountWhere.Address.EQ(params.Recipient)).OneG(context.Background())
+	if err != nil {
+		return "", types.ErrParams
+	}
+	if acc == nil {
+		return "", types.ErrParams
+	}
+
 	//msg
 	res, err := models.TNFTS(models.TNFTWhere.Index.EQ(params.Index),
 		models.TNFTWhere.ClassID.EQ(string(params.ClassID)),
@@ -152,6 +172,16 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 		if recipient.Recipient == "" {
 			return "", types.ErrParams
 		}
+		acc, err := models.TAccounts(
+			models.TAccountWhere.AppID.EQ(params.AppID),
+			models.TAccountWhere.Address.EQ(recipient.Recipient)).OneG(context.Background())
+		if err != nil {
+			return "", types.ErrParams
+		}
+		if acc == nil {
+			return "", types.ErrParams
+		}
+
 		res, err := models.TNFTS(models.TNFTWhere.Index.EQ(recipient.Index),
 			models.TNFTWhere.ClassID.EQ(string(params.ClassID)),
 			models.TNFTWhere.AppID.EQ(params.AppID),
