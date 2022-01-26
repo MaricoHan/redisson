@@ -271,7 +271,7 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, request interface{}
 	params.Txhash = h.Txhash(ctx)
 	params.Operation = h.Operation(ctx)
 	if params.Operation != "" {
-		if params.Operation != "mint" || params.Operation != "edit" || params.Operation != "transfer" || params.Operation != "burn" {
+		if !strings.Contains("mint/edit/transfer/burn", params.Operation) {
 			return nil, types.ErrParams
 		}
 	}
