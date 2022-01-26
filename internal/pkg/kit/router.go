@@ -243,7 +243,6 @@ func (c Controller) serverOptions(
 				types.ErrBuildAndSign,
 				types.ErrNftTransfer,
 				types.ErrNftBatchTransfer,
-				types.ErrGetTx,
 				types.ErrNftBurnPend,
 				types.ErrNftStatus,
 				types.ErrNftClassesSet,
@@ -257,7 +256,7 @@ func (c Controller) serverOptions(
 				errResp.Message = appErr.Error()
 				errResp.Code = appErr.Code()
 
-			case types.ErrNftMissing:
+			case types.ErrGetTx, types.ErrNftMissing:
 				w.WriteHeader(http.StatusNotFound)
 				errResp.CodeSpace = appErr.CodeSpace()
 				errResp.Message = appErr.Error()
