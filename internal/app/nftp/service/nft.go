@@ -29,12 +29,20 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
 
 	// get NFT by app_id,class_id and index
 	tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(params.Index)).One(context.Background(), boil.GetContextDB())
-
 	if err != nil {
 		return "", types.ErrInternal
 	}
-	if tNft == nil || tNft.Status == "burned" {
+	if tNft == nil || tNft.Status == models.TNFTSStatusBurned {
 		return "", types.ErrNftMissing
+	}
+
+	// judge whether the Caller is the owner
+	if params.Sender != tNft.Owner {
+		return "", types.ErrNotOwner
+	}
+	// judge whether the Caller is one of the APP's address
+	if tNft.AppID != params.AppID {
+		return "", types.ErrNoPermission
 	}
 
 	// create rawMsg
@@ -55,13 +63,13 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
 	}
 
 	// Tx into database
-	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, "edit_nft", "undo")
+	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, models.TTXSOperationTypeEditNFT, models.TTXSStatusUndo)
 	if err != nil {
 		return "", err
 	}
 
 	// lock the NFT
-	tNft.Status = "pendding"
+	tNft.Status = models.TNFTSStatusPending
 	tNft.LockedBy = null.Uint64From(txId)
 	_, err = tNft.UpdateG(context.Background(), boil.Infer())
 	if err != nil {
@@ -74,12 +82,6 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
 
 func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 
-	// get database object
-	db, err := orm.GetDB().Begin()
-	if err != nil {
-		return "", types.ErrMysqlConn
-	}
-
 	// create rawMsgs
 	var msgEditNFTs sdktype.Msgs
 	for _, EditNft := range params.EditNfts { // create every rawMsg
@@ -89,6 +91,18 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 		if err != nil {
 			return "", err
 		}
+		if tNft == nil || tNft.Status == models.TNFTSStatusBurned {
+			return "", types.ErrNftMissing
+		}
+		// judge whether the Caller is the owner
+		if params.Sender != tNft.Owner {
+			return "", types.ErrNotOwner
+		}
+		// judge whether the Caller is one of the APP's address
+		if tNft.AppID != params.AppID {
+			return "", types.ErrNoPermission
+		}
+
 		msgEditNFT := nft.MsgEditNFT{
 			Id:      strconv.FormatInt(int64(tNft.ID), 10),
 			DenomId: tNft.ClassID,
@@ -108,23 +122,29 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 	}
 
 	// Tx into database
-	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, "edit_nft_batch", "undo")
+	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, models.TTXSOperationTypeEditNFTBatch, models.TTXSStatusUndo)
 	if err != nil {
 		return "", err
+	}
+
+	// get database object
+	db, err := orm.GetDB().Begin()
+	if err != nil {
+		return "", types.ErrMysqlConn
 	}
 
 	// lock the NFTs
 	for _, EditNft := range params.EditNfts { // create every rawMsg
 		tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(EditNft.Index)).One(context.Background(), boil.GetContextDB())
-		tNft.Status = "pendding"
+		tNft.Status = models.TNFTSStatusPending
 		tNft.LockedBy = null.Uint64From(txId)
 		// update
 		_, err = tNft.Update(context.Background(), db, boil.Infer())
 		if err != nil {
+			db.Rollback()
 			return "", err
 		}
 	}
-
 	// commit
 	err = db.Commit()
 	if err != nil {
@@ -143,13 +163,21 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if tNft == nil || tNft.Status == "burned" {
+	if tNft == nil || tNft.Status == models.TNFTSStatusBurned {
 		return "", types.ErrNftMissing
 	}
-	if tNft.Status == "pendding" {
+	if tNft.Status == models.TNFTSStatusPending {
 		return "", types.ErrNftBurnPend
 	}
 
+	// judge whether the Caller is the owner
+	if params.Sender != tNft.Owner {
+		return "", types.ErrNotOwner
+	}
+	// judge whether the Caller is one of the APP's address
+	if tNft.AppID != params.AppID {
+		return "", types.ErrNoPermission
+	}
 	// create rawMsg
 	msgBurnNFT := nft.MsgBurnNFT{
 		Id:      tNft.NFTID,
@@ -165,13 +193,13 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (string, error) {
 	}
 
 	// Tx into database
-	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, "burn_nft", "undo")
+	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, models.TTXSOperationTypeBurnNFT, models.TTXSStatusUndo)
 	if err != nil {
 		return "", err
 	}
 
 	// lock the NFT
-	tNft.Status = "pendding"
+	tNft.Status = models.TNFTSStatusPending
 	tNft.LockedBy = null.Uint64From(txId)
 	_, err = tNft.UpdateG(context.Background(), boil.Infer())
 	if err != nil {
@@ -182,11 +210,6 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (string, error) {
 	return txHash, nil
 }
 func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
-	// get database object
-	db, err := orm.GetDB().Begin()
-	if err != nil {
-		return "", types.ErrMysqlConn
-	}
 	// create rawMsgs
 	var msgBurnNFTs sdktype.Msgs
 	for _, index := range params.Indices { // create every rawMsg
@@ -195,11 +218,20 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		if tNft == nil || tNft.Status == "burned" {
+		if tNft == nil || tNft.Status == models.TNFTSStatusBurned {
 			return "", types.ErrNftMissing
 		}
-		if tNft.Status == "pendding" {
+		if tNft.Status == models.TNFTSStatusPending {
 			return "", types.ErrNftBurnPend
+		}
+
+		// judge whether the Caller is the owner
+		if params.Sender != tNft.Owner {
+			return "", types.ErrNotOwner
+		}
+		// judge whether the Caller is one of the APP's address
+		if tNft.AppID != params.AppID {
+			return "", types.ErrNoPermission
 		}
 
 		// create rawMsg
@@ -216,18 +248,25 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 	signedData, txHash, err := svc.base.BuildAndSign(msgBurnNFTs, baseTx)
 
 	// Tx into database
-	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, "burn_nft_batch", "undo")
+	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, models.TTXSOperationTypeBurnNFTBatch, models.TTXSStatusUndo)
 	if err != nil {
 		return "", err
+	}
+
+	// get database object
+	db, err := orm.GetDB().Begin()
+	if err != nil {
+		return "", types.ErrMysqlConn
 	}
 
 	// lock the NFT
 	for _, index := range params.Indices { // create every rawMsg
 		tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(index)).One(context.Background(), boil.GetContextDB())
-		tNft.Status = "pendding"
+		tNft.Status = models.TNFTSStatusPending
 		tNft.LockedBy = null.Uint64From(txId)
 		_, err = tNft.Update(context.Background(), db, boil.Infer())
 		if err != nil {
+			db.Rollback()
 			return "", err
 		}
 	}
@@ -265,7 +304,7 @@ func (svc *Nft) NftByIndex(params dto.NftByIndexP) (*dto.NftByIndexP, error) {
 		Owner:       tNft.Owner,
 		Status:      tNft.Status,
 		TxHash:      tNft.TXHash,
-		TimeStamp:   tNft.Timestamp.Time.String(),
+		Timestamp:   tNft.Timestamp.Time.String(),
 	}
 
 	return result, nil
