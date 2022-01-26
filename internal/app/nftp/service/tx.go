@@ -36,7 +36,6 @@ func (svc *Tx) TxResultByTxHash(params dto.TxResultByTxHashP) (*dto.TxResultByTx
 	} else {
 		result.Status = 2 // tx.Status == "failed"
 	}
-
 	result.Message = txinfo.ErrMSG.String
 
 	return result, nil

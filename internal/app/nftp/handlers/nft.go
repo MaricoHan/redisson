@@ -234,6 +234,9 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, request interface{}
 	if params.Limit == 0 {
 		params.Limit = 10
 	}
+	if params.Limit >= 50 {
+		return nil, types.ErrParams
+	}
 
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {

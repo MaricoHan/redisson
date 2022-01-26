@@ -37,22 +37,22 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 		return "", types.ErrBuildAndSign
 	}
 
-	err = modext.Transaction(func(exec boil.ContextExecutor) error {
-		//txs status = undo
-		txId, err := svc.base.TxIntoDataBase(params.AppID,
-			hash,
-			data,
-			models.TTXSOperationTypeTransferClass,
-			models.TTXSStatusUndo)
-		if err != nil {
-			return err
-		}
+	//txs status = undo
+	txId, err := svc.base.TxIntoDataBase(params.AppID,
+		hash,
+		data,
+		models.TTXSOperationTypeTransferClass,
+		models.TTXSStatusUndo)
+	if err != nil {
+		return "", err
+	}
 
+	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		//class status && class.lockby == txid
 		class, err := models.TClasses(
 			models.TClassWhere.ClassID.EQ(string(params.ClassID)),
 			models.TClassWhere.AppID.EQ(params.AppID),
-			models.TClassWhere.Owner.EQ(params.Owner)).OneG(context.Background())
+			models.TClassWhere.Owner.EQ(params.Owner)).One(context.Background(), exec)
 		if err != nil {
 			return types.ErrNftClassTransfer
 		}
@@ -61,13 +61,14 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 		class.Status = models.TClassesStatusPending
 		class.LockedBy = null.Uint64From(txId)
 
-		ok, err := class.UpdateG(context.Background(), boil.Infer())
-		if ok != 1 {
-			return types.ErrNftClassTransfer
-		}
+		ok, err := class.Update(context.Background(), exec, boil.Infer())
 		if err != nil {
 			return types.ErrNftClassTransfer
 		}
+		if ok != 1 {
+			return types.ErrNftClassTransfer
+		}
+
 		return nil
 	})
 	if err != nil {
@@ -102,24 +103,24 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 		return "", types.ErrBuildAndSign
 	}
 
-	err = modext.Transaction(func(exec boil.ContextExecutor) error {
-		//写入txs status = undo
-		txId, err := svc.base.TxIntoDataBase(params.AppID,
-			hash,
-			data,
-			models.TTXSOperationTypeTransferNFT,
-			models.TTXSStatusUndo)
-		if err != nil {
-			return err
-		}
+	//写入txs status = undo
+	txId, err := svc.base.TxIntoDataBase(params.AppID,
+		hash,
+		data,
+		models.TTXSOperationTypeTransferNFT,
+		models.TTXSStatusUndo)
+	if err != nil {
+		return "", err
+	}
 
+	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		res.Status = models.TNFTSStatusPending
 		res.LockedBy = null.Uint64From(txId)
-		ok, err := res.UpdateG(context.Background(), boil.Infer())
-		if ok != 1 {
+		ok, err := res.Update(context.Background(), exec, boil.Infer())
+		if err != nil {
 			return types.ErrNftTransfer
 		}
-		if err != nil {
+		if ok != 1 {
 			return types.ErrNftTransfer
 		}
 		return nil
@@ -170,17 +171,17 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 		return "", types.ErrBuildAndSign
 	}
 
-	err = modext.Transaction(func(exec boil.ContextExecutor) error {
-		//写入txs status = undo
-		txId, err := svc.base.TxIntoDataBase(params.AppID,
-			hash,
-			data,
-			models.TTXSOperationTypeTransferNFTBatch,
-			models.TTXSStatusUndo)
-		if err != nil {
-			return err
-		}
+	//写入txs status = undo
+	txId, err := svc.base.TxIntoDataBase(params.AppID,
+		hash,
+		data,
+		models.TTXSOperationTypeTransferNFTBatch,
+		models.TTXSStatusUndo)
+	if err != nil {
+		return "", err
+	}
 
+	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		for _, modelResultR := range params.Recipients {
 			recipient := &dto.Recipient{
 				Index:     modelResultR.Index,
@@ -196,19 +197,19 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 				models.TNFTWhere.ClassID.EQ(string(params.ClassID)),
 				models.TNFTWhere.AppID.EQ(params.AppID),
 				models.TNFTWhere.Owner.EQ(params.Owner),
-			).OneG(context.Background())
+			).One(context.Background(), exec)
 			if err != nil {
 				return types.ErrNftBatchTransfer
 			}
 
 			res.Status = models.TNFTSStatusPending
 			res.LockedBy = null.Uint64From(txId)
-			ok, err := res.UpdateG(context.Background(), boil.Infer())
-			if ok != 1 {
-				return types.ErrNftClassesSet
-			}
+			ok, err := res.Update(context.Background(), exec, boil.Infer())
 			if err != nil {
 				return types.ErrNftBatchTransfer
+			}
+			if ok != 1 {
+				return types.ErrNftClassesSet
 			}
 		}
 		return nil
