@@ -380,12 +380,22 @@ func (svc *Nft) NftByIndex(params dto.NftByIndexP) (*dto.NftByIndexP, error) {
 		return nil, types.ErrInternal
 	}
 
+	// nft does not exist
+	if tNft == nil {
+		return nil, types.ErrNftMissing
+	}
+
 	// get class by class_id
 	class, err := models.TClasses(models.TClassWhere.ClassID.EQ(params.ClassId)).One(context.Background(), boil.GetContextDB())
 	// internal error：500
-	if errors.Cause(err) != sql.ErrNoRows {
+	if err != nil && errors.Cause(err) != sql.ErrNoRows {
 		return nil, types.ErrInternal
 	}
+	if class == nil {
+		return nil, types.ErrNftClassStatus
+	}
+
+	fmt.Println("1242134")
 
 	result := &dto.NftByIndexP{
 		Id:          tNft.NFTID,
