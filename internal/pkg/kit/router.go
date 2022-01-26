@@ -130,7 +130,6 @@ func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFu
 		if req == nil {
 			return nil, err
 		}
-
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			log.Error("Execute decode request failed", "error", err.Error())
 			return nil, err
@@ -138,9 +137,8 @@ func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFu
 
 		//validate request
 		if err := c.validate.Struct(req); err != nil {
-			return nil, err
+			return nil, types.UpdateDescription(types.RootCodeSpace, "3", err.Error())
 		}
-
 		return req, nil
 	}
 }
@@ -196,15 +194,29 @@ func (c Controller) serverOptions(
 
 	//format error
 	errorEncoderOption := func(ctx context.Context, err error, w http.ResponseWriter) {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		var response Response
 		appErr, ok := err.(types.IError)
 		if !ok {
 			w.WriteHeader(http.StatusInternalServerError)
+			response = Response{
+				ErrorResp: &ErrorResp{
+					Code:    types.ErrInternal.Code(),
+					Message: types.ErrInternal.Error(),
+				},
+			}
 		} else {
+			errResp := &ErrorResp{}
 			switch appErr {
 			case types.ErrInternal, types.ErrMysqlConn, types.ErrChainConn, types.ErrRedisConn:
 				w.WriteHeader(http.StatusInternalServerError)
+				errResp.Message = types.ErrInternal.Error()
+				errResp.Code = types.ErrInternal.Code()
+
 			case types.ErrAuthenticate:
 				w.WriteHeader(http.StatusForbidden)
+				errResp.Message = appErr.Error()
+				errResp.Code = appErr.Code()
 			case types.ErrParams, types.ErrAccountCreate,
 				types.ErrGetAccountDetails,
 				types.ErrNftClassCreate,
@@ -218,17 +230,33 @@ func (c Controller) serverOptions(
 				types.ErrNftBatchEdit,
 				types.ErrNftBurn,
 				types.ErrNftBatchBurn,
-				types.ErrTxResult:
+				types.ErrTxResult,
+				types.ErrNotOwner,
+				types.ErrNoPermission,
+				types.ErrGetNftOperationDetails,
+				types.ErrNftClassTransfer,
+				types.ErrBuildAndSign,
+				types.ErrNftTransfer,
+				types.ErrNftBatchTransfer,
+				types.ErrGetTx,
+				types.ErrNftBurnPend,
+				types.ErrNftStatus,
+				types.ErrNftClassesSet,
+				types.ErrTxMsgGet,
+				types.ErrTxMsgInsert:
 				w.WriteHeader(http.StatusBadRequest)
+				errResp.Message = appErr.Error()
+				errResp.Code = appErr.Code()
+
+			case types.ErrNftMissing:
+				w.WriteHeader(http.StatusNotFound)
+				errResp.Message = appErr.Error()
+				errResp.Code = appErr.Code()
 			}
+
+			response = Response{ErrorResp: errResp}
 		}
 
-		response := Response{
-			ErrorResp: &ErrorResp{
-				Code:    appErr.Code(),
-				Message: appErr.Error(),
-			},
-		}
 		bz, _ := json.Marshal(response)
 		_, _ = w.Write(bz)
 	}
