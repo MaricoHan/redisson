@@ -218,9 +218,6 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, request interface{}
 		Index:   h.Index(ctx),
 		AppID:   h.AppID(ctx),
 	}
-	params.Signer = h.Signer(ctx)
-	params.Operation = h.Operation(ctx)
-	params.Txhash = h.Txhash(ctx)
 
 	offset, err := h.Offset(ctx)
 	if err != nil {
@@ -234,13 +231,10 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, request interface{}
 	}
 	params.Limit = limit
 
-	if params.Offset == 0 {
-		params.Offset = 1
-	}
-
 	if params.Limit == 0 {
 		params.Limit = 10
 	}
+
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
 		startDateTime, err := time.Parse(timeLayout, startDateR)
@@ -273,6 +267,14 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, request interface{}
 		return nil, types.ErrParams
 	}
 
+	params.Signer = h.Signer(ctx)
+	params.Txhash = h.Txhash(ctx)
+	params.Operation = h.Operation(ctx)
+	if params.Operation != "" {
+		if params.Operation != "mint" || params.Operation != "edit" || params.Operation != "transfer" || params.Operation != "burn" {
+			return nil, types.ErrParams
+		}
+	}
 	// 校验参数 end
 	return h.svc.NftOperationHistoryByIndex(params)
 }

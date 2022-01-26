@@ -9,6 +9,7 @@ import (
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 )
 
 type INftTransfer interface {
@@ -34,6 +35,9 @@ func newNftTransfer(svc *service.NftTransfer) *nftTransfer {
 func (h nftTransfer) TransferNftClassByID(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
 	req := request.(*vo.TransferNftClassByIDRequest)
+	if req.Recipient == "" {
+		return nil, types.ErrParams
+	}
 	params := dto.TransferNftClassByIDP{
 		ClassID:   h.ClassID(ctx),
 		Owner:     h.Owner(ctx),
@@ -48,7 +52,9 @@ func (h nftTransfer) TransferNftClassByID(ctx context.Context, request interface
 func (h nftTransfer) TransferNftByIndex(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
 	req := request.(*vo.TransferNftByIndexRequest)
-
+	if req.Recipient == "" {
+		return nil, types.ErrParams
+	}
 	params := dto.TransferNftByIndexP{
 		ClassID:   h.ClassID(ctx),
 		Owner:     h.Owner(ctx),
@@ -64,6 +70,9 @@ func (h nftTransfer) TransferNftByIndex(ctx context.Context, request interface{}
 func (h nftTransfer) TransferNftByBatch(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
 	req := request.(*vo.TransferNftByBatchRequest)
+	if req.Recipients == nil {
+		return nil, types.ErrParams
+	}
 	params := dto.TransferNftByBatchP{
 		ClassID:    h.ClassID(ctx),
 		Owner:      h.Owner(ctx),
