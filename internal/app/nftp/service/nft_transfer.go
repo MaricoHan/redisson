@@ -55,6 +55,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	//sign
 	baseTx := svc.base.CreateBaseTx(params.Owner, "")
 	data, hash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
+
 	if err != nil {
 		return "", types.ErrBuildAndSign
 	}

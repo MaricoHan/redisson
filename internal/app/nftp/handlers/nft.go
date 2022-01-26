@@ -158,13 +158,18 @@ func (h nft) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 		return nil, types.ErrParams
 	}
 	params.Limit = limit
-	if params.Offset == 0 {
-		params.Offset = 1
-	}
 
 	if params.Limit == 0 {
 		params.Limit = 10
 	}
+	if params.Limit >= 50 {
+		return nil, types.ErrParams
+	}
+
+	if params.Offset == 0 {
+		params.Offset = 1
+	}
+
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
 		startDateTime, err := time.Parse(timeLayout, startDateR)
