@@ -2,7 +2,6 @@ package controller
 
 import (
 	"context"
-
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/chain"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"

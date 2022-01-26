@@ -121,6 +121,7 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
 
 	// get NFT by app_id,class_id and index
 	tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(params.Index)).One(context.Background(), boil.GetContextDB())
+
 	if err != nil {
 		return "", types.ErrInternal
 	}
@@ -146,7 +147,7 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
 	}
 
 	// Tx into database
-	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, "edit_nft", models.TTXSStatusUndo)
+	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, "edit_nft", "undo")
 	if err != nil {
 		return "", err
 	}
@@ -201,7 +202,7 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 	}
 
 	// Tx into database
-	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, "edit_nft_batch", models.TTXSStatusUndo)
+	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, "edit_nft_batch", "undo")
 	if err != nil {
 		return "", err
 	}
@@ -257,7 +258,7 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (string, error) {
 	}
 
 	// Tx into database
-	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, "burn_nft", models.TTXSStatusUndo)
+	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, "burn_nft", "undo")
 	if err != nil {
 		return "", err
 	}
@@ -310,7 +311,7 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 	signedData, txHash, err := svc.base.BuildAndSign(msgBurnNFTs, baseTx)
 
 	// Tx into database
-	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, "burn_nft_batch", models.TTXSStatusUndo)
+	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, "burn_nft_batch", "undo")
 	if err != nil {
 		return "", err
 	}
