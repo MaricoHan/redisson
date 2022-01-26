@@ -201,8 +201,9 @@ func (c Controller) serverOptions(
 			w.WriteHeader(http.StatusInternalServerError)
 			response = Response{
 				ErrorResp: &ErrorResp{
-					Code:    types.ErrInternal.Code(),
-					Message: types.ErrInternal.Error(),
+					CodeSpace: types.ErrInternal.CodeSpace(),
+					Code:      types.ErrInternal.Code(),
+					Message:   types.ErrInternal.Error(),
 				},
 			}
 		} else {
@@ -210,11 +211,13 @@ func (c Controller) serverOptions(
 			switch appErr {
 			case types.ErrInternal, types.ErrMysqlConn, types.ErrChainConn, types.ErrRedisConn:
 				w.WriteHeader(http.StatusInternalServerError)
+				errResp.CodeSpace = types.ErrInternal.CodeSpace()
 				errResp.Message = types.ErrInternal.Error()
 				errResp.Code = types.ErrInternal.Code()
 
 			case types.ErrAuthenticate:
 				w.WriteHeader(http.StatusForbidden)
+				errResp.CodeSpace = appErr.CodeSpace()
 				errResp.Message = appErr.Error()
 				errResp.Code = appErr.Code()
 			case types.ErrParams, types.ErrAccountCreate,
@@ -246,11 +249,13 @@ func (c Controller) serverOptions(
 				types.ErrTxMsgInsert,
 				types.ErrIndicesFormat:
 				w.WriteHeader(http.StatusBadRequest)
+				errResp.CodeSpace = appErr.CodeSpace()
 				errResp.Message = appErr.Error()
 				errResp.Code = appErr.Code()
 
 			case types.ErrNftMissing:
 				w.WriteHeader(http.StatusNotFound)
+				errResp.CodeSpace = appErr.CodeSpace()
 				errResp.Message = appErr.Error()
 				errResp.Code = appErr.Code()
 			}
