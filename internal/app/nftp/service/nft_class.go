@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -41,12 +42,11 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 	//new classId
 	var data []byte = []byte(params.Owner)
 	data = append(data, []byte(params.Name)...)
-	data = append(data, []byte(string(time.Now().Unix()))...)
+	data = append(data, []byte(strconv.FormatInt(time.Now().Unix(),10))...)
 	classId := nftp + strings.ToLower(hex.EncodeToString(tmhash.Sum(data)))
 	//txMsg, Platform side created
 	baseTx := svc.base.CreateBaseTx(pAddress, defultKeyPassword)
 	createDenomMsg := nft.MsgIssueDenom{
-		//nftClassID := nftp + sha256(createrAddress + className + time.now().unix())
 		Id:               classId,
 		Name:             params.Name,
 		Sender:           pAddress,
@@ -104,7 +104,7 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 		}
 		if params.Name != "" {
 			//Fuzzy query support
-			queryMod = append(queryMod, qm.Where("name_contains=?", params.Name))
+			queryMod = append(queryMod, qm.Where("name like ? ", "%"+params.Name+"%"))
 		}
 		if params.Owner != "" {
 			queryMod = append(queryMod, models.TClassWhere.Owner.EQ(params.Owner))
