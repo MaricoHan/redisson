@@ -96,3 +96,12 @@ func Register(codeSpace string, code string, description string) *AppError {
 
 	return err
 }
+
+func UpdateDescription(codeSpace string, code string, description string) *AppError {
+	e := getUsedErrorCodes(codeSpace, code)
+	if e == nil {
+		panic(fmt.Sprintf("error with code %d No registered: %q", code, e.desc))
+	}
+	e.desc = description
+	return e
+}

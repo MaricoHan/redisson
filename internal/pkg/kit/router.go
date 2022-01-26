@@ -137,7 +137,7 @@ func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFu
 
 		//validate request
 		if err := c.validate.Struct(req); err != nil {
-			return nil, err
+			return nil, types.UpdateDescription(types.RootCodeSpace, "3", err.Error())
 		}
 		return req, nil
 	}
