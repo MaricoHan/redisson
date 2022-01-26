@@ -5,10 +5,11 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
-	"github.com/friendsofgo/errors"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/friendsofgo/errors"
 
 	sdktype "github.com/irisnet/core-sdk-go/types"
 	"github.com/irisnet/irismod-sdk-go/nft"

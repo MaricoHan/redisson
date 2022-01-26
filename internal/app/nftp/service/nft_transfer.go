@@ -23,6 +23,28 @@ func NewNftTransfer(base *Base) *NftTransfer {
 }
 
 func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (string, error) {
+	acc, err := models.TAccounts(
+		models.TAccountWhere.AppID.EQ(params.AppID),
+		models.TAccountWhere.Address.EQ(params.Recipient)).OneG(context.Background())
+	if err != nil {
+		return "", types.ErrParams
+	}
+	if acc == nil {
+		return "", types.ErrParams
+	}
+
+	class, err := models.TClasses(
+		models.TClassWhere.ClassID.EQ(string(params.ClassID)),
+		models.TClassWhere.AppID.EQ(params.AppID),
+		models.TClassWhere.Owner.EQ(params.Owner)).OneG(context.Background())
+	if err != nil {
+		return "", types.ErrNftClassTransfer
+	}
+
+	if class.Status != models.TClassesStatusActive {
+		return "", types.ErrNftClassStatus
+	}
+
 	//msg
 	msgs := nft.MsgTransferDenom{
 		Id:        string(params.ClassID),
@@ -33,6 +55,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	//sign
 	baseTx := svc.base.CreateBaseTx(params.Owner, "")
 	data, hash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
+
 	if err != nil {
 		return "", types.ErrBuildAndSign
 	}
@@ -48,15 +71,6 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	}
 
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
-		//class status && class.lockby == txid
-		class, err := models.TClasses(
-			models.TClassWhere.ClassID.EQ(string(params.ClassID)),
-			models.TClassWhere.AppID.EQ(params.AppID),
-			models.TClassWhere.Owner.EQ(params.Owner)).One(context.Background(), exec)
-		if err != nil {
-			return types.ErrNftClassTransfer
-		}
-
 		//class status = pending && lockby = txs.id
 		class.Status = models.TClassesStatusPending
 		class.LockedBy = null.Uint64From(txId)
@@ -79,6 +93,16 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 }
 
 func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (string, error) {
+	acc, err := models.TAccounts(
+		models.TAccountWhere.AppID.EQ(params.AppID),
+		models.TAccountWhere.Address.EQ(params.Recipient)).OneG(context.Background())
+	if err != nil {
+		return "", types.ErrParams
+	}
+	if acc == nil {
+		return "", types.ErrParams
+	}
+
 	//msg
 	res, err := models.TNFTS(models.TNFTWhere.Index.EQ(params.Index),
 		models.TNFTWhere.ClassID.EQ(string(params.ClassID)),
@@ -87,6 +111,10 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 	).OneG(context.Background())
 	if err != nil {
 		return "", types.ErrNftTransfer
+	}
+
+	if res.Status != models.TNFTSStatusActive {
+		return "", types.ErrNftStatus
 	}
 
 	msgs := nft.MsgTransferNFT{
@@ -145,6 +173,16 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 		if recipient.Recipient == "" {
 			return "", types.ErrParams
 		}
+		acc, err := models.TAccounts(
+			models.TAccountWhere.AppID.EQ(params.AppID),
+			models.TAccountWhere.Address.EQ(recipient.Recipient)).OneG(context.Background())
+		if err != nil {
+			return "", types.ErrParams
+		}
+		if acc == nil {
+			return "", types.ErrParams
+		}
+
 		res, err := models.TNFTS(models.TNFTWhere.Index.EQ(recipient.Index),
 			models.TNFTWhere.ClassID.EQ(string(params.ClassID)),
 			models.TNFTWhere.AppID.EQ(params.AppID),
@@ -152,6 +190,10 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 		).OneG(context.Background())
 		if err != nil {
 			return "", types.ErrNftBatchTransfer
+		}
+
+		if res.Status != models.TNFTSStatusActive {
+			return "", types.ErrNftStatus
 		}
 
 		//msg
@@ -200,6 +242,10 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			).One(context.Background(), exec)
 			if err != nil {
 				return types.ErrNftBatchTransfer
+			}
+
+			if res.Status != models.TNFTSStatusActive {
+				return types.ErrNftStatus
 			}
 
 			res.Status = models.TNFTSStatusPending
