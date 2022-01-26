@@ -35,7 +35,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	if err != nil {
 		return "", types.ErrBuildAndSign
 	}
-	//types.ErrBuildAndSign
+
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		//txs status = undo
 		txId, err := svc.base.TxIntoDataBase(params.AppID,
@@ -61,13 +61,12 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 		class.LockedBy = null.Uint64From(txId)
 
 		ok, err := class.UpdateG(context.Background(), boil.Infer())
-		if err != nil {
-			return types.ErrNftClassTransfer
-		}
 		if ok != 1 {
 			return types.ErrNftClassTransfer
 		}
-
+		if err != nil {
+			return types.ErrNftClassTransfer
+		}
 		return nil
 	})
 	if err != nil {
