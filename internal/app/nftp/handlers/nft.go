@@ -39,8 +39,27 @@ func newNft(svc *service.Nft) *nft {
 
 // CreateNft Create one or more nft class
 // return creation result
-func (h nft) CreateNft(ctx context.Context, _ interface{}) (interface{}, error) {
-	panic("not yet implemented")
+func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, error) {
+	// 校验参数 start
+	req := request.(*vo.CreateNftsRequest)
+	params := dto.CreateNftsRequest{
+		AppID:     h.AppID(ctx),
+		ClassId:   h.ClassId(ctx),
+		Name:      req.Name,
+		Uri:       req.Uri,
+		UriHash:   req.UriHash,
+		Data:      req.Data,
+		Amount:    req.Amount,
+		Recipient: req.Recipient,
+	}
+	if params.Amount == 0 {
+		params.Amount = 1
+	}
+	if params.Amount > 100 {
+		return nil, types.ErrParams
+	}
+
+	return h.svc.CreateNfts(params)
 }
 
 // EditNftByIndex Edit an nft and return the edited result
@@ -115,7 +134,68 @@ func (h nft) DeleteNftByBatch(ctx context.Context, _ interface{}) (interface{}, 
 
 // Nfts return class list
 func (h nft) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
-	panic("not yet implemented")
+	// 校验参数 start
+	params := dto.NftsP{
+		AppID:   h.AppID(ctx),
+		Id:      h.Id(ctx),
+		ClassId: h.ClassId(ctx),
+		Owner:   h.Owner(ctx),
+		TxHash:  h.TxHash(ctx),
+		Status:  h.Status(ctx),
+	}
+	offset, err := h.Offset(ctx)
+	if err != nil {
+		return nil, types.ErrParams
+	}
+	params.Offset = offset
+
+	limit, err := h.Limit(ctx)
+	if err != nil {
+		return nil, types.ErrParams
+	}
+	params.Limit = limit
+	if params.Offset == 0 {
+		params.Offset = 1
+	}
+
+	if params.Limit == 0 {
+		params.Limit = 10
+	}
+	startDateR := h.StartDate(ctx)
+	if startDateR != "" {
+		startDateTime, err := time.Parse(timeLayout, startDateR)
+		if err != nil {
+			return nil, types.ErrParams
+		}
+		params.StartDate = &startDateTime
+	}
+
+	endDateR := h.EndDate(ctx)
+	if endDateR != "" {
+		endDateTime, err := time.Parse(timeLayout, endDateR)
+		if err != nil {
+			return nil, types.ErrParams
+		}
+		params.EndDate = &endDateTime
+	}
+
+	if params.EndDate != nil && params.StartDate != nil {
+		if !params.EndDate.After(*params.StartDate) {
+			return nil, types.ErrParams
+		}
+	}
+	switch h.SortBy(ctx) {
+	case "DATE_ASC":
+		params.SortBy = "DATE_ASC"
+	case "DATE_DESC":
+		params.SortBy = "DATE_DESC"
+	default:
+		return nil, types.ErrParams
+	}
+
+	// 校验参数 end
+	// 业务数据入库的地方
+	return h.svc.Nfts(params)
 }
 
 // NftByIndex return class details
@@ -221,6 +301,16 @@ func (h nft) Txhash(ctx context.Context) string {
 	return txhash.(string)
 }
 
+func (h nft) Id(ctx context.Context) string {
+	id := ctx.Value("id")
+
+	if id == nil {
+		return ""
+	}
+	return id.(string)
+
+}
+
 func (h nft) ClassId(ctx context.Context) string {
 	classId := ctx.Value("class_id")
 
@@ -252,6 +342,21 @@ func (h nft) Index(ctx context.Context) uint64 {
 
 	// return index
 	return index
+}
+func (h nft) TxHash(ctx context.Context) string {
+	txHash := ctx.Value("tx_hash")
+	if txHash == nil {
+		return ""
+	}
+
+	return txHash.(string)
+}
+func (h nft) Status(ctx context.Context) string {
+	status := ctx.Value("status")
+	if status == nil {
+		return ""
+	}
+	return status.(string)
 }
 func (h nft) Indices(ctx context.Context) []uint64 {
 	rec := ctx.Value("indices")
