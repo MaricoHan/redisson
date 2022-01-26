@@ -57,6 +57,52 @@ type NftByIndexP struct {
 	AppID uint64 `json:"app_id"`
 }
 
+type NftsP struct {
+	PageP
+	Id      string `json:"id"`
+	ClassId string `json:"class_id"`
+	Owner   string `json:"owner"`
+	TxHash  string `json:"tx_hash"`
+	Status  string `json:"status"`
+	AppID   uint64 `json:"app_id"`
+}
+
+type NftsRes struct {
+	PageRes
+	Nfts []*Nft `json:"nfts"`
+}
+
+type Nft struct {
+	Id          string `json:"id"`
+	Index       uint64 `json:"index"`
+	Name        string `json:"name"`
+	ClassId     string `json:"class_id"`
+	ClassName   string `json:"class_name"`
+	ClassSymbol string `json:"class_symbol"`
+	Uri         string `json:"uri"`
+	Owner       string `json:"owner"`
+	Status      string `json:"status"`
+	TxHash      string `json:"tx_hash"`
+	Timestamp   string `json:"timestamp"`
+}
+
+type NftClassByIds struct {
+	ClassId string `json:"class_id"`
+	Name    string `json:"name"`
+	Symbol  string `json:"symbol"`
+}
+
+type CreateNftsRequest struct {
+	AppID     uint64 `json:"app_id"`
+	ClassId   string `json:"class_id"`
+	Name      string `json:"name"`
+	Uri       string `json:"uri"`
+	UriHash   string `json:"uri_hash"`
+	Data      string `json:"data"`
+	Amount    int    `json:"amount"`
+	Recipient string `json:"recipient"`
+}
+
 type NftOperationHistoryByIndexP struct {
 	PageP
 	ClassID   string `json:"class_id"`
