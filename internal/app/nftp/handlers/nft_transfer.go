@@ -80,11 +80,6 @@ func (h nftTransfer) ClassID(ctx context.Context) string {
 		return ""
 	}
 	return class_id.(string)
-	//parseUint, err := strconv.ParseUint(class_id.(string), 10, 64)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//return parseUint
 }
 
 func (h nftTransfer) Owner(ctx context.Context) string {

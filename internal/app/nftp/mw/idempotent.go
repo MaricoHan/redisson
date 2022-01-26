@@ -49,6 +49,7 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		writeInternalResp(w)
 		return
 	}
+
 	if ok {
 		writeBadRequestResp(w, types.ErrIdempotent)
 		return
