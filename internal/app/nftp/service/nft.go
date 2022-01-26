@@ -19,6 +19,7 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
@@ -69,6 +70,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) ([]string, error) {
 		baseTx := svc.base.CreateBaseTx(classOne.Owner, "")
 		originData, thash, err := svc.base.BuildAndSign(msgs, baseTx)
 		if err != nil {
+			log.Debug("create nfts", "buildandsign error:", err.Error())
 			return err
 		}
 		txHash = &thash
@@ -158,12 +160,14 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
 	baseTx := svc.base.CreateBaseTx(params.Sender, "")
 	signedData, txHash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgEditNFT}, baseTx)
 	if err != nil {
+		log.Debug("edit nft by index", "BuildAndSign error:", err.Error())
 		return "", err
 	}
 
 	// Tx into database
 	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, models.TTXSOperationTypeEditNFT, models.TTXSStatusUndo)
 	if err != nil {
+		log.Debug("edit nft by index", "Tx into database error:", err.Error())
 		return "", err
 	}
 
@@ -219,12 +223,14 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 	baseTx := svc.base.CreateBaseTx(params.Sender, "")
 	signedData, txHash, err := svc.base.BuildAndSign(msgEditNFTs, baseTx)
 	if err != nil {
+		log.Debug("edit nft by batch", "BuildAndSign error:", err.Error())
 		return "", err
 	}
 
 	// Tx into database
 	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, models.TTXSOperationTypeEditNFTBatch, models.TTXSStatusUndo)
 	if err != nil {
+		log.Debug("edit nft by batch", "Tx into database error:", err.Error())
 		return "", err
 	}
 
@@ -287,12 +293,14 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (string, error) {
 	baseTx := svc.base.CreateBaseTx(params.Sender, "")
 	signedData, txHash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgBurnNFT}, baseTx)
 	if err != nil {
+		log.Debug("delete nft by index", "BuildAndSign error:", err.Error())
 		return "", err
 	}
 
 	// Tx into database
 	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, models.TTXSOperationTypeBurnNFT, models.TTXSStatusUndo)
 	if err != nil {
+		log.Debug("delete nft by index", "Tx into database error:", err.Error())
 		return "", err
 	}
 
@@ -343,10 +351,14 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 	// build and sign transaction
 	baseTx := svc.base.CreateBaseTx(params.Sender, "")
 	signedData, txHash, err := svc.base.BuildAndSign(msgBurnNFTs, baseTx)
-
+	if err != nil {
+		log.Debug("delete nft by batch", "BuildAndSign error:", err.Error())
+		return "", err
+	}
 	// Tx into database
 	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, models.TTXSOperationTypeBurnNFTBatch, models.TTXSStatusUndo)
 	if err != nil {
+		log.Debug("delete nft by batch", "Tx into database error:", err.Error())
 		return "", err
 	}
 

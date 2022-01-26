@@ -9,6 +9,7 @@ import (
 	sdktype "github.com/irisnet/core-sdk-go/types"
 	"github.com/irisnet/irismod-sdk-go/nft"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"
@@ -57,6 +58,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	data, hash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
 
 	if err != nil {
+		log.Debug("transfer nft class", "BuildAndSign error:", err.Error())
 		return "", types.ErrBuildAndSign
 	}
 
@@ -67,6 +69,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 		models.TTXSOperationTypeTransferClass,
 		models.TTXSStatusUndo)
 	if err != nil {
+		log.Debug("transfer nft class", "Tx Into DataBase error:", err.Error())
 		return "", err
 	}
 
@@ -128,6 +131,7 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 	baseTx := svc.base.CreateBaseTx(params.Owner, "")
 	data, hash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
 	if err != nil {
+		log.Debug("transfer nft by index", "BuildAndSign error:", err.Error())
 		return "", types.ErrBuildAndSign
 	}
 
@@ -138,6 +142,7 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 		models.TTXSOperationTypeTransferNFT,
 		models.TTXSStatusUndo)
 	if err != nil {
+		log.Debug("transfer nft by index", "Tx Into DataBase error:", err.Error())
 		return "", err
 	}
 
@@ -210,6 +215,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 	baseTx := svc.base.CreateBaseTx(params.Owner, "")
 	data, hash, err := svc.base.BuildAndSign(msgs, baseTx)
 	if err != nil {
+		log.Debug("transfer nft by batch", "BuildAndSign error:", err.Error())
 		return "", types.ErrBuildAndSign
 	}
 
@@ -220,6 +226,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 		models.TTXSOperationTypeTransferNFTBatch,
 		models.TTXSStatusUndo)
 	if err != nil {
+		log.Debug("transfer nft by batch", "Tx Into DataBase error:", err.Error())
 		return "", err
 	}
 
