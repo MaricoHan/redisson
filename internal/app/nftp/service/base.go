@@ -8,7 +8,6 @@ import (
 
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
 	sdk "github.com/irisnet/core-sdk-go"
 	sdktype "github.com/irisnet/core-sdk-go/types"
