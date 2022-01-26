@@ -42,6 +42,7 @@ var (
 	ErrGetTx                  = Register(RootCodeSpace, "35", "failed to get tx by hash")
 	ErrGetNftOperationDetails = Register(RootCodeSpace, "36", "failed to get nft operation details")
 	ErrNftStatus              = Register(RootCodeSpace, "37", "One of these NFTs does not exist or its status is not active")
+	ErrIndicesFormat          = Register(RootCodeSpace, "38", "Indices format is invalid, must be unsigned numeric type,such as:1,2,3,4...")
 )
 
 var usedErrorCodes = map[string]*AppError{}

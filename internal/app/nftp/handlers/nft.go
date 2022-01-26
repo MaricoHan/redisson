@@ -64,7 +64,9 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 
 // EditNftByIndex Edit an nft and return the edited result
 func (h nft) EditNftByIndex(ctx context.Context, request interface{}) (interface{}, error) {
+
 	req := request.(*vo.EditNftByIndexRequest)
+
 	params := dto.EditNftByIndexP{
 		AppID:   h.AppID(ctx),
 		ClassId: h.ClassId(ctx),
@@ -122,11 +124,18 @@ func (h nft) DeleteNftByIndex(ctx context.Context, _ interface{}) (interface{}, 
 // return the deleted results
 func (h nft) DeleteNftByBatch(ctx context.Context, _ interface{}) (interface{}, error) {
 
+	// check start
+	indices, err := h.Indices(ctx)
+	if err != nil {
+		return nil, types.ErrIndicesFormat
+	}
+	//check end
+
 	params := dto.DeleteNftByBatchP{
 		AppID:   h.AppID(ctx),
 		ClassId: h.ClassId(ctx),
 		Sender:  h.Owner(ctx),
-		Indices: h.Indices(ctx),
+		Indices: indices,
 	}
 
 	return h.svc.DeleteNftByBatch(params)
@@ -364,7 +373,7 @@ func (h nft) Status(ctx context.Context) string {
 	return status.(string)
 }
 
-func (h nft) Indices(ctx context.Context) []uint64 {
+func (h nft) Indices(ctx context.Context) ([]uint64, error) {
 	rec := ctx.Value("indices")
 
 	// "1,2,3,4,..." to {1,2,3,4,...}
@@ -374,10 +383,10 @@ func (h nft) Indices(ctx context.Context) []uint64 {
 	for _, s := range strArr {
 		tmp, err := strconv.ParseUint(s, 10, 64)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 		indices = append(indices, tmp)
 	}
 
-	return indices
+	return indices, nil
 }
