@@ -145,7 +145,7 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
 
 	// create rawMsg
 	msgEditNFT := nft.MsgEditNFT{
-		Id:      strconv.FormatInt(int64(tNft.ID), 10),
+		Id:      tNft.NFTID,
 		DenomId: tNft.ClassID,
 		Name:    tNft.Name.String,
 		URI:     params.Uri,
@@ -204,7 +204,7 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 		}
 
 		msgEditNFT := nft.MsgEditNFT{
-			Id:      strconv.FormatInt(int64(tNft.ID), 10),
+			Id:      tNft.NFTID,
 			DenomId: tNft.ClassID,
 			Name:    tNft.Name.String,
 			URI:     EditNft.Uri,
@@ -259,7 +259,7 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (string, error) {
 		return "", types.ErrInternal
 	}
 	// nft does not exist or status is not active：404
-	if tNft == nil || tNft.Status != models.TNFTSStatusBurned {
+	if tNft == nil || tNft.Status != models.TNFTSStatusActive {
 		return "", types.ErrNftMissing
 	}
 	// pending：400
@@ -387,7 +387,7 @@ func (svc *Nft) NftByIndex(params dto.NftByIndexP) (*dto.NftByIndexP, error) {
 	}
 
 	result := &dto.NftByIndexP{
-		Id:          strconv.FormatInt(int64(tNft.ID), 10),
+		Id:          tNft.NFTID,
 		Index:       tNft.Index,
 		Name:        tNft.Name.String,
 		ClassId:     tNft.ClassID,
