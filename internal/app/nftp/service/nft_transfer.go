@@ -35,7 +35,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	if err != nil {
 		return "", types.ErrBuildAndSign
 	}
-
+	//types.ErrBuildAndSign
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		//txs status = undo
 		txId, err := svc.base.TxIntoDataBase(params.AppID,
@@ -215,6 +215,6 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 	if err != nil {
 		return "", err
 	}
-
+	
 	return hash, nil
 }
