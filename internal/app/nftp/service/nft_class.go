@@ -16,6 +16,7 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
@@ -42,7 +43,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 	//new classId
 	var data []byte = []byte(params.Owner)
 	data = append(data, []byte(params.Name)...)
-	data = append(data, []byte(strconv.FormatInt(time.Now().Unix(),10))...)
+	data = append(data, []byte(strconv.FormatInt(time.Now().Unix(), 10))...)
 	classId := nftp + strings.ToLower(hex.EncodeToString(tmhash.Sum(data)))
 	//txMsg, Platform side created
 	baseTx := svc.base.CreateBaseTx(pAddress, defultKeyPassword)
@@ -66,6 +67,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 
 	originData, txHash, err := svc.base.BuildAndSign(sdktype.Msgs{&createDenomMsg, &transferDenomMsg}, baseTx)
 	if err != nil {
+		log.Debug("create nft class", "BuildAndSign error:", err.Error())
 		return nil, err
 	}
 
