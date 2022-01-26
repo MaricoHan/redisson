@@ -21,11 +21,7 @@ func NewNftTransfer(base *Base) *NftTransfer {
 }
 
 func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (string, error) {
-	db, err := orm.GetDB().Begin()
-	if err != nil {
-		return "", types.ErrMysqlConn
-	}
-	modext.Transaction
+	modext.Transaction()
 	//query if class can be operated
 	class, err := models.TClasses(
 		models.TClassWhere.ClassID.EQ(string(params.ClassID)),
@@ -35,7 +31,6 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 		db.Rollback()
 		return "", types.ErrNftClassTransfer
 	}
-	modext.Transaction
 	//msg
 	msgs := nft.MsgTransferDenom{
 		Id:        string(params.ClassID),
