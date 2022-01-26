@@ -16,11 +16,6 @@ func NewTx() *Tx {
 }
 
 func (svc *Tx) TxResultByTxHash(params dto.TxResultByTxHashP) (*dto.TxResultByTxHashRes, error) {
-	//验证不为空
-	if params.Hash == "" {
-		return nil, types.ErrParams
-	}
-
 	//query
 	txinfo, err := models.TTXS(
 		models.TTXWhere.Hash.EQ(params.Hash),
@@ -36,7 +31,7 @@ func (svc *Tx) TxResultByTxHash(params dto.TxResultByTxHashP) (*dto.TxResultByTx
 
 	if txinfo.Status == models.TTXSStatusPending {
 		result.Status = 0
-	} else if txinfo.Status == TTXSStatusSuccess {
+	} else if txinfo.Status == models.TTXSStatusSuccess {
 		result.Status = 1
 	} else {
 		result.Status = 2 // tx.Status == "failed"
