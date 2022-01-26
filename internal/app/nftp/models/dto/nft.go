@@ -83,7 +83,7 @@ type Nft struct {
 	Owner       string `json:"owner"`
 	Status      string `json:"status"`
 	TxHash      string `json:"tx_hash"`
-	TimeStamp   string `json:"time_stamp"`
+	Timestamp   string `json:"timestamp"`
 }
 
 type NftClassByIds struct {
