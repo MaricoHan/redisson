@@ -1,6 +1,8 @@
 package dto
 
-import "github.com/volatiletech/sqlboiler/v4/types"
+import (
+	"github.com/volatiletech/sqlboiler/v4/types"
+)
 
 type CreateAccountP struct {
 	Count int64  `json:"count"`
