@@ -240,7 +240,10 @@ func (c Controller) serverOptions(
 				types.ErrNftBatchTransfer,
 				types.ErrGetTx,
 				types.ErrNftBurnPend,
-				types.ErrNftStatus:
+				types.ErrNftStatus,
+				types.ErrNftClassesSet,
+				types.ErrTxMsgGet,
+				types.ErrTxMsgInsert:
 				w.WriteHeader(http.StatusBadRequest)
 				errResp.Message = appErr.Error()
 				errResp.Code = appErr.Code()
