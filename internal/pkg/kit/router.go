@@ -137,7 +137,7 @@ func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFu
 
 		//validate request
 		if err := c.validate.Struct(req); err != nil {
-			return nil, err
+			return nil, types.UpdateDescription(types.RootCodeSpace, "3", err.Error())
 		}
 		return req, nil
 	}
@@ -231,13 +231,26 @@ func (c Controller) serverOptions(
 				types.ErrNftBurn,
 				types.ErrNftBatchBurn,
 				types.ErrTxResult,
-				types.ErrNftBurnPend,
 				types.ErrNotOwner,
-				types.ErrNoPermission, types.ErrNftMissing:
+				types.ErrNoPermission,
+				types.ErrGetNftOperationDetails,
+				types.ErrNftClassTransfer,
+				types.ErrBuildAndSign,
+				types.ErrNftTransfer,
+				types.ErrNftBatchTransfer,
+				types.ErrGetTx,
+				types.ErrNftBurnPend,
+				types.ErrNftStatus:
 				w.WriteHeader(http.StatusBadRequest)
 				errResp.Message = appErr.Error()
 				errResp.Code = appErr.Code()
+
+			case types.ErrNftMissing:
+				w.WriteHeader(http.StatusNotFound)
+				errResp.Message = appErr.Error()
+				errResp.Code = appErr.Code()
 			}
+
 			response = Response{ErrorResp: errResp}
 		}
 

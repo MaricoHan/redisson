@@ -234,6 +234,9 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, request interface{}
 	if params.Limit == 0 {
 		params.Limit = 10
 	}
+	if params.Limit >= 50 {
+		return nil, types.ErrParams
+	}
 
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
@@ -360,6 +363,7 @@ func (h nft) Status(ctx context.Context) string {
 	}
 	return status.(string)
 }
+
 func (h nft) Indices(ctx context.Context) []uint64 {
 	rec := ctx.Value("indices")
 

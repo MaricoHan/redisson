@@ -41,6 +41,7 @@ var (
 	ErrTxMsgGet               = Register(RootCodeSpace, "34", "failed to get ttx")
 	ErrGetTx                  = Register(RootCodeSpace, "35", "failed to get tx by hash")
 	ErrGetNftOperationDetails = Register(RootCodeSpace, "36", "failed to get nft operation details")
+	ErrNftStatus              = Register(RootCodeSpace, "37", "One of these NFTs does not exist or its status is not active")
 )
 
 var usedErrorCodes = map[string]*AppError{}
@@ -94,4 +95,13 @@ func Register(codeSpace string, code string, description string) *AppError {
 	setUsedErrorCodes(err)
 
 	return err
+}
+
+func UpdateDescription(codeSpace string, code string, description string) *AppError {
+	e := getUsedErrorCodes(codeSpace, code)
+	if e == nil {
+		panic(fmt.Sprintf("error with code %d No registered: %q", code, e.desc))
+	}
+	e.desc = description
+	return e
 }
