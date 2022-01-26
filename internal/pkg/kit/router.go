@@ -243,7 +243,8 @@ func (c Controller) serverOptions(
 				types.ErrNftStatus,
 				types.ErrNftClassesSet,
 				types.ErrTxMsgGet,
-				types.ErrTxMsgInsert:
+				types.ErrTxMsgInsert,
+				types.ErrIndicesFormat:
 				w.WriteHeader(http.StatusBadRequest)
 				errResp.Message = appErr.Error()
 				errResp.Code = appErr.Code()
