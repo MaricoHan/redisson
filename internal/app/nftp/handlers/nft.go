@@ -77,12 +77,7 @@ func (h nft) EditNftByIndex(ctx context.Context, request interface{}) (interface
 		Uri:  req.Uri,
 		Data: req.Data,
 	}
-	//check start
-	//1. judge whether the Caller is the owner
 
-	//2. judge whether the Caller is the APP's address
-
-	//check end
 	return h.svc.EditNftByIndex(params)
 }
 
