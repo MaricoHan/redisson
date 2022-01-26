@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"io/ioutil"
 	"net/http"
 	"sort"
@@ -30,6 +31,7 @@ type authHandler struct {
 }
 
 func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	log.Debug("user request", "method:", r.Method, "url:", r.URL.Path)
 	appKey := r.Header.Get("X-Api-Key")
 	appKeyResult, err := models.TAppKeys(
 		qm.Select(models.TAppKeyColumns.APIKey),
