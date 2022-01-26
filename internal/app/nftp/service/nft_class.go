@@ -42,8 +42,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 	var data []byte = []byte(params.Owner)
 	data = append(data, []byte(params.Name)...)
 	data = append(data, []byte(string(time.Now().Unix()))...)
-	str := strings.ToLower(hex.EncodeToString(tmhash.Sum(data)))
-	classId := nftp + str
+	classId := nftp + strings.ToLower(hex.EncodeToString(tmhash.Sum(data)))
 	//txMsg, Platform side created
 	baseTx := svc.base.CreateBaseTx(pAddress, defultKeyPassword)
 	createDenomMsg := nft.MsgIssueDenom{
