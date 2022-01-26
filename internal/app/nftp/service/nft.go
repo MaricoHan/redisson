@@ -136,11 +136,11 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
 		return "", types.ErrNftMissing
 	}
 
-	// judge whether the Caller is the owner
+	// judge whether the Caller is the owner：400
 	if params.Sender != tNft.Owner {
 		return "", types.ErrNotOwner
 	}
-	// judge whether the Caller is one of the APP's address
+	// judge whether the Caller is one of the APP's address：400
 	if tNft.AppID != params.AppID {
 		return "", types.ErrNoPermission
 	}
@@ -197,11 +197,11 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 			return "", types.ErrNftStatus
 		}
 
-		// judge whether the Caller is the owner
+		// judge whether the Caller is the owner：400
 		if params.Sender != tNft.Owner {
 			return "", types.ErrNotOwner
 		}
-		// judge whether the Caller is one of the APP's address
+		// judge whether the Caller is one of the APP's address：400
 		if tNft.AppID != params.AppID {
 			return "", types.ErrNoPermission
 		}
@@ -271,11 +271,11 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (string, error) {
 		return "", types.ErrNftBurnPend
 	}
 
-	// judge whether the Caller is the owner
+	// judge whether the Caller is the owner：400
 	if params.Sender != tNft.Owner {
 		return "", types.ErrNotOwner
 	}
-	// judge whether the Caller is one of the APP's address
+	// judge whether the Caller is one of the APP's address：400
 	if tNft.AppID != params.AppID {
 		return "", types.ErrNoPermission
 	}
@@ -380,12 +380,17 @@ func (svc *Nft) NftByIndex(params dto.NftByIndexP) (*dto.NftByIndexP, error) {
 
 	// get NFT by app_id,class_id and index
 	tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(params.Index)).One(context.Background(), boil.GetContextDB())
-	if err != nil {
-		return nil, err
+	// internal error：500
+	if errors.Cause(err) != sql.ErrNoRows {
+		return nil, types.ErrInternal
 	}
 
 	// get class by class_id
 	class, err := models.TClasses(models.TClassWhere.ClassID.EQ(params.ClassId)).One(context.Background(), boil.GetContextDB())
+	// internal error：500
+	if errors.Cause(err) != sql.ErrNoRows {
+		return nil, types.ErrInternal
+	}
 
 	result := &dto.NftByIndexP{
 		Id:          strconv.FormatInt(int64(tNft.ID), 10),
