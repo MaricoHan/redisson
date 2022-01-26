@@ -233,6 +233,9 @@ func (c Controller) serverOptions(
 				types.ErrTxResult,
 				types.ErrNftBurnPend,
 				types.ErrNotOwner,
+				types.ErrNftClassesSet,
+				types.ErrTxMsgGet,
+				types.ErrTxMsgInsert,
 				types.ErrNoPermission, types.ErrNftMissing:
 				w.WriteHeader(http.StatusBadRequest)
 				errResp.Message = appErr.Error()

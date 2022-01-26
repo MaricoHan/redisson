@@ -100,10 +100,10 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) ([]string, error) {
 
 		tClass.LockedBy = null.Uint64FromPtr(&tx.ID)
 		ok, err := tClass.Update(context.Background(), orm.GetDB(), boil.Infer())
-		if ok != 1 {
+		if err != nil {
 			return types.ErrNftClassesSet
 		}
-		if err != nil {
+		if ok != 1 {
 			return types.ErrNftClassesSet
 		}
 		return err
