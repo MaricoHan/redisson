@@ -73,6 +73,10 @@ func (h nftClass) Classes(ctx context.Context, _ interface{}) (interface{}, erro
 	if params.Limit == 0 {
 		params.Limit = 10
 	}
+
+	if params.Limit >= 50 {
+		return nil, types.ErrParams
+	}
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
 		startDateTime, err := time.Parse(timeLayout, startDateR)
