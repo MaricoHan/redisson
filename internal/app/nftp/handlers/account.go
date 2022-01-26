@@ -8,7 +8,6 @@ import (
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
-
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
@@ -46,7 +45,6 @@ func (h account) CreateAccount(ctx context.Context, request interface{}) (interf
 	if params.Count == 0 {
 		params.Count = 1
 	}
-
 	if params.Count > 1000 {
 		return nil, types.ErrParams
 	}

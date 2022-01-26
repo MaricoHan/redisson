@@ -1,14 +1,14 @@
 package dto
 
 type TransferNftClassByIDP struct {
-	ClassID   uint64 `json:"class_id"`
+	ClassID   string `json:"class_id"`
 	Owner     string `json:"owner"`
 	Recipient string `json:"recipient"`
 	AppID     uint64 `json:"app_id"`
 }
 
 type TransferNftByIndexP struct {
-	ClassID   uint64 `json:"class_id"`
+	ClassID   string `json:"class_id"`
 	Owner     string `json:"owner"`
 	Index     uint64 `json:"index"`
 	Recipient string `json:"recipient"`
@@ -16,7 +16,7 @@ type TransferNftByIndexP struct {
 }
 
 type TransferNftByBatchP struct {
-	ClassID    uint64       `json:"class_id"`
+	ClassID    string       `json:"class_id"`
 	Owner      string       `json:"owner"`
 	Recipients []*Recipient `json:"recipients"`
 	AppID      uint64       `json:"app_id"`
