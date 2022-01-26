@@ -137,7 +137,12 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			Index:     modelResult.Index,
 			Recipient: modelResult.Recipient,
 		}
-
+		if recipient.Index == 0 {
+			return "", types.ErrParams
+		}
+		if recipient.Recipient == "" {
+			return "", types.ErrParams
+		}
 		res, err := models.TNFTS(models.TNFTWhere.Index.EQ(recipient.Index),
 			models.TNFTWhere.ClassID.EQ(string(params.ClassID)),
 			models.TNFTWhere.AppID.EQ(params.AppID),
@@ -179,6 +184,12 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			recipient := &dto.Recipient{
 				Index:     modelResultR.Index,
 				Recipient: modelResultR.Recipient,
+			}
+			if recipient.Index == 0 {
+				return types.ErrParams
+			}
+			if recipient.Recipient == "" {
+				return types.ErrParams
 			}
 			res, err := models.TNFTS(models.TNFTWhere.Index.EQ(recipient.Index),
 				models.TNFTWhere.ClassID.EQ(string(params.ClassID)),

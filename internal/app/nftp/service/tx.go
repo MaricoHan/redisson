@@ -16,11 +16,6 @@ func NewTx() *Tx {
 }
 
 func (svc *Tx) TxResultByTxHash(params dto.TxResultByTxHashP) (*dto.TxResultByTxHashRes, error) {
-	//验证不为空
-	if params.Hash == "" {
-		return nil, types.ErrParams
-	}
-
 	//query
 	txinfo, err := models.TTXS(
 		models.TTXWhere.Hash.EQ(params.Hash),
