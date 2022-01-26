@@ -132,13 +132,13 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 			queryMod = append(queryMod, qm.OrderBy(orderBy))
 		}
 
-		total, err := modext.PageQuery(
+		total, err := modext.PageQueryByOffset(
 			context.Background(),
 			orm.GetDB(),
 			queryMod,
 			&modelResults,
-			params.Offset,
-			params.Limit,
+			int(params.Offset),
+			int(params.Limit),
 		)
 		if err != nil {
 			return err
