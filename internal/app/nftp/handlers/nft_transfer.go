@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
@@ -70,6 +71,7 @@ func (h nftTransfer) TransferNftByIndex(ctx context.Context, request interface{}
 func (h nftTransfer) TransferNftByBatch(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
 	req := request.(*vo.TransferNftByBatchRequest)
+	fmt.Println("1111111")
 	if req.Recipients == nil {
 		return nil, types.ErrParams
 	}
