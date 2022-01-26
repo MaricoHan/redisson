@@ -61,7 +61,6 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// todo
 	fmt.Println(h.Signature(r, appKeyResult.APIKey, reqTimestampStr, reqSignature))
 	r.Header.Set("X-App-Id", fmt.Sprintf("%d", appKeyResult.AppID))
-
 	h.next.ServeHTTP(w, r)
 }
 

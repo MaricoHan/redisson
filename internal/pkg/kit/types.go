@@ -14,6 +14,7 @@ type Response struct {
 }
 
 type ErrorResp struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
+	CodeSpace string `json:"code_space"`
+	Code      string `json:"code"`
+	Message   string `json:"message"`
 }
