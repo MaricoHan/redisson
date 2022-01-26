@@ -61,12 +61,13 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 		class.LockedBy = null.Uint64From(txId)
 
 		ok, err := class.UpdateG(context.Background(), boil.Infer())
-		if ok != 1 {
-			return types.ErrNftClassTransfer
-		}
 		if err != nil {
 			return types.ErrNftClassTransfer
 		}
+		if ok != 1 {
+			return types.ErrNftClassTransfer
+		}
+
 		return nil
 	})
 	if err != nil {
@@ -115,10 +116,10 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 		res.Status = models.TNFTSStatusPending
 		res.LockedBy = null.Uint64From(txId)
 		ok, err := res.UpdateG(context.Background(), boil.Infer())
-		if ok != 1 {
+		if err != nil {
 			return types.ErrNftTransfer
 		}
-		if err != nil {
+		if ok != 1 {
 			return types.ErrNftTransfer
 		}
 		return nil
@@ -203,11 +204,11 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			res.Status = models.TNFTSStatusPending
 			res.LockedBy = null.Uint64From(txId)
 			ok, err := res.UpdateG(context.Background(), boil.Infer())
-			if ok != 1 {
-				return types.ErrNftClassesSet
-			}
 			if err != nil {
 				return types.ErrNftBatchTransfer
+			}
+			if ok != 1 {
+				return types.ErrNftClassesSet
 			}
 		}
 		return nil
@@ -215,6 +216,6 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 	if err != nil {
 		return "", err
 	}
-	
+
 	return hash, nil
 }
