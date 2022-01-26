@@ -363,6 +363,7 @@ func (h nft) Status(ctx context.Context) string {
 	}
 	return status.(string)
 }
+
 func (h nft) Indices(ctx context.Context) []uint64 {
 	rec := ctx.Value("indices")
 
