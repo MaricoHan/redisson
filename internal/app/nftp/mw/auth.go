@@ -30,7 +30,6 @@ type authHandler struct {
 }
 
 func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
 	appKey := r.Header.Get("X-Api-Key")
 	appKeyResult, err := models.TAppKeys(
 		qm.Select(models.TAppKeyColumns.APIKey),
@@ -61,7 +60,6 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// 2. 验证签名
 	// todo
 	fmt.Println(h.Signature(r, appKeyResult.APIKey, reqTimestampStr, reqSignature))
-
 	r.Header.Set("X-App-Id", fmt.Sprintf("%d", appKeyResult.AppID))
 
 	h.next.ServeHTTP(w, r)
@@ -108,7 +106,6 @@ func (h authHandler) Signature(r *http.Request, appKey string, timestamp string,
 	if hexHash != signature {
 		return false
 	}
-
 	return true
 
 }

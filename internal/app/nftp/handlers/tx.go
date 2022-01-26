@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 )
@@ -30,10 +31,6 @@ func (h tx) TxResultByTxHash(ctx context.Context, _ interface{}) (interface{}, e
 		Hash:  h.Hash(ctx),
 		AppID: h.AppID(ctx),
 	}
-	if params.Hash == "" {
-		params.Hash = ""
-	}
-
 	// 校验参数 end
 	// 业务数据入库的地方
 	return h.svc.TxResultByTxHash(params)
