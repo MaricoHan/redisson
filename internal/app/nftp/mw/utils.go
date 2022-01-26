@@ -13,8 +13,9 @@ func writeBadRequestResp(w http.ResponseWriter, err types.IError) {
 	w.WriteHeader(http.StatusBadRequest)
 	response := kit.Response{
 		ErrorResp: &kit.ErrorResp{
-			Code:    err.Code(),
-			Message: err.Error(),
+			CodeSpace: err.CodeSpace(),
+			Code:      err.Code(),
+			Message:   err.Error(),
 		},
 	}
 	bz, _ := json.Marshal(response)
@@ -27,8 +28,9 @@ func writeForbiddenResp(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusForbidden)
 	response := kit.Response{
 		ErrorResp: &kit.ErrorResp{
-			Code:    types.ErrParams.Code(),
-			Message: types.ErrParams.Error(),
+			CodeSpace: types.ErrParams.CodeSpace(),
+			Code:      types.ErrParams.Code(),
+			Message:   types.ErrParams.Error(),
 		},
 	}
 	bz, _ := json.Marshal(response)
@@ -41,8 +43,9 @@ func writeInternalResp(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusInternalServerError)
 	response := kit.Response{
 		ErrorResp: &kit.ErrorResp{
-			Code:    types.ErrInternal.Code(),
-			Message: types.ErrInternal.Error(),
+			CodeSpace: types.ErrInternal.CodeSpace(),
+			Code:      types.ErrInternal.Code(),
+			Message:   types.ErrInternal.Error(),
 		},
 	}
 	bz, _ := json.Marshal(response)
