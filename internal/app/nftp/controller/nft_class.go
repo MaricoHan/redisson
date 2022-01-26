@@ -1,18 +1,20 @@
 package controller
 
 import (
-	"context"
 	"net/http"
 
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/handlers"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/kit"
 )
 
 type NftClassController struct {
 	BaseController
+	handler handlers.INftClass
 }
 
-func NewNftClassController(bc BaseController) kit.IController {
-	return NftClassController{bc}
+func NewNftClassController(bc BaseController, handler handlers.INftClass) kit.IController {
+	return NftClassController{bc, handler}
 }
 
 // GetEndpoints implement the method GetRouter of the interfce IController
@@ -22,34 +24,18 @@ func (c NftClassController) GetEndpoints() []kit.Endpoint {
 		kit.Endpoint{
 			URI:     "/nft/classes",
 			Method:  http.MethodGet,
-			Handler: c.makeHandler(c.Classes, nil),
+			Handler: c.makeHandler(c.handler.Classes, nil),
 		},
 		kit.Endpoint{
 			URI:     "/nft/classes",
 			Method:  http.MethodPost,
-			Handler: c.makeHandler(c.CreateNftClass, nil),
+			Handler: c.makeHandler(c.handler.CreateNftClass, &vo.CreateNftClassRequest{}),
 		},
 		kit.Endpoint{
 			URI:     "/nft/classes/{id}",
 			Method:  http.MethodGet,
-			Handler: c.makeHandler(c.ClassByID, nil),
+			Handler: c.makeHandler(c.handler.ClassByID, nil),
 		},
 	)
 	return ends
-}
-
-// CreateNftClass Create one or more nft class
-// return creation result
-func (c NftClassController) CreateNftClass(ctx context.Context, _ interface{}) (interface{}, error) {
-	panic("not yet implemented")
-}
-
-// Classes return class list
-func (c NftClassController) Classes(ctx context.Context, _ interface{}) (interface{}, error) {
-	panic("not yet implemented")
-}
-
-// ClassByID return class list
-func (c NftClassController) ClassByID(ctx context.Context, _ interface{}) (interface{}, error) {
-	panic("not yet implemented")
 }
