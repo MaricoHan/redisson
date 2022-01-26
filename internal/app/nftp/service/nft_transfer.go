@@ -57,8 +57,8 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 		AppID:         params.AppID,
 		Hash:          hash,
 		OriginData:    null.BytesFrom(data),
-		OperationType: "transfer_class",
-		Status:        "undo",
+		OperationType: models.TTXSOperationTypeTransferClass,
+		Status:        models.TTXSStatusUndo,
 	}
 	err = txs.InsertG(context.Background(), boil.Infer())
 	if err != nil {
@@ -66,7 +66,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	}
 
 	//class status = pending && lockby = txs.id
-	class.Status = "pending"
+	class.Status = models.TClassesStatusPending
 	class.LockedBy = txs.ID
 	_, err = class.UpdateG(context.Background(), boil.Infer())
 	if err != nil {
@@ -115,15 +115,15 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 		AppID:         params.AppID,
 		Hash:          hash,
 		OriginData:    null.BytesFrom(data),
-		OperationType: "transfer_nft",
-		Status:        "undo",
+		OperationType: models.TTXSOperationTypeTransferNFT,
+		Status:        models.TTXSStatusUndo,
 	}
 	err = txs.InsertG(context.Background(), boil.Infer())
 	if err != nil {
 		return "", types.ErrNftTransfer
 	}
 
-	res.Status = "pending"
+	res.Status = models.TNFTSStatusPending
 	res.LockedBy = null.Uint64From(txs.ID)
 	_, err = res.UpdateG(context.Background(), boil.Infer())
 	if err != nil {
@@ -181,8 +181,8 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 		AppID:         params.AppID,
 		Hash:          hash,
 		OriginData:    null.BytesFrom(data),
-		OperationType: "transfer_nft_batch",
-		Status:        "undo",
+		OperationType: models.TTXSOperationTypeTransferNFTBatch,
+		Status:        models.TTXSStatusUndo,
 	}
 	err = txs.InsertG(context.Background(), boil.Infer())
 	if err != nil {
@@ -204,7 +204,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			return "", types.ErrNftBatchTransfer
 		}
 
-		res.Status = "pending"
+		res.Status = models.TNFTSStatusPending
 		res.LockedBy = null.Uint64From(txs.ID)
 		_, err = res.UpdateG(context.Background(), boil.Infer())
 		if err != nil {
