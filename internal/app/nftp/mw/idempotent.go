@@ -42,6 +42,11 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	if len(req.OperationID) > 65 {
+		writeBadRequestResp(w, types.UpdateDescription(types.RootCodeSpace, "3", "operation_id beyond the length of the"))
+		return
+	}
+
 	appID := r.Header.Get("X-App-Id")
 	key := fmt.Sprintf("%s:%s", appID, req.OperationID)
 	ok, err := redis.Has(key)

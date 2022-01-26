@@ -24,6 +24,8 @@ import (
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
+
 	sdkcrypto "github.com/irisnet/core-sdk-go/common/crypto"
 	sdktype "github.com/irisnet/core-sdk-go/types"
 )
@@ -66,6 +68,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 			hdPath,
 		)
 		if err != nil {
+			log.Debug("create account", "NewMnemonicKeyManagerWithHDPath error:", err.Error())
 			return nil, types.ErrAccountCreate
 		}
 		_, priv := res.Generate()
@@ -90,6 +93,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 	}
 	err = tAccounts.InsertAll(context.Background(), db)
 	if err != nil {
+		log.Debug("create account", "accounts insert error:", err.Error())
 		return nil, types.ErrAccountCreate
 	}
 
