@@ -3,6 +3,7 @@ package kit
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -137,6 +138,7 @@ func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFu
 
 		//validate request
 		if err := c.validate.Struct(req); err != nil {
+			fmt.Println(err)
 			return nil, types.UpdateDescription(types.RootCodeSpace, "3", err.Error())
 		}
 		return req, nil
@@ -248,6 +250,7 @@ func (c Controller) serverOptions(
 				types.ErrTxMsgGet,
 				types.ErrTxMsgInsert,
 				types.ErrNftClassStatus,
+				types.ErrClassStatus,
 				types.ErrIndicesFormat:
 				w.WriteHeader(http.StatusBadRequest)
 				errResp.CodeSpace = appErr.CodeSpace()

@@ -166,10 +166,6 @@ func (h nft) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 		return nil, types.ErrParams
 	}
 
-	if params.Offset == 0 {
-		params.Offset = 1
-	}
-
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
 		startDateTime, err := time.Parse(timeLayout, startDateR)
