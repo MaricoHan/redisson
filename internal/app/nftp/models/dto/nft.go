@@ -12,7 +12,7 @@ type EditNftByIndexP struct {
 }
 
 type EditNftByBatchP struct {
-	EditNfts []*EditNft `json:"edit_nfts"`
+	EditNfts []*EditNft `json:"nfts"`
 
 	AppID   uint64 `json:"app_id"`
 	ClassId string `json:"class_id"`
@@ -52,7 +52,7 @@ type NftByIndexP struct {
 	Owner       string `json:"owner"`
 	Status      string `json:"status"`
 	TxHash      string `json:"tx_hash"`
-	TimeStamp   string `json:"time_stamp"`
+	Timestamp   string `json:"timestamp"`
 
 	AppID uint64 `json:"app_id"`
 }

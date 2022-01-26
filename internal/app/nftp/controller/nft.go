@@ -44,7 +44,7 @@ func (c NftController) GetEndpoints() []kit.Endpoint {
 		},
 		kit.Endpoint{
 			URI:     "/nft/nfts/{class_id}/{owner}",
-			Method:  http.MethodPatch,
+			Method:  http.MethodDelete,
 			Handler: c.makeHandler(c.handler.DeleteNftByBatch, nil),
 		},
 		kit.Endpoint{

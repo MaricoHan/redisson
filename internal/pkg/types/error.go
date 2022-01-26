@@ -33,9 +33,12 @@ var (
 	ErrBuildAndSign        = Register(RootCodeSpace, "26", "failed to build and sign")
 	ErrNftTransfer         = Register(RootCodeSpace, "27", "failed to transfer nft")
 	ErrNftBatchTransfer    = Register(RootCodeSpace, "28", "failed to batch transfer nft")
-	ErrNftClassesSet       = Register(RootCodeSpace, "29", "failed to set nft class")
-	ErrTxMsgInsert         = Register(RootCodeSpace, "30", "failed to insert ttx")
-	ErrTxMsgGet            = Register(RootCodeSpace, "31", "failed to get ttx")
+	ErrNotOwner            = Register(RootCodeSpace, "29", "sender is not the nft‘s owner")
+	ErrNoPermission        = Register(RootCodeSpace, "30", "sender is not the one of the app‘s accounts")
+	ErrName                = Register(RootCodeSpace, "31", "sender is not the nft‘s owner")
+	ErrNftClassesSet       = Register(RootCodeSpace, "32", "failed to set nft class")
+	ErrTxMsgInsert         = Register(RootCodeSpace, "33", "failed to insert ttx")
+	ErrTxMsgGet            = Register(RootCodeSpace, "34", "failed to get ttx")
 )
 
 var usedErrorCodes = map[string]*AppError{}

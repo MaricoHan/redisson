@@ -64,6 +64,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 		Sender:    pAddress,
 		Recipient: params.Owner,
 	}
+
 	originData, txHash, err := svc.base.BuildAndSign(sdktype.Msgs{&createDenomMsg, &transferDenomMsg}, baseTx)
 	if err != nil {
 		return nil, err
