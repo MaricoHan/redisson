@@ -23,7 +23,6 @@ type idempotentMiddlewareHandler struct {
 }
 
 func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
 	if r.Method != http.MethodPost {
 		h.next.ServeHTTP(w, r)
 		return

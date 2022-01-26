@@ -26,7 +26,7 @@ type pageBasic struct {
 func (h pageBasic) Offset(ctx context.Context) (int64, error) {
 	offset := ctx.Value("offset")
 	if offset == nil {
-		return 1, nil
+		return 0, nil
 	}
 	return strconv.ParseInt(offset.(string), 10, 64)
 }
