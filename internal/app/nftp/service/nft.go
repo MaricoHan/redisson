@@ -170,7 +170,6 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
 
 	// return the txHash
 	return txHash, nil
-
 }
 
 func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
@@ -205,7 +204,6 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 			Sender:  params.Sender,
 		}
 		msgEditNFTs = append(msgEditNFTs, &msgEditNFT)
-
 	}
 
 	// build and sign transaction
@@ -221,28 +219,23 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 		return "", err
 	}
 
-	// get database object
-	db, err := orm.GetDB().Begin()
-	if err != nil {
-		return "", types.ErrMysqlConn
-	}
-
 	// lock the NFTs
-	for _, EditNft := range params.EditNfts { // create every rawMsg
-		tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(EditNft.Index)).One(context.Background(), boil.GetContextDB())
-		tNft.Status = models.TNFTSStatusPending
-		tNft.LockedBy = null.Uint64From(txId)
-		// update
-		_, err = tNft.Update(context.Background(), db, boil.Infer())
-		if err != nil {
-			db.Rollback()
-			return "", err
+	err = modext.Transaction(func(exec boil.ContextExecutor) error {
+		for _, EditNft := range params.EditNfts { // create every rawMsg
+			tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(EditNft.Index)).One(context.Background(), boil.GetContextDB())
+			tNft.Status = models.TNFTSStatusPending
+			tNft.LockedBy = null.Uint64From(txId)
+			// update
+			_, err = tNft.Update(context.Background(), exec, boil.Infer())
+			if err != nil {
+				return err
+			}
 		}
-	}
-	// commit
-	err = db.Commit()
+		return nil
+	})
+
 	if err != nil {
-		return "", types.ErrInternal
+		return "", err
 	}
 
 	// return the txHash
@@ -253,6 +246,7 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (string, error) {
 
 	// get NFT by app_id,class_id and index
 	tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(params.Index)).One(context.Background(), boil.GetContextDB())
+
 	if err != nil {
 		return "", err
 	}
@@ -303,7 +297,6 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (string, error) {
 	return txHash, nil
 }
 func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
-
 	// create rawMsgs
 	var msgBurnNFTs sdktype.Msgs
 	for _, index := range params.Indices { // create every rawMsg
@@ -347,27 +340,22 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 		return "", err
 	}
 
-	// get database object
-	db, err := orm.GetDB().Begin()
-	if err != nil {
-		return "", types.ErrMysqlConn
-	}
-
-	// lock the NFT
-	for _, index := range params.Indices { // create every rawMsg
-		tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(index)).One(context.Background(), boil.GetContextDB())
-		tNft.Status = models.TNFTSStatusPending
-		tNft.LockedBy = null.Uint64From(txId)
-		_, err = tNft.Update(context.Background(), db, boil.Infer())
-		if err != nil {
-			db.Rollback()
-			return "", err
+	// lock the NFTs
+	err = modext.Transaction(func(exec boil.ContextExecutor) error {
+		for _, index := range params.Indices { // create every rawMsg
+			tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(index)).One(context.Background(), boil.GetContextDB())
+			tNft.Status = models.TNFTSStatusPending
+			tNft.LockedBy = null.Uint64From(txId)
+			_, err = tNft.Update(context.Background(), exec, boil.Infer())
+			if err != nil {
+				return err
+			}
 		}
-	}
-	// commit
-	err = db.Commit()
+		return nil
+	})
+
 	if err != nil {
-		return "", types.ErrInternal
+		return "", err
 	}
 
 	// return the txHash
@@ -375,9 +363,9 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 }
 
 func (svc *Nft) NftByIndex(params dto.NftByIndexP) (*dto.NftByIndexP, error) {
-
 	// get NFT by app_id,class_id and index
 	tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(params.Index)).One(context.Background(), boil.GetContextDB())
+
 	if err != nil {
 		return nil, err
 	}
@@ -405,18 +393,23 @@ func (svc *Nft) NftByIndex(params dto.NftByIndexP) (*dto.NftByIndexP, error) {
 }
 
 func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndexP) (*dto.BNftOperationHistoryByIndexRes, error) {
-	result := &dto.BNftOperationHistoryByIndexRes{}
-	result.Offset = params.Offset
-	result.Limit = params.Limit
-	result.OperationRecords = []*dto.OperationRecord{}
-	//nft, err := models.TNFTS(
-	//	models.TNFTWhere.AppID.EQ(params.AppID),
-	//	models.TNFTWhere.ClassID.EQ(params.ClassID),
-	//	models.TNFTWhere.Index.EQ(params.Index),
-	//	).OneG(context.Background())
-	//if err != nil {
-	//	return nil, types.ErrMysqlConn
-	//}
+	result := &dto.BNftOperationHistoryByIndexRes{
+		PageRes: dto.PageRes{
+			Offset:     params.Offset,
+			Limit:      params.Limit,
+			TotalCount: 0,
+		},
+		OperationRecords: nil,
+	}
+
+	nft, err := models.TNFTS(
+		models.TNFTWhere.AppID.EQ(params.AppID),
+		models.TNFTWhere.ClassID.EQ(params.ClassID),
+		models.TNFTWhere.Index.EQ(params.Index),
+	).OneG(context.Background())
+	if err != nil {
+		return nil, types.ErrGetNftOperationDetails
+	}
 
 	queryMod := []qm.QueryMod{
 		qm.From(models.TableNames.TMSGS),
@@ -427,12 +420,12 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 			models.TMSGColumns.Timestamp),
 		models.TMSGWhere.AppID.EQ(params.AppID),
 	}
-	//if params.Txhash != "" {
-	//	queryMod = append(queryMod, models.TMSGWhere.TXHash.EQ(params.Txhash))
-	//}else {
-	//	queryMod = append(queryMod, models.TMSGWhere.TXHash.EQ(nft.TXHash))
-	//}
-	////否则查询该nft的所有hash
+	if params.Txhash != "" {
+		queryMod = append(queryMod, models.TMSGWhere.TXHash.EQ(params.Txhash))
+	} else {
+		queryMod = append(queryMod, models.TMSGWhere.NFTID.EQ(null.StringFrom(nft.NFTID)))
+	} //否则查询该nft的所有hash
+
 	if params.Signer != "" {
 		queryMod = append(queryMod, models.TMSGWhere.Signer.EQ(params.Signer))
 	}
@@ -449,21 +442,21 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 		orderBy := ""
 		switch params.SortBy {
 		case "DATE_DESC":
-			orderBy = fmt.Sprintf("%s desc", models.TMSGWhere.CreateAt)
+			orderBy = fmt.Sprintf("%s desc", models.TMSGColumns.CreateAt)
 		case "DATE_ASC":
-			orderBy = fmt.Sprintf("%s ASC", models.TMSGWhere.CreateAt)
+			orderBy = fmt.Sprintf("%s ASC", models.TMSGColumns.CreateAt)
 		}
 		queryMod = append(queryMod, qm.OrderBy(orderBy))
 	}
 
 	var modelResults []*models.TMSG
-	total, err := modext.PageQuery(
+	total, err := modext.PageQueryByOffset(
 		context.Background(),
 		orm.GetDB(),
 		queryMod,
 		&modelResults,
-		params.Offset,
-		params.Limit,
+		int(params.Offset),
+		int(params.Limit),
 	)
 	if err != nil {
 		// records not exist
@@ -471,7 +464,7 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 			return result, nil
 		}
 
-		return nil, types.ErrMysqlConn
+		return nil, types.ErrGetNftOperationDetails
 	}
 
 	result.TotalCount = total
@@ -487,7 +480,119 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 		operationRecords = append(operationRecords, operationRecord)
 	}
 	result.OperationRecords = operationRecords
+	fmt.Println(result)
+	return result, nil
+}
 
+func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
+	db, err := orm.GetDB().Begin()
+	result := &dto.NftsRes{}
+	result.Offset = params.Offset
+	result.Limit = params.Limit
+	result.Nfts = []*dto.Nft{}
+	queryMod := []qm.QueryMod{
+		qm.From(models.TableNames.TNFTS),
+		models.TNFTWhere.AppID.EQ(params.AppID),
+	}
+	if params.Id != "" {
+		queryMod = append(queryMod, models.TNFTWhere.NFTID.EQ(params.Id))
+	}
+	if params.ClassId != "" {
+		queryMod = append(queryMod, models.TNFTWhere.ClassID.EQ(params.ClassId))
+	}
+	if params.Owner != "" {
+		queryMod = append(queryMod, models.TNFTWhere.Owner.EQ(params.Owner))
+	}
+	if params.TxHash != "" {
+		queryMod = append(queryMod, models.TNFTWhere.TXHash.EQ(params.TxHash))
+	}
+	if params.Status != "" {
+		queryMod = append(queryMod, models.TNFTWhere.Status.EQ(params.Status))
+	}
+
+	if params.StartDate != nil {
+		queryMod = append(queryMod, models.TNFTWhere.CreateAt.GTE(*params.StartDate))
+	}
+	if params.EndDate != nil {
+		queryMod = append(queryMod, models.TNFTWhere.CreateAt.LTE(*params.EndDate))
+	}
+	if params.SortBy != "" {
+		orderBy := ""
+		switch params.SortBy {
+		case "DATE_DESC":
+			orderBy = fmt.Sprintf("%s desc", models.TNFTColumns.CreateAt)
+		case "DATE_ASC":
+			orderBy = fmt.Sprintf("%s ASC", models.TNFTColumns.CreateAt)
+		}
+		queryMod = append(queryMod, qm.OrderBy(orderBy))
+	}
+
+	var modelResults []*models.TNFT
+	total, err := modext.PageQueryByOffset(
+		context.Background(),
+		db,
+		queryMod,
+		&modelResults,
+		int(params.Offset),
+		int(params.Limit),
+	)
+	if err != nil {
+		db.Rollback()
+		// records not exist
+		if strings.Contains(err.Error(), "records not exist") {
+			return result, nil
+		}
+		return nil, types.ErrMysqlConn
+	}
+
+	classIds := []string{}
+	tempMap := map[string]byte{} // 存放不重复主键
+	for _, m := range modelResults {
+		l := len(tempMap)
+		tempMap[m.ClassID] = 0
+		if len(tempMap) != l {
+			classIds = append(classIds, m.ClassID) //当元素不重复时，将元素添加到切片result中
+		}
+	}
+	q1 := []qm.QueryMod{
+		qm.From(models.TableNames.TClasses),
+		qm.Select(models.TClassColumns.ClassID, models.TClassColumns.Name, models.TClassColumns.Symbol),
+	}
+	q1 = append(q1, models.TClassWhere.ClassID.IN(classIds))
+	var classByIds []*dto.NftClassByIds
+	err = models.NewQuery(q1...).Bind(context.Background(), db, &classByIds)
+	if err != nil {
+		db.Rollback()
+		return nil, types.ErrInternal
+	}
+	err = db.Commit()
+	if err != nil {
+		return nil, types.ErrInternal
+	}
+
+	result.TotalCount = total
+	var nfts []*dto.Nft
+	for _, modelResult := range modelResults {
+		nft := &dto.Nft{
+			Id:        modelResult.NFTID,
+			Index:     modelResult.Index,
+			Name:      modelResult.Name.String,
+			ClassId:   modelResult.ClassID,
+			Uri:       modelResult.URI.String,
+			Owner:     modelResult.Owner,
+			Status:    modelResult.Status,
+			TxHash:    modelResult.TXHash,
+			Timestamp: modelResult.Timestamp.Time.String(),
+		}
+		for _, class := range classByIds {
+			if class.ClassId == modelResult.ClassID {
+				nft.ClassName = class.Name
+				nft.ClassSymbol = class.Symbol
+			}
+		}
+		nfts = append(nfts, nft)
+	}
+	result.Nfts = nfts
 	return result, nil
 }
 

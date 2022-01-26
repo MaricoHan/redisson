@@ -41,6 +41,7 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		writeBadRequestResp(w, types.ErrParams)
 		return
 	}
+
 	appID := r.Header.Get("X-App-Id")
 	key := fmt.Sprintf("%s:%s", appID, req.OperationID)
 	ok, err := redis.Has(key)
@@ -48,6 +49,7 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		writeInternalResp(w)
 		return
 	}
+
 	if ok {
 		writeBadRequestResp(w, types.ErrIdempotent)
 		return
@@ -57,6 +59,5 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		writeBadRequestResp(w, types.ErrRedisConn)
 		return
 	}
-
 	h.next.ServeHTTP(w, r)
 }
