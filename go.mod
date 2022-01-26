@@ -9,7 +9,7 @@ require (
 	github.com/go-playground/validator/v10 v10.10.0
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/gorilla/mux v1.8.0
-	github.com/irisnet/core-sdk-go v0.0.0-20220106085924-448b745f3429
+	github.com/irisnet/core-sdk-go v0.0.0-20220125122946-76af4796219f
 	github.com/irisnet/irismod-sdk-go/nft v0.0.0-20220121065225-0b70859f7bed
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.8.1

@@ -5,10 +5,11 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
-	"github.com/friendsofgo/errors"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/friendsofgo/errors"
 
 	sdktype "github.com/irisnet/core-sdk-go/types"
 	"github.com/irisnet/irismod-sdk-go/nft"
@@ -35,87 +36,88 @@ func NewNft(base *Base) *Nft {
 }
 
 func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) ([]string, error) {
-	db, err := orm.GetDB().Begin()
-	//platform address
-	classOne, err := models.TClasses(
-		models.TClassWhere.ClassID.EQ(params.ClassId),
-	).One(context.Background(), db)
-	if err != nil {
-		db.Rollback()
-		return nil, types.ErrNftClassDetailsGet
-	}
-	offSet := classOne.Offset
-	//nftID := nftp + sha256(nftClassID)+index
-	var msgs sdktype.Msgs
-	for i := 1; i <= params.Amount; i++ {
-		index := int(offSet) + i
-		nftId := nftp + strings.ToUpper(hex.EncodeToString(tmhash.Sum([]byte(params.ClassId)))) + string(index)
-		createNft := nft.MsgMintNFT{
-			Id:        nftId,
-			DenomId:   params.ClassId,
-			Name:      params.Name,
-			URI:       params.Uri,
-			UriHash:   params.UriHash,
-			Data:      params.Data,
-			Sender:    classOne.Owner,
-			Recipient: params.Recipient,
+	var err error
+	var txHash *string
+	err = modext.Transaction(func(exec boil.ContextExecutor) error {
+		classOne, err := models.TClasses(
+			models.TClassWhere.ClassID.EQ(params.ClassId),
+		).One(context.Background(), orm.GetDB())
+		if err != nil {
+			return types.ErrNftClassDetailsGet
 		}
-		msgs = append(msgs, &createNft)
-	}
-	baseTx := svc.base.CreateBaseTx(classOne.Owner, "")
-	originData, txHash, err := svc.base.BuildAndSign(msgs, baseTx)
+		offSet := classOne.Offset
+		//nftID := nftp + sha256(nftClassID)+index
+		var msgs sdktype.Msgs
+		for i := 1; i <= params.Amount; i++ {
+			index := int(offSet) + i
+			nftId := nftp + strings.ToLower(hex.EncodeToString(tmhash.Sum([]byte(params.ClassId)))) + strconv.Itoa(index)
+			if params.Recipient == "" {
+				params.Recipient = classOne.Owner
+			}
+			createNft := nft.MsgMintNFT{
+				Id:        nftId,
+				DenomId:   params.ClassId,
+				Name:      params.Name,
+				URI:       params.Uri,
+				UriHash:   params.UriHash,
+				Data:      params.Data,
+				Sender:    classOne.Owner,
+				Recipient: params.Recipient,
+			}
+			msgs = append(msgs, &createNft)
+		}
+		baseTx := svc.base.CreateBaseTx(classOne.Owner, "")
+		originData, thash, err := svc.base.BuildAndSign(msgs, baseTx)
+		if err != nil {
+			return err
+		}
+		txHash = &thash
+
+		//modify t_class offset
+		tClass, err := models.TClasses(models.TClassWhere.AppID.EQ(params.AppID), models.TClassWhere.ClassID.EQ(params.ClassId)).One(context.Background(), orm.GetDB())
+		if err != nil {
+			return types.ErrNftClassDetailsGet
+		}
+		tClass.Status = models.TTXSStatusPending
+		tClass.Offset = tClass.Offset + uint64(params.Amount)
+
+		//transferInfo
+		ttx := models.TTX{
+			AppID:         params.AppID,
+			Hash:          thash,
+			Timestamp:     null.Time{Time: time.Now()},
+			OriginData:    null.BytesFromPtr(&originData),
+			OperationType: models.TTXSOperationTypeMintNFT,
+			Status:        models.TTXSStatusUndo,
+		}
+
+		err = ttx.Insert(context.Background(), orm.GetDB(), boil.Infer())
+		if err != nil {
+			return types.ErrTxMsgInsert
+		}
+
+		tx, err := models.TTXS(qm.Where("hash=?", txHash)).One(context.Background(), orm.GetDB())
+		if err != nil {
+			return types.ErrTxMsgGet
+		}
+
+		tClass.LockedBy = null.Uint64FromPtr(&tx.ID)
+		ok, err := tClass.Update(context.Background(), orm.GetDB(), boil.Infer())
+		if err != nil {
+			return types.ErrNftClassesSet
+		}
+		if ok != 1 {
+			return types.ErrNftClassesSet
+		}
+		return err
+	})
+
 	if err != nil {
 		return nil, err
 	}
 
-	//modify t_class offset
-	tClass, err := models.TClasses(models.TClassWhere.AppID.EQ(params.AppID), models.TClassWhere.ClassID.EQ(params.ClassId)).One(context.Background(), db)
-	if err != nil {
-		db.Rollback()
-		return nil, types.ErrNftClassDetailsGet
-	}
-	tClass.Status = models.TTXSStatusPending
-	tClass.Offset = tClass.Offset + uint64(params.Amount)
-
-	//transferInfo
-	ttx := models.TTX{
-		AppID:         params.AppID,
-		Hash:          txHash,
-		Timestamp:     null.Time{Time: time.Now()},
-		OriginData:    null.BytesFromPtr(&originData),
-		OperationType: models.TTXSOperationTypeMintNFT,
-		Status:        models.TTXSStatusUndo,
-	}
-
-	err = ttx.Insert(context.Background(), db, boil.Infer())
-	if err != nil {
-		db.Rollback()
-		return nil, types.ErrTxMsgInsert
-	}
-
-	tx, err := models.TTXS(qm.Where("hash=?", txHash)).One(context.Background(), db)
-	if err != nil {
-		db.Rollback()
-		return nil, types.ErrTxMsgGet
-	}
-
-	tClass.LockedBy = null.Uint64FromPtr(&tx.ID)
-	ok, err := tClass.Update(context.Background(), db, boil.Infer())
-	if ok != 1 {
-		db.Rollback()
-		return nil, types.ErrNftClassesSet
-	}
-	if err != nil {
-		db.Rollback()
-		return nil, types.ErrNftClassesSet
-	}
-	err = db.Commit()
-	if err != nil {
-		return nil, types.ErrInternal
-	}
-
 	var hashs []string
-	hashs = append(hashs, txHash)
+	hashs = append(hashs, *txHash)
 	return hashs, nil
 }
 
@@ -125,7 +127,7 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
 	tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(params.Index)).One(context.Background(), boil.GetContextDB())
 
 	// internal error：500
-	if errors.Cause(err) != sql.ErrNoRows {
+	if err != nil && errors.Cause(err) != sql.ErrNoRows {
 		return "", types.ErrInternal
 	}
 	// nft does not exist ：404
@@ -185,7 +187,7 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 		// get NFT by app_id,class_id and index
 		tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(EditNft.Index)).One(context.Background(), boil.GetContextDB())
 		// internal error：500
-		if errors.Cause(err) != sql.ErrNoRows {
+		if err != nil && errors.Cause(err) != sql.ErrNoRows {
 			return "", types.ErrInternal
 		}
 		// nft does not exist or status is not active：400
@@ -254,7 +256,7 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (string, error) {
 	// get NFT by app_id,class_id and index
 	tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(params.Index)).One(context.Background(), boil.GetContextDB())
 	// internal error：500
-	if errors.Cause(err) != sql.ErrNoRows {
+	if err != nil && errors.Cause(err) != sql.ErrNoRows {
 		return "", types.ErrInternal
 	}
 	// nft does not exist or status is not active：404
@@ -312,7 +314,7 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 		//get NFT by app_id,class_id and index
 		tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(index)).One(context.Background(), boil.GetContextDB())
 		// internal error：500
-		if errors.Cause(err) != sql.ErrNoRows {
+		if err != nil && errors.Cause(err) != sql.ErrNoRows {
 			return "", types.ErrInternal
 		}
 		// nft does not exist or status is not active：400
@@ -374,7 +376,7 @@ func (svc *Nft) NftByIndex(params dto.NftByIndexP) (*dto.NftByIndexP, error) {
 	// get NFT by app_id,class_id and index
 	tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(params.Index)).One(context.Background(), boil.GetContextDB())
 	// internal error：500
-	if errors.Cause(err) != sql.ErrNoRows {
+	if err != nil && errors.Cause(err) != sql.ErrNoRows {
 		return nil, types.ErrInternal
 	}
 
@@ -497,7 +499,7 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 }
 
 func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
-	db, err := orm.GetDB().Begin()
+	var err error
 	result := &dto.NftsRes{}
 	result.Offset = params.Offset
 	result.Limit = params.Limit
@@ -540,46 +542,47 @@ func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
 	}
 
 	var modelResults []*models.TNFT
-	total, err := modext.PageQueryByOffset(
-		context.Background(),
-		db,
-		queryMod,
-		&modelResults,
-		int(params.Offset),
-		int(params.Limit),
-	)
+	var total int64
+	var classByIds []*dto.NftClassByIds
+	classIds := []string{}
+
+	err = modext.Transaction(func(exec boil.ContextExecutor) error {
+		total, err = modext.PageQueryByOffset(
+			context.Background(),
+			orm.GetDB(),
+			queryMod,
+			&modelResults,
+			int(params.Offset),
+			int(params.Limit),
+		)
+		if err != nil {
+			return err
+		}
+
+		tempMap := map[string]byte{} // 存放不重复主键
+		for _, m := range modelResults {
+			l := len(tempMap)
+			tempMap[m.ClassID] = 0
+			if len(tempMap) != l {
+				classIds = append(classIds, m.ClassID)
+			}
+		}
+		qMod := []qm.QueryMod{
+			qm.From(models.TableNames.TClasses),
+			qm.Select(models.TClassColumns.ClassID, models.TClassColumns.Name, models.TClassColumns.Symbol),
+			models.TClassWhere.ClassID.IN(classIds),
+		}
+
+		err = models.NewQuery(qMod...).Bind(context.Background(), orm.GetDB(), &classByIds)
+		return err
+	})
+
 	if err != nil {
-		db.Rollback()
 		// records not exist
 		if strings.Contains(err.Error(), "records not exist") {
 			return result, nil
 		}
 		return nil, types.ErrMysqlConn
-	}
-
-	classIds := []string{}
-	tempMap := map[string]byte{} // 存放不重复主键
-	for _, m := range modelResults {
-		l := len(tempMap)
-		tempMap[m.ClassID] = 0
-		if len(tempMap) != l {
-			classIds = append(classIds, m.ClassID) //当元素不重复时，将元素添加到切片result中
-		}
-	}
-	q1 := []qm.QueryMod{
-		qm.From(models.TableNames.TClasses),
-		qm.Select(models.TClassColumns.ClassID, models.TClassColumns.Name, models.TClassColumns.Symbol),
-	}
-	q1 = append(q1, models.TClassWhere.ClassID.IN(classIds))
-	var classByIds []*dto.NftClassByIds
-	err = models.NewQuery(q1...).Bind(context.Background(), db, &classByIds)
-	if err != nil {
-		db.Rollback()
-		return nil, types.ErrInternal
-	}
-	err = db.Commit()
-	if err != nil {
-		return nil, types.ErrInternal
 	}
 
 	result.TotalCount = total
