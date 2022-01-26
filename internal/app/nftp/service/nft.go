@@ -395,8 +395,6 @@ func (svc *Nft) NftByIndex(params dto.NftByIndexP) (*dto.NftByIndexP, error) {
 		return nil, types.ErrNftClassStatus
 	}
 
-	fmt.Println("1242134")
-
 	result := &dto.NftByIndexP{
 		Id:          tNft.NFTID,
 		Index:       tNft.Index,
