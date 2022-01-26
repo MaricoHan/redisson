@@ -755,8 +755,8 @@ github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9de
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
-gitlab.bianjie.ai/irita-paas/orms/orm-nft.git v0.0.0-20220121112220-a13c86ecbdb0 h1:YbgK7dvTckuW5deiCyLLCjmIXameVbXQc1tDGkQcrgA=
-gitlab.bianjie.ai/irita-paas/orms/orm-nft.git v0.0.0-20220121112220-a13c86ecbdb0/go.mod h1:9p3NWqsPYCZXe87vBNkKMXkvbf2ujMerqQLa0M6mTOk=
+gitlab.bianjie.ai/irita-paas/orms/orm-nft.git v0.0.0-20220125063317-b7a73ff21e6b h1:09tbO+6ugcE0zSwGbq2hhsztsChutXbRGNPSxRyQEbg=
+gitlab.bianjie.ai/irita-paas/orms/orm-nft.git v0.0.0-20220125063317-b7a73ff21e6b/go.mod h1:9p3NWqsPYCZXe87vBNkKMXkvbf2ujMerqQLa0M6mTOk=
 go.etcd.io/bbolt v1.3.2/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 go.etcd.io/bbolt v1.3.3/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 go.etcd.io/bbolt v1.3.5 h1:XAzx9gjCb0Rxj7EoqcClPD1d5ZBxZJk0jbuoPHenBt0=
