@@ -3,14 +3,12 @@ package service
 import (
 	"context"
 
-	"github.com/volatiletech/null/v8"
-	"github.com/volatiletech/sqlboiler/v4/boil"
-
 	sdktype "github.com/irisnet/core-sdk-go/types"
 	"github.com/irisnet/irismod-sdk-go/nft"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
-	"gitlab.bianjie.ai/irita-paas/orms/orm-nft"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 )
 
@@ -18,14 +16,24 @@ type NftTransfer struct {
 	base *Base
 }
 
-func NewNftTransfer() *NftTransfer {
-	return &NftTransfer{}
+func NewNftTransfer(base *Base) *NftTransfer {
+	return &NftTransfer{base: base}
 }
 
 func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (string, error) {
 	db, err := orm.GetDB().Begin()
 	if err != nil {
 		return "", types.ErrMysqlConn
+	}
+
+	//query if class can be operated
+	class, err := models.TClasses(
+		models.TClassWhere.ClassID.EQ(string(params.ClassID)),
+		models.TClassWhere.AppID.EQ(params.AppID),
+		models.TClassWhere.Owner.EQ(params.Owner)).OneG(context.Background())
+	if err != nil {
+		db.Rollback()
+		return "", types.ErrNftClassTransfer
 	}
 
 	//msg
@@ -44,28 +52,26 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 
 	//txs status = undo
 	txs := models.TTX{
-		AppID:      params.AppID,
-		Hash:       hash,
-		Status:     "undo",
-		OriginData: null.BytesFrom(data),
+		AppID:         params.AppID,
+		Hash:          hash,
+		OriginData:    null.BytesFrom(data),
+		OperationType: models.TTXSOperationTypeTransferClass,
+		Status:        models.TTXSStatusUndo,
 	}
 	err = txs.InsertG(context.Background(), boil.Infer())
 	if err != nil {
+		db.Rollback()
 		return "", types.ErrNftClassTransfer
 	}
 
-	//class status = pendding && lockby = txs.id
-	class, err := models.TClasses(
-		models.TClassWhere.ClassID.EQ(string(params.ClassID)),
-		models.TClassWhere.AppID.EQ(params.AppID),
-		models.TClassWhere.Owner.EQ(params.Owner)).OneG(context.Background())
+	//class status = pending && lockby = txs.id
+	class.Status = models.TClassesStatusPending
+	class.LockedBy = txs.ID
+
+	ok, err = class.UpdateG(context.Background(), boil.Infer())
+	if ok !=
 	if err != nil {
-		return "", types.ErrTxResult
-	}
-	class.Status = "pendding"
-	class.LockedBy = null.Uint64FromPtr(&txs.ID)
-	_, err = class.UpdateG(context.Background(), boil.Infer())
-	if err != nil {
+		db.Rollback()
 		return "", types.ErrNftClassTransfer
 	}
 
@@ -90,8 +96,10 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 		models.TNFTWhere.Owner.EQ(params.Owner),
 	).OneG(context.Background())
 	if err != nil {
-		return "", types.ErrMysqlConn
+		db.Rollback()
+		return "", types.ErrNftTransfer
 	}
+
 	msgs := nft.MsgTransferNFT{
 		Id:        res.NFTID,
 		DenomId:   string(params.ClassID),
@@ -99,39 +107,27 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 		Recipient: params.Recipient,
 	}
 
-	//sign
 	baseTx := svc.base.CreateBaseTx(params.Owner, "")
 	data, hash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
 	if err != nil {
-		return "", types.ErrTxResult
+		return "", types.ErrBuildAndSign
 	}
-
 	//写入txs status = undo
 	txs := models.TTX{
-		AppID:      params.AppID,
-		Hash:       hash,
-		Status:     "undo",
-		OriginData: null.BytesFrom(data),
+		AppID:         params.AppID,
+		Hash:          hash,
+		OriginData:    null.BytesFrom(data),
+		OperationType: models.TTXSOperationTypeTransferNFT,
+		Status:        models.TTXSStatusUndo,
 	}
 	err = txs.InsertG(context.Background(), boil.Infer())
 	if err != nil {
 		return "", types.ErrNftTransfer
 	}
 
-	//nft status = pendding && lockby = txs.id
-	nft, err := models.TNFTS(
-		models.TNFTWhere.ClassID.EQ(string(params.ClassID)),
-		models.TNFTWhere.ClassID.EQ(res.NFTID),
-		models.TNFTWhere.AppID.EQ(params.AppID),
-		models.TNFTWhere.Owner.EQ(params.Owner),
-	).OneG(context.Background())
-	if err != nil {
-		return "", types.ErrNftTransfer
-	}
-
-	nft.Status = "pendding"
-	nft.LockedBy = null.Uint64From(txs.ID)
-	_, err = nft.UpdateG(context.Background(), boil.Infer())
+	res.Status = models.TNFTSStatusPending
+	res.LockedBy = null.Uint64From(txs.ID)
+	_, err = res.UpdateG(context.Background(), boil.Infer())
 	if err != nil {
 		return "", types.ErrNftTransfer
 	}
@@ -163,6 +159,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			models.TNFTWhere.Owner.EQ(params.Owner),
 		).OneG(context.Background())
 		if err != nil {
+			db.Rollback()
 			return "", types.ErrNftBatchTransfer
 		}
 		msg := nft.MsgTransferNFT{
@@ -175,7 +172,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 	}
 
 	//sign
-	baseTx := svc.base.CreateBaseTx("", "")
+	baseTx := svc.base.CreateBaseTx(params.Owner, "")
 	data, hash, err := svc.base.BuildAndSign(msgs, baseTx)
 	if err != nil {
 		return "", types.ErrBuildAndSign
@@ -183,10 +180,11 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 
 	//写入txs status = undo
 	txs := models.TTX{
-		AppID:      params.AppID,
-		Hash:       hash,
-		Status:     "undo",
-		OriginData: null.BytesFrom(data),
+		AppID:         params.AppID,
+		Hash:          hash,
+		OriginData:    null.BytesFrom(data),
+		OperationType: models.TTXSOperationTypeTransferNFTBatch,
+		Status:        models.TTXSStatusUndo,
 	}
 	err = txs.InsertG(context.Background(), boil.Infer())
 	if err != nil {
@@ -203,19 +201,14 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			models.TNFTWhere.AppID.EQ(params.AppID),
 			models.TNFTWhere.Owner.EQ(params.Owner),
 		).OneG(context.Background())
-		//nft status = pendding && lockby = txs.id
-		nft, err := models.TNFTS(
-			models.TNFTWhere.ClassID.EQ(string(params.ClassID)),
-			models.TNFTWhere.ClassID.EQ(res.NFTID),
-			models.TNFTWhere.AppID.EQ(params.AppID),
-			models.TNFTWhere.Owner.EQ(params.Owner),
-		).OneG(context.Background())
 		if err != nil {
-			return "", types.ErrTxResult
+			db.Rollback()
+			return "", types.ErrNftBatchTransfer
 		}
-		nft.Status = "pendding"
-		nft.LockedBy = null.Uint64From(txs.ID)
-		_, err = nft.UpdateG(context.Background(), boil.Infer())
+
+		res.Status = models.TNFTSStatusPending
+		res.LockedBy = null.Uint64From(txs.ID)
+		_, err = res.UpdateG(context.Background(), boil.Infer())
 		if err != nil {
 			return "", types.ErrNftBatchTransfer
 		}
@@ -225,6 +218,5 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 	if err != nil {
 		return "", types.ErrInternal
 	}
-
 	return hash, nil
 }

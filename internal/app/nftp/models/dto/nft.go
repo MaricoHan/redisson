@@ -13,10 +13,9 @@ type EditNftByIndexP struct {
 
 type EditNftByBatchP struct {
 	EditNfts []*EditNft `json:"nfts"`
-
-	AppID   uint64 `json:"app_id"`
-	ClassId string `json:"class_id"`
-	Sender  string `json:"owner"`
+	AppID    uint64     `json:"app_id"`
+	ClassId  string     `json:"class_id"`
+	Sender   string     `json:"owner"`
 }
 
 type EditNft struct {

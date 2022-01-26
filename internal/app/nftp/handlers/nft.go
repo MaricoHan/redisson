@@ -39,6 +39,11 @@ func newNft(svc *service.Nft) *nft {
 
 // CreateNft Create one or more nft class
 // return creation result
+<<<<<<< HEAD
+func (h nft) CreateNft(ctx context.Context, _ interface{}) (interface{}, error) {
+	panic("not yet implemented")
+
+=======
 func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
 	req := request.(*vo.CreateNftsRequest)
@@ -60,6 +65,7 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 	}
 
 	return h.svc.CreateNfts(params)
+>>>>>>> 6d38c7b5f958f24e42d47c41b2e17334a05ccb06
 }
 
 // EditNftByIndex Edit an nft and return the edited result
