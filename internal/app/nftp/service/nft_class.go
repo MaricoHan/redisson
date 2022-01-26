@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -41,13 +42,11 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 	//new classId
 	var data []byte = []byte(params.Owner)
 	data = append(data, []byte(params.Name)...)
-	data = append(data, []byte(string(time.Now().Unix()))...)
-	str := strings.ToUpper(hex.EncodeToString(tmhash.Sum(data)))
-	classId := fmt.Sprintf("nftp%d", str)
+	data = append(data, []byte(strconv.FormatInt(time.Now().Unix(),10))...)
+	classId := nftp + strings.ToLower(hex.EncodeToString(tmhash.Sum(data)))
 	//txMsg, Platform side created
 	baseTx := svc.base.CreateBaseTx(pAddress, defultKeyPassword)
 	createDenomMsg := nft.MsgIssueDenom{
-		//nftClassID := nftp + sha256(createrAddress + className + time.now().unix())
 		Id:               classId,
 		Name:             params.Name,
 		Sender:           pAddress,
@@ -89,85 +88,79 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 }
 
 func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, error) {
-	db, err := orm.GetDB().Begin()
 	result := &dto.NftClassesRes{}
 	result.Offset = params.Offset
 	result.Limit = params.Limit
 	result.NftClasses = []*dto.NftClass{}
-	queryMod := []qm.QueryMod{
-		qm.From(models.TableNames.TClasses),
-		models.TClassWhere.AppID.EQ(params.AppID),
-	}
-	if params.Id != "" {
-		queryMod = append(queryMod, models.TClassWhere.ClassID.EQ(params.Id))
-	}
-	if params.Name != "" {
-		//Fuzzy query support
-		queryMod = append(queryMod, qm.Where("name_contains=?", params.Name))
-	}
-	if params.Owner != "" {
-		queryMod = append(queryMod, models.TClassWhere.Owner.EQ(params.Owner))
-	}
-	if params.TxHash != "" {
-		queryMod = append(queryMod, models.TClassWhere.TXHash.EQ(params.TxHash))
-	}
-
-	if params.StartDate != nil {
-		queryMod = append(queryMod, models.TClassWhere.CreateAt.GTE(*params.StartDate))
-	}
-	if params.EndDate != nil {
-		queryMod = append(queryMod, models.TClassWhere.CreateAt.LTE(*params.EndDate))
-	}
-	if params.SortBy != "" {
-		orderBy := ""
-		switch params.SortBy {
-		case "DATE_DESC":
-			orderBy = fmt.Sprintf("%s desc", models.TClassColumns.CreateAt)
-		case "DATE_ASC":
-			orderBy = fmt.Sprintf("%s ASC", models.TClassColumns.CreateAt)
-		}
-		queryMod = append(queryMod, qm.OrderBy(orderBy))
-	}
-
 	var modelResults []*models.TClass
-	total, err := modext.PageQuery(
-		context.Background(),
-		db,
-		queryMod,
-		&modelResults,
-		//int(params.Offset),
-		//int(params.Limit),
-		params.Offset,
-		params.Limit,
-	)
-	if err != nil {
-		// records not exist
-		if strings.Contains(err.Error(), "records not exist") {
-			return result, nil
-		}
-		return nil, types.ErrInternal
-	}
-
-	result.TotalCount = total
-
-	var classIds []string
-	for _, modelResult := range modelResults {
-		classIds = append(classIds, modelResult.ClassID)
-	}
-	q1 := []qm.QueryMod{
-		qm.From(models.TableNames.TNFTS),
-		qm.Select(models.TNFTColumns.ClassID),
-		qm.Select("count(class_id) as count, class_id"),
-		qm.GroupBy(models.TNFTColumns.ClassID),
-	}
-	q1 = append(q1, models.TNFTWhere.ClassID.IN(classIds))
 	var countRes []*dto.NftCount
-	err = models.NewQuery(q1...).Bind(context.Background(), db, &countRes)
-	if err != nil {
-		db.Rollback()
-		return nil, types.ErrInternal
-	}
-	err = db.Commit()
+	err := modext.Transaction(func(exec boil.ContextExecutor) error {
+		queryMod := []qm.QueryMod{
+			qm.From(models.TableNames.TClasses),
+			models.TClassWhere.AppID.EQ(params.AppID),
+		}
+		if params.Id != "" {
+			queryMod = append(queryMod, models.TClassWhere.ClassID.EQ(params.Id))
+		}
+		if params.Name != "" {
+			//Fuzzy query support
+			queryMod = append(queryMod, qm.Where("name like ? ", "%"+params.Name+"%"))
+		}
+		if params.Owner != "" {
+			queryMod = append(queryMod, models.TClassWhere.Owner.EQ(params.Owner))
+		}
+		if params.TxHash != "" {
+			queryMod = append(queryMod, models.TClassWhere.TXHash.EQ(params.TxHash))
+		}
+
+		if params.StartDate != nil {
+			queryMod = append(queryMod, models.TClassWhere.CreateAt.GTE(*params.StartDate))
+		}
+		if params.EndDate != nil {
+			queryMod = append(queryMod, models.TClassWhere.CreateAt.LTE(*params.EndDate))
+		}
+		if params.SortBy != "" {
+			orderBy := ""
+			switch params.SortBy {
+			case "DATE_DESC":
+				orderBy = fmt.Sprintf("%s desc", models.TClassColumns.CreateAt)
+			case "DATE_ASC":
+				orderBy = fmt.Sprintf("%s ASC", models.TClassColumns.CreateAt)
+			}
+			queryMod = append(queryMod, qm.OrderBy(orderBy))
+		}
+
+		total, err := modext.PageQuery(
+			context.Background(),
+			orm.GetDB(),
+			queryMod,
+			&modelResults,
+			params.Offset,
+			params.Limit,
+		)
+		if err != nil {
+			return err
+		}
+		result.TotalCount = total
+
+		var classIds []string
+		for _, modelResult := range modelResults {
+			classIds = append(classIds, modelResult.ClassID)
+		}
+		q1 := []qm.QueryMod{
+			qm.From(models.TableNames.TNFTS),
+			qm.Select(models.TNFTColumns.ClassID),
+			qm.Select("count(class_id) as count, class_id"),
+			qm.GroupBy(models.TNFTColumns.ClassID),
+			models.TNFTWhere.ClassID.IN(classIds),
+		}
+
+		err = models.NewQuery(q1...).Bind(context.Background(), orm.GetDB(), &countRes)
+		if err != nil {
+			return types.ErrInternal
+		}
+		return err
+	})
 	if err != nil {
 		return nil, types.ErrInternal
 	}
@@ -196,25 +189,31 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 }
 
 func (svc *NftClass) NftClassById(params dto.NftClassesP) (*dto.NftClassRes, error) {
-	db, err := orm.GetDB().Begin()
 	if params.Id == "" {
 		return nil, types.ErrNftClassDetailsGet
 	}
+	var err error
+	var classOne *models.TClass
+	var count int64
+	err = modext.Transaction(func(exec boil.ContextExecutor) error {
+		classOne, err = models.TClasses(
+			models.TClassWhere.ClassID.EQ(params.Id),
+			models.TClassWhere.AppID.EQ(params.AppID),
+		).One(context.Background(), orm.GetDB())
+		if err != nil {
+			return types.ErrNftClassesGet
+		}
 
-	classOne, err := models.TClasses(
-		models.TClassWhere.ClassID.EQ(params.Id),
-		models.TClassWhere.AppID.EQ(params.AppID),
-	).One(context.Background(), db)
+		count, err = models.TNFTS(
+			models.TNFTWhere.ClassID.EQ(params.Id),
+			models.TNFTWhere.AppID.EQ(params.AppID),
+		).Count(context.Background(), orm.GetDB())
+		if err != nil {
+			return types.ErrInternal
+		}
+		return err
+	})
 	if err != nil {
-		return nil, types.ErrNftClassesGet
-	}
-
-	count, err := models.TNFTS(
-		models.TNFTWhere.ClassID.EQ(params.Id),
-		models.TNFTWhere.AppID.EQ(params.AppID),
-	).Count(context.Background(), db)
-	if err != nil {
-		db.Rollback()
 		return nil, types.ErrInternal
 	}
 
