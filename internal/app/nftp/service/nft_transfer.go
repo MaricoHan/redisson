@@ -6,10 +6,10 @@ import (
 	sdktype "github.com/irisnet/core-sdk-go/types"
 	"github.com/irisnet/irismod-sdk-go/nft"
 	"github.com/volatiletech/sqlboiler/v4/boil"
-
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
+	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"
 )
 
 type NftTransfer struct {
@@ -25,7 +25,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	if err != nil {
 		return "", types.ErrMysqlConn
 	}
-
+	modext.Transaction
 	//query if class can be operated
 	class, err := models.TClasses(
 		models.TClassWhere.ClassID.EQ(string(params.ClassID)),
@@ -35,7 +35,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 		db.Rollback()
 		return "", types.ErrNftClassTransfer
 	}
-
+	modext.Transaction
 	//msg
 	msgs := nft.MsgTransferDenom{
 		Id:        string(params.ClassID),
@@ -68,8 +68,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	class.Status = models.TClassesStatusPending
 	class.LockedBy = txs.ID
 
-	ok, err = class.UpdateG(context.Background(), boil.Infer())
-	if ok !=
+	_, err = class.UpdateG(context.Background(), boil.Infer())
 	if err != nil {
 		db.Rollback()
 		return "", types.ErrNftClassTransfer
