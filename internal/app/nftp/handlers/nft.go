@@ -39,11 +39,6 @@ func newNft(svc *service.Nft) *nft {
 
 // CreateNft Create one or more nft class
 // return creation result
-<<<<<<< HEAD
-func (h nft) CreateNft(ctx context.Context, _ interface{}) (interface{}, error) {
-	panic("not yet implemented")
-
-=======
 func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
 	req := request.(*vo.CreateNftsRequest)
@@ -65,7 +60,6 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 	}
 
 	return h.svc.CreateNfts(params)
->>>>>>> 6d38c7b5f958f24e42d47c41b2e17334a05ccb06
 }
 
 // EditNftByIndex Edit an nft and return the edited result
@@ -224,9 +218,6 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, request interface{}
 		Index:   h.Index(ctx),
 		AppID:   h.AppID(ctx),
 	}
-	params.Signer = h.Signer(ctx)
-	params.Operation = h.Operation(ctx)
-	params.Txhash = h.Txhash(ctx)
 
 	offset, err := h.Offset(ctx)
 	if err != nil {
@@ -240,13 +231,10 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, request interface{}
 	}
 	params.Limit = limit
 
-	if params.Offset == 0 {
-		params.Offset = 1
-	}
-
 	if params.Limit == 0 {
 		params.Limit = 10
 	}
+
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
 		startDateTime, err := time.Parse(timeLayout, startDateR)
@@ -279,6 +267,14 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, request interface{}
 		return nil, types.ErrParams
 	}
 
+	params.Signer = h.Signer(ctx)
+	params.Txhash = h.Txhash(ctx)
+	params.Operation = h.Operation(ctx)
+	if params.Operation != "" {
+		if !strings.Contains("mint/edit/transfer/burn", params.Operation) {
+			return nil, types.ErrParams
+		}
+	}
 	// 校验参数 end
 	return h.svc.NftOperationHistoryByIndex(params)
 }
