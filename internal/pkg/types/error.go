@@ -43,6 +43,7 @@ var (
 	ErrGetNftOperationDetails = Register(RootCodeSpace, "36", "failed to get nft operation details")
 	ErrNftStatus              = Register(RootCodeSpace, "37", "One of these NFTs does not exist or its status is not active")
 	ErrIndicesFormat          = Register(RootCodeSpace, "38", "Indices format is invalid, must be unsigned numeric type,such as:1,2,3,4...")
+	ErrNftClassStatus         = Register(RootCodeSpace, "39", "One of these NFT Class does not exist or its status is not active")
 )
 
 var usedErrorCodes = map[string]*AppError{}
