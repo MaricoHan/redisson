@@ -87,7 +87,7 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 	for _, EditNft := range params.EditNfts { // create every rawMsg
 		// get NFT by app_id,class_id and index
 		tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(EditNft.Index)).One(context.Background(), boil.GetContextDB())
-		fmt.Println(tNft)
+
 		if err != nil {
 			return "", err
 		}
