@@ -69,9 +69,6 @@ func (h nftClass) Classes(ctx context.Context, _ interface{}) (interface{}, erro
 		return nil, types.ErrParams
 	}
 	params.Limit = limit
-	if params.Offset == 0 {
-		params.Offset = 1
-	}
 
 	if params.Limit == 0 {
 		params.Limit = 10

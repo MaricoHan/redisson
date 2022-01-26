@@ -42,7 +42,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 	//new classId
 	var data []byte = []byte(params.Owner)
 	data = append(data, []byte(params.Name)...)
-	data = append(data, []byte(strconv.FormatInt(time.Now().Unix(),10))...)
+	data = append(data, []byte(strconv.FormatInt(time.Now().Unix(), 10))...)
 	classId := nftp + strings.ToLower(hex.EncodeToString(tmhash.Sum(data)))
 	//txMsg, Platform side created
 	baseTx := svc.base.CreateBaseTx(pAddress, defultKeyPassword)
@@ -130,13 +130,13 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 			queryMod = append(queryMod, qm.OrderBy(orderBy))
 		}
 
-		total, err := modext.PageQuery(
+		total, err := modext.PageQueryByOffset(
 			context.Background(),
 			orm.GetDB(),
 			queryMod,
 			&modelResults,
-			params.Offset,
-			params.Limit,
+			int(params.Offset),
+			int(params.Limit),
 		)
 		if err != nil {
 			return err

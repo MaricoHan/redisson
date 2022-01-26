@@ -42,6 +42,9 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) ([]string, error) {
 		classOne, err := models.TClasses(
 			models.TClassWhere.ClassID.EQ(params.ClassId),
 		).One(context.Background(), orm.GetDB())
+		if classOne.Status != models.TNFTSStatusActive {
+			return types.ErrClassStatus
+		}
 		if err != nil {
 			return types.ErrNftClassDetailsGet
 		}
@@ -507,6 +510,7 @@ func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
 	queryMod := []qm.QueryMod{
 		qm.From(models.TableNames.TNFTS),
 		models.TNFTWhere.AppID.EQ(params.AppID),
+		models.TNFTWhere.Status.IN([]string{models.TNFTSStatusActive, models.TNFTSStatusBurned}),
 	}
 	if params.Id != "" {
 		queryMod = append(queryMod, models.TNFTWhere.NFTID.EQ(params.Id))
