@@ -129,28 +129,23 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 		return "", err
 	}
 
-	// get database object
-	db, err := orm.GetDB().Begin()
-	if err != nil {
-		return "", types.ErrMysqlConn
-	}
-
 	// lock the NFTs
-	for _, EditNft := range params.EditNfts { // create every rawMsg
-		tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(EditNft.Index)).One(context.Background(), boil.GetContextDB())
-		tNft.Status = models.TNFTSStatusPending
-		tNft.LockedBy = null.Uint64From(txId)
-		// update
-		_, err = tNft.Update(context.Background(), db, boil.Infer())
-		if err != nil {
-			db.Rollback()
-			return "", err
+	err = modext.Transaction(func(exec boil.ContextExecutor) error {
+		for _, EditNft := range params.EditNfts { // create every rawMsg
+			tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(EditNft.Index)).One(context.Background(), boil.GetContextDB())
+			tNft.Status = models.TNFTSStatusPending
+			tNft.LockedBy = null.Uint64From(txId)
+			// update
+			_, err = tNft.Update(context.Background(), exec, boil.Infer())
+			if err != nil {
+				return err
+			}
 		}
-	}
-	// commit
-	err = db.Commit()
+		return nil
+	})
+
 	if err != nil {
-		return "", types.ErrInternal
+		return "", err
 	}
 
 	// return the txHash
@@ -255,27 +250,22 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 		return "", err
 	}
 
-	// get database object
-	db, err := orm.GetDB().Begin()
-	if err != nil {
-		return "", types.ErrMysqlConn
-	}
-
-	// lock the NFT
-	for _, index := range params.Indices { // create every rawMsg
-		tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(index)).One(context.Background(), boil.GetContextDB())
-		tNft.Status = models.TNFTSStatusPending
-		tNft.LockedBy = null.Uint64From(txId)
-		_, err = tNft.Update(context.Background(), db, boil.Infer())
-		if err != nil {
-			db.Rollback()
-			return "", err
+	// lock the NFTs
+	err = modext.Transaction(func(exec boil.ContextExecutor) error {
+		for _, index := range params.Indices { // create every rawMsg
+			tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(index)).One(context.Background(), boil.GetContextDB())
+			tNft.Status = models.TNFTSStatusPending
+			tNft.LockedBy = null.Uint64From(txId)
+			_, err = tNft.Update(context.Background(), exec, boil.Infer())
+			if err != nil {
+				return err
+			}
 		}
-	}
-	// commit
-	err = db.Commit()
+		return nil
+	})
+
 	if err != nil {
-		return "", types.ErrInternal
+		return "", err
 	}
 
 	// return the txHash
