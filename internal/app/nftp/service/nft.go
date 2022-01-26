@@ -2,8 +2,10 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"encoding/hex"
 	"fmt"
+	"github.com/friendsofgo/errors"
 	"strconv"
 	"strings"
 	"time"
@@ -121,10 +123,16 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
 
 	// get NFT by app_id,class_id and index
 	tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(params.Index)).One(context.Background(), boil.GetContextDB())
-	if err != nil {
+	if tNft == nil || tNft.Status == models.TNFTSStatusBurned {
+		return "", types.ErrNftMissing
+	}
+
+	// internal error：500
+	if errors.Cause(err) != sql.ErrNoRows {
 		return "", types.ErrInternal
 	}
-	if tNft == nil || tNft.Status == models.TNFTSStatusBurned {
+	// nft does not exist ：404
+	if tNft == nil || tNft.Status != models.TNFTSStatusActive {
 		return "", types.ErrNftMissing
 	}
 
@@ -180,13 +188,15 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 	for _, EditNft := range params.EditNfts { // create every rawMsg
 		// get NFT by app_id,class_id and index
 		tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(EditNft.Index)).One(context.Background(), boil.GetContextDB())
+		// internal error：500
+		if errors.Cause(err) != sql.ErrNoRows {
+			return "", types.ErrInternal
+		}
+		// nft does not exist or status is not active：400
+		if tNft == nil || tNft.Status != models.TNFTSStatusActive {
+			return "", types.ErrNftStatus
+		}
 
-		if err != nil {
-			return "", err
-		}
-		if tNft == nil || tNft.Status == models.TNFTSStatusBurned {
-			return "", types.ErrNftMissing
-		}
 		// judge whether the Caller is the owner
 		if params.Sender != tNft.Owner {
 			return "", types.ErrNotOwner
@@ -248,12 +258,15 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (string, error) {
 
 	// get NFT by app_id,class_id and index
 	tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(params.Index)).One(context.Background(), boil.GetContextDB())
-	if err != nil {
-		return "", err
+	// internal error：500
+	if errors.Cause(err) != sql.ErrNoRows {
+		return "", types.ErrInternal
 	}
-	if tNft == nil || tNft.Status == models.TNFTSStatusBurned {
+	// nft does not exist or status is not active：404
+	if tNft == nil || tNft.Status != models.TNFTSStatusBurned {
 		return "", types.ErrNftMissing
 	}
+	// pending：400
 	if tNft.Status == models.TNFTSStatusPending {
 		return "", types.ErrNftBurnPend
 	}
@@ -304,14 +317,13 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 	for _, index := range params.Indices { // create every rawMsg
 		//get NFT by app_id,class_id and index
 		tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(index)).One(context.Background(), boil.GetContextDB())
-		if err != nil {
-			return "", err
+		// internal error：500
+		if errors.Cause(err) != sql.ErrNoRows {
+			return "", types.ErrInternal
 		}
-		if tNft == nil || tNft.Status == models.TNFTSStatusBurned {
-			return "", types.ErrNftMissing
-		}
-		if tNft.Status == models.TNFTSStatusPending {
-			return "", types.ErrNftBurnPend
+		// nft does not exist or status is not active：400
+		if tNft == nil || tNft.Status != models.TNFTSStatusActive {
+			return "", types.ErrNftStatus
 		}
 
 		// judge whether the Caller is the owner
@@ -344,7 +356,7 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 
 	// lock the NFTs
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
-		for _, index := range params.Indices { // create every rawMsg
+		for _, index := range params.Indices { // lock every nft
 			tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(index)).One(context.Background(), boil.GetContextDB())
 			tNft.Status = models.TNFTSStatusPending
 			tNft.LockedBy = null.Uint64From(txId)
