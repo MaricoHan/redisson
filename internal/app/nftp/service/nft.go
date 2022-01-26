@@ -47,7 +47,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) ([]string, error) {
 		var msgs sdktype.Msgs
 		for i := 1; i <= params.Amount; i++ {
 			index := int(offSet) + i
-			nftId := nftp + strings.ToUpper(hex.EncodeToString(tmhash.Sum([]byte(params.ClassId)))) + string(index)
+			nftId := nftp + strings.ToLower(hex.EncodeToString(tmhash.Sum([]byte(params.ClassId)))) + strconv.Itoa(index)
 			if params.Recipient == "" {
 				params.Recipient = classOne.Owner
 			}
