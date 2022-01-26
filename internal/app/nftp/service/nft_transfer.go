@@ -23,6 +23,18 @@ func NewNftTransfer(base *Base) *NftTransfer {
 }
 
 func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (string, error) {
+	class, err := models.TClasses(
+		models.TClassWhere.ClassID.EQ(string(params.ClassID)),
+		models.TClassWhere.AppID.EQ(params.AppID),
+		models.TClassWhere.Owner.EQ(params.Owner)).OneG(context.Background())
+	if err != nil {
+		return "", types.ErrNftClassTransfer
+	}
+
+	if class.Status != models.TClassesStatusActive {
+		return "", types.ErrNftClassStatus
+	}
+
 	//msg
 	msgs := nft.MsgTransferDenom{
 		Id:        string(params.ClassID),
@@ -48,15 +60,6 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	}
 
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
-		//class status && class.lockby == txid
-		class, err := models.TClasses(
-			models.TClassWhere.ClassID.EQ(string(params.ClassID)),
-			models.TClassWhere.AppID.EQ(params.AppID),
-			models.TClassWhere.Owner.EQ(params.Owner)).One(context.Background(), exec)
-		if err != nil {
-			return types.ErrNftClassTransfer
-		}
-
 		//class status = pending && lockby = txs.id
 		class.Status = models.TClassesStatusPending
 		class.LockedBy = null.Uint64From(txId)
@@ -87,6 +90,10 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 	).OneG(context.Background())
 	if err != nil {
 		return "", types.ErrNftTransfer
+	}
+
+	if res.Status != models.TNFTSStatusActive {
+		return "", types.ErrNftStatus
 	}
 
 	msgs := nft.MsgTransferNFT{
@@ -154,6 +161,10 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			return "", types.ErrNftBatchTransfer
 		}
 
+		if res.Status != models.TNFTSStatusActive {
+			return "", types.ErrNftStatus
+		}
+
 		//msg
 		msg := nft.MsgTransferNFT{
 			Id:        res.NFTID,
@@ -200,6 +211,10 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			).One(context.Background(), exec)
 			if err != nil {
 				return types.ErrNftBatchTransfer
+			}
+
+			if res.Status != models.TNFTSStatusActive {
+				return types.ErrNftStatus
 			}
 
 			res.Status = models.TNFTSStatusPending

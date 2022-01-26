@@ -42,6 +42,7 @@ var (
 	ErrGetTx                  = Register(RootCodeSpace, "35", "failed to get tx by hash")
 	ErrGetNftOperationDetails = Register(RootCodeSpace, "36", "failed to get nft operation details")
 	ErrNftStatus              = Register(RootCodeSpace, "37", "One of these NFTs does not exist or its status is not active")
+	ErrNftClassStatus         = Register(RootCodeSpace, "38", "One of these NFT Class does not exist or its status is not active")
 )
 
 var usedErrorCodes = map[string]*AppError{}
