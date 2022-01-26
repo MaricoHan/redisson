@@ -5,14 +5,11 @@ import (
 
 	sdktype "github.com/irisnet/core-sdk-go/types"
 	"github.com/irisnet/irismod-sdk-go/nft"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
-	"gitlab.bianjie.ai/irita-paas/orms/orm-nft"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
-	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"
 )
 
 type NftTransfer struct {
@@ -52,7 +49,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	if err != nil {
 		return "", types.ErrBuildAndSign
 	}
-	modext.Transaction
+
 	//txs status = undo
 	txs := models.TTX{
 		AppID:         params.AppID,
@@ -70,7 +67,9 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	//class status = pending && lockby = txs.id
 	class.Status = models.TClassesStatusPending
 	class.LockedBy = txs.ID
-	_, err = class.UpdateG(context.Background(), boil.Infer())
+
+	ok, err = class.UpdateG(context.Background(), boil.Infer())
+	if ok !=
 	if err != nil {
 		db.Rollback()
 		return "", types.ErrNftClassTransfer
