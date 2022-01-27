@@ -110,7 +110,6 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 }
 
 func (svc *Account) Accounts(params dto.AccountsP) (*dto.AccountsRes, error) {
-
 	result := &dto.AccountsRes{}
 	result.Offset = params.Offset
 	result.Limit = params.Limit

@@ -167,7 +167,7 @@ func (h nft) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 	if params.Limit == 0 {
 		params.Limit = 10
 	}
-	if params.Limit >= 50 {
+	if params.Limit > 50 {
 		return nil, types.ErrParams
 	}
 
@@ -244,7 +244,7 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, request interface{}
 	if params.Limit == 0 {
 		params.Limit = 10
 	}
-	if params.Limit >= 50 {
+	if params.Limit > 50 {
 		return nil, types.ErrParams
 	}
 
