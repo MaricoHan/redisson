@@ -101,9 +101,19 @@ func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface
 	}
 
 	//check start
-	//1. count limit :50
+	// 1. count limit :50
 	if len(params.EditNfts) > 50 {
 		return nil, types.ErrNftTooMany
+	}
+
+	// 2.judge whether the NFT is repeated
+	hash := make(map[uint64]bool)
+	for _, Nft := range params.EditNfts {
+		if hash[Nft.Index] == false {
+			hash[Nft.Index] = true
+		} else {
+			return "", types.ErrRepeated
+		}
 	}
 
 	//check end
@@ -137,8 +147,19 @@ func (h nft) DeleteNftByBatch(ctx context.Context, _ interface{}) (interface{}, 
 	// check start
 	indices, err := h.Indices(ctx)
 	if err != nil {
-		return nil, types.ErrIndicesFormat
+		return nil, err
 	}
+
+	// 2.judge whether the NFT is repeated
+	hash := make(map[uint64]bool)
+	for _, index := range indices {
+		if hash[index] == false {
+			hash[index] = true
+		} else {
+			return nil, types.ErrRepeated
+		}
+	}
+
 	if len(indices) > 50 {
 		return nil, types.ErrNftTooMany
 	}
@@ -381,7 +402,7 @@ func (h nft) Index(ctx context.Context) (uint64, error) {
 		return 0, types.ErrIndexFormat
 	}
 	index, err := strconv.ParseUint(rec.(string), 10, 64)
-	if err == nil {
+	if err != nil {
 		return 0, types.ErrIndexFormat
 	}
 
@@ -420,7 +441,7 @@ func (h nft) Indices(ctx context.Context) ([]uint64, error) {
 	for _, s := range strArr {
 		tmp, err := strconv.ParseUint(s, 10, 64)
 		if err != nil {
-			return nil, err
+			return nil, types.ErrIndicesFormat
 		}
 		indices = append(indices, tmp)
 	}

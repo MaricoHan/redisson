@@ -148,16 +148,21 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
 		return "", types.ErrNoPermission
 	}
 
+	nftName := "[do-not-modify]"
+	if params.Name != "" {
+		nftName = params.Name
+	}
+
 	// create rawMsg
 	msgEditNFT := nft.MsgEditNFT{
 		Id:      tNft.NFTID,
 		DenomId: tNft.ClassID,
-		Name:    tNft.Name.String,
+		Name:    nftName,
 		URI:     params.Uri,
 		Data:    params.Data,
 		Sender:  params.Sender,
+		UriHash: "[do-not-modify]",
 	}
-	fmt.Println("msgEditNFT", msgEditNFT)
 
 	// build and sign transaction
 	baseTx := svc.base.CreateBaseTx(params.Sender, "")
@@ -213,13 +218,18 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 			return "", types.ErrNoPermission
 		}
 
+		nftName := "[do-not-modify]"
+		if EditNft.Name != "" {
+			nftName = EditNft.Name
+		}
 		msgEditNFT := nft.MsgEditNFT{
 			Id:      tNft.NFTID,
 			DenomId: tNft.ClassID,
-			Name:    tNft.Name.String,
+			Name:    nftName,
 			URI:     EditNft.Uri,
 			Data:    EditNft.Data,
 			Sender:  params.Sender,
+			UriHash: "[do-not-modify]",
 		}
 		msgEditNFTs = append(msgEditNFTs, &msgEditNFT)
 	}
@@ -242,7 +252,7 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 	// lock the NFTs
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		for _, EditNft := range params.EditNfts { // create every rawMsg
-			tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(EditNft.Index)).One(context.Background(), boil.GetContextDB())
+			tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(EditNft.Index)).One(context.Background(), exec)
 			tNft.Status = models.TNFTSStatusPending
 			tNft.LockedBy = null.Uint64From(txId)
 			// update
@@ -370,7 +380,7 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 	// lock the NFTs
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		for _, index := range params.Indices { // lock every nft
-			tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(index)).One(context.Background(), boil.GetContextDB())
+			tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(index)).One(context.Background(), exec)
 			tNft.Status = models.TNFTSStatusPending
 			tNft.LockedBy = null.Uint64From(txId)
 			_, err = tNft.Update(context.Background(), exec, boil.Infer())

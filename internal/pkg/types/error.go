@@ -48,6 +48,7 @@ var (
 	ErrNftStatusOne           = Register(RootCodeSpace, "41", "nft status is not active or burned")
 	ErrNftCountByClass        = Register(RootCodeSpace, "42", "Cannot get nft count by classId")
 	ErrNotFound               = Register(RootCodeSpace, "43", "Resource Not Found")
+	ErrRepeated               = Register(RootCodeSpace, "44", "Please do not fill in duplicate NFT in the request parameters")
 )
 
 var usedErrorCodes = map[string]*AppError{}
