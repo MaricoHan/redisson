@@ -132,12 +132,13 @@ func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFu
 		}
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			log.Error("Execute decode request failed", "error", err.Error())
-			return nil, types.UpdateDescription(types.RootCodeSpace, "3", err.Error())
+			return nil, types.NewAppError(types.RootCodeSpace, "3", err.Error())
 		}
 
 		//validate request
 		if err := c.validate.Struct(req); err != nil {
-			return nil, types.UpdateDescription(types.RootCodeSpace, "3", err.Error())
+			log.Error("Execute decode request failed", "validate struct", err.Error())
+			return nil, types.NewAppError(types.RootCodeSpace, "3", err.Error())
 		}
 		return req, nil
 	}
