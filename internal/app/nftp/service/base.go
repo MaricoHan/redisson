@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"crypto/sha256"
+	"database/sql"
 	"encoding/hex"
 	"strings"
 
@@ -11,6 +12,7 @@ import (
 
 	sdk "github.com/irisnet/core-sdk-go"
 	sdktype "github.com/irisnet/core-sdk-go/types"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 )
 
@@ -64,4 +66,31 @@ func (m Base) TxIntoDataBase(AppID uint64, txHash string, signedData []byte, ope
 		return 0, err
 	}
 	return ttx.ID, err
+}
+
+// ValidateTx validate tx status
+func (m Base) ValidateTx(hash string, exec boil.ContextExecutor) (*models.TTX, error) {
+	tx, err := models.TTXS(models.TTXWhere.Hash.EQ(hash)).One(context.Background(), exec)
+	if err == sql.ErrNoRows {
+		return tx, nil
+	} else if err != nil {
+		return tx, err
+	}
+
+	// pending
+	if tx.Status == models.TTXSStatusPending {
+		return tx, types.ErrTXStatusPending
+	}
+
+	// undo
+	if tx.Status == models.TTXSStatusUndo {
+		return tx, types.ErrTXStatusUndo
+	}
+
+	// success
+	if tx.Status == models.TTXSStatusSuccess {
+		return tx, types.ErrTXStatusSuccess
+	}
+
+	return tx, nil
 }
