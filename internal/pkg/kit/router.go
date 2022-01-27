@@ -221,45 +221,13 @@ func (c Controller) serverOptions(
 				errResp.CodeSpace = appErr.CodeSpace()
 				errResp.Message = appErr.Error()
 				errResp.Code = appErr.Code()
-			case types.ErrParams, types.ErrAccountCreate,
-				types.ErrGetAccountDetails,
-				types.ErrNftClassCreate,
-				types.ErrNftClassesGet,
-				types.ErrNftClassDetailsGet,
-				types.ErrNftCreate,
-				types.ErrNftGet,
-				types.ErrNftDetailsGet,
-				types.ErrNftOptionHistoryGet,
-				types.ErrNftEdit,
-				types.ErrNftBatchEdit,
-				types.ErrNftBurn,
-				types.ErrNftBatchBurn,
-				types.ErrTxResult,
-				types.ErrNotOwner,
-				types.ErrNoPermission,
-				types.ErrGetNftOperationDetails,
-				types.ErrNftClassTransfer,
-				types.ErrBuildAndSign,
-				types.ErrNftTransfer,
-				types.ErrNftBatchTransfer,
-				types.ErrNftBurnPend,
-				types.ErrNftStatus,
-				types.ErrNftClassesSet,
-				types.ErrTxMsgGet,
-				types.ErrTxMsgInsert,
-				types.ErrNftClassStatus,
-				types.ErrClassStatus,
-				types.ErrNftStatusOne,
-				types.ErrNftCountByClass,
-				types.ErrIndicesFormat:
-				w.WriteHeader(http.StatusBadRequest)
+			case types.ErrGetTx, types.ErrNftMissing:
+				w.WriteHeader(http.StatusNotFound)
 				errResp.CodeSpace = appErr.CodeSpace()
 				errResp.Message = appErr.Error()
 				errResp.Code = appErr.Code()
-
-			case types.ErrNftMissing,
-				types.ErrNotFound:
-				w.WriteHeader(http.StatusNotFound)
+			default:
+				w.WriteHeader(http.StatusBadRequest)
 				errResp.CodeSpace = appErr.CodeSpace()
 				errResp.Message = appErr.Error()
 				errResp.Code = appErr.Code()
