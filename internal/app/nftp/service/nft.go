@@ -437,7 +437,7 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 		},
 		OperationRecords: nil,
 	}
-	nft, err := models.TNFTS(
+	res, err := models.TNFTS(
 		models.TNFTWhere.AppID.EQ(params.AppID),
 		models.TNFTWhere.ClassID.EQ(params.ClassID),
 		models.TNFTWhere.Index.EQ(params.Index),
@@ -454,7 +454,7 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 			models.TMSGColumns.Recipient,
 			models.TMSGColumns.Timestamp),
 		models.TMSGWhere.AppID.EQ(params.AppID),
-		models.TMSGWhere.NFTID.EQ(null.StringFrom(nft.NFTID)),
+		models.TMSGWhere.NFTID.EQ(null.StringFrom(res.NFTID)),
 	}
 	if params.Txhash != "" {
 		queryMod = append(queryMod, models.TMSGWhere.TXHash.EQ(params.Txhash))
