@@ -167,24 +167,34 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
 	// build and sign transaction
 	baseTx := svc.base.CreateBaseTx(params.Sender, "")
 	signedData, txHash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgEditNFT}, baseTx)
-
-	fmt.Println("signedData:", signedData)
 	if err != nil {
 		log.Debug("edit nft by index", "BuildAndSign error:", err.Error())
 		return "", err
 	}
+	_, err = svc.base.ValidateTx("B06FDA23CC60FCBD87D70150CD9546A33BA672EEAD528B2E2917D1ABCB9BA45D", boil.GetContextDB())
 
-	// Tx into database
-	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, models.TTXSOperationTypeEditNFT, models.TTXSStatusUndo)
 	if err != nil {
-		log.Debug("edit nft by index", "Tx into database error:", err.Error())
 		return "", err
 	}
 
-	// lock the NFT
-	tNft.Status = models.TNFTSStatusPending
-	tNft.LockedBy = null.Uint64From(txId)
-	_, err = tNft.UpdateG(context.Background(), boil.Infer())
+	err = modext.Transaction(func(exec boil.ContextExecutor) error {
+		// Tx into database
+		txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, models.TTXSOperationTypeEditNFT, models.TTXSStatusUndo, exec)
+		if err != nil {
+			log.Debug("edit nft by index", "Tx into database error:", err.Error())
+			return err
+		}
+
+		// lock the NFT
+		tNft.Status = models.TNFTSStatusPending
+		tNft.LockedBy = null.Uint64From(txId)
+		_, err = tNft.Update(context.Background(), exec, boil.Infer())
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+
 	if err != nil {
 		return "", err
 	}
@@ -242,15 +252,16 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 		return "", err
 	}
 
-	// Tx into database
-	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, models.TTXSOperationTypeEditNFTBatch, models.TTXSStatusUndo)
-	if err != nil {
-		log.Debug("edit nft by batch", "Tx into database error:", err.Error())
-		return "", err
-	}
-
-	// lock the NFTs
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
+		// Tx into database
+		txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, models.TTXSOperationTypeEditNFTBatch, models.TTXSStatusUndo, exec)
+
+		if err != nil {
+			log.Debug("edit nft by batch", "Tx into database error:", err.Error())
+			return err
+		}
+
+		// lock the NFTs
 		for _, EditNft := range params.EditNfts { // create every rawMsg
 			tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(EditNft.Index)).One(context.Background(), exec)
 			tNft.Status = models.TNFTSStatusPending
@@ -263,7 +274,6 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 		}
 		return nil
 	})
-
 	if err != nil {
 		return "", err
 	}
@@ -312,17 +322,24 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (string, error) {
 		return "", err
 	}
 
-	// Tx into database
-	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, models.TTXSOperationTypeBurnNFT, models.TTXSStatusUndo)
-	if err != nil {
-		log.Debug("delete nft by index", "Tx into database error:", err.Error())
-		return "", err
-	}
+	err = modext.Transaction(func(exec boil.ContextExecutor) error {
+		// Tx into database
+		txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, models.TTXSOperationTypeBurnNFT, models.TTXSStatusUndo, exec)
+		if err != nil {
+			log.Debug("delete nft by index", "Tx into database error:", err.Error())
+			return err
+		}
 
-	// lock the NFT
-	tNft.Status = models.TNFTSStatusPending
-	tNft.LockedBy = null.Uint64From(txId)
-	_, err = tNft.UpdateG(context.Background(), boil.Infer())
+		// lock the NFT
+		tNft.Status = models.TNFTSStatusPending
+		tNft.LockedBy = null.Uint64From(txId)
+		_, err = tNft.Update(context.Background(), exec, boil.Infer())
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+
 	if err != nil {
 		return "", err
 	}
@@ -370,15 +387,16 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 		log.Debug("delete nft by batch", "BuildAndSign error:", err.Error())
 		return "", err
 	}
-	// Tx into database
-	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, models.TTXSOperationTypeBurnNFTBatch, models.TTXSStatusUndo)
-	if err != nil {
-		log.Debug("delete nft by batch", "Tx into database error:", err.Error())
-		return "", err
-	}
 
-	// lock the NFTs
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
+		// Tx into database
+		txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, models.TTXSOperationTypeBurnNFTBatch, models.TTXSStatusUndo, exec)
+		if err != nil {
+			log.Debug("delete nft by batch", "Tx into database error:", err.Error())
+			return err
+		}
+
+		// lock the NFTs
 		for _, index := range params.Indices { // lock every nft
 			tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(index)).One(context.Background(), exec)
 			tNft.Status = models.TNFTSStatusPending

@@ -3,7 +3,9 @@ package service
 import (
 	"context"
 	"crypto/sha256"
+	"database/sql"
 	"encoding/hex"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"strings"
 
 	"github.com/volatiletech/null/v8"
@@ -50,7 +52,7 @@ func (m Base) BuildAndSign(msgs sdktype.Msgs, baseTx sdktype.BaseTx) ([]byte, st
 }
 
 // TxIntoDataBase operationType : issue_class,mint_nft,edit_nft,edit_nft_batch,burn_nft,burn_nft_batch
-func (m Base) TxIntoDataBase(AppID uint64, txHash string, signedData []byte, operationType string, status string) (uint64, error) {
+func (m Base) TxIntoDataBase(AppID uint64, txHash string, signedData []byte, operationType string, status string, exec boil.ContextExecutor) (uint64, error) {
 	// Tx into database
 	ttx := models.TTX{
 		AppID:         AppID,
@@ -59,9 +61,36 @@ func (m Base) TxIntoDataBase(AppID uint64, txHash string, signedData []byte, ope
 		OperationType: operationType,
 		Status:        status,
 	}
-	err := ttx.InsertG(context.Background(), boil.Infer())
+	err := ttx.Insert(context.Background(), exec, boil.Infer())
 	if err != nil {
 		return 0, err
 	}
 	return ttx.ID, err
+}
+
+// ValidateTx validate tx status
+func (m Base) ValidateTx(hash string, exec boil.ContextExecutor) (*models.TTX, error) {
+	tx, err := models.TTXS(models.TTXWhere.Hash.EQ(hash)).One(context.Background(), exec)
+	if err == sql.ErrNoRows {
+		return tx, nil
+	} else if err != nil {
+		return tx, err
+	}
+
+	// pending
+	if tx.Status == models.TTXSStatusPending {
+		return tx, types.ErrTXStatusPending
+	}
+
+	// undo
+	if tx.Status == models.TTXSStatusUndo {
+		return tx, types.ErrTXStatusUndo
+	}
+
+	// success
+	if tx.Status == models.TTXSStatusSuccess {
+		return tx, types.ErrTXStatusSuccess
+	}
+
+	return tx, nil
 }

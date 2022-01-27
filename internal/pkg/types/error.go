@@ -49,6 +49,9 @@ var (
 	ErrNftCountByClass        = Register(RootCodeSpace, "42", "Cannot get nft count by classId")
 	ErrNotFound               = Register(RootCodeSpace, "43", "Resource Not Found")
 	ErrRepeated               = Register(RootCodeSpace, "44", "Please do not fill in duplicate NFT in the request parameters")
+	ErrTXStatusSuccess        = Register(RootCodeSpace, "45", "tx transaction success")
+	ErrTXStatusPending        = Register(RootCodeSpace, "46", "tx transaction is in progress, please wait")
+	ErrTXStatusUndo           = Register(RootCodeSpace, "47", "tx transaction not executed, please wait")
 )
 
 var usedErrorCodes = map[string]*AppError{}
