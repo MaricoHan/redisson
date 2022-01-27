@@ -68,6 +68,20 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	}
 
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
+		//validate tx
+		txone, err := svc.base.ValidateTx(hash)
+		if err != nil {
+			return err
+		}
+		if txone != nil && txone.Status == models.TTXSStatusFailed {
+			baseTx.Memo = string(txone.ID)
+			data, hash, err = svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
+			if err != nil {
+				log.Debug("transfer nft class", "BuildAndSign error:", err.Error())
+				return types.ErrBuildAndSign
+			}
+		}
+
 		//txs status = undo
 		txId, err := svc.base.TxIntoDataBase(params.AppID,
 			hash,
@@ -150,6 +164,20 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 	}
 
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
+		//validate tx
+		txone, err := svc.base.ValidateTx(hash)
+		if err != nil {
+			return err
+		}
+		if txone != nil && txone.Status == models.TTXSStatusFailed {
+			baseTx.Memo = string(txone.ID)
+			data, hash, err = svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
+			if err != nil {
+				log.Debug("transfer nft by index", "BuildAndSign error:", err.Error())
+				return types.ErrBuildAndSign
+			}
+		}
+
 		//写入txs status = undo
 		txId, err := svc.base.TxIntoDataBase(params.AppID,
 			hash,
@@ -249,6 +277,20 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 	}
 
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
+		//validate tx
+		txone, err := svc.base.ValidateTx(hash)
+		if err != nil {
+			return err
+		}
+		if txone != nil && txone.Status == models.TTXSStatusFailed {
+			baseTx.Memo = string(txone.ID)
+			data, hash, err = svc.base.BuildAndSign(msgs, baseTx)
+			if err != nil {
+				log.Debug("transfer nft by batch", "BuildAndSign error:", err.Error())
+				return types.ErrBuildAndSign
+			}
+		}
+
 		//写入txs status = undo
 		txId, err := svc.base.TxIntoDataBase(params.AppID,
 			hash,
