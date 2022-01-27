@@ -42,7 +42,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) ([]string, error) {
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		classOne, err := models.TClasses(
 			models.TClassWhere.ClassID.EQ(params.ClassId),
-		).One(context.Background(), orm.GetDB())
+		).One(context.Background(), exec)
 		if classOne.Status != models.TNFTSStatusActive {
 			return types.ErrClassStatus
 		}
@@ -50,7 +50,6 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) ([]string, error) {
 			return types.ErrNftClassDetailsGet
 		}
 		offSet := classOne.Offset
-		//nftID := nftp + sha256(nftClassID)+index
 		var msgs sdktype.Msgs
 		for i := 1; i <= params.Amount; i++ {
 			index := int(offSet) + i
@@ -79,7 +78,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) ([]string, error) {
 		txHash = &thash
 
 		//modify t_class offset
-		tClass, err := models.TClasses(models.TClassWhere.AppID.EQ(params.AppID), models.TClassWhere.ClassID.EQ(params.ClassId)).One(context.Background(), orm.GetDB())
+		tClass, err := models.TClasses(models.TClassWhere.AppID.EQ(params.AppID), models.TClassWhere.ClassID.EQ(params.ClassId)).One(context.Background(), exec)
 		if err != nil {
 			return types.ErrNftClassDetailsGet
 		}
@@ -96,18 +95,18 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) ([]string, error) {
 			Status:        models.TTXSStatusUndo,
 		}
 
-		err = ttx.Insert(context.Background(), orm.GetDB(), boil.Infer())
+		err = ttx.Insert(context.Background(), exec, boil.Infer())
 		if err != nil {
 			return types.ErrTxMsgInsert
 		}
 
-		tx, err := models.TTXS(qm.Where("hash=?", txHash)).One(context.Background(), orm.GetDB())
+		tx, err := models.TTXS(qm.Where("hash=?", txHash)).One(context.Background(), exec)
 		if err != nil {
 			return types.ErrTxMsgGet
 		}
 
 		tClass.LockedBy = null.Uint64FromPtr(&tx.ID)
-		ok, err := tClass.Update(context.Background(), orm.GetDB(), boil.Infer())
+		ok, err := tClass.Update(context.Background(), exec, boil.Infer())
 		if err != nil {
 			return types.ErrNftClassesSet
 		}
@@ -533,7 +532,6 @@ func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
 	queryMod := []qm.QueryMod{
 		qm.From(models.TableNames.TNFTS),
 		models.TNFTWhere.AppID.EQ(params.AppID),
-		models.TNFTWhere.Status.IN([]string{models.TNFTSStatusActive, models.TNFTSStatusBurned}),
 	}
 	if params.Id != "" {
 		queryMod = append(queryMod, models.TNFTWhere.NFTID.EQ(params.Id))
@@ -552,10 +550,10 @@ func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
 	}
 
 	if params.StartDate != nil {
-		queryMod = append(queryMod, models.TNFTWhere.CreateAt.GTE(*params.StartDate))
+		queryMod = append(queryMod, models.TNFTWhere.Timestamp.GTE(null.TimeFromPtr(params.StartDate)))
 	}
 	if params.EndDate != nil {
-		queryMod = append(queryMod, models.TNFTWhere.CreateAt.LTE(*params.EndDate))
+		queryMod = append(queryMod, models.TNFTWhere.Timestamp.LTE(null.TimeFromPtr(params.EndDate)))
 	}
 	if params.SortBy != "" {
 		orderBy := ""
@@ -577,7 +575,7 @@ func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		total, err = modext.PageQueryByOffset(
 			context.Background(),
-			orm.GetDB(),
+			exec,
 			queryMod,
 			&modelResults,
 			int(params.Offset),
@@ -601,7 +599,7 @@ func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
 			models.TClassWhere.ClassID.IN(classIds),
 		}
 
-		err = models.NewQuery(qMod...).Bind(context.Background(), orm.GetDB(), &classByIds)
+		err = models.NewQuery(qMod...).Bind(context.Background(), exec, &classByIds)
 		return err
 	})
 

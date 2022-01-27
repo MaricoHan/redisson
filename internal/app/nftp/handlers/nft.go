@@ -10,6 +10,7 @@ import (
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
+	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 )
 
 type INft interface {
@@ -155,6 +156,10 @@ func (h nft) DeleteNftByBatch(ctx context.Context, _ interface{}) (interface{}, 
 
 // Nfts return class list
 func (h nft) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
+	status, err := h.Status(ctx)
+	if err != nil {
+		return nil, err
+	}
 	// 校验参数 start
 	params := dto.NftsP{
 		AppID:   h.AppID(ctx),
@@ -162,7 +167,7 @@ func (h nft) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 		ClassId: h.ClassId(ctx),
 		Owner:   h.Owner(ctx),
 		TxHash:  h.TxHash(ctx),
-		Status:  h.Status(ctx),
+		Status:  status,
 	}
 	offset, err := h.Offset(ctx)
 	if err != nil {
@@ -275,7 +280,7 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, _ interface{}) (int
 
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
-		startDateTime, err := time.Parse(timeLayout, startDateR)
+		startDateTime, err := time.Parse(timeLayoutWithoutHMS, startDateR)
 		if err != nil {
 			return nil, types.ErrParams
 		}
@@ -284,7 +289,7 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, _ interface{}) (int
 
 	endDateR := h.EndDate(ctx)
 	if endDateR != "" {
-		endDateTime, err := time.Parse(timeLayout, endDateR)
+		endDateTime, err := time.Parse(timeLayoutWithoutHMS, endDateR)
 		if err != nil {
 			return nil, types.ErrParams
 		}
@@ -391,12 +396,15 @@ func (h nft) TxHash(ctx context.Context) string {
 
 	return txHash.(string)
 }
-func (h nft) Status(ctx context.Context) string {
+func (h nft) Status(ctx context.Context) (string, error) {
 	status := ctx.Value("status")
 	if status == nil {
-		return ""
+		return models.TNFTSStatusActive, nil
 	}
-	return status.(string)
+	if status != models.TNFTSStatusActive || status != models.TNFTSStatusBurned {
+		return "", types.ErrNftStatusOne
+	}
+	return status.(string), nil
 }
 
 func (h nft) Indices(ctx context.Context) ([]uint64, error) {
