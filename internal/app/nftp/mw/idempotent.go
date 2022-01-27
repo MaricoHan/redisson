@@ -43,7 +43,7 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 	}
 
 	if len(req.OperationID) > 65 {
-		writeBadRequestResp(w, types.UpdateDescription(types.RootCodeSpace, "3", "operation_id beyond the length of the"))
+		writeBadRequestResp(w, types.NewAppError(types.RootCodeSpace, "3", "operation_id beyond the length of the"))
 		return
 	}
 

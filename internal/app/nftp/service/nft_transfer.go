@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 
@@ -33,7 +32,6 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	if acc == nil {
 		return "", types.ErrParams
 	}
-
 	class, err := models.TClasses(
 		models.TClassWhere.ClassID.EQ(string(params.ClassID)),
 		models.TClassWhere.AppID.EQ(params.AppID),
@@ -166,7 +164,7 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 }
 
 func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (string, error) {
-	var indexlist []uint64
+	indexMap := map[uint64]int{}
 	var msgs sdktype.Msgs
 	for _, modelResult := range params.Recipients {
 		recipient := &dto.Recipient{
@@ -190,13 +188,9 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 		}
 
 		//判断index是否重复
-		for i := range indexlist {
-			if recipient.Index == uint64(i) {
-				return "", types.ErrParams
-			}
+		if _, ok := indexMap[recipient.Index]; ok {
+			return "", types.ErrParams
 		}
-		indexlist = append(indexlist, recipient.Index)
-
 		res, err := models.TNFTS(models.TNFTWhere.Index.EQ(recipient.Index),
 			models.TNFTWhere.ClassID.EQ(string(params.ClassID)),
 			models.TNFTWhere.AppID.EQ(params.AppID),
@@ -218,6 +212,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			Recipient: recipient.Recipient,
 		}
 		msgs = append(sdktype.Msgs{&msg})
+		indexMap[recipient.Index] = 0
 	}
 
 	//sign
