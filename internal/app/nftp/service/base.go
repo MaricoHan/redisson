@@ -4,6 +4,8 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"strings"
 
 	"github.com/volatiletech/null/v8"
@@ -64,4 +66,29 @@ func (m Base) TxIntoDataBase(AppID uint64, txHash string, signedData []byte, ope
 		return 0, err
 	}
 	return ttx.ID, err
+}
+
+// ValidateTx validate tx status
+func (m Base) ValidateTx(hash string, exec boil.ContextExecutor) (*models.TTX, error) {
+	tx, err := models.TTXS(qm.Where("hash=?", hash)).One(context.Background(), exec)
+	if err != nil {
+		return tx, err
+	}
+
+	// pending
+	if tx.Status == models.TTXSStatusPending {
+		return tx, types.ErrTXStatusPending
+	}
+
+	// undo
+	if tx.Status == models.TTXSStatusUndo {
+		return tx, types.ErrTXStatusUndo
+	}
+
+	// success
+	if tx.Status == models.TTXSStatusSuccess {
+		return tx, types.ErrTXStatusSuccess
+	}
+
+	return tx, nil
 }

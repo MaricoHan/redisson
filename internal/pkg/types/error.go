@@ -48,6 +48,9 @@ var (
 	ErrNftStatusOne           = Register(RootCodeSpace, "41", "nft status is not active or burned")
 	ErrNftCountByClass        = Register(RootCodeSpace, "42", "Cannot get nft count by classId")
 	ErrNotFound               = Register(RootCodeSpace, "43", "Resource Not Found")
+	ErrTXStatusSuccess        = Register(RootCodeSpace, "44", "tx transaction success")
+	ErrTXStatusPending        = Register(RootCodeSpace, "45", "tx transaction is in progress, please wait")
+	ErrTXStatusUndo           = Register(RootCodeSpace, "46", "tx transaction not executed, please wait")
 )
 
 var usedErrorCodes = map[string]*AppError{}

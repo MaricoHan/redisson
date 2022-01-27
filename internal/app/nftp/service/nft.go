@@ -75,6 +75,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) ([]string, error) {
 			log.Debug("create nfts", "buildandsign error:", err.Error())
 			return err
 		}
+
 		txHash = &thash
 
 		//modify t_class offset
