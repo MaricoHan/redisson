@@ -205,9 +205,9 @@ func (svc *Account) AccountsHistory(params dto.AccountsP) (*dto.AccountOperation
 		orderBy := ""
 		switch params.SortBy {
 		case "DATE_DESC":
-			orderBy = fmt.Sprintf("%s desc", models.TMSGColumns.CreateAt)
+			orderBy = fmt.Sprintf("%s desc", models.TMSGColumns.Timestamp)
 		case "DATE_ASC":
-			orderBy = fmt.Sprintf("%s ASC", models.TMSGColumns.CreateAt)
+			orderBy = fmt.Sprintf("%s ASC", models.TMSGColumns.Timestamp)
 		}
 		queryMod = append(queryMod, qm.OrderBy(orderBy))
 	}
