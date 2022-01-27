@@ -67,11 +67,18 @@ func (h nft) EditNftByIndex(ctx context.Context, request interface{}) (interface
 
 	req := request.(*vo.EditNftByIndexRequest)
 
+	//check start
+	index, err := h.Index(ctx)
+	if err != nil {
+		return nil, err
+	}
+	//check end
+
 	params := dto.EditNftByIndexP{
 		AppID:   h.AppID(ctx),
 		ClassId: h.ClassId(ctx),
 		Sender:  h.Owner(ctx),
-		Index:   h.Index(ctx),
+		Index:   index,
 
 		Name: req.Name,
 		Uri:  req.Uri,
@@ -105,11 +112,18 @@ func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface
 
 // DeleteNftByIndex Delete an nft and return the edited result
 func (h nft) DeleteNftByIndex(ctx context.Context, _ interface{}) (interface{}, error) {
+
+	//check start
+	index, err := h.Index(ctx)
+	if err != nil {
+		return nil, err
+	}
+	//check end
 	params := dto.DeleteNftByIndexP{
 		AppID:   h.AppID(ctx),
 		ClassId: h.ClassId(ctx),
 		Sender:  h.Owner(ctx),
-		Index:   h.Index(ctx),
+		Index:   index,
 	}
 
 	return h.svc.DeleteNftByIndex(params)
@@ -127,7 +141,6 @@ func (h nft) DeleteNftByBatch(ctx context.Context, _ interface{}) (interface{}, 
 	if len(indices) > 50 {
 		return nil, types.ErrNftTooMany
 	}
-
 	//check end
 
 	params := dto.DeleteNftByBatchP{
@@ -209,10 +222,17 @@ func (h nft) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 
 // NftByIndex return class details
 func (h nft) NftByIndex(ctx context.Context, _ interface{}) (interface{}, error) {
+
+	//check start
+	index, err := h.Index(ctx)
+	if err != nil {
+		return nil, err
+	}
+	//check end
 	params := dto.NftByIndexP{
 		AppID:   h.AppID(ctx),
 		ClassId: h.ClassId(ctx),
-		Index:   h.Index(ctx),
+		Index:   index,
 	}
 
 	return h.svc.NftByIndex(params)
@@ -220,11 +240,17 @@ func (h nft) NftByIndex(ctx context.Context, _ interface{}) (interface{}, error)
 }
 
 // NftOperationHistoryByIndex return class details
-func (h nft) NftOperationHistoryByIndex(ctx context.Context, request interface{}) (interface{}, error) {
+func (h nft) NftOperationHistoryByIndex(ctx context.Context, _ interface{}) (interface{}, error) {
+
 	// 校验参数 start
+	//check start
+	index, err := h.Index(ctx)
+	if err != nil {
+		return nil, err
+	}
 	params := dto.NftOperationHistoryByIndexP{
 		ClassID: h.ClassId(ctx),
-		Index:   h.Index(ctx),
+		Index:   index,
 		AppID:   h.AppID(ctx),
 	}
 
@@ -344,18 +370,18 @@ func (h nft) Owner(ctx context.Context) string {
 	return owner.(string)
 
 }
-func (h nft) Index(ctx context.Context) uint64 {
+func (h nft) Index(ctx context.Context) (uint64, error) {
 	rec := ctx.Value("index")
 	if rec == nil {
-		return 0
+		return 0, types.ErrIndexFormat
 	}
 	index, err := strconv.ParseUint(rec.(string), 10, 64)
-	if err != nil {
-		panic(err)
+	if err == nil {
+		return 0, types.ErrIndexFormat
 	}
 
 	// return index
-	return index
+	return index, nil
 }
 func (h nft) TxHash(ctx context.Context) string {
 	txHash := ctx.Value("tx_hash")

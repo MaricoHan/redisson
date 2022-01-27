@@ -35,7 +35,6 @@ var (
 	ErrNftBatchTransfer       = Register(RootCodeSpace, "28", "failed to batch transfer nft")
 	ErrNotOwner               = Register(RootCodeSpace, "29", "sender is not the nft‘s owner")
 	ErrNoPermission           = Register(RootCodeSpace, "30", "sender is not the one of the app‘s accounts")
-	ErrName                   = Register(RootCodeSpace, "31", "sender is not the nft‘s owner")
 	ErrNftClassesSet          = Register(RootCodeSpace, "32", "failed to set nft class")
 	ErrTxMsgInsert            = Register(RootCodeSpace, "33", "failed to insert ttx")
 	ErrTxMsgGet               = Register(RootCodeSpace, "34", "failed to get ttx")
@@ -45,6 +44,7 @@ var (
 	ErrIndicesFormat          = Register(RootCodeSpace, "38", "Indices format is invalid, must be unsigned numeric type,such as:1,2,3,4...")
 	ErrNftClassStatus         = Register(RootCodeSpace, "39", "One of these NFT Class does not exist or its status is not active")
 	ErrClassStatus            = Register(RootCodeSpace, "40", "nftClass does not exist or its status is not active")
+	ErrIndexFormat            = Register(RootCodeSpace, "41", "Index format is invalid, must be unsigned numeric type")
 )
 
 var usedErrorCodes = map[string]*AppError{}
