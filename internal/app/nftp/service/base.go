@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"strings"
 
 	"github.com/volatiletech/null/v8"
