@@ -438,8 +438,7 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 		},
 		OperationRecords: nil,
 	}
-
-	tnft, err := models.TNFTS(
+	res, err := models.TNFTS(
 		models.TNFTWhere.AppID.EQ(params.AppID),
 		models.TNFTWhere.ClassID.EQ(params.ClassID),
 		models.TNFTWhere.Index.EQ(params.Index),
@@ -456,13 +455,11 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 			models.TMSGColumns.Recipient,
 			models.TMSGColumns.Timestamp),
 		models.TMSGWhere.AppID.EQ(params.AppID),
+		models.TMSGWhere.NFTID.EQ(null.StringFrom(res.NFTID)),
 	}
 	if params.Txhash != "" {
 		queryMod = append(queryMod, models.TMSGWhere.TXHash.EQ(params.Txhash))
-	} else {
-		queryMod = append(queryMod, models.TMSGWhere.NFTID.EQ(null.StringFrom(tnft.NFTID)))
-	} //否则查询该nft的所有hash
-
+	}
 	if params.Signer != "" {
 		queryMod = append(queryMod, models.TMSGWhere.Signer.EQ(params.Signer))
 	}
@@ -485,14 +482,13 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 		}
 		queryMod = append(queryMod, qm.OrderBy(orderBy))
 	}
-
 	var modelResults []*models.TMSG
 	total, err := modext.PageQueryByOffset(
 		context.Background(),
 		orm.GetDB(),
 		queryMod,
 		&modelResults,
-		int(params.Offset),
+		1,
 		int(params.Limit),
 	)
 	if err != nil {
@@ -500,7 +496,6 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 		if strings.Contains(err.Error(), "records not exist") {
 			return result, nil
 		}
-
 		return nil, types.ErrGetNftOperationDetails
 	}
 
