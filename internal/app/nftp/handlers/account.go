@@ -79,7 +79,7 @@ func (h account) Accounts(ctx context.Context, _ interface{}) (interface{}, erro
 	if params.Limit == 0 {
 		params.Limit = 10
 	}
-	if params.Limit >= 50 {
+	if params.Limit > 50 {
 		return nil, types.ErrParams
 	}
 
@@ -150,7 +150,7 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 	if params.Limit == 0 {
 		params.Limit = 10
 	}
-	if params.Limit >= 50 {
+	if params.Limit > 50 {
 		return nil, types.ErrParams
 	}
 
