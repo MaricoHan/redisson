@@ -487,7 +487,7 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 		orm.GetDB(),
 		queryMod,
 		&modelResults,
-		1,
+		int(params.Offset),
 		int(params.Limit),
 	)
 	if err != nil {
