@@ -134,10 +134,9 @@ func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFu
 			log.Error("Execute decode request failed", "error", err.Error())
 			return nil, types.NewAppError(types.RootCodeSpace, "3", err.Error())
 		}
-
 		//validate request
 		if err := c.validate.Struct(req); err != nil {
-			log.Error("Execute decode request failed", "validate struct", err.Error())
+			log.Error("Execute decode request failed", "validate struct", err.Error(), "req:", req)
 			return nil, types.NewAppError(types.RootCodeSpace, "3", err.Error())
 		}
 		return req, nil
@@ -215,7 +214,6 @@ func (c Controller) serverOptions(
 				errResp.CodeSpace = types.ErrInternal.CodeSpace()
 				errResp.Message = types.ErrInternal.Error()
 				errResp.Code = types.ErrInternal.Code()
-
 			case types.ErrAuthenticate:
 				w.WriteHeader(http.StatusForbidden)
 				errResp.CodeSpace = appErr.CodeSpace()
@@ -232,7 +230,6 @@ func (c Controller) serverOptions(
 				errResp.Message = appErr.Error()
 				errResp.Code = appErr.Code()
 			}
-
 			response = Response{ErrorResp: errResp}
 		}
 

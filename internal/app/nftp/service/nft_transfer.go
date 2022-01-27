@@ -62,7 +62,6 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	//sign
 	baseTx := svc.base.CreateBaseTx(params.Owner, "")
 	data, hash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
-
 	if err != nil {
 		log.Debug("transfer nft class", "BuildAndSign error:", err.Error())
 		return "", types.ErrBuildAndSign
@@ -124,7 +123,7 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 		models.TNFTWhere.Owner.EQ(params.Owner),
 	).OneG(context.Background())
 	if err != nil {
-		return "", types.ErrNftTransfer
+		return "", types.ErrNftMissing
 	}
 
 	if res.Status != models.TNFTSStatusActive {

@@ -540,7 +540,6 @@ func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
 	if params.Status != "" {
 		queryMod = append(queryMod, models.TNFTWhere.Status.EQ(params.Status))
 	}
-
 	if params.StartDate != nil {
 		queryMod = append(queryMod, models.TNFTWhere.Timestamp.GTE(null.TimeFromPtr(params.StartDate)))
 	}
