@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 
@@ -24,6 +23,12 @@ func NewNftTransfer(base *Base) *NftTransfer {
 }
 
 func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (string, error) {
+	//不能自己转让给自己
+	if params.Recipient == params.Owner {
+		return "", types.ErrParams
+	}
+
+	//recipient不能为平台外账户或此应用外账户或非法账户
 	acc, err := models.TAccounts(
 		models.TAccountWhere.AppID.EQ(params.AppID),
 		models.TAccountWhere.Address.EQ(params.Recipient)).OneG(context.Background())
@@ -34,6 +39,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 		return "", types.ErrParams
 	}
 
+	//判断class
 	class, err := models.TClasses(
 		models.TClassWhere.ClassID.EQ(string(params.ClassID)),
 		models.TClassWhere.AppID.EQ(params.AppID),
@@ -96,6 +102,11 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 }
 
 func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (string, error) {
+	//不能自己转让给自己
+	if params.Recipient == params.Owner {
+		return "", types.ErrParams
+	}
+
 	acc, err := models.TAccounts(
 		models.TAccountWhere.AppID.EQ(params.AppID),
 		models.TAccountWhere.Address.EQ(params.Recipient)).OneG(context.Background())
@@ -123,8 +134,12 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 	msgs := nft.MsgTransferNFT{
 		Id:        res.NFTID,
 		DenomId:   string(params.ClassID),
+		Name:      res.Name.String,
+		URI:       res.URI.String,
+		Data:      res.Metadata.String,
 		Sender:    params.Owner,
 		Recipient: params.Recipient,
+		UriHash:   res.URIHash.String,
 	}
 
 	//build and sign
@@ -166,6 +181,7 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 }
 
 func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (string, error) {
+	indexMap := map[uint64]int{}
 	var msgs sdktype.Msgs
 	for _, modelResult := range params.Recipients {
 		recipient := &dto.Recipient{
@@ -188,6 +204,15 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			return "", types.ErrParams
 		}
 
+		//不能自己转让给自己
+		if recipient.Recipient == params.Owner {
+			return "", types.ErrParams
+		}
+
+		//判断index是否重复
+		if _, ok := indexMap[recipient.Index]; ok {
+			return "", types.ErrParams
+		}
 		res, err := models.TNFTS(models.TNFTWhere.Index.EQ(recipient.Index),
 			models.TNFTWhere.ClassID.EQ(string(params.ClassID)),
 			models.TNFTWhere.AppID.EQ(params.AppID),
@@ -205,10 +230,15 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 		msg := nft.MsgTransferNFT{
 			Id:        res.NFTID,
 			DenomId:   string(params.ClassID),
+			Name:      res.Name.String,
+			URI:       res.URI.String,
+			Data:      res.Metadata.String,
 			Sender:    params.Owner,
 			Recipient: recipient.Recipient,
+			UriHash:   res.URIHash.String,
 		}
 		msgs = append(sdktype.Msgs{&msg})
+		indexMap[recipient.Index] = 0
 	}
 
 	//sign

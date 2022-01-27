@@ -72,14 +72,10 @@ func (h account) Accounts(ctx context.Context, _ interface{}) (interface{}, erro
 	}
 	params.Limit = limit
 
-	if params.Offset == 0 {
-		params.Offset = 1
-	}
-
 	if params.Limit == 0 {
 		params.Limit = 10
 	}
-	if params.Limit >= 50 {
+	if params.Limit > 50 {
 		return nil, types.ErrParams
 	}
 
@@ -150,7 +146,7 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 	if params.Limit == 0 {
 		params.Limit = 10
 	}
-	if params.Limit >= 50 {
+	if params.Limit > 50 {
 		return nil, types.ErrParams
 	}
 
@@ -194,6 +190,10 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 		} else if params.Module == "nft" && !strings.Contains("transfer_class/mint/edit/transfer/burn", params.Operation) {
 			return nil, types.ErrParams
 		}
+	}
+
+	if params.Module == "" && params.Operation != "" {
+		params.Operation = ""
 	}
 	return h.svc.AccountsHistory(params)
 }

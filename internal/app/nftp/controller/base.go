@@ -27,7 +27,7 @@ func GetAllControllers() []kit.IController {
 		Controller: kit.NewController(),
 	}
 
-	baseSvc := service.NewBase(chain.GetSdkClient(), 2000000, "uirita", 2000000)
+	baseSvc := service.NewBase(chain.GetSdkClient(), chain.GetGas(), chain.GetDenom(), chain.GetAmount())
 	controllers := []kit.IController{
 		NewDemoController(bc, handlers.NewDemo()),
 		NewAccountsController(bc, handlers.NewAccount(service.NewAccount())),

@@ -12,9 +12,24 @@ import (
 )
 
 var sdkClient sdk.Client
+var gas uint64
+var denom string
+var amount int64
 
 func GetSdkClient() sdk.Client {
 	return sdkClient
+}
+
+func GetGas() uint64 {
+	return gas
+}
+
+func GetAmount() int64 {
+	return amount
+}
+
+func GetDenom() string {
+	return denom
 }
 
 func NewSdkClient(conf configs.Chain, db *sql.DB) {
@@ -48,4 +63,7 @@ func NewSdkClient(conf configs.Chain, db *sql.DB) {
 	sdkClient = sdk.NewClient(cfg)
 	nftClient := nft.NewClient(sdkClient.BaseClient, sdkClient.AppCodec())
 	sdkClient.RegisterModule(nftClient)
+	gas = conf.Gas
+	amount = conf.Amount
+	denom = conf.Denom
 }
