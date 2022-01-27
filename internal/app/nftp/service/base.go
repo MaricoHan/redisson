@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"strings"
 
@@ -70,7 +69,7 @@ func (m Base) TxIntoDataBase(AppID uint64, txHash string, signedData []byte, ope
 
 // ValidateTx validate tx status
 func (m Base) ValidateTx(hash string, exec boil.ContextExecutor) (*models.TTX, error) {
-	tx, err := models.TTXS(qm.Where("hash=?", hash)).One(context.Background(), exec)
+	tx, err := models.TTXS(models.TTXWhere.Hash.EQ(hash)).One(context.Background(), exec)
 	if err != nil {
 		return tx, err
 	}
