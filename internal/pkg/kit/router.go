@@ -251,6 +251,7 @@ func (c Controller) serverOptions(
 				types.ErrTxMsgInsert,
 				types.ErrNftClassStatus,
 				types.ErrClassStatus,
+				types.ErrNftTooMany,
 				types.ErrIndicesFormat:
 				w.WriteHeader(http.StatusBadRequest)
 				errResp.CodeSpace = appErr.CodeSpace()

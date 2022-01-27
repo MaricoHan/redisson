@@ -124,6 +124,10 @@ func (h nft) DeleteNftByBatch(ctx context.Context, _ interface{}) (interface{}, 
 	if err != nil {
 		return nil, types.ErrIndicesFormat
 	}
+	if len(indices) > 50 {
+		return nil, types.ErrNftTooMany
+	}
+
 	//check end
 
 	params := dto.DeleteNftByBatchP{
