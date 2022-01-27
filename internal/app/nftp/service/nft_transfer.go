@@ -143,7 +143,7 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 		models.TTXSStatusUndo)
 	if err != nil {
 		log.Debug("transfer nft by index", "Tx Into DataBase error:", err.Error())
-		return "", err
+		return "", types.ErrTxMsgInsert
 	}
 
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
@@ -268,6 +268,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 		return nil
 	})
 	if err != nil {
+		//自定义err
 		return "", err
 	}
 
