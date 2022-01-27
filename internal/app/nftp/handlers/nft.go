@@ -68,11 +68,18 @@ func (h nft) EditNftByIndex(ctx context.Context, request interface{}) (interface
 
 	req := request.(*vo.EditNftByIndexRequest)
 
+	//check start
+	index, err := h.Index(ctx)
+	if err != nil {
+		return nil, err
+	}
+	//check end
+
 	params := dto.EditNftByIndexP{
 		AppID:   h.AppID(ctx),
 		ClassId: h.ClassId(ctx),
 		Sender:  h.Owner(ctx),
-		Index:   h.Index(ctx),
+		Index:   index,
 
 		Name: req.Name,
 		Uri:  req.Uri,
@@ -94,9 +101,19 @@ func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface
 	}
 
 	//check start
-	//1. count limit :50
+	// 1. count limit :50
 	if len(params.EditNfts) > 50 {
 		return nil, types.ErrNftTooMany
+	}
+
+	// 2.judge whether the NFT is repeated
+	hash := make(map[uint64]bool)
+	for _, Nft := range params.EditNfts {
+		if hash[Nft.Index] == false {
+			hash[Nft.Index] = true
+		} else {
+			return "", types.ErrRepeated
+		}
 	}
 
 	//check end
@@ -106,11 +123,18 @@ func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface
 
 // DeleteNftByIndex Delete an nft and return the edited result
 func (h nft) DeleteNftByIndex(ctx context.Context, _ interface{}) (interface{}, error) {
+
+	//check start
+	index, err := h.Index(ctx)
+	if err != nil {
+		return nil, err
+	}
+	//check end
 	params := dto.DeleteNftByIndexP{
 		AppID:   h.AppID(ctx),
 		ClassId: h.ClassId(ctx),
 		Sender:  h.Owner(ctx),
-		Index:   h.Index(ctx),
+		Index:   index,
 	}
 
 	return h.svc.DeleteNftByIndex(params)
@@ -123,7 +147,21 @@ func (h nft) DeleteNftByBatch(ctx context.Context, _ interface{}) (interface{}, 
 	// check start
 	indices, err := h.Indices(ctx)
 	if err != nil {
-		return nil, types.ErrIndicesFormat
+		return nil, err
+	}
+
+	// 2.judge whether the NFT is repeated
+	hash := make(map[uint64]bool)
+	for _, index := range indices {
+		if hash[index] == false {
+			hash[index] = true
+		} else {
+			return nil, types.ErrRepeated
+		}
+	}
+
+	if len(indices) > 50 {
+		return nil, types.ErrNftTooMany
 	}
 	//check end
 
@@ -210,10 +248,17 @@ func (h nft) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 
 // NftByIndex return class details
 func (h nft) NftByIndex(ctx context.Context, _ interface{}) (interface{}, error) {
+
+	//check start
+	index, err := h.Index(ctx)
+	if err != nil {
+		return nil, err
+	}
+	//check end
 	params := dto.NftByIndexP{
 		AppID:   h.AppID(ctx),
 		ClassId: h.ClassId(ctx),
-		Index:   h.Index(ctx),
+		Index:   index,
 	}
 
 	return h.svc.NftByIndex(params)
@@ -221,11 +266,17 @@ func (h nft) NftByIndex(ctx context.Context, _ interface{}) (interface{}, error)
 }
 
 // NftOperationHistoryByIndex return class details
-func (h nft) NftOperationHistoryByIndex(ctx context.Context, request interface{}) (interface{}, error) {
+func (h nft) NftOperationHistoryByIndex(ctx context.Context, _ interface{}) (interface{}, error) {
+
 	// 校验参数 start
+	//check start
+	index, err := h.Index(ctx)
+	if err != nil {
+		return nil, err
+	}
 	params := dto.NftOperationHistoryByIndexP{
 		ClassID: h.ClassId(ctx),
-		Index:   h.Index(ctx),
+		Index:   index,
 		AppID:   h.AppID(ctx),
 	}
 
@@ -345,18 +396,18 @@ func (h nft) Owner(ctx context.Context) string {
 	return owner.(string)
 
 }
-func (h nft) Index(ctx context.Context) uint64 {
+func (h nft) Index(ctx context.Context) (uint64, error) {
 	rec := ctx.Value("index")
 	if rec == nil {
-		return 0
+		return 0, types.ErrIndexFormat
 	}
 	index, err := strconv.ParseUint(rec.(string), 10, 64)
 	if err != nil {
-		panic(err)
+		return 0, types.ErrIndexFormat
 	}
 
 	// return index
-	return index
+	return index, nil
 }
 func (h nft) TxHash(ctx context.Context) string {
 	txHash := ctx.Value("tx_hash")
@@ -379,6 +430,9 @@ func (h nft) Status(ctx context.Context) (string, error) {
 
 func (h nft) Indices(ctx context.Context) ([]uint64, error) {
 	rec := ctx.Value("indices")
+	if rec == nil {
+		return nil, types.ErrIndicesFormat
+	}
 
 	// "1,2,3,4,..." to {1,2,3,4,...}
 	var indices []uint64
@@ -387,7 +441,7 @@ func (h nft) Indices(ctx context.Context) ([]uint64, error) {
 	for _, s := range strArr {
 		tmp, err := strconv.ParseUint(s, 10, 64)
 		if err != nil {
-			return nil, err
+			return nil, types.ErrIndicesFormat
 		}
 		indices = append(indices, tmp)
 	}

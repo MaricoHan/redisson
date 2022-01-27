@@ -67,18 +67,18 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 		return "", types.ErrBuildAndSign
 	}
 
-	//txs status = undo
-	txId, err := svc.base.TxIntoDataBase(params.AppID,
-		hash,
-		data,
-		models.TTXSOperationTypeTransferClass,
-		models.TTXSStatusUndo)
-	if err != nil {
-		log.Debug("transfer nft class", "Tx Into DataBase error:", err.Error())
-		return "", types.ErrTxMsgInsert
-	}
-
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
+		//txs status = undo
+		txId, err := svc.base.TxIntoDataBase(params.AppID,
+			hash,
+			data,
+			models.TTXSOperationTypeTransferClass,
+			models.TTXSStatusUndo, exec)
+		if err != nil {
+			log.Debug("transfer nft class", "Tx Into DataBase error:", err.Error())
+			return err
+		}
+
 		//class status = pending && lockby = txs.id
 		class.Status = models.TClassesStatusPending
 		class.LockedBy = null.Uint64From(txId)
@@ -149,18 +149,18 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 		return "", types.ErrBuildAndSign
 	}
 
-	//写入txs status = undo
-	txId, err := svc.base.TxIntoDataBase(params.AppID,
-		hash,
-		data,
-		models.TTXSOperationTypeTransferNFT,
-		models.TTXSStatusUndo)
-	if err != nil {
-		log.Debug("transfer nft by index", "Tx Into DataBase error:", err.Error())
-		return "", types.ErrTxMsgInsert
-	}
-
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
+		//写入txs status = undo
+		txId, err := svc.base.TxIntoDataBase(params.AppID,
+			hash,
+			data,
+			models.TTXSOperationTypeTransferNFT,
+			models.TTXSStatusUndo, exec)
+		if err != nil {
+			log.Debug("transfer nft by index", "Tx Into DataBase error:", err.Error())
+			return types.ErrTxMsgInsert
+		}
+
 		res.Status = models.TNFTSStatusPending
 		res.LockedBy = null.Uint64From(txId)
 		ok, err := res.Update(context.Background(), exec, boil.Infer())
@@ -248,18 +248,18 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 		return "", types.ErrBuildAndSign
 	}
 
-	//写入txs status = undo
-	txId, err := svc.base.TxIntoDataBase(params.AppID,
-		hash,
-		data,
-		models.TTXSOperationTypeTransferNFTBatch,
-		models.TTXSStatusUndo)
-	if err != nil {
-		log.Debug("transfer nft by batch", "Tx Into DataBase error:", err.Error())
-		return "", types.ErrTxMsgInsert
-	}
-
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
+		//写入txs status = undo
+		txId, err := svc.base.TxIntoDataBase(params.AppID,
+			hash,
+			data,
+			models.TTXSOperationTypeTransferNFTBatch,
+			models.TTXSStatusUndo, exec)
+		if err != nil {
+			log.Debug("transfer nft by batch", "Tx Into DataBase error:", err.Error())
+			return err
+		}
+
 		for _, modelResultR := range params.Recipients {
 			recipient := &dto.Recipient{
 				Index:     modelResultR.Index,
