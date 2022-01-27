@@ -5,7 +5,8 @@ log_level = "debug"
 
 [mysql]
 db_name = "nftp_open_api"
-host = "192.168.150.40"
+# host = "192.168.150.40"
+host = "192.168.150.60"
 port = "23306"
 user = "nftp"
 password = "nftppassword"
@@ -16,7 +17,6 @@ max_open_conns = 100
 [chain]
 chain_id = "dev"
 grpc_address = "192.168.150.42:9090"
-
 rpc_address = "tcp://192.168.150.42:26657"
 project_id = "a36dc219dbdd4dbe809766accbed0ac6"
 project_key = ""

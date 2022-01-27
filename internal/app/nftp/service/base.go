@@ -52,7 +52,7 @@ func (m Base) BuildAndSign(msgs sdktype.Msgs, baseTx sdktype.BaseTx) ([]byte, st
 }
 
 // TxIntoDataBase operationType : issue_class,mint_nft,edit_nft,edit_nft_batch,burn_nft,burn_nft_batch
-func (m Base) TxIntoDataBase(AppID uint64, txHash string, signedData []byte, operationType string, status string) (uint64, error) {
+func (m Base) TxIntoDataBase(AppID uint64, txHash string, signedData []byte, operationType string, status string, exec boil.ContextExecutor) (uint64, error) {
 	// Tx into database
 	ttx := models.TTX{
 		AppID:         AppID,
@@ -61,7 +61,7 @@ func (m Base) TxIntoDataBase(AppID uint64, txHash string, signedData []byte, ope
 		OperationType: operationType,
 		Status:        status,
 	}
-	err := ttx.InsertG(context.Background(), boil.Infer())
+	err := ttx.Insert(context.Background(), exec, boil.Infer())
 	if err != nil {
 		return 0, err
 	}

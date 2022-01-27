@@ -149,14 +149,20 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
 		return "", types.ErrNoPermission
 	}
 
+	nftName := "[do-not-modify]"
+	if params.Name != "" {
+		nftName = params.Name
+	}
+
 	// create rawMsg
 	msgEditNFT := nft.MsgEditNFT{
 		Id:      tNft.NFTID,
 		DenomId: tNft.ClassID,
-		Name:    tNft.Name.String,
+		Name:    nftName,
 		URI:     params.Uri,
 		Data:    params.Data,
 		Sender:  params.Sender,
+		UriHash: "[do-not-modify]",
 	}
 
 	// build and sign transaction
@@ -166,18 +172,30 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
 		log.Debug("edit nft by index", "BuildAndSign error:", err.Error())
 		return "", err
 	}
+	_, err = svc.base.ValidateTx("B06FDA23CC60FCBD87D70150CD9546A33BA672EEAD528B2E2917D1ABCB9BA45D", boil.GetContextDB())
 
-	// Tx into database
-	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, models.TTXSOperationTypeEditNFT, models.TTXSStatusUndo)
 	if err != nil {
-		log.Debug("edit nft by index", "Tx into database error:", err.Error())
 		return "", err
 	}
 
-	// lock the NFT
-	tNft.Status = models.TNFTSStatusPending
-	tNft.LockedBy = null.Uint64From(txId)
-	_, err = tNft.UpdateG(context.Background(), boil.Infer())
+	err = modext.Transaction(func(exec boil.ContextExecutor) error {
+		// Tx into database
+		txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, models.TTXSOperationTypeEditNFT, models.TTXSStatusUndo, exec)
+		if err != nil {
+			log.Debug("edit nft by index", "Tx into database error:", err.Error())
+			return err
+		}
+
+		// lock the NFT
+		tNft.Status = models.TNFTSStatusPending
+		tNft.LockedBy = null.Uint64From(txId)
+		_, err = tNft.Update(context.Background(), exec, boil.Infer())
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+
 	if err != nil {
 		return "", err
 	}
@@ -211,13 +229,18 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 			return "", types.ErrNoPermission
 		}
 
+		nftName := "[do-not-modify]"
+		if EditNft.Name != "" {
+			nftName = EditNft.Name
+		}
 		msgEditNFT := nft.MsgEditNFT{
 			Id:      tNft.NFTID,
 			DenomId: tNft.ClassID,
-			Name:    tNft.Name.String,
+			Name:    nftName,
 			URI:     EditNft.Uri,
 			Data:    EditNft.Data,
 			Sender:  params.Sender,
+			UriHash: "[do-not-modify]",
 		}
 		msgEditNFTs = append(msgEditNFTs, &msgEditNFT)
 	}
@@ -230,17 +253,18 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 		return "", err
 	}
 
-	// Tx into database
-	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, models.TTXSOperationTypeEditNFTBatch, models.TTXSStatusUndo)
-	if err != nil {
-		log.Debug("edit nft by batch", "Tx into database error:", err.Error())
-		return "", err
-	}
-
-	// lock the NFTs
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
+		// Tx into database
+		txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, models.TTXSOperationTypeEditNFTBatch, models.TTXSStatusUndo, exec)
+
+		if err != nil {
+			log.Debug("edit nft by batch", "Tx into database error:", err.Error())
+			return err
+		}
+
+		// lock the NFTs
 		for _, EditNft := range params.EditNfts { // create every rawMsg
-			tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(EditNft.Index)).One(context.Background(), boil.GetContextDB())
+			tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(EditNft.Index)).One(context.Background(), exec)
 			tNft.Status = models.TNFTSStatusPending
 			tNft.LockedBy = null.Uint64From(txId)
 			// update
@@ -251,7 +275,6 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 		}
 		return nil
 	})
-
 	if err != nil {
 		return "", err
 	}
@@ -300,17 +323,24 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (string, error) {
 		return "", err
 	}
 
-	// Tx into database
-	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, models.TTXSOperationTypeBurnNFT, models.TTXSStatusUndo)
-	if err != nil {
-		log.Debug("delete nft by index", "Tx into database error:", err.Error())
-		return "", err
-	}
+	err = modext.Transaction(func(exec boil.ContextExecutor) error {
+		// Tx into database
+		txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, models.TTXSOperationTypeBurnNFT, models.TTXSStatusUndo, exec)
+		if err != nil {
+			log.Debug("delete nft by index", "Tx into database error:", err.Error())
+			return err
+		}
 
-	// lock the NFT
-	tNft.Status = models.TNFTSStatusPending
-	tNft.LockedBy = null.Uint64From(txId)
-	_, err = tNft.UpdateG(context.Background(), boil.Infer())
+		// lock the NFT
+		tNft.Status = models.TNFTSStatusPending
+		tNft.LockedBy = null.Uint64From(txId)
+		_, err = tNft.Update(context.Background(), exec, boil.Infer())
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+
 	if err != nil {
 		return "", err
 	}
@@ -358,17 +388,18 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 		log.Debug("delete nft by batch", "BuildAndSign error:", err.Error())
 		return "", err
 	}
-	// Tx into database
-	txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, models.TTXSOperationTypeBurnNFTBatch, models.TTXSStatusUndo)
-	if err != nil {
-		log.Debug("delete nft by batch", "Tx into database error:", err.Error())
-		return "", err
-	}
 
-	// lock the NFTs
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
+		// Tx into database
+		txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, models.TTXSOperationTypeBurnNFTBatch, models.TTXSStatusUndo, exec)
+		if err != nil {
+			log.Debug("delete nft by batch", "Tx into database error:", err.Error())
+			return err
+		}
+
+		// lock the NFTs
 		for _, index := range params.Indices { // lock every nft
-			tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(index)).One(context.Background(), boil.GetContextDB())
+			tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(index)).One(context.Background(), exec)
 			tNft.Status = models.TNFTSStatusPending
 			tNft.LockedBy = null.Uint64From(txId)
 			_, err = tNft.Update(context.Background(), exec, boil.Infer())
@@ -387,7 +418,7 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 	return txHash, nil
 }
 
-func (svc *Nft) NftByIndex(params dto.NftByIndexP) (*dto.NftByIndexP, error) {
+func (svc *Nft) NftByIndex(params dto.NftByIndexP) (*dto.NftR, error) {
 	// get NFT by app_id,class_id and index
 	tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(params.Index)).One(context.Background(), boil.GetContextDB())
 	// internal error：500
@@ -410,7 +441,7 @@ func (svc *Nft) NftByIndex(params dto.NftByIndexP) (*dto.NftByIndexP, error) {
 		return nil, types.ErrNftClassStatus
 	}
 
-	result := &dto.NftByIndexP{
+	result := &dto.NftR{
 		Id:          tNft.NFTID,
 		Index:       tNft.Index,
 		Name:        tNft.Name.String,
