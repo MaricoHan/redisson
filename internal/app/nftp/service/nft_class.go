@@ -40,7 +40,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 	}
 	pAddress := classOne.Address
 	//new classId
-	var data []byte = []byte(params.Owner)
+	var data = []byte(params.Owner)
 	data = append(data, []byte(params.Name)...)
 	data = append(data, []byte(strconv.FormatInt(time.Now().Unix(), 10))...)
 	classId := nftp + strings.ToLower(hex.EncodeToString(tmhash.Sum(data)))
@@ -234,6 +234,7 @@ func (svc *NftClass) NftClassById(params dto.NftClassesP) (*dto.NftClassRes, err
 	result.Description = classOne.Description.String
 	result.UriHash = classOne.URIHash.String
 	result.NftCount = uint64(count)
+	result.TxHash = classOne.TXHash
 
 	return result, nil
 

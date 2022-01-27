@@ -371,7 +371,7 @@ func (h nft) Status(ctx context.Context) (string, error) {
 	if status == nil {
 		return models.TNFTSStatusActive, nil
 	}
-	if status != models.TNFTSStatusActive || status != models.TNFTSStatusBurned {
+	if status != models.TNFTSStatusActive && status != models.TNFTSStatusBurned {
 		return "", types.ErrNftStatusOne
 	}
 	return status.(string), nil

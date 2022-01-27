@@ -106,6 +106,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) ([]string, error) {
 		}
 
 		tClass.LockedBy = null.Uint64FromPtr(&tx.ID)
+		tClass.URIHash = null.StringFrom("[do-not-modify]")
 		ok, err := tClass.Update(context.Background(), exec, boil.Infer())
 		if err != nil {
 			return types.ErrNftClassesSet
@@ -438,7 +439,7 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 		OperationRecords: nil,
 	}
 
-	nft, err := models.TNFTS(
+	tnft, err := models.TNFTS(
 		models.TNFTWhere.AppID.EQ(params.AppID),
 		models.TNFTWhere.ClassID.EQ(params.ClassID),
 		models.TNFTWhere.Index.EQ(params.Index),
@@ -459,7 +460,7 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 	if params.Txhash != "" {
 		queryMod = append(queryMod, models.TMSGWhere.TXHash.EQ(params.Txhash))
 	} else {
-		queryMod = append(queryMod, models.TMSGWhere.NFTID.EQ(null.StringFrom(nft.NFTID)))
+		queryMod = append(queryMod, models.TMSGWhere.NFTID.EQ(null.StringFrom(tnft.NFTID)))
 	} //否则查询该nft的所有hash
 
 	if params.Signer != "" {
@@ -566,7 +567,7 @@ func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
 	var modelResults []*models.TNFT
 	var total int64
 	var classByIds []*dto.NftClassByIds
-	classIds := []string{}
+	var classIds []string
 	fmt.Println(int(params.Offset))
 	fmt.Println(int(params.Limit))
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
@@ -611,7 +612,7 @@ func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
 	result.TotalCount = total
 	var nfts []*dto.Nft
 	for _, modelResult := range modelResults {
-		nft := &dto.Nft{
+		n := &dto.Nft{
 			Id:        modelResult.NFTID,
 			Index:     modelResult.Index,
 			Name:      modelResult.Name.String,
@@ -624,11 +625,11 @@ func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
 		}
 		for _, class := range classByIds {
 			if class.ClassId == modelResult.ClassID {
-				nft.ClassName = class.Name
-				nft.ClassSymbol = class.Symbol
+				n.ClassName = class.Name
+				n.ClassSymbol = class.Symbol
 			}
 		}
-		nfts = append(nfts, nft)
+		nfts = append(nfts, n)
 	}
 	result.Nfts = nfts
 	return result, nil
