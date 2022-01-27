@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
@@ -79,8 +80,9 @@ func (h nftClass) Classes(ctx context.Context, _ interface{}) (interface{}, erro
 	}
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
-		startDateTime, err := time.Parse(timeLayout, startDateR)
+		startDateTime, err := time.Parse(timeLayoutWithoutHMS, startDateR)
 		if err != nil {
+			fmt.Println("cuole+==============================")
 			return nil, types.ErrParams
 		}
 		params.StartDate = &startDateTime
@@ -88,7 +90,7 @@ func (h nftClass) Classes(ctx context.Context, _ interface{}) (interface{}, erro
 
 	endDateR := h.EndDate(ctx)
 	if endDateR != "" {
-		endDateTime, err := time.Parse(timeLayout, endDateR)
+		endDateTime, err := time.Parse(timeLayoutWithoutHMS, endDateR)
 		if err != nil {
 			return nil, types.ErrParams
 		}
