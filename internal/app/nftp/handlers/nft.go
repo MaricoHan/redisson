@@ -250,7 +250,7 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, request interface{}
 
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
-		startDateTime, err := time.Parse(timeLayout, startDateR)
+		startDateTime, err := time.Parse(timeLayoutWithoutHMS, startDateR)
 		if err != nil {
 			return nil, types.ErrParams
 		}
@@ -259,7 +259,7 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, request interface{}
 
 	endDateR := h.EndDate(ctx)
 	if endDateR != "" {
-		endDateTime, err := time.Parse(timeLayout, endDateR)
+		endDateTime, err := time.Parse(timeLayoutWithoutHMS, endDateR)
 		if err != nil {
 			return nil, types.ErrParams
 		}

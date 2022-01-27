@@ -18,7 +18,6 @@ import (
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
-	"gitlab.bianjie.ai/irita-paas/orms/orm-nft"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"
 )
@@ -117,10 +116,10 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 		}
 
 		if params.StartDate != nil {
-			queryMod = append(queryMod, models.TClassWhere.CreateAt.GTE(*params.StartDate))
+			queryMod = append(queryMod, models.TClassWhere.Timestamp.GTE(null.TimeFromPtr(params.StartDate)))
 		}
 		if params.EndDate != nil {
-			queryMod = append(queryMod, models.TClassWhere.CreateAt.LTE(*params.EndDate))
+			queryMod = append(queryMod, models.TClassWhere.Timestamp.LTE(null.TimeFromPtr(params.EndDate)))
 		}
 		if params.SortBy != "" {
 			orderBy := ""
@@ -135,7 +134,7 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 
 		total, err := modext.PageQueryByOffset(
 			context.Background(),
-			orm.GetDB(),
+			exec,
 			queryMod,
 			&modelResults,
 			int(params.Offset),
@@ -159,14 +158,17 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 			models.TNFTWhere.ClassID.IN(classIds),
 		}
 
-		err = models.NewQuery(q1...).Bind(context.Background(), orm.GetDB(), &countRes)
+		err = models.NewQuery(q1...).Bind(context.Background(), exec, &countRes)
 		if err != nil {
-			return types.ErrInternal
+			return types.ErrNftCountByClass
 		}
 		return err
 	})
 	if err != nil {
-		return nil, types.ErrInternal
+		if strings.Contains(err.Error(), "records not exist") {
+			return result, nil
+		}
+		return result, err
 	}
 
 	var nftClasses []*dto.NftClass
@@ -203,7 +205,7 @@ func (svc *NftClass) NftClassById(params dto.NftClassesP) (*dto.NftClassRes, err
 		classOne, err = models.TClasses(
 			models.TClassWhere.ClassID.EQ(params.Id),
 			models.TClassWhere.AppID.EQ(params.AppID),
-		).One(context.Background(), orm.GetDB())
+		).One(context.Background(), exec)
 		if err != nil {
 			return types.ErrNftClassesGet
 		}
@@ -211,7 +213,7 @@ func (svc *NftClass) NftClassById(params dto.NftClassesP) (*dto.NftClassRes, err
 		count, err = models.TNFTS(
 			models.TNFTWhere.ClassID.EQ(params.Id),
 			models.TNFTWhere.AppID.EQ(params.AppID),
-		).Count(context.Background(), orm.GetDB())
+		).Count(context.Background(), exec)
 		if err != nil {
 			return types.ErrNftClassDetailsGet
 		}

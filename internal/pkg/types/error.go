@@ -37,8 +37,8 @@ var (
 	ErrNoPermission           = Register(RootCodeSpace, "30", "sender is not the one of the app‘s accounts")
 	ErrName                   = Register(RootCodeSpace, "31", "sender is not the nft‘s owner")
 	ErrNftClassesSet          = Register(RootCodeSpace, "32", "failed to set nft class")
-	ErrTxMsgInsert            = Register(RootCodeSpace, "33", "failed to insert ttx")
-	ErrTxMsgGet               = Register(RootCodeSpace, "34", "failed to get ttx")
+	ErrTxMsgInsert            = Register(RootCodeSpace, "33", "failed to insert txs")
+	ErrTxMsgGet               = Register(RootCodeSpace, "34", "failed to get txs")
 	ErrGetTx                  = Register(RootCodeSpace, "35", "failed to get tx by hash")
 	ErrGetNftOperationDetails = Register(RootCodeSpace, "36", "failed to get nft operation details")
 	ErrNftStatus              = Register(RootCodeSpace, "37", "One of these NFTs does not exist or its status is not active")
@@ -46,7 +46,8 @@ var (
 	ErrNftClassStatus         = Register(RootCodeSpace, "39", "One of these NFT Class does not exist or its status is not active")
 	ErrClassStatus            = Register(RootCodeSpace, "40", "nftClass does not exist or its status is not active")
 	ErrNftStatusOne           = Register(RootCodeSpace, "41", "nft status is not active or burned")
-	ErrNotFound               = Register(RootCodeSpace, "404", "Not Found")
+	ErrNftCountByClass        = Register(RootCodeSpace, "42", "Cannot get nft count by classId")
+	ErrNotFound               = Register(RootCodeSpace, "43", "Resource Not Found")
 )
 
 var usedErrorCodes = map[string]*AppError{}
@@ -100,13 +101,4 @@ func Register(codeSpace string, code string, description string) *AppError {
 	setUsedErrorCodes(err)
 
 	return err
-}
-
-func UpdateDescription(codeSpace string, code string, description string) *AppError {
-	e := getUsedErrorCodes(codeSpace, code)
-	if e == nil {
-		panic(fmt.Sprintf("error with code %d No registered: %q", code, e.desc))
-	}
-	e.desc = description
-	return e
 }
