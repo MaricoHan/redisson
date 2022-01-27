@@ -248,13 +248,15 @@ func (c Controller) serverOptions(
 				types.ErrTxMsgInsert,
 				types.ErrNftClassStatus,
 				types.ErrClassStatus,
+				types.ErrNftStatusOne,
 				types.ErrIndicesFormat:
 				w.WriteHeader(http.StatusBadRequest)
 				errResp.CodeSpace = appErr.CodeSpace()
 				errResp.Message = appErr.Error()
 				errResp.Code = appErr.Code()
 
-			case types.ErrGetTx, types.ErrNftMissing:
+			case types.ErrNftMissing,
+				types.ErrNotFound:
 				w.WriteHeader(http.StatusNotFound)
 				errResp.CodeSpace = appErr.CodeSpace()
 				errResp.Message = appErr.Error()

@@ -530,7 +530,6 @@ func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
 	queryMod := []qm.QueryMod{
 		qm.From(models.TableNames.TNFTS),
 		models.TNFTWhere.AppID.EQ(params.AppID),
-		models.TNFTWhere.Status.IN([]string{models.TNFTSStatusActive, models.TNFTSStatusBurned}),
 	}
 	if params.Id != "" {
 		queryMod = append(queryMod, models.TNFTWhere.NFTID.EQ(params.Id))

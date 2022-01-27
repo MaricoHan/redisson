@@ -100,6 +100,7 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 		queryMod := []qm.QueryMod{
 			qm.From(models.TableNames.TClasses),
 			models.TClassWhere.AppID.EQ(params.AppID),
+			models.TClassWhere.Status.EQ(models.TNFTSStatusActive),
 		}
 		if params.Id != "" {
 			queryMod = append(queryMod, models.TClassWhere.ClassID.EQ(params.Id))
@@ -153,6 +154,7 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 			qm.From(models.TableNames.TNFTS),
 			qm.Select(models.TNFTColumns.ClassID),
 			qm.Select("count(class_id) as count, class_id"),
+			models.TNFTWhere.Status.EQ(models.TNFTSStatusActive),
 			qm.GroupBy(models.TNFTColumns.ClassID),
 			models.TNFTWhere.ClassID.IN(classIds),
 		}
@@ -211,12 +213,12 @@ func (svc *NftClass) NftClassById(params dto.NftClassesP) (*dto.NftClassRes, err
 			models.TNFTWhere.AppID.EQ(params.AppID),
 		).Count(context.Background(), orm.GetDB())
 		if err != nil {
-			return types.ErrInternal
+			return types.ErrNftClassDetailsGet
 		}
 		return err
 	})
 	if err != nil {
-		return nil, types.ErrInternal
+		return nil, types.ErrNotFound
 	}
 
 	result := &dto.NftClassRes{}
