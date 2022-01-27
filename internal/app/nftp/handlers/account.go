@@ -191,6 +191,10 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 			return nil, types.ErrParams
 		}
 	}
+
+	if params.Module == "" && params.Operation != "" {
+		params.Operation = ""
+	}
 	return h.svc.AccountsHistory(params)
 }
 
