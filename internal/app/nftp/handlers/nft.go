@@ -375,6 +375,9 @@ func (h nft) Status(ctx context.Context) string {
 
 func (h nft) Indices(ctx context.Context) ([]uint64, error) {
 	rec := ctx.Value("indices")
+	if rec == nil {
+		return nil, types.ErrIndicesFormat
+	}
 
 	// "1,2,3,4,..." to {1,2,3,4,...}
 	var indices []uint64
