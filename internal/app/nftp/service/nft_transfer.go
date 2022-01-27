@@ -23,6 +23,12 @@ func NewNftTransfer(base *Base) *NftTransfer {
 }
 
 func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (string, error) {
+	//不能自己转让给自己
+	if params.Recipient == params.Owner {
+		return "", types.ErrParams
+	}
+
+	//recipient不能为平台外账户或此应用外账户或非法账户
 	acc, err := models.TAccounts(
 		models.TAccountWhere.AppID.EQ(params.AppID),
 		models.TAccountWhere.Address.EQ(params.Recipient)).OneG(context.Background())
@@ -32,6 +38,8 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	if acc == nil {
 		return "", types.ErrParams
 	}
+
+	//判断class
 	class, err := models.TClasses(
 		models.TClassWhere.ClassID.EQ(string(params.ClassID)),
 		models.TClassWhere.AppID.EQ(params.AppID),
@@ -94,6 +102,11 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 }
 
 func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (string, error) {
+	//不能自己转让给自己
+	if params.Recipient == params.Owner {
+		return "", types.ErrParams
+	}
+
 	acc, err := models.TAccounts(
 		models.TAccountWhere.AppID.EQ(params.AppID),
 		models.TAccountWhere.Address.EQ(params.Recipient)).OneG(context.Background())
@@ -184,6 +197,11 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			return "", types.ErrParams
 		}
 		if acc == nil {
+			return "", types.ErrParams
+		}
+
+		//不能自己转让给自己
+		if recipient.Recipient == params.Owner {
 			return "", types.ErrParams
 		}
 
