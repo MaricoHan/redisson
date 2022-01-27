@@ -166,6 +166,7 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 }
 
 func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (string, error) {
+	var indexlist []uint64
 	var msgs sdktype.Msgs
 	for _, modelResult := range params.Recipients {
 		recipient := &dto.Recipient{
@@ -187,6 +188,14 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 		if acc == nil {
 			return "", types.ErrParams
 		}
+
+		//判断index是否重复
+		for i := range indexlist {
+			if recipient.Index == uint64(i) {
+				return "", types.ErrParams
+			}
+		}
+		indexlist = append(indexlist, recipient.Index)
 
 		res, err := models.TNFTS(models.TNFTWhere.Index.EQ(recipient.Index),
 			models.TNFTWhere.ClassID.EQ(string(params.ClassID)),

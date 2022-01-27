@@ -72,10 +72,6 @@ func (h account) Accounts(ctx context.Context, _ interface{}) (interface{}, erro
 	}
 	params.Limit = limit
 
-	if params.Offset == 0 {
-		params.Offset = 1
-	}
-
 	if params.Limit == 0 {
 		params.Limit = 10
 	}
