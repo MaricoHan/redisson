@@ -79,6 +79,9 @@ func (h nftTransfer) TransferNftByBatch(ctx context.Context, request interface{}
 		Recipients: req.Recipients,
 		AppID:      h.AppID(ctx),
 	}
+	if len(params.Recipients) > 50 {
+		return "", types.ErrParams
+	}
 	// 校验参数 end
 	return h.svc.TransferNftByBatch(params)
 }

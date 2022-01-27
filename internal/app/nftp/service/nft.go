@@ -488,7 +488,7 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 		orm.GetDB(),
 		queryMod,
 		&modelResults,
-		1,
+		int(params.Offset),
 		int(params.Limit),
 	)
 	if err != nil {
@@ -541,7 +541,6 @@ func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
 	if params.Status != "" {
 		queryMod = append(queryMod, models.TNFTWhere.Status.EQ(params.Status))
 	}
-
 	if params.StartDate != nil {
 		queryMod = append(queryMod, models.TNFTWhere.Timestamp.GTE(null.TimeFromPtr(params.StartDate)))
 	}
