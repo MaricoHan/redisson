@@ -495,7 +495,6 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 		if strings.Contains(err.Error(), "records not exist") {
 			return result, nil
 		}
-
 		return nil, types.ErrGetNftOperationDetails
 	}
 

@@ -134,8 +134,12 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 	msgs := nft.MsgTransferNFT{
 		Id:        res.NFTID,
 		DenomId:   string(params.ClassID),
+		Name:      res.Name.String,
+		URI:       res.URI.String,
+		Data:      res.Metadata.String,
 		Sender:    params.Owner,
 		Recipient: params.Recipient,
+		UriHash:   res.URIHash.String,
 	}
 
 	//build and sign
@@ -226,8 +230,12 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 		msg := nft.MsgTransferNFT{
 			Id:        res.NFTID,
 			DenomId:   string(params.ClassID),
+			Name:      res.Name.String,
+			URI:       res.URI.String,
+			Data:      res.Metadata.String,
 			Sender:    params.Owner,
 			Recipient: recipient.Recipient,
+			UriHash:   res.URIHash.String,
 		}
 		msgs = append(sdktype.Msgs{&msg})
 		indexMap[recipient.Index] = 0
