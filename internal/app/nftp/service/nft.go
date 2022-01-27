@@ -158,10 +158,13 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
 		Data:    params.Data,
 		Sender:  params.Sender,
 	}
+	fmt.Println("msgEditNFT", msgEditNFT)
 
 	// build and sign transaction
 	baseTx := svc.base.CreateBaseTx(params.Sender, "")
 	signedData, txHash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgEditNFT}, baseTx)
+
+	fmt.Println("signedData:", signedData)
 	if err != nil {
 		log.Debug("edit nft by index", "BuildAndSign error:", err.Error())
 		return "", err
@@ -387,7 +390,7 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 	return txHash, nil
 }
 
-func (svc *Nft) NftByIndex(params dto.NftByIndexP) (*dto.NftByIndexP, error) {
+func (svc *Nft) NftByIndex(params dto.NftByIndexP) (*dto.NftR, error) {
 	// get NFT by app_id,class_id and index
 	tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(params.Index)).One(context.Background(), boil.GetContextDB())
 	// internal error：500
@@ -410,7 +413,7 @@ func (svc *Nft) NftByIndex(params dto.NftByIndexP) (*dto.NftByIndexP, error) {
 		return nil, types.ErrNftClassStatus
 	}
 
-	result := &dto.NftByIndexP{
+	result := &dto.NftR{
 		Id:          tNft.NFTID,
 		Index:       tNft.Index,
 		Name:        tNft.Name.String,

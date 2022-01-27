@@ -5,7 +5,7 @@ log_level = "debug"
 
 [mysql]
 db_name = "nftp_open_api"
-host = "192.168.150.40"
+host = "192.168.150.60"
 port = "23306"
 user = "nftp"
 password = "nftppassword"
