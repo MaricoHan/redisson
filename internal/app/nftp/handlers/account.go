@@ -118,7 +118,7 @@ func (h account) Accounts(ctx context.Context, _ interface{}) (interface{}, erro
 
 func (h account) Account(ctx context.Context) string {
 	accountR := ctx.Value("account")
-	if accountR == nil {
+	if accountR == nil || accountR == "" {
 		return ""
 	}
 	return accountR.(string)
@@ -200,7 +200,7 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 
 func (h account) module(ctx context.Context) string {
 	module := ctx.Value("module")
-	if module == nil {
+	if module == nil || module == "" {
 		return ""
 	}
 	return module.(string)
@@ -208,7 +208,7 @@ func (h account) module(ctx context.Context) string {
 
 func (h account) operation(ctx context.Context) string {
 	operation := ctx.Value("operation")
-	if operation == nil {
+	if operation == nil || operation == "" {
 		return ""
 	}
 	return operation.(string)

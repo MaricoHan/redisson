@@ -377,7 +377,7 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, _ interface{}) (int
 
 func (h nft) Signer(ctx context.Context) string {
 	signer := ctx.Value("signer")
-	if signer == nil {
+	if signer == nil || signer == "" {
 		return ""
 	}
 	return signer.(string)
@@ -385,7 +385,7 @@ func (h nft) Signer(ctx context.Context) string {
 
 func (h nft) Operation(ctx context.Context) string {
 	operation := ctx.Value("operation")
-	if operation == nil {
+	if operation == nil || operation == "" {
 		return ""
 	}
 	return operation.(string)
@@ -393,7 +393,7 @@ func (h nft) Operation(ctx context.Context) string {
 
 func (h nft) Txhash(ctx context.Context) string {
 	txhash := ctx.Value("tx_hash")
-	if txhash == nil {
+	if txhash == nil || txhash == "" {
 		return ""
 	}
 	return txhash.(string)
@@ -421,7 +421,6 @@ func (h nft) ClassId(ctx context.Context) string {
 
 func (h nft) Owner(ctx context.Context) string {
 	owner := ctx.Value("owner")
-
 	if owner == nil {
 		return ""
 	}

@@ -26,7 +26,7 @@ type pageBasic struct {
 
 func (h pageBasic) Offset(ctx context.Context) (int64, error) {
 	offset := ctx.Value("offset")
-	if offset == nil {
+	if offset == "" || offset == nil {
 		return 0, nil
 	}
 	return strconv.ParseInt(offset.(string), 10, 64)
@@ -34,7 +34,7 @@ func (h pageBasic) Offset(ctx context.Context) (int64, error) {
 
 func (h pageBasic) Limit(ctx context.Context) (int64, error) {
 	limit := ctx.Value("limit")
-	if limit == nil {
+	if limit == "" || limit == nil {
 		return 10, nil
 	}
 	return strconv.ParseInt(limit.(string), 10, 64)
@@ -42,7 +42,7 @@ func (h pageBasic) Limit(ctx context.Context) (int64, error) {
 
 func (h pageBasic) StartDate(ctx context.Context) string {
 	endDate := ctx.Value("start_date")
-	if endDate == nil {
+	if endDate == "" || endDate == nil {
 		return ""
 	}
 	return endDate.(string)
@@ -50,7 +50,7 @@ func (h pageBasic) StartDate(ctx context.Context) string {
 
 func (h pageBasic) EndDate(ctx context.Context) string {
 	endDate := ctx.Value("end_date")
-	if endDate == nil {
+	if endDate == "" || endDate == nil {
 		return ""
 	}
 	return endDate.(string)
@@ -58,7 +58,7 @@ func (h pageBasic) EndDate(ctx context.Context) string {
 
 func (h pageBasic) SortBy(ctx context.Context) string {
 	sortBy := ctx.Value("sort_by")
-	if sortBy == nil {
+	if sortBy == "" || sortBy == nil {
 		return "DATE_DESC"
 	}
 	return sortBy.(string)
