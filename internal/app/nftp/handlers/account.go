@@ -81,7 +81,7 @@ func (h account) Accounts(ctx context.Context, _ interface{}) (interface{}, erro
 
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
-		startDateTime, err := time.Parse(timeLayout, startDateR)
+		startDateTime, err := time.Parse(timeLayout, startDateR+" 00:00:00")
 		if err != nil {
 			return nil, types.ErrParams
 		}
@@ -90,7 +90,7 @@ func (h account) Accounts(ctx context.Context, _ interface{}) (interface{}, erro
 
 	endDateR := h.EndDate(ctx)
 	if endDateR != "" {
-		endDateTime, err := time.Parse(timeLayout, endDateR)
+		endDateTime, err := time.Parse(timeLayout, endDateR+" 23:59:59")
 		if err != nil {
 			return nil, types.ErrParams
 		}
@@ -152,7 +152,7 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
-		startDateTime, err := time.Parse(timeLayout, startDateR)
+		startDateTime, err := time.Parse(timeLayout, startDateR+" 00:00:00")
 		if err != nil {
 			return nil, types.ErrParams
 		}
@@ -161,7 +161,7 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 
 	endDateR := h.EndDate(ctx)
 	if endDateR != "" {
-		endDateTime, err := time.Parse(timeLayout, endDateR)
+		endDateTime, err := time.Parse(timeLayout, endDateR+" 23:59:59")
 		if err != nil {
 			return nil, types.ErrParams
 		}
