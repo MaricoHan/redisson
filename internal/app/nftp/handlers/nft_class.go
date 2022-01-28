@@ -35,6 +35,34 @@ func newNftClass(svc *service.NftClass) *nftClass {
 func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
 	req := request.(*vo.CreateNftClassRequest)
+	if req.Name == "" || len(req.Name) < 3 || len(req.Name) > 64 {
+		return nil, types.ErrParams
+	}
+
+	if (req.Symbol != "" && len(req.Symbol) < 3) || (req.Symbol != "" && len(req.Symbol) > 64) {
+		return nil, types.ErrParams
+	}
+
+	if req.Description != "" && len(req.Description) > 2048 {
+		return nil, types.ErrParams
+	}
+
+	if req.Uri != "" && len(req.Uri) > 256 {
+		return nil, types.ErrParams
+	}
+
+	if req.UriHash != "" && len(req.UriHash) > 512 {
+		return nil, types.ErrParams
+	}
+
+	if req.Data != "" && len(req.Data) > 4096 {
+		return nil, types.ErrParams
+	}
+
+	if req.Owner == "" || len(req.Owner) > 128 {
+		return nil, types.ErrParams
+	}
+
 	params := dto.CreateNftClassP{
 		AppID:       h.AppID(ctx),
 		Name:        req.Name,
