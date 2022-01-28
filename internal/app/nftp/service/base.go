@@ -12,7 +12,6 @@ import (
 
 	sdk "github.com/irisnet/core-sdk-go"
 	sdktype "github.com/irisnet/core-sdk-go/types"
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 )
 
@@ -69,8 +68,8 @@ func (m Base) TxIntoDataBase(AppID uint64, txHash string, signedData []byte, ope
 }
 
 // ValidateTx validate tx status
-func (m Base) ValidateTx(hash string, exec boil.ContextExecutor) (*models.TTX, error) {
-	tx, err := models.TTXS(models.TTXWhere.Hash.EQ(hash)).One(context.Background(), exec)
+func (m Base) ValidateTx(hash string) (*models.TTX, error) {
+	tx, err := models.TTXS(models.TTXWhere.Hash.EQ(hash)).OneG(context.Background())
 	if err == sql.ErrNoRows {
 		return tx, nil
 	} else if err != nil {
