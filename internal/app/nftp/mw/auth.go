@@ -7,10 +7,11 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"io/ioutil"
 	"net/http"
 	"sort"
+
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 
 	"github.com/gorilla/mux"
 
@@ -34,7 +35,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Debug("user request", "method:", r.Method, "url:", r.URL.Path)
 	appKey := r.Header.Get("X-Api-Key")
 	appKeyResult, err := models.TAppKeys(
-		qm.Select(models.TAppKeyColumns.APIKey),
+		qm.Select(models.TAppKeyColumns.APISecret),
 		qm.Select(models.TAppKeyColumns.AppID),
 		models.TAppKeyWhere.APIKey.EQ(appKey),
 	).OneG(context.Background())
@@ -46,27 +47,34 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	reqTimestampStr := r.Header.Get("X-Timestamp")
 
 	//// 1.1 判断时间误差
+	// todo
+	// 生产的时候打开
 	//reqTimestampInt, err := strconv.ParseInt(reqTimestampStr, 10, 64)
 	//if err != nil {
-	//	w.WriteHeader(http.StatusBadRequest)
+	//	writeBadRequestResp(w, types.ErrParams)
 	//	return
 	//}
 	//
 	//curTimestamp := time.Now().Unix()
 	//if curTimestamp-reqTimestampInt > timeInterval || curTimestamp < reqTimestampInt {
-	//	w.WriteHeader(http.StatusBadRequest)
+	//	writeBadRequestResp(w, types.ErrParams)
 	//	return
 	//}
 
 	reqSignature := r.Header.Get("X-Signature")
 	// 2. 验证签名
 	// todo
-	fmt.Println(h.Signature(r, appKeyResult.APIKey, reqTimestampStr, reqSignature))
+	// 生产的时候打开
+	//if !h.Signature(r, appKeyResult.APISecret, reqTimestampStr, reqSignature) {
+	//	writeForbiddenResp(w)
+	//	return
+	//}
+	fmt.Println(h.Signature(r, appKeyResult.APISecret, reqTimestampStr, reqSignature))
 	r.Header.Set("X-App-Id", fmt.Sprintf("%d", appKeyResult.AppID))
 	h.next.ServeHTTP(w, r)
 }
 
-func (h authHandler) Signature(r *http.Request, appKey string, timestamp string, signature string) bool {
+func (h authHandler) Signature(r *http.Request, apiSecret string, timestamp string, signature string) bool {
 
 	// 获取 path params
 	params := map[string]interface{}{}
@@ -91,7 +99,7 @@ func (h authHandler) Signature(r *http.Request, appKey string, timestamp string,
 	}
 	paramsBody := map[string]interface{}{}
 	_ = json.Unmarshal(bodyBytes, &paramsBody)
-	hexHash := hash(timestamp + appKey)
+	hexHash := hash(timestamp + apiSecret)
 
 	for k, v := range paramsBody {
 		params[k] = v
@@ -102,7 +110,7 @@ func (h authHandler) Signature(r *http.Request, appKey string, timestamp string,
 
 	if sortParams != nil {
 		sortParamsBytes, _ := json.Marshal(sortParams)
-		hexHash = hash(string(sortParamsBytes) + timestamp + appKey)
+		hexHash = hash(string(sortParamsBytes) + timestamp + apiSecret)
 	}
 	if hexHash != signature {
 		return false
