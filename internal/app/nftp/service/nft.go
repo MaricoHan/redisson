@@ -49,6 +49,22 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) ([]string, error) {
 		if err != nil {
 			return types.ErrNftClassDetailsGet
 		}
+
+		//validate receipient
+		if params.Recipient == "" {
+			params.Recipient = classOne.Owner
+		} else {
+			acc, err := models.TAccounts(
+				models.TAccountWhere.AppID.EQ(params.AppID),
+				models.TAccountWhere.Address.EQ(params.Recipient)).OneG(context.Background())
+			if err != nil {
+				return types.ErrParams
+			}
+			if acc == nil {
+				return types.ErrParams
+			}
+		}
+
 		offSet := classOne.Offset
 		var msgs sdktype.Msgs
 		for i := 1; i <= params.Amount; i++ {
