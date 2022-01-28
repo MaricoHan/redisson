@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"reflect"
 	"strconv"
 	"time"
 
@@ -127,13 +128,17 @@ func (c Controller) GetPagation(ctx context.Context) (int, int) {
 func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFunc {
 	return func(ctx context.Context, r *http.Request) (request interface{}, err error) {
 		log.Debug("Execute decode request", "method", "decodeRequest")
+		p := reflect.ValueOf(req).Elem()
+		p.Set(reflect.Zero(p.Type()))
 		if req == nil {
 			return nil, err
 		}
+
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			log.Error("Execute decode request failed", "error", err.Error())
 			return nil, types.NewAppError(types.RootCodeSpace, "3", err.Error())
 		}
+
 		//validate request
 		if err := c.validate.Struct(req); err != nil {
 			log.Error("Execute decode request failed", "validate struct", err.Error(), "req:", req)
@@ -160,7 +165,6 @@ func (c Controller) serverOptions(
 	//copy params from Form,PostForm to Context
 	copyParams := func(ctx context.Context, request *http.Request) context.Context {
 		log.Debug("Merge request params to Context", "method", "serverBefore")
-
 		if err := request.ParseForm(); err != nil {
 			log.Error("Parse form failed", "error", err.Error())
 			return ctx
@@ -172,7 +176,6 @@ func (c Controller) serverOptions(
 			}
 			return vs
 		}
-
 		for k, v := range request.Form {
 			ctx = context.WithValue(ctx, k, improveValue(v))
 		}
