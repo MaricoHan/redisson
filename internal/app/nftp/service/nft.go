@@ -624,7 +624,6 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 		operationRecords = append(operationRecords, operationRecord)
 	}
 	result.OperationRecords = operationRecords
-	fmt.Println(result)
 	return result, nil
 }
 
@@ -678,8 +677,6 @@ func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
 	var total int64
 	var classByIds []*dto.NftClassByIds
 	classIds := []string{}
-	fmt.Println(int(params.Offset))
-	fmt.Println(int(params.Limit))
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		total, err = modext.PageQueryByOffset(
 			context.Background(),

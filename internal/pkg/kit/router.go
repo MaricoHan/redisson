@@ -128,21 +128,27 @@ func (c Controller) GetPagation(ctx context.Context) (int, int) {
 func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFunc {
 	return func(ctx context.Context, r *http.Request) (request interface{}, err error) {
 		log.Debug("Execute decode request", "method", "decodeRequest")
-		p := reflect.ValueOf(req).Elem()
-		p.Set(reflect.Zero(p.Type()))
 		if req == nil {
 			return nil, err
 		}
-
+		p := reflect.ValueOf(req).Elem()
+		p.Set(reflect.Zero(p.Type()))
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			log.Error("Execute decode request failed", "error", err.Error())
 			return nil, types.NewAppError(types.RootCodeSpace, "3", err.Error())
 		}
-
-		//validate request
-		if err := c.validate.Struct(req); err != nil {
-			log.Error("Execute decode request failed", "validate struct", err.Error(), "req:", req)
-			return nil, types.NewAppError(types.RootCodeSpace, "3", err.Error())
+		switch p.Type().Kind() {
+		case reflect.Struct:
+			//validate request
+			if err := c.validate.Struct(req); err != nil {
+				log.Error("Execute decode request failed", "validate struct", err.Error(), "req:", req)
+				return nil, types.NewAppError(types.RootCodeSpace, "3", err.Error())
+			}
+		case reflect.Array:
+			if err := c.validate.Var(req, ""); err != nil {
+				log.Error("Execute decode request failed", "validate struct", err.Error(), "req:", req)
+				return nil, types.NewAppError(types.RootCodeSpace, "3", err.Error())
+			}
 		}
 		return req, nil
 	}

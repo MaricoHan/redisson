@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -125,13 +124,22 @@ func (h nft) EditNftByIndex(ctx context.Context, request interface{}) (interface
 // return the deleted results
 func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface{}, error) {
 	req := request.(*vo.EditNftByBatchRequest)
+
+	if len(*req) == 0 {
+		return nil, types.ErrParams
+	}
+
+	var nfts []*dto.EditNft
+	for _, v := range *req {
+		nfts = append(nfts, v)
+	}
+
 	params := dto.EditNftByBatchP{
-		EditNfts: req.Nfts,
+		EditNfts: nfts,
 		AppID:    h.AppID(ctx),
 		ClassId:  h.ClassId(ctx),
 		Sender:   h.Owner(ctx),
 	}
-	fmt.Println(params)
 	//check start
 	//1. count limit :50
 	if len(params.EditNfts) > 50 {
