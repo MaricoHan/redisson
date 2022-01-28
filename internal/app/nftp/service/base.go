@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"crypto/sha256"
+	"database/sql"
 	"encoding/hex"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"strings"
@@ -70,8 +71,10 @@ func (m Base) TxIntoDataBase(AppID uint64, txHash string, signedData []byte, ope
 // ValidateTx validate tx status
 func (m Base) ValidateTx(hash string) (*models.TTX, error) {
 	tx, err := models.TTXS(models.TTXWhere.Hash.EQ(hash)).OneG(context.Background())
-	if err != nil {
-		return nil, nil
+	if err == sql.ErrNoRows {
+		return tx, nil
+	} else if err != nil {
+		return tx, err
 	}
 
 	// pending

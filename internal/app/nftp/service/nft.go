@@ -76,6 +76,20 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) ([]string, error) {
 			return err
 		}
 
+		//validate tx
+		txone, err := svc.base.ValidateTx(thash)
+		if err != nil {
+			return err
+		}
+		if txone != nil && txone.Status == models.TTXSStatusFailed {
+			baseTx.Memo = string(txone.ID)
+			originData, thash, err = svc.base.BuildAndSign(msgs, baseTx)
+			if err != nil {
+				log.Debug("create nfts", "buildandsign error:", err.Error())
+				return types.ErrBuildAndSign
+			}
+		}
+
 		txHash = &thash
 
 		//modify t_class offset
