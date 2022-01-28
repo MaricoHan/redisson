@@ -503,10 +503,13 @@ func (svc *Nft) NftByIndex(params dto.NftByIndexP) (*dto.NftR, error) {
 	if err != nil && errors.Cause(err) != sql.ErrNoRows {
 		return nil, types.ErrInternal
 	}
-
 	// nft does not exist
 	if tNft == nil {
 		return nil, types.ErrNftMissing
+	}
+
+	if !strings.Contains("active/burned", tNft.Status) {
+		return nil, types.ErrNftStatus
 	}
 
 	// get class by class_id

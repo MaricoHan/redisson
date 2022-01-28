@@ -285,6 +285,7 @@ func (h nft) NftByIndex(ctx context.Context, _ interface{}) (interface{}, error)
 	if err != nil {
 		return nil, err
 	}
+
 	//check end
 	params := dto.NftByIndexP{
 		AppID:   h.AppID(ctx),
