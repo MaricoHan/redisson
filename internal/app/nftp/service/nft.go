@@ -161,6 +161,7 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
 	if err != nil && errors.Cause(err) != sql.ErrNoRows {
 		return "", types.ErrInternal
 	}
+
 	// nft does not exist ：404
 	if tNft == nil || tNft.Status != models.TNFTSStatusActive {
 		return "", types.ErrNftMissing
