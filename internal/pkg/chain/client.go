@@ -49,7 +49,7 @@ func NewSdkClient(conf configs.Chain, db *sql.DB) {
 		sdktype.KeyDAOOption(NewMsqlKeyDao(db)),
 		sdktype.AlgoOption("secp256k1"),
 		sdktype.TimeoutOption(60),
-		sdktype.CachedOption(false),
+		sdktype.CachedOption(true),
 		sdktype.GRPCOptions(grpcOpts),
 		sdktype.HeaderOption(httpHeader),
 		sdktype.WSAddrOption(conf.WsAddr),

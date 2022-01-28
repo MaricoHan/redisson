@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -125,14 +126,14 @@ func (h nft) EditNftByIndex(ctx context.Context, request interface{}) (interface
 func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface{}, error) {
 	req := request.(*vo.EditNftByBatchRequest)
 	params := dto.EditNftByBatchP{
-		EditNfts: req.EditNftsR,
+		EditNfts: req.Nfts,
 		AppID:    h.AppID(ctx),
 		ClassId:  h.ClassId(ctx),
 		Sender:   h.Owner(ctx),
 	}
-
+	fmt.Println(params)
 	//check start
-	// 1. count limit :50
+	//1. count limit :50
 	if len(params.EditNfts) > 50 {
 		return nil, types.ErrNftTooMany
 	}
@@ -454,7 +455,7 @@ func (h nft) Status(ctx context.Context) (string, error) {
 	if status == nil {
 		return models.TNFTSStatusActive, nil
 	}
-	if status != models.TNFTSStatusActive || status != models.TNFTSStatusBurned {
+	if status != models.TNFTSStatusActive && status != models.TNFTSStatusBurned {
 		return "", types.ErrNftStatusOne
 	}
 	return status.(string), nil

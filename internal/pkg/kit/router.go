@@ -134,6 +134,7 @@ func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFu
 			log.Error("Execute decode request failed", "error", err.Error())
 			return nil, types.NewAppError(types.RootCodeSpace, "3", err.Error())
 		}
+
 		//validate request
 		if err := c.validate.Struct(req); err != nil {
 			log.Error("Execute decode request failed", "validate struct", err.Error(), "req:", req)

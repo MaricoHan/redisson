@@ -19,5 +19,5 @@ type EditNftByIndexRequest struct {
 }
 
 type EditNftByBatchRequest struct {
-	EditNftsR []*dto.EditNft `json:"nfts"`
+	Nfts []*dto.EditNft `json:"nfts" validate:"required"`
 }
