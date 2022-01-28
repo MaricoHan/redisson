@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -79,7 +80,6 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 	if params.Amount > 100 {
 		return nil, types.ErrParams
 	}
-
 	return h.svc.CreateNfts(params)
 }
 
