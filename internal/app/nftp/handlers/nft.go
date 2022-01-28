@@ -80,7 +80,6 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 	if params.Amount > 100 {
 		return nil, types.ErrParams
 	}
-	fmt.Println(1)
 	return h.svc.CreateNfts(params)
 }
 
