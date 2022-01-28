@@ -81,7 +81,7 @@ func (h account) Accounts(ctx context.Context, _ interface{}) (interface{}, erro
 
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
-		startDateTime, err := time.Parse(timeLayout, startDateR)
+		startDateTime, err := time.Parse(timeLayout, startDateR+" 00:00:00")
 		if err != nil {
 			return nil, types.ErrParams
 		}
@@ -90,7 +90,7 @@ func (h account) Accounts(ctx context.Context, _ interface{}) (interface{}, erro
 
 	endDateR := h.EndDate(ctx)
 	if endDateR != "" {
-		endDateTime, err := time.Parse(timeLayout, endDateR)
+		endDateTime, err := time.Parse(timeLayout, endDateR+" 23:59:59")
 		if err != nil {
 			return nil, types.ErrParams
 		}
@@ -118,7 +118,7 @@ func (h account) Accounts(ctx context.Context, _ interface{}) (interface{}, erro
 
 func (h account) Account(ctx context.Context) string {
 	accountR := ctx.Value("account")
-	if accountR == nil {
+	if accountR == nil || accountR == "" {
 		return ""
 	}
 	return accountR.(string)
@@ -152,7 +152,7 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
-		startDateTime, err := time.Parse(timeLayout, startDateR)
+		startDateTime, err := time.Parse(timeLayout, startDateR+" 00:00:00")
 		if err != nil {
 			return nil, types.ErrParams
 		}
@@ -161,7 +161,7 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 
 	endDateR := h.EndDate(ctx)
 	if endDateR != "" {
-		endDateTime, err := time.Parse(timeLayout, endDateR)
+		endDateTime, err := time.Parse(timeLayout, endDateR+" 23:59:59")
 		if err != nil {
 			return nil, types.ErrParams
 		}
@@ -200,7 +200,7 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 
 func (h account) module(ctx context.Context) string {
 	module := ctx.Value("module")
-	if module == nil {
+	if module == nil || module == "" {
 		return ""
 	}
 	return module.(string)
@@ -208,7 +208,7 @@ func (h account) module(ctx context.Context) string {
 
 func (h account) operation(ctx context.Context) string {
 	operation := ctx.Value("operation")
-	if operation == nil {
+	if operation == nil || operation == "" {
 		return ""
 	}
 	return operation.(string)
