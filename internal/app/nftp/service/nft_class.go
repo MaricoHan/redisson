@@ -87,7 +87,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 		return nil, err
 	}
 	if txone != nil && txone.Status == models.TTXSStatusFailed {
-		baseTx.Memo = string(txone.ID)
+		baseTx.Memo = fmt.Sprintf("%d", txone.ID)
 		originData, txHash, err = svc.base.BuildAndSign(sdktype.Msgs{&createDenomMsg, &transferDenomMsg}, baseTx)
 		if err != nil {
 			log.Debug("create nft class", "BuildAndSign error:", err.Error())
