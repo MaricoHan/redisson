@@ -124,15 +124,24 @@ func (h nft) EditNftByIndex(ctx context.Context, request interface{}) (interface
 // return the deleted results
 func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface{}, error) {
 	req := request.(*vo.EditNftByBatchRequest)
+
+	if len(*req) == 0 {
+		return nil, types.ErrParams
+	}
+
+	var nfts []*dto.EditNft
+	for _, v := range *req {
+		nfts = append(nfts, v)
+	}
+
 	params := dto.EditNftByBatchP{
-		EditNfts: req.EditNftsR,
+		EditNfts: nfts,
 		AppID:    h.AppID(ctx),
 		ClassId:  h.ClassId(ctx),
 		Sender:   h.Owner(ctx),
 	}
-
 	//check start
-	// 1. count limit :50
+	//1. count limit :50
 	if len(params.EditNfts) > 50 {
 		return nil, types.ErrNftTooMany
 	}
@@ -457,7 +466,7 @@ func (h nft) Status(ctx context.Context) (string, error) {
 	if status == nil {
 		return models.TNFTSStatusActive, nil
 	}
-	if status != models.TNFTSStatusActive || status != models.TNFTSStatusBurned {
+	if status != models.TNFTSStatusActive && status != models.TNFTSStatusBurned {
 		return "", types.ErrNftStatusOne
 	}
 	return status.(string), nil

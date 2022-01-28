@@ -45,66 +45,65 @@ func NewAccount() *Account {
 func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 	// 写入数据库
 	// sdk 创建账户
-	db, err := orm.GetDB().Begin()
-	if err != nil {
-		return nil, types.ErrMysqlConn
-	}
-	tAppOneObj, err := models.TApps(models.TAppWhere.ID.EQ(params.AppID)).One(context.Background(), db)
-	if err != nil {
-		return nil, types.ErrInternal
-	}
-
-	tAccounts := modext.TAccounts{}
-
 	var addresses []string
-	var i int64
-	accOffsetStart := tAppOneObj.AccOffset
-	for i = 0; i < params.Count; i++ {
-		index := accOffsetStart + i
-		hdPath := fmt.Sprintf("%s%d", hdPathPrefix, index)
-		res, err := sdkcrypto.NewMnemonicKeyManagerWithHDPath(
-			tAppOneObj.Mnemonic,
-			algo,
-			hdPath,
-		)
+	err := modext.Transaction(func(exec boil.ContextExecutor) error {
+		tAppOneObj, err := models.TApps(models.TAppWhere.ID.EQ(params.AppID)).One(context.Background(), exec)
 		if err != nil {
-			log.Debug("create account", "NewMnemonicKeyManagerWithHDPath error:", err.Error())
-			return nil, types.ErrAccountCreate
+			return types.ErrInternal
 		}
-		_, priv := res.Generate()
+		tAccounts := modext.TAccounts{}
 
-		//privStr, err := res.ExportPrivKey(keyPassword)
-		//if err != nil {
-		//	return nil, types.ErrAccountCreate
-		//}
+		var i int64
+		accOffsetStart := tAppOneObj.AccOffset
+		for i = 0; i < params.Count; i++ {
+			index := accOffsetStart + i
+			hdPath := fmt.Sprintf("%s%d", hdPathPrefix, index)
+			res, err := sdkcrypto.NewMnemonicKeyManagerWithHDPath(
+				tAppOneObj.Mnemonic,
+				algo,
+				hdPath,
+			)
+			if err != nil {
+				log.Debug("create account", "NewMnemonicKeyManagerWithHDPath error:", err.Error())
+				return types.ErrAccountCreate
+			}
+			_, priv := res.Generate()
 
-		tmpAddress := sdktype.AccAddress(priv.PubKey().Address().Bytes()).String()
+			//privStr, err := res.ExportPrivKey(keyPassword)
+			//if err != nil {
+			//	return nil, types.ErrAccountCreate
+			//}
 
-		tmp := &models.TAccount{
-			AppID:    params.AppID,
-			Address:  tmpAddress,
-			AccIndex: uint64(index),
-			PriKey:   base64.StdEncoding.EncodeToString(codec.MarshalPrivKey(priv)),
-			PubKey:   base64.StdEncoding.EncodeToString(codec.MarshalPubkey(res.ExportPubKey())),
+			tmpAddress := sdktype.AccAddress(priv.PubKey().Address().Bytes()).String()
+
+			tmp := &models.TAccount{
+				AppID:    params.AppID,
+				Address:  tmpAddress,
+				AccIndex: uint64(index),
+				PriKey:   base64.StdEncoding.EncodeToString(codec.MarshalPrivKey(priv)),
+				PubKey:   base64.StdEncoding.EncodeToString(codec.MarshalPubkey(res.ExportPubKey())),
+			}
+
+			tAccounts = append(tAccounts, tmp)
+			addresses = append(addresses, tmpAddress)
+		}
+		err = tAccounts.InsertAll(context.Background(), exec)
+		if err != nil {
+			log.Debug("create account", "accounts insert error:", err.Error())
+			return types.ErrAccountCreate
 		}
 
-		tAccounts = append(tAccounts, tmp)
-		addresses = append(addresses, tmpAddress)
-	}
-	err = tAccounts.InsertAll(context.Background(), db)
-	if err != nil {
-		log.Debug("create account", "accounts insert error:", err.Error())
-		return nil, types.ErrAccountCreate
-	}
+		tAppOneObj.AccOffset += params.Count
+		updateRes, err := tAppOneObj.Update(context.Background(), exec, boil.Infer())
+		if err != nil || updateRes == 0 {
+			return types.ErrInternal
+		}
 
-	tAppOneObj.AccOffset += params.Count
-	updateRes, err := tAppOneObj.Update(context.Background(), db, boil.Infer())
-	if err != nil || updateRes == 0 {
-		return nil, types.ErrInternal
-	}
-	err = db.Commit()
+		return nil
+	})
+
 	if err != nil {
-		return nil, types.ErrInternal
+		return nil, err
 	}
 	return addresses, nil
 }
