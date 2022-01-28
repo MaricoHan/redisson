@@ -31,9 +31,12 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 	var bodyBytes []byte
 	if r.Body != nil {
 		bodyBytes, _ = ioutil.ReadAll(r.Body)
+		r.Body.Close()
 	}
 	// 把刚刚读出来的再写进去
-	r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+	if bodyBytes != nil {
+		r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+	}
 
 	req := &vo.Base{}
 	err := json.Unmarshal(bodyBytes, req)
