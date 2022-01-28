@@ -49,13 +49,25 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) ([]string, error) {
 		if err != nil {
 			return types.ErrNftClassDetailsGet
 		}
+
 		offSet := classOne.Offset
 		var msgs sdktype.Msgs
 		for i := 1; i <= params.Amount; i++ {
 			index := int(offSet) + i
 			nftId := nftp + strings.ToLower(hex.EncodeToString(tmhash.Sum([]byte(params.ClassId)))) + strconv.Itoa(index)
+			//validate receipient
 			if params.Recipient == "" {
 				params.Recipient = classOne.Owner
+			} else {
+				acc, err := models.TAccounts(
+					models.TAccountWhere.AppID.EQ(params.AppID),
+					models.TAccountWhere.Address.EQ(params.Recipient)).OneG(context.Background())
+				if err != nil {
+					return types.ErrParams
+				}
+				if acc == nil {
+					return types.ErrParams
+				}
 			}
 			createNft := nft.MsgMintNFT{
 				Id:        nftId,
@@ -149,6 +161,7 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
 	if err != nil && errors.Cause(err) != sql.ErrNoRows {
 		return "", types.ErrInternal
 	}
+
 	// nft does not exist ：404
 	if tNft == nil || tNft.Status != models.TNFTSStatusActive {
 		return "", types.ErrNftMissing
@@ -490,10 +503,13 @@ func (svc *Nft) NftByIndex(params dto.NftByIndexP) (*dto.NftR, error) {
 	if err != nil && errors.Cause(err) != sql.ErrNoRows {
 		return nil, types.ErrInternal
 	}
-
 	// nft does not exist
 	if tNft == nil {
 		return nil, types.ErrNftMissing
+	}
+
+	if !strings.Contains("active/burned", tNft.Status) {
+		return nil, types.ErrNftStatus
 	}
 
 	// get class by class_id

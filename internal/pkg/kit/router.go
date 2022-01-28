@@ -219,7 +219,7 @@ func (c Controller) serverOptions(
 				errResp.CodeSpace = appErr.CodeSpace()
 				errResp.Message = appErr.Error()
 				errResp.Code = appErr.Code()
-			case types.ErrGetTx, types.ErrNftMissing, types.ErrNotFound:
+			case types.ErrGetTx, types.ErrNftStatus, types.ErrNftMissing, types.ErrNotFound:
 				w.WriteHeader(http.StatusNotFound)
 				errResp.CodeSpace = appErr.CodeSpace()
 				errResp.Message = appErr.Error()
