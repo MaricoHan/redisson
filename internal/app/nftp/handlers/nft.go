@@ -53,9 +53,26 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 		Amount:    req.Amount,
 		Recipient: req.Recipient,
 	}
-	if req.Name == "" {
+	if req.Name == "" || len(req.Name) < 3 || len(req.Name) > 64 {
 		return nil, types.ErrParams
 	}
+
+	if req.Uri != "" && len(req.Uri) > 256 {
+		return nil, types.ErrParams
+	}
+
+	if req.UriHash != "" && len(req.UriHash) > 512 {
+		return nil, types.ErrParams
+	}
+
+	if req.Data != "" && len(req.Data) > 4096 {
+		return nil, types.ErrParams
+	}
+
+	if req.Recipient != "" && len(req.Recipient) > 128 {
+		return nil, types.ErrParams
+	}
+
 	if params.Amount == 0 {
 		params.Amount = 1
 	}
@@ -70,6 +87,17 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 func (h nft) EditNftByIndex(ctx context.Context, request interface{}) (interface{}, error) {
 
 	req := request.(*vo.EditNftByIndexRequest)
+	if req.Name == "" || len(req.Name) < 3 || len(req.Name) > 64 {
+		return nil, types.ErrParams
+	}
+
+	if req.Uri != "" && len(req.Uri) > 256 {
+		return nil, types.ErrParams
+	}
+
+	if req.Data != "" && len(req.Data) > 4096 {
+		return nil, types.ErrParams
+	}
 
 	//check start
 	index, err := h.Index(ctx)
