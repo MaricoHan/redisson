@@ -31,6 +31,7 @@ func NewBase(sdkClient sdk.Client, gas uint64, denom string, amount int64) *Base
 }
 
 func (m Base) CreateBaseTx(keyName, keyPassword string) sdktype.BaseTx {
+	//from := "t_" + keyName
 	return sdktype.BaseTx{
 		From:     keyName,
 		Gas:      m.gas,
@@ -45,7 +46,6 @@ func (m Base) BuildAndSign(msgs sdktype.Msgs, baseTx sdktype.BaseTx) ([]byte, st
 	if err != nil {
 		return nil, "", err
 	}
-
 	hashBz := sha256.Sum256(sigData)
 	hash := strings.ToUpper(hex.EncodeToString(hashBz[:]))
 	return sigData, hash, nil

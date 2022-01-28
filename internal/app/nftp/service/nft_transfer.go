@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 
@@ -74,7 +75,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 			return err
 		}
 		if txone != nil && txone.Status == models.TTXSStatusFailed {
-			baseTx.Memo = string(txone.ID)
+			baseTx.Memo = fmt.Sprintf("%d", txone.ID)
 			data, hash, err = svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
 			if err != nil {
 				log.Debug("transfer nft class", "BuildAndSign error:", err.Error())
@@ -170,7 +171,7 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 			return err
 		}
 		if txone != nil && txone.Status == models.TTXSStatusFailed {
-			baseTx.Memo = string(txone.ID)
+			baseTx.Memo = fmt.Sprintf("%d", txone.ID)
 			data, hash, err = svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
 			if err != nil {
 				log.Debug("transfer nft by index", "BuildAndSign error:", err.Error())
@@ -283,7 +284,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			return err
 		}
 		if txone != nil && txone.Status == models.TTXSStatusFailed {
-			baseTx.Memo = string(txone.ID)
+			baseTx.Memo = fmt.Sprintf("%d", txone.ID)
 			data, hash, err = svc.base.BuildAndSign(msgs, baseTx)
 			if err != nil {
 				log.Debug("transfer nft by batch", "BuildAndSign error:", err.Error())
