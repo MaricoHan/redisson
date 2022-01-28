@@ -43,11 +43,12 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) ([]string, error) {
 		classOne, err := models.TClasses(
 			models.TClassWhere.ClassID.EQ(params.ClassId),
 		).One(context.Background(), exec)
-		if classOne.Status != models.TNFTSStatusActive {
-			return types.ErrClassStatus
-		}
 		if err != nil {
 			return types.ErrNftClassDetailsGet
+		}
+
+		if classOne.Status != models.TNFTSStatusActive {
+			return types.ErrClassStatus
 		}
 
 		offSet := classOne.Offset
@@ -146,10 +147,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	var hashs []string
-	hashs = append(hashs, *txHash)
-	return hashs, nil
+	return []string{*txHash}, nil
 }
 
 func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
