@@ -662,6 +662,10 @@ func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
 	if params.SortBy != "" {
 		orderBy := ""
 		switch params.SortBy {
+		case "ID_ASC":
+			orderBy = fmt.Sprintf("%s ASC", models.TNFTColumns.NFTID)
+		case "ID_DESC":
+			orderBy = fmt.Sprintf("%s desc", models.TNFTColumns.NFTID)
 		case "DATE_DESC":
 			orderBy = fmt.Sprintf("%s desc", models.TNFTColumns.CreateAt)
 		case "DATE_ASC":
