@@ -264,6 +264,10 @@ func (h nft) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 		}
 	}
 	switch h.SortBy(ctx) {
+	case "ID_ASC":
+		params.SortBy = "ID_ASC"
+	case "ID_DESC":
+		params.SortBy = "ID_DESC"
 	case "DATE_ASC":
 		params.SortBy = "DATE_ASC"
 	case "DATE_DESC":
