@@ -31,6 +31,17 @@ func NewNftClass(base *Base) *NftClass {
 }
 
 func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error) {
+	//owner不能为平台外账户或此应用外账户或非法账户
+	acc, err := models.TAccounts(
+		models.TAccountWhere.AppID.EQ(params.AppID),
+		models.TAccountWhere.Address.EQ(params.Owner)).OneG(context.Background())
+	if err != nil {
+		return nil, types.ErrParams
+	}
+	if acc == nil {
+		return nil, types.ErrParams
+	}
+
 	//platform address
 	classOne, err := models.TAccounts(
 		models.TAccountWhere.AppID.EQ(uint64(0)),
