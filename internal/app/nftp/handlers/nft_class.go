@@ -46,6 +46,7 @@ func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 		Data:        req.Data,
 		Owner:       req.Owner,
 	}
+	fmt.Println("yewu;", params)
 	return h.svc.CreateNftClass(params)
 }
 

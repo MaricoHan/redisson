@@ -128,10 +128,8 @@ func (c Controller) GetPagation(ctx context.Context) (int, int) {
 func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFunc {
 	return func(ctx context.Context, r *http.Request) (request interface{}, err error) {
 		log.Debug("Execute decode request", "method", "decodeRequest")
-		defer func() {
-			p := reflect.ValueOf(req).Elem()
-			p.Set(reflect.Zero(p.Type()))
-		}()
+		p := reflect.ValueOf(req).Elem()
+		p.Set(reflect.Zero(p.Type()))
 		if req == nil {
 			return nil, err
 		}
