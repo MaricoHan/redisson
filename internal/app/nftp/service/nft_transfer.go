@@ -265,7 +265,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			Recipient: recipient.Recipient,
 			UriHash:   res.URIHash.String,
 		}
-		msgs = append(sdktype.Msgs{&msg})
+		msgs = append(msgs, &msg)
 		indexMap[recipient.Index] = 0
 	}
 
