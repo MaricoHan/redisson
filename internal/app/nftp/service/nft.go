@@ -230,7 +230,7 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 		tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(EditNft.Index)).One(context.Background(), boil.GetContextDB())
 		// internal error：500
 		if err != nil && errors.Cause(err) != sql.ErrNoRows {
-			log.Debug("edit nft by batch", "internal error:", err.Error())
+			log.Error("edit nft by batch", "internal error:", err.Error())
 			return "", types.ErrInternal
 		}
 		// nft does not exist or status is not active：400
