@@ -53,12 +53,12 @@ func (m Base) BuildAndSign(msgs sdktype.Msgs, baseTx sdktype.BaseTx) ([]byte, st
 	return sigData, hash, nil
 }
 
-func (m Base) BuildAndSend(msgs sdktype.Msgs, baseTx sdktype.BaseTx) (string, error) {
+func (m Base) BuildAndSend(msgs sdktype.Msgs, baseTx sdktype.BaseTx) (sdktype.ResultTx, error) {
 	sigData, err := m.sdkClient.BuildAndSend(msgs, baseTx)
 	if err != nil {
-		return "", err
+		return sigData, err
 	}
-	return sigData.Hash, nil
+	return sigData, nil
 }
 
 // TxIntoDataBase operationType : issue_class,mint_nft,edit_nft,edit_nft_batch,burn_nft,burn_nft_batch

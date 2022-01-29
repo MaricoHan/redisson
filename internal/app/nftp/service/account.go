@@ -60,7 +60,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 	}
 	tmsgs := modext.TMSGs{}
 	var msgs bank.MsgMultiSend
-	var txhash string
+	var resultTx sdktype.ResultTx
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		tAppOneObj, err := models.TApps(models.TAppWhere.ID.EQ(params.AppID)).One(context.Background(), exec)
 		if err != nil {
@@ -114,7 +114,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 		}
 		msgs = svc.base.CreateGasMsg(classOne.Address, addresses)
 		tx := svc.base.CreateBaseTx(classOne.Address, defultKeyPassword)
-		txhash, err = svc.base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
+		resultTx, err = svc.base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
 		if err != nil {
 			log.Error("create account", "build and send, error:", err)
 			return types.ErrBuildAndSend
@@ -132,7 +132,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 		messageByte, _ := json.Marshal(message)
 		tmsgs = append(tmsgs, &models.TMSG{
 			AppID:     params.AppID,
-			TXHash:    txhash,
+			TXHash:    resultTx.Hash,
 			Timestamp: null.TimeFrom(time.Now()),
 			Module:    "account",
 			Operation: "add_gas",
