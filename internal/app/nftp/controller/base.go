@@ -30,7 +30,7 @@ func GetAllControllers() []kit.IController {
 	baseSvc := service.NewBase(chain.GetSdkClient(), chain.GetGas(), chain.GetDenom(), chain.GetAmount())
 	controllers := []kit.IController{
 		NewDemoController(bc, handlers.NewDemo()),
-		NewAccountsController(bc, handlers.NewAccount(service.NewAccount())),
+		NewAccountsController(bc, handlers.NewAccount(service.NewAccount(baseSvc))),
 		NewNftClassController(bc, handlers.NewNftClass(service.NewNftClass(baseSvc))),
 		NewNftController(bc, handlers.NewNft(service.NewNft(baseSvc))),
 		NewNftTransferController(bc, handlers.NewNftTransfer(service.NewNftTransfer(baseSvc))),

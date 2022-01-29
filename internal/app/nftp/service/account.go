@@ -36,10 +36,11 @@ const hdPathPrefix = hd.BIP44Prefix + "0'/0/"
 const defultKeyPassword = "12345678"
 
 type Account struct {
+	base *Base
 }
 
-func NewAccount() *Account {
-	return &Account{}
+func NewAccount(base *Base) *Account {
+	return &Account{base: base}
 }
 
 func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
@@ -49,7 +50,13 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
 		tAppOneObj, err := models.TApps(models.TAppWhere.ID.EQ(params.AppID)).One(context.Background(), exec)
 		if err != nil {
-			return types.ErrInternal
+			return types.ErrNotFound
+		}
+		classOne, err := models.TAccounts(
+			models.TAccountWhere.AppID.EQ(uint64(0)),
+		).OneG(context.Background())
+		if err != nil {
+			return types.ErrNotFound
 		}
 		tAccounts := modext.TAccounts{}
 
@@ -98,7 +105,13 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 		if err != nil || updateRes == 0 {
 			return types.ErrInternal
 		}
-
+		msg := svc.base.CreateGasMsg(classOne.Address, addresses)
+		tx := svc.base.CreateBaseTx(classOne.Address, defultKeyPassword)
+		_, _, err = svc.base.BuildAndSign(sdktype.Msgs{&msg}, tx)
+		if err != nil {
+			log.Error("create account", "build and sign, error:", err)
+			return types.ErrBuildAndSign
+		}
 		return nil
 	})
 

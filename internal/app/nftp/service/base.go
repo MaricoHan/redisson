@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
+	"github.com/irisnet/core-sdk-go/bank"
 	"strings"
 
 	"github.com/volatiletech/null/v8"
@@ -93,4 +94,27 @@ func (m Base) ValidateTx(hash string) (*models.TTX, error) {
 	}
 
 	return tx, nil
+}
+
+func (m Base) CreateGasMsg(inputAddress string, outputAddress []string) bank.MsgMultiSend {
+	inputCoins := sdktype.NewCoins(sdktype.NewCoin("uirita", sdktype.NewInt(int64(4000000*len(outputAddress)))))
+	outputCoins := sdktype.NewCoins(sdktype.NewCoin("uirita", sdktype.NewInt(4000000)))
+	inputs := []bank.Input{
+		{
+			Address: inputAddress,
+			Coins:   inputCoins,
+		},
+	}
+	var outputs []bank.Output
+	for _, v := range outputAddress {
+		outputs = append(outputs, bank.Output{
+			Address: v,
+			Coins:   outputCoins,
+		})
+	}
+	msg := bank.MsgMultiSend{
+		Inputs:  inputs,
+		Outputs: outputs,
+	}
+	return msg
 }
