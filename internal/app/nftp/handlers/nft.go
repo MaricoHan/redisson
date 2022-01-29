@@ -250,7 +250,7 @@ func (h nft) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
-		startDateTime, err := time.Parse(timeLayout, startDateR)
+		startDateTime, err := time.Parse(timeLayout, startDateR+" 00:00:00")
 		if err != nil {
 			return nil, types.ErrParams
 		}
@@ -259,7 +259,7 @@ func (h nft) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 
 	endDateR := h.EndDate(ctx)
 	if endDateR != "" {
-		endDateTime, err := time.Parse(timeLayout, endDateR)
+		endDateTime, err := time.Parse(timeLayout, endDateR+" 23:59:59")
 		if err != nil {
 			return nil, types.ErrParams
 		}
@@ -462,7 +462,7 @@ func (h nft) TxHash(ctx context.Context) string {
 }
 func (h nft) Status(ctx context.Context) (string, error) {
 	status := ctx.Value("status")
-	if status == nil {
+	if status == nil || status == "" {
 		return models.TNFTSStatusActive, nil
 	}
 	if status != models.TNFTSStatusActive && status != models.TNFTSStatusBurned {

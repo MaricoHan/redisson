@@ -132,7 +132,7 @@ func (svc *Account) Accounts(params dto.AccountsP) (*dto.AccountsRes, error) {
 		orderBy := ""
 		switch params.SortBy {
 		case "DATE_DESC":
-			orderBy = fmt.Sprintf("%s desc", models.TAccountColumns.CreateAt)
+			orderBy = fmt.Sprintf("%s DESC", models.TAccountColumns.CreateAt)
 		case "DATE_ASC":
 			orderBy = fmt.Sprintf("%s ASC", models.TAccountColumns.CreateAt)
 		}
@@ -204,7 +204,7 @@ func (svc *Account) AccountsHistory(params dto.AccountsP) (*dto.AccountOperation
 		orderBy := ""
 		switch params.SortBy {
 		case "DATE_DESC":
-			orderBy = fmt.Sprintf("%s desc", models.TMSGColumns.Timestamp)
+			orderBy = fmt.Sprintf("%s DESC", models.TMSGColumns.Timestamp)
 		case "DATE_ASC":
 			orderBy = fmt.Sprintf("%s ASC", models.TMSGColumns.Timestamp)
 		}

@@ -569,7 +569,7 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 		orderBy := ""
 		switch params.SortBy {
 		case "DATE_DESC":
-			orderBy = fmt.Sprintf("%s desc", models.TMSGColumns.CreateAt)
+			orderBy = fmt.Sprintf("%s DESC", models.TMSGColumns.CreateAt)
 		case "DATE_ASC":
 			orderBy = fmt.Sprintf("%s ASC", models.TMSGColumns.CreateAt)
 		}
@@ -645,11 +645,11 @@ func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
 		case "ID_ASC":
 			orderBy = fmt.Sprintf("%s ASC", models.TNFTColumns.NFTID)
 		case "ID_DESC":
-			orderBy = fmt.Sprintf("%s desc", models.TNFTColumns.NFTID)
+			orderBy = fmt.Sprintf("%s DESC", models.TNFTColumns.NFTID)
 		case "DATE_DESC":
-			orderBy = fmt.Sprintf("%s desc", models.TNFTColumns.CreateAt)
+			orderBy = fmt.Sprintf("%s DESC", models.TNFTColumns.Timestamp)
 		case "DATE_ASC":
-			orderBy = fmt.Sprintf("%s ASC", models.TNFTColumns.CreateAt)
+			orderBy = fmt.Sprintf("%s ASC", models.TNFTColumns.Timestamp)
 		}
 		queryMod = append(queryMod, qm.OrderBy(orderBy))
 	}

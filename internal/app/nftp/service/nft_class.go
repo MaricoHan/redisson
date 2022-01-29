@@ -150,7 +150,7 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 			orderBy := ""
 			switch params.SortBy {
 			case "DATE_DESC":
-				orderBy = fmt.Sprintf("%s desc", models.TClassColumns.CreateAt)
+				orderBy = fmt.Sprintf("%s DESC", models.TClassColumns.CreateAt)
 			case "DATE_ASC":
 				orderBy = fmt.Sprintf("%s ASC", models.TClassColumns.CreateAt)
 			}
