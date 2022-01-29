@@ -64,24 +64,12 @@ func (m Base) BuildAndSign(msgs sdktype.Msgs, baseTx sdktype.BaseTx) ([]byte, st
 	return sigData, hash, nil
 }
 
-func (m Base) BuildAndSend(msgs sdktype.Msgs, baseTx sdktype.BaseTx) ([]TransferGas, string, error) {
+func (m Base) BuildAndSend(msgs sdktype.Msgs, baseTx sdktype.BaseTx) (string, error) {
 	sigData, err := m.sdkClient.BuildAndSend(msgs, baseTx)
-	var transfers []TransferGas
 	if err != nil {
-		return transfers, "", err
+		return "", err
 	}
-	coinRecciveds := sigData.Events.GetValues(CoinReceived, RECEIVER)
-	coinAmounts := sigData.Events.GetValues(CoinReceived, AMOUNT)
-	for k, v := range coinRecciveds {
-		if k == 0 {
-			continue
-		}
-		transfers = append(transfers, TransferGas{
-			receiver: v,
-			amount:   coinAmounts[k][0 : len(coinAmounts[k])-6],
-		})
-	}
-	return transfers, sigData.Hash, nil
+	return sigData.Hash, nil
 }
 
 // TxIntoDataBase operationType : issue_class,mint_nft,edit_nft,edit_nft_batch,burn_nft,burn_nft_batch

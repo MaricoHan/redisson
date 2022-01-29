@@ -29,6 +29,7 @@ import (
 	"github.com/irisnet/core-sdk-go/common/crypto/codec"
 	"github.com/volatiletech/null/v8"
 
+	"github.com/irisnet/core-sdk-go/bank"
 	sdkcrypto "github.com/irisnet/core-sdk-go/common/crypto"
 	sdktype "github.com/irisnet/core-sdk-go/types"
 	sqltype "github.com/volatiletech/sqlboiler/v4/types"
@@ -58,7 +59,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 		return nil, types.ErrNotFound
 	}
 	tmsgs := modext.TMSGs{}
-	var transfers []TransferGas
+	var msgs bank.MsgMultiSend
 	var txhash string
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		tAppOneObj, err := models.TApps(models.TAppWhere.ID.EQ(params.AppID)).One(context.Background(), exec)
@@ -111,11 +112,11 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 		if err != nil || updateRes == 0 {
 			return types.ErrInternal
 		}
-		msg := svc.base.CreateGasMsg(classOne.Address, addresses)
+		msgs = svc.base.CreateGasMsg(classOne.Address, addresses)
 		tx := svc.base.CreateBaseTx(classOne.Address, defultKeyPassword)
-		transfers, txhash, err = svc.base.BuildAndSend(sdktype.Msgs{&msg}, tx)
+		txhash, err = svc.base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
 		if err != nil {
-			log.Error("create account", "build and sign, error:", err)
+			log.Error("create account", "build and send, error:", err)
 			return types.ErrBuildAndSend
 		}
 		return nil
@@ -123,10 +124,10 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	for _, v := range transfers {
+	for _, v := range msgs.Outputs {
 		message := map[string]string{
-			"recipient": v.receiver,
-			"amount":    v.amount,
+			"recipient": v.Address,
+			"amount":    v.Coins.String()[0 : len(v.Coins.String())-6],
 		}
 		messageByte, _ := json.Marshal(message)
 		tmsgs = append(tmsgs, &models.TMSG{
@@ -136,7 +137,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 			Module:    "account",
 			Operation: "add_gas",
 			Signer:    classOne.Address,
-			Recipient: null.StringFrom(v.receiver),
+			Recipient: null.StringFrom(v.Address),
 			Message:   sqltype.JSON(messageByte),
 		})
 	}
