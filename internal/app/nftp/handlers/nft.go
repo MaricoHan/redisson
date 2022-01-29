@@ -130,6 +130,9 @@ func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface
 
 	var nfts []*dto.EditNft
 	for _, v := range *req {
+		if v.Index == 0 || v.Name == "" {
+			return nil, types.ErrParams
+		}
 		nfts = append(nfts, v)
 	}
 
