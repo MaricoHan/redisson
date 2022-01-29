@@ -46,7 +46,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 		models.TClassWhere.AppID.EQ(params.AppID),
 		models.TClassWhere.Owner.EQ(params.Owner)).OneG(context.Background())
 	if err != nil {
-		return "", types.ErrNftClassTransfer
+		return "", types.ErrTransfer
 	}
 
 	if class.Status != models.TClassesStatusActive {
@@ -100,10 +100,10 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 
 		ok, err := class.Update(context.Background(), exec, boil.Infer())
 		if err != nil {
-			return types.ErrNftClassTransfer
+			return types.ErrTransfer
 		}
 		if ok != 1 {
-			return types.ErrNftClassTransfer
+			return types.ErrTransfer
 		}
 
 		return nil
@@ -138,7 +138,7 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 		models.TNFTWhere.Owner.EQ(params.Owner),
 	).OneG(context.Background())
 	if err != nil {
-		return "", types.ErrNftMissing
+		return "", types.ErrNftNotFound
 	}
 
 	if res.Status != models.TNFTSStatusActive {
@@ -187,17 +187,17 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 			models.TTXSStatusUndo, exec)
 		if err != nil {
 			log.Debug("transfer nft by index", "Tx Into DataBase error:", err.Error())
-			return types.ErrTxMsgInsert
+			return types.ErrTransfer
 		}
 
 		res.Status = models.TNFTSStatusPending
 		res.LockedBy = null.Uint64From(txId)
 		ok, err := res.Update(context.Background(), exec, boil.Infer())
 		if err != nil {
-			return types.ErrNftTransfer
+			return types.ErrTransfer
 		}
 		if ok != 1 {
-			return types.ErrNftTransfer
+			return types.ErrTransfer
 		}
 		return nil
 	})
@@ -247,7 +247,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			models.TNFTWhere.Owner.EQ(params.Owner),
 		).OneG(context.Background())
 		if err != nil {
-			return "", types.ErrNftBatchTransfer
+			return "", types.ErrTransfer
 		}
 
 		if res.Status != models.TNFTSStatusActive {
@@ -320,7 +320,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 				models.TNFTWhere.Owner.EQ(params.Owner),
 			).One(context.Background(), exec)
 			if err != nil {
-				return types.ErrNftBatchTransfer
+				return types.ErrTransfer
 			}
 
 			if res.Status != models.TNFTSStatusActive {
@@ -331,10 +331,10 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			res.LockedBy = null.Uint64From(txId)
 			ok, err := res.Update(context.Background(), exec, boil.Infer())
 			if err != nil {
-				return types.ErrNftBatchTransfer
+				return types.ErrTransfer
 			}
 			if ok != 1 {
-				return types.ErrNftClassesSet
+				return types.ErrNftClassNotFound
 			}
 		}
 		return nil

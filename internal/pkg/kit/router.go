@@ -218,7 +218,7 @@ func (c Controller) serverOptions(
 		} else {
 			errResp := &ErrorResp{}
 			switch appErr {
-			case types.ErrInternal, types.ErrMysqlConn, types.ErrChainConn, types.ErrRedisConn:
+			case types.ErrInternal, types.ErrChainConn:
 				w.WriteHeader(http.StatusInternalServerError)
 				errResp.CodeSpace = types.ErrInternal.CodeSpace()
 				errResp.Message = types.ErrInternal.Error()
@@ -228,7 +228,7 @@ func (c Controller) serverOptions(
 				errResp.CodeSpace = appErr.CodeSpace()
 				errResp.Message = appErr.Error()
 				errResp.Code = appErr.Code()
-			case types.ErrGetTx, types.ErrNftStatus, types.ErrNftMissing, types.ErrNotFound:
+			case types.ErrNftStatus, types.ErrNftNotFound, types.ErrQuery:
 				w.WriteHeader(http.StatusNotFound)
 				errResp.CodeSpace = appErr.CodeSpace()
 				errResp.Message = appErr.Error()

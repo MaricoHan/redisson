@@ -148,7 +148,7 @@ func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface
 	//check start
 	//1. count limit :50
 	if len(params.EditNfts) > 50 {
-		return nil, types.ErrNftTooMany
+		return nil, types.ErrLimit
 	}
 
 	// 2.judge whether the NFT is repeated
@@ -213,7 +213,7 @@ func (h nft) DeleteNftByBatch(ctx context.Context, _ interface{}) (interface{}, 
 	}
 
 	if len(indices) > 50 {
-		return nil, types.ErrNftTooMany
+		return nil, types.ErrLimit
 	}
 	//check end
 
@@ -486,7 +486,7 @@ func (h nft) Status(ctx context.Context) (string, error) {
 		return models.TNFTSStatusActive, nil
 	}
 	if status != models.TNFTSStatusActive && status != models.TNFTSStatusBurned {
-		return "", types.ErrNftStatusOne
+		return "", types.ErrNftStatus
 	}
 	return status.(string), nil
 }

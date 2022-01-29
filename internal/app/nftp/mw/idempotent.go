@@ -61,7 +61,7 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 	}
 
 	if err := redis.Set(key, "1", time.Second*60); err != nil {
-		writeBadRequestResp(w, types.ErrRedisConn)
+		writeBadRequestResp(w, types.ErrInternal)
 		return
 	}
 	h.next.ServeHTTP(w, r)

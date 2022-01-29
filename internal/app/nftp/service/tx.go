@@ -22,7 +22,7 @@ func (svc *Tx) TxResultByTxHash(params dto.TxResultByTxHashP) (*dto.TxResultByTx
 		models.TTXWhere.AppID.EQ(params.AppID),
 	).OneG(context.Background())
 	if err != nil {
-		return nil, types.ErrGetTx
+		return nil, types.ErrQuery
 	}
 
 	//result

@@ -65,7 +65,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 			)
 			if err != nil {
 				log.Debug("create account", "NewMnemonicKeyManagerWithHDPath error:", err.Error())
-				return types.ErrAccountCreate
+				return types.ErrCreate
 			}
 			_, priv := res.Generate()
 
@@ -90,7 +90,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 		err = tAccounts.InsertAll(context.Background(), exec)
 		if err != nil {
 			log.Debug("create account", "accounts insert error:", err.Error())
-			return types.ErrAccountCreate
+			return types.ErrCreate
 		}
 
 		tAppOneObj.AccOffset += params.Count
@@ -153,8 +153,7 @@ func (svc *Account) Accounts(params dto.AccountsP) (*dto.AccountsRes, error) {
 		if strings.Contains(err.Error(), "records not exist") {
 			return result, nil
 		}
-
-		return nil, types.ErrMysqlConn
+		return nil, types.ErrInternal
 	}
 
 	result.TotalCount = total
@@ -225,8 +224,7 @@ func (svc *Account) AccountsHistory(params dto.AccountsP) (*dto.AccountOperation
 		if strings.Contains(err.Error(), "records not exist") {
 			return result, nil
 		}
-
-		return nil, types.ErrMysqlConn
+		return nil, types.ErrInternal
 	}
 
 	result.TotalCount = total
