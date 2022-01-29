@@ -257,7 +257,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 		//msg
 		msg := nft.MsgTransferNFT{
 			Id:        res.NFTID,
-			DenomId:   string(params.ClassID),
+			DenomId:   params.ClassID,
 			Name:      res.Name.String,
 			URI:       res.URI.String,
 			Data:      res.Metadata.String,
