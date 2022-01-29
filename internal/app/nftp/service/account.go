@@ -3,10 +3,10 @@ package service
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"strings"
-
-	"github.com/irisnet/core-sdk-go/common/crypto/codec"
+	"time"
 
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
@@ -26,8 +26,13 @@ import (
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 
+	"github.com/irisnet/core-sdk-go/common/crypto/codec"
+	"github.com/volatiletech/null/v8"
+
+	"github.com/irisnet/core-sdk-go/bank"
 	sdkcrypto "github.com/irisnet/core-sdk-go/common/crypto"
 	sdktype "github.com/irisnet/core-sdk-go/types"
+	sqltype "github.com/volatiletech/sqlboiler/v4/types"
 )
 
 const algo = "secp256k1"
@@ -36,23 +41,33 @@ const hdPathPrefix = hd.BIP44Prefix + "0'/0/"
 const defultKeyPassword = "12345678"
 
 type Account struct {
+	base *Base
 }
 
-func NewAccount() *Account {
-	return &Account{}
+func NewAccount(base *Base) *Account {
+	return &Account{base: base}
 }
 
 func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 	// 写入数据库
 	// sdk 创建账户
 	var addresses []string
-	err := modext.Transaction(func(exec boil.ContextExecutor) error {
+	classOne, err := models.TAccounts(
+		models.TAccountWhere.AppID.EQ(uint64(0)),
+	).OneG(context.Background())
+	if err != nil {
+		return nil, types.ErrNftClassNotFound
+	}
+	tmsgs := modext.TMSGs{}
+	var msgs bank.MsgMultiSend
+	var resultTx sdktype.ResultTx
+	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		tAppOneObj, err := models.TApps(models.TAppWhere.ID.EQ(params.AppID)).One(context.Background(), exec)
 		if err != nil {
-			return types.ErrInternal
+			return types.ErrQuery
 		}
-		tAccounts := modext.TAccounts{}
 
+		tAccounts := modext.TAccounts{}
 		var i int64
 		accOffsetStart := tAppOneObj.AccOffset
 		for i = 0; i < params.Count; i++ {
@@ -92,18 +107,44 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 			log.Debug("create account", "accounts insert error:", err.Error())
 			return types.ErrCreate
 		}
-
 		tAppOneObj.AccOffset += params.Count
 		updateRes, err := tAppOneObj.Update(context.Background(), exec, boil.Infer())
 		if err != nil || updateRes == 0 {
 			return types.ErrInternal
 		}
-
+		msgs = svc.base.CreateGasMsg(classOne.Address, addresses)
+		tx := svc.base.CreateBaseTx(classOne.Address, defultKeyPassword)
+		resultTx, err = svc.base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
+		if err != nil {
+			log.Error("create account", "build and send, error:", err)
+			return types.ErrBuildAndSend
+		}
 		return nil
 	})
-
 	if err != nil {
 		return nil, err
+	}
+	for _, v := range msgs.Outputs {
+		message := map[string]string{
+			"recipient": v.Address,
+			"amount":    v.Coins.String()[0 : len(v.Coins.String())-6],
+		}
+		messageByte, _ := json.Marshal(message)
+		tmsgs = append(tmsgs, &models.TMSG{
+			AppID:     params.AppID,
+			TXHash:    resultTx.Hash,
+			Timestamp: null.TimeFrom(time.Now()),
+			Module:    "account",
+			Operation: "add_gas",
+			Signer:    classOne.Address,
+			Recipient: null.StringFrom(v.Address),
+			Message:   sqltype.JSON(messageByte),
+		})
+	}
+	err = tmsgs.InsertAll(context.Background(), boil.GetContextDB())
+	if err != nil {
+		log.Error("create account", "msgs create error:", err)
+		return nil, types.ErrCreate
 	}
 	return addresses, nil
 }

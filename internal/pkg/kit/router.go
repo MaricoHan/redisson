@@ -219,22 +219,22 @@ func (c Controller) serverOptions(
 			errResp := &ErrorResp{}
 			switch appErr {
 			case types.ErrInternal, types.ErrChainConn:
-				w.WriteHeader(http.StatusInternalServerError)
+				w.WriteHeader(http.StatusInternalServerError) //500
 				errResp.CodeSpace = types.ErrInternal.CodeSpace()
 				errResp.Message = types.ErrInternal.Error()
 				errResp.Code = types.ErrInternal.Code()
 			case types.ErrAuthenticate:
-				w.WriteHeader(http.StatusForbidden)
+				w.WriteHeader(http.StatusForbidden) //403
 				errResp.CodeSpace = appErr.CodeSpace()
 				errResp.Message = appErr.Error()
 				errResp.Code = appErr.Code()
 			case types.ErrNftStatus, types.ErrNftNotFound, types.ErrQuery:
-				w.WriteHeader(http.StatusNotFound)
+				w.WriteHeader(http.StatusNotFound) //404
 				errResp.CodeSpace = appErr.CodeSpace()
 				errResp.Message = appErr.Error()
 				errResp.Code = appErr.Code()
 			default:
-				w.WriteHeader(http.StatusBadRequest)
+				w.WriteHeader(http.StatusBadRequest) //400
 				errResp.CodeSpace = appErr.CodeSpace()
 				errResp.Message = appErr.Error()
 				errResp.Code = appErr.Code()

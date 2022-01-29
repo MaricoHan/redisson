@@ -7,11 +7,13 @@ import (
 	"encoding/hex"
 	"strings"
 
+	"github.com/irisnet/core-sdk-go/bank"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 
 	sdk "github.com/irisnet/core-sdk-go"
 	sdktype "github.com/irisnet/core-sdk-go/types"
+	"gitlab.bianjie.ai/irita-paas/open-api/config"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 )
@@ -36,7 +38,7 @@ func (m Base) CreateBaseTx(keyName, keyPassword string) sdktype.BaseTx {
 		From:     keyName,
 		Gas:      m.gas,
 		Fee:      m.coins,
-		Mode:     sdktype.Async,
+		Mode:     sdktype.Commit,
 		Password: keyPassword,
 	}
 }
@@ -49,6 +51,14 @@ func (m Base) BuildAndSign(msgs sdktype.Msgs, baseTx sdktype.BaseTx) ([]byte, st
 	hashBz := sha256.Sum256(sigData)
 	hash := strings.ToUpper(hex.EncodeToString(hashBz[:]))
 	return sigData, hash, nil
+}
+
+func (m Base) BuildAndSend(msgs sdktype.Msgs, baseTx sdktype.BaseTx) (sdktype.ResultTx, error) {
+	sigData, err := m.sdkClient.BuildAndSend(msgs, baseTx)
+	if err != nil {
+		return sigData, err
+	}
+	return sigData, nil
 }
 
 // TxIntoDataBase operationType : issue_class,mint_nft,edit_nft,edit_nft_batch,burn_nft,burn_nft_batch
@@ -93,4 +103,29 @@ func (m Base) ValidateTx(hash string) (*models.TTX, error) {
 	}
 
 	return tx, nil
+}
+
+func (m Base) CreateGasMsg(inputAddress string, outputAddress []string) bank.MsgMultiSend {
+	accountGas := config.Get().Chain.AccoutGas
+	denom := config.Get().Chain.Denom
+	inputCoins := sdktype.NewCoins(sdktype.NewCoin(denom, sdktype.NewInt(accountGas*int64(len(outputAddress)))))
+	outputCoins := sdktype.NewCoins(sdktype.NewCoin(denom, sdktype.NewInt(accountGas)))
+	inputs := []bank.Input{
+		{
+			Address: inputAddress,
+			Coins:   inputCoins,
+		},
+	}
+	var outputs []bank.Output
+	for _, v := range outputAddress {
+		outputs = append(outputs, bank.Output{
+			Address: v,
+			Coins:   outputCoins,
+		})
+	}
+	msg := bank.MsgMultiSend{
+		Inputs:  inputs,
+		Outputs: outputs,
+	}
+	return msg
 }
