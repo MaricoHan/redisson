@@ -24,17 +24,6 @@ type Base struct {
 	coins     sdktype.DecCoins
 }
 
-type TransferGas struct {
-	receiver string
-	amount   string
-}
-
-var (
-	CoinReceived = "coin_received"
-	RECEIVER     = "receiver"
-	AMOUNT       = "amount"
-)
-
 func NewBase(sdkClient sdk.Client, gas uint64, denom string, amount int64) *Base {
 	return &Base{
 		sdkClient: sdkClient,
