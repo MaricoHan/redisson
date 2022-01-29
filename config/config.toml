@@ -23,6 +23,7 @@ chain_account_addr = ""
 
 gas = 200000
 amount = 200000
+account_gas = 4000000
 denom = "uirita"
 
 

@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"github.com/irisnet/core-sdk-go/bank"
+	"gitlab.bianjie.ai/irita-paas/open-api/config"
 	"strings"
 
 	"github.com/volatiletech/null/v8"
@@ -23,6 +24,17 @@ type Base struct {
 	coins     sdktype.DecCoins
 }
 
+type TransferGas struct {
+	receiver string
+	amount   string
+}
+
+var (
+	CoinReceived = "coin_received"
+	RECEIVER     = "receiver"
+	AMOUNT       = "amount"
+)
+
 func NewBase(sdkClient sdk.Client, gas uint64, denom string, amount int64) *Base {
 	return &Base{
 		sdkClient: sdkClient,
@@ -37,7 +49,7 @@ func (m Base) CreateBaseTx(keyName, keyPassword string) sdktype.BaseTx {
 		From:     keyName,
 		Gas:      m.gas,
 		Fee:      m.coins,
-		Mode:     sdktype.Async,
+		Mode:     sdktype.Commit,
 		Password: keyPassword,
 	}
 }
@@ -50,6 +62,26 @@ func (m Base) BuildAndSign(msgs sdktype.Msgs, baseTx sdktype.BaseTx) ([]byte, st
 	hashBz := sha256.Sum256(sigData)
 	hash := strings.ToUpper(hex.EncodeToString(hashBz[:]))
 	return sigData, hash, nil
+}
+
+func (m Base) BuildAndSend(msgs sdktype.Msgs, baseTx sdktype.BaseTx) ([]TransferGas, string, error) {
+	sigData, err := m.sdkClient.BuildAndSend(msgs, baseTx)
+	var transfers []TransferGas
+	if err != nil {
+		return transfers, "", err
+	}
+	coinRecciveds := sigData.Events.GetValues(CoinReceived, RECEIVER)
+	coinAmounts := sigData.Events.GetValues(CoinReceived, AMOUNT)
+	for k, v := range coinRecciveds {
+		if k == 0 {
+			continue
+		}
+		transfers = append(transfers, TransferGas{
+			receiver: v,
+			amount:   coinAmounts[k][0 : len(coinAmounts[k])-6],
+		})
+	}
+	return transfers, sigData.Hash, nil
 }
 
 // TxIntoDataBase operationType : issue_class,mint_nft,edit_nft,edit_nft_batch,burn_nft,burn_nft_batch
@@ -97,8 +129,10 @@ func (m Base) ValidateTx(hash string) (*models.TTX, error) {
 }
 
 func (m Base) CreateGasMsg(inputAddress string, outputAddress []string) bank.MsgMultiSend {
-	inputCoins := sdktype.NewCoins(sdktype.NewCoin("uirita", sdktype.NewInt(int64(4000000*len(outputAddress)))))
-	outputCoins := sdktype.NewCoins(sdktype.NewCoin("uirita", sdktype.NewInt(4000000)))
+	accountGas := config.Get().Chain.AccoutGas
+	denom := config.Get().Chain.Denom
+	inputCoins := sdktype.NewCoins(sdktype.NewCoin(denom, sdktype.NewInt(accountGas*int64(len(outputAddress)))))
+	outputCoins := sdktype.NewCoins(sdktype.NewCoin(denom, sdktype.NewInt(accountGas)))
 	inputs := []bank.Input{
 		{
 			Address: inputAddress,

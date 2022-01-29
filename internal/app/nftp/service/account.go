@@ -3,10 +3,10 @@ package service
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"strings"
-
-	"github.com/irisnet/core-sdk-go/common/crypto/codec"
+	"time"
 
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
@@ -26,8 +26,12 @@ import (
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 
+	"github.com/irisnet/core-sdk-go/common/crypto/codec"
+	"github.com/volatiletech/null/v8"
+
 	sdkcrypto "github.com/irisnet/core-sdk-go/common/crypto"
 	sdktype "github.com/irisnet/core-sdk-go/types"
+	sqltype "github.com/volatiletech/sqlboiler/v4/types"
 )
 
 const algo = "secp256k1"
@@ -47,19 +51,22 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 	// 写入数据库
 	// sdk 创建账户
 	var addresses []string
-	err := modext.Transaction(func(exec boil.ContextExecutor) error {
+	classOne, err := models.TAccounts(
+		models.TAccountWhere.AppID.EQ(uint64(0)),
+	).OneG(context.Background())
+	if err != nil {
+		return nil, types.ErrNotFound
+	}
+	tmsgs := modext.TMSGs{}
+	var transfers []TransferGas
+	var txhash string
+	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		tAppOneObj, err := models.TApps(models.TAppWhere.ID.EQ(params.AppID)).One(context.Background(), exec)
 		if err != nil {
 			return types.ErrNotFound
 		}
-		classOne, err := models.TAccounts(
-			models.TAccountWhere.AppID.EQ(uint64(0)),
-		).OneG(context.Background())
-		if err != nil {
-			return types.ErrNotFound
-		}
-		tAccounts := modext.TAccounts{}
 
+		tAccounts := modext.TAccounts{}
 		var i int64
 		accOffsetStart := tAppOneObj.AccOffset
 		for i = 0; i < params.Count; i++ {
@@ -99,7 +106,6 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 			log.Debug("create account", "accounts insert error:", err.Error())
 			return types.ErrAccountCreate
 		}
-
 		tAppOneObj.AccOffset += params.Count
 		updateRes, err := tAppOneObj.Update(context.Background(), exec, boil.Infer())
 		if err != nil || updateRes == 0 {
@@ -107,16 +113,37 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 		}
 		msg := svc.base.CreateGasMsg(classOne.Address, addresses)
 		tx := svc.base.CreateBaseTx(classOne.Address, defultKeyPassword)
-		_, _, err = svc.base.BuildAndSign(sdktype.Msgs{&msg}, tx)
+		transfers, txhash, err = svc.base.BuildAndSend(sdktype.Msgs{&msg}, tx)
 		if err != nil {
 			log.Error("create account", "build and sign, error:", err)
-			return types.ErrBuildAndSign
+			return types.ErrBuildAndSend
 		}
 		return nil
 	})
-
 	if err != nil {
 		return nil, err
+	}
+	for _, v := range transfers {
+		message := map[string]string{
+			"recipient": v.receiver,
+			"amount":    v.amount,
+		}
+		messageByte, _ := json.Marshal(message)
+		tmsgs = append(tmsgs, &models.TMSG{
+			AppID:     params.AppID,
+			TXHash:    txhash,
+			Timestamp: null.TimeFrom(time.Now()),
+			Module:    "account",
+			Operation: "add_gas",
+			Signer:    classOne.Address,
+			Recipient: null.StringFrom(v.receiver),
+			Message:   sqltype.JSON(messageByte),
+		})
+	}
+	err = tmsgs.InsertAll(context.Background(), boil.GetContextDB())
+	if err != nil {
+		log.Error("create account", "msgs create error:", err)
+		return nil, types.ErrAccountCreate
 	}
 	return addresses, nil
 }
