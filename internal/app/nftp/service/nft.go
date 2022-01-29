@@ -647,9 +647,9 @@ func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
 		case "ID_DESC":
 			orderBy = fmt.Sprintf("%s desc", models.TNFTColumns.NFTID)
 		case "DATE_DESC":
-			orderBy = fmt.Sprintf("%s desc", models.TNFTColumns.CreateAt)
+			orderBy = fmt.Sprintf("%s desc", models.TNFTColumns.Timestamp)
 		case "DATE_ASC":
-			orderBy = fmt.Sprintf("%s ASC", models.TNFTColumns.CreateAt)
+			orderBy = fmt.Sprintf("%s ASC", models.TNFTColumns.Timestamp)
 		}
 		queryMod = append(queryMod, qm.OrderBy(orderBy))
 	}
