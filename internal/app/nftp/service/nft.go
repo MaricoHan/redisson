@@ -230,10 +230,14 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 		tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID), models.TNFTWhere.ClassID.EQ(params.ClassId), models.TNFTWhere.Index.EQ(EditNft.Index)).One(context.Background(), boil.GetContextDB())
 		// internal error：500
 		if err != nil && errors.Cause(err) != sql.ErrNoRows {
+			log.Error("edit nft by batch", "internal error:", err.Error())
 			return "", types.ErrInternal
 		}
 		// nft does not exist or status is not active：400
-		if tNft == nil || tNft.Status != models.TNFTSStatusActive {
+		if tNft == nil {
+			return "", types.ErrNftMissing
+		}
+		if tNft.Status != models.TNFTSStatusActive {
 			return "", types.ErrNftStatus
 		}
 
@@ -393,6 +397,7 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (string, error) {
 	// return the txHash
 	return txHash, nil
 }
+
 func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 	// create rawMsgs
 	var msgBurnNFTs sdktype.Msgs

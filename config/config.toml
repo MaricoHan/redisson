@@ -21,7 +21,7 @@ project_id = "a36dc219dbdd4dbe809766accbed0ac6"
 project_key = ""
 chain_account_addr = ""
 
-gas = 200000
+gas = 400000
 amount = 200000
 denom = "uirita"
 

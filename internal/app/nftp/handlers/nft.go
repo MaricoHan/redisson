@@ -103,6 +103,9 @@ func (h nft) EditNftByIndex(ctx context.Context, request interface{}) (interface
 	if err != nil {
 		return nil, err
 	}
+	if index == 0 {
+		return nil, types.ErrParams
+	}
 	//check end
 
 	params := dto.EditNftByIndexP{
@@ -130,6 +133,9 @@ func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface
 
 	var nfts []*dto.EditNft
 	for _, v := range *req {
+		if v.Index == 0 || v.Name == "" {
+			return nil, types.ErrParams
+		}
 		nfts = append(nfts, v)
 	}
 
@@ -168,6 +174,10 @@ func (h nft) DeleteNftByIndex(ctx context.Context, _ interface{}) (interface{}, 
 	if err != nil {
 		return nil, err
 	}
+	if index == 0 {
+		return nil, types.ErrParams
+	}
+
 	//check end
 	params := dto.DeleteNftByIndexP{
 		AppID:   h.AppID(ctx),
@@ -192,6 +202,9 @@ func (h nft) DeleteNftByBatch(ctx context.Context, _ interface{}) (interface{}, 
 	// 2.judge whether the NFT is repeated
 	hash := make(map[uint64]bool)
 	for _, index := range indices {
+		if index == 0 {
+			return nil, types.ErrParams
+		}
 		if hash[index] == false {
 			hash[index] = true
 		} else {
@@ -297,6 +310,9 @@ func (h nft) NftByIndex(ctx context.Context, _ interface{}) (interface{}, error)
 	if err != nil {
 		return nil, err
 	}
+	if index == 0 {
+		return nil, types.ErrParams
+	}
 
 	//check end
 	params := dto.NftByIndexP{
@@ -318,6 +334,10 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, _ interface{}) (int
 	if err != nil {
 		return nil, err
 	}
+	if index == 0 {
+		return nil, types.ErrParams
+	}
+
 	params := dto.NftOperationHistoryByIndexP{
 		ClassID: h.ClassId(ctx),
 		Index:   index,
