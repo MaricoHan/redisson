@@ -233,7 +233,10 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 			return "", types.ErrInternal
 		}
 		// nft does not exist or status is not active：400
-		if tNft == nil || tNft.Status != models.TNFTSStatusActive {
+		if tNft == nil {
+			return "", types.ErrNftMissing
+		}
+		if tNft.Status != models.TNFTSStatusActive {
 			return "", types.ErrNftStatus
 		}
 
