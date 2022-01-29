@@ -52,6 +52,7 @@ var (
 	ErrTXStatusSuccess        = Register(RootCodeSpace, "45", "tx transaction success")
 	ErrTXStatusPending        = Register(RootCodeSpace, "46", "tx transaction is in progress, please wait")
 	ErrTXStatusUndo           = Register(RootCodeSpace, "47", "tx transaction not executed, please wait")
+	ErrBuildAndSend           = Register(RootCodeSpace, "48", "failed to build and send")
 )
 
 var usedErrorCodes = map[string]*AppError{}
