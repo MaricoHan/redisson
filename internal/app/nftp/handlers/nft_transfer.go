@@ -55,7 +55,7 @@ func (h nftTransfer) TransferNftClassByID(ctx context.Context, request interface
 func (h nftTransfer) TransferNftByIndex(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
 	req := request.(*vo.TransferNftByIndexRequest)
-	if req.Recipient == "" {
+	if req.Recipient == "" || h.Index(ctx) == 0 {
 		return nil, types.ErrParams
 	}
 
