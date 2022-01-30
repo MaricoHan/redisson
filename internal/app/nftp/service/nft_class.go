@@ -39,7 +39,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 		return nil, types.ErrParams
 	}
 	if acc == nil {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Owner")
 	}
 
 	//platform address

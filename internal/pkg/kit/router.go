@@ -221,16 +221,15 @@ func (c Controller) serverOptions(
 			}
 		} else {
 			switch appErr {
-			case types.ErrInternal, types.ErrChainConn, types.ErrTransfer,
-				types.ErrCreate, types.ErrBurn, types.ErrEdit,
-				types.ErrBuildAndSign, types.ErrBuildAndSend:
-				w.WriteHeader(http.StatusInternalServerError) //500
+			case types.ErrParams, types.ErrIdempotent, types.ErrNftStatus,
+				types.ErrNftClassStatus:
+				w.WriteHeader(http.StatusBadRequest) //400
 			case types.ErrAuthenticate, types.ErrNotOwner, types.ErrNoPermission:
 				w.WriteHeader(http.StatusForbidden) //403
 			case types.ErrNftClassNotFound, types.ErrNftNotFound, types.ErrQuery:
 				w.WriteHeader(http.StatusNotFound) //404
 			default:
-				w.WriteHeader(http.StatusBadRequest) //400
+				w.WriteHeader(http.StatusInternalServerError) //500
 			}
 		}
 		response = Response{ErrorResp: &ErrorResp{

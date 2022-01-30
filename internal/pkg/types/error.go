@@ -51,11 +51,10 @@ var (
 	ErrNotOwner         = Register(RootCodeSpace, NotOwnerAccount, "This account is not the owner account")
 	ErrNoPermission     = Register(RootCodeSpace, NotAppOfAccount, "This account is not an in-app account")
 	ErrBuildAndSign     = Register(RootCodeSpace, StructureSignTransactionFailed, "failed to build and sign")
-	ErrRepeated         = Register(RootCodeSpace, RepeatError, "Please do not fill in duplicate NFT in the request parameters")
+	ErrBuildAndSend     = Register(RootCodeSpace, StructureSendTransactionFailed, "failed to build and send")
 	ErrTXStatusSuccess  = Register(RootCodeSpace, TxStatusSuccesss, "tx transaction success")
 	ErrTXStatusPending  = Register(RootCodeSpace, TxStatusPending, "tx transaction is in progress, please wait")
 	ErrTXStatusUndo     = Register(RootCodeSpace, TxStatusUndo, "tx transaction not executed, please wait")
-	ErrBuildAndSend     = Register(RootCodeSpace, StructureSendTransactionFailed, "failed to build and send")
 )
 
 var usedErrorCodes = map[string]*AppError{}

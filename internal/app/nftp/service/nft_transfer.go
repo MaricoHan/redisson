@@ -26,7 +26,7 @@ func NewNftTransfer(base *Base) *NftTransfer {
 func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (string, error) {
 	//不能自己转让给自己
 	if params.Recipient == params.Owner {
-		return "", types.ErrParams
+		return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
 	}
 
 	//recipient不能为平台外账户或此应用外账户或非法账户
@@ -37,7 +37,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 		return "", types.ErrParams
 	}
 	if acc == nil {
-		return "", types.ErrParams
+		return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
 	}
 
 	//判断class
@@ -118,7 +118,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (string, error) {
 	//不能自己转让给自己
 	if params.Recipient == params.Owner {
-		return "", types.ErrParams
+		return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
 	}
 
 	acc, err := models.TAccounts(
@@ -128,7 +128,7 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 		return "", types.ErrParams
 	}
 	if acc == nil {
-		return "", types.ErrParams
+		return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
 	}
 
 	//msg
@@ -217,10 +217,10 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			Recipient: modelResult.Recipient,
 		}
 		if recipient.Index == 0 {
-			return "", types.ErrParams
+			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Index")
 		}
 		if recipient.Recipient == "" {
-			return "", types.ErrParams
+			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
 		}
 		acc, err := models.TAccounts(
 			models.TAccountWhere.AppID.EQ(params.AppID),
@@ -229,17 +229,17 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			return "", types.ErrParams
 		}
 		if acc == nil {
-			return "", types.ErrParams
+			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
 		}
 
 		//不能自己转让给自己
 		if recipient.Recipient == params.Owner {
-			return "", types.ErrParams
+			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
 		}
 
 		//判断index是否重复
 		if _, ok := indexMap[recipient.Index]; ok {
-			return "", types.ErrParams
+			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Repeated Index")
 		}
 		res, err := models.TNFTS(models.TNFTWhere.Index.EQ(recipient.Index),
 			models.TNFTWhere.ClassID.EQ(string(params.ClassID)),
@@ -309,10 +309,10 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 				Recipient: modelResultR.Recipient,
 			}
 			if recipient.Index == 0 {
-				return types.ErrParams
+				return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Index")
 			}
 			if recipient.Recipient == "" {
-				return types.ErrParams
+				return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
 			}
 			res, err := models.TNFTS(models.TNFTWhere.Index.EQ(recipient.Index),
 				models.TNFTWhere.ClassID.EQ(string(params.ClassID)),
