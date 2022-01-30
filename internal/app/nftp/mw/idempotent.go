@@ -40,7 +40,6 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		writeBadRequestResp(w, types.ErrParams)
 		return
 	}
-
 	if len(req.OperationID) >= 65 || len(req.OperationID) == 0 {
 		writeBadRequestResp(w, types.NewAppError(types.RootCodeSpace, "3", "operation_id does not comply with the rules"))
 		return

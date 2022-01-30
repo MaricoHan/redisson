@@ -208,43 +208,34 @@ func (c Controller) serverOptions(
 		var response Response
 		urlPath := ctx.Value(httptransport.ContextKeyRequestPath)
 		url := strings.SplitN(urlPath.(string)[1:], "/", 3)
+		codeSpace := strings.ToUpper(url[0])
 		appErr, ok := err.(types.IError)
 		if !ok {
 			w.WriteHeader(http.StatusInternalServerError)
 			response = Response{
 				ErrorResp: &ErrorResp{
-					CodeSpace: types.MatchingCodeSpace(url[0]),
+					CodeSpace: codeSpace,
 					Code:      types.ErrInternal.Code(),
 					Message:   types.ErrInternal.Error(),
 				},
 			}
 		} else {
-			errResp := &ErrorResp{}
 			switch appErr {
 			case types.ErrInternal, types.ErrMysqlConn, types.ErrChainConn, types.ErrRedisConn:
 				w.WriteHeader(http.StatusInternalServerError)
-				errResp.CodeSpace = types.MatchingCodeSpace(url[0])
-				errResp.Message = types.ErrInternal.Error()
-				errResp.Code = types.ErrInternal.Code()
 			case types.ErrAuthenticate:
 				w.WriteHeader(http.StatusForbidden)
-				errResp.CodeSpace = types.MatchingCodeSpace(url[0])
-				errResp.Message = appErr.Error()
-				errResp.Code = appErr.Code()
 			case types.ErrGetTx, types.ErrNftStatus, types.ErrNftMissing, types.ErrNotFound:
 				w.WriteHeader(http.StatusNotFound)
-				errResp.CodeSpace = types.MatchingCodeSpace(url[0])
-				errResp.Message = appErr.Error()
-				errResp.Code = appErr.Code()
 			default:
 				w.WriteHeader(http.StatusBadRequest)
-				errResp.CodeSpace = types.MatchingCodeSpace(url[0])
-				errResp.Message = appErr.Error()
-				errResp.Code = appErr.Code()
 			}
-			response = Response{ErrorResp: errResp}
 		}
-
+		response = Response{ErrorResp: &ErrorResp{
+			CodeSpace: codeSpace,
+			Code:      appErr.Code(),
+			Message:   appErr.Error(),
+		}}
 		bz, _ := json.Marshal(response)
 		_, _ = w.Write(bz)
 	}

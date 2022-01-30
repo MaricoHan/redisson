@@ -3,10 +3,7 @@ package types
 import "fmt"
 
 const (
-	RootCodeSpace    = "Nftp-Open-Api"
-	AccountCodeSpace = "Account"
-	NftCodeSpace     = "NFT"
-	TxCodeSpace      = "Tx"
+	RootCodeSpace = "NFTP-OPEN-API"
 )
 
 var (
@@ -111,16 +108,4 @@ func Register(codeSpace string, code string, description string) *AppError {
 	setUsedErrorCodes(err)
 
 	return err
-}
-
-func MatchingCodeSpace(path string) string {
-	switch path {
-	case "account":
-		return AccountCodeSpace
-	case "tx":
-		return TxCodeSpace
-	case "nft":
-		return NftCodeSpace
-	}
-	return RootCodeSpace
 }
