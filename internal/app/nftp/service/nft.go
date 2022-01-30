@@ -180,7 +180,6 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
 		log.Debug("edit nft by index", "BuildAndSign error:", err.Error())
 		return "", err
 	}
-
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		//validate tx
 		txone, err := svc.base.ValidateTx(txHash)
