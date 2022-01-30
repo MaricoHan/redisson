@@ -44,8 +44,13 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) ([]string, error) {
 			models.TClassWhere.AppID.EQ(params.AppID),
 			models.TClassWhere.ClassID.EQ(params.ClassId),
 		).One(context.Background(), exec)
-		if err != nil {
-			return types.ErrQuery
+		if err != nil && errors.Cause(err) == sql.ErrNoRows {
+			//400
+			return types.NewAppError(types.RootCodeSpace, types.QueryDataFailed, "class not found")
+		} else if err != nil {
+			//500
+			log.Error("create nfts", "query class error:", err.Error())
+			return types.ErrCreate
 		}
 		if classOne.Status != models.TNFTSStatusActive {
 			return types.ErrNftClassStatus
@@ -62,8 +67,13 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) ([]string, error) {
 				acc, err := models.TAccounts(
 					models.TAccountWhere.AppID.EQ(params.AppID),
 					models.TAccountWhere.Address.EQ(params.Recipient)).OneG(context.Background())
-				if err != nil {
-					return types.ErrParams
+				if err != nil && errors.Cause(err) == sql.ErrNoRows {
+					//400
+					return types.NewAppError(types.RootCodeSpace, types.QueryDataFailed, "recipient not found")
+				} else if err != nil {
+					//500
+					log.Error("create nfts", "query recipient error:", err.Error())
+					return types.ErrCreate
 				}
 				if acc == nil {
 					return types.ErrParams
@@ -85,7 +95,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) ([]string, error) {
 		originData, thash, err := svc.base.BuildAndSign(msgs, baseTx)
 		if err != nil {
 			log.Debug("create nfts", "buildandsign error:", err.Error())
-			return err
+			return types.ErrBuildAndSend
 		}
 		//validate tx
 		txone, err := svc.base.ValidateTx(thash)
@@ -180,7 +190,7 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
 	signedData, txHash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgEditNFT}, baseTx)
 	if err != nil {
 		log.Debug("edit nft by index", "BuildAndSign error:", err.Error())
-		return "", err
+		return "", types.ErrBuildAndSign
 	}
 
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
@@ -273,7 +283,7 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 	signedData, txHash, err := svc.base.BuildAndSign(msgEditNFTs, baseTx)
 	if err != nil {
 		log.Debug("edit nft by batch", "BuildAndSign error:", err.Error())
-		return "", err
+		return "", types.ErrBuildAndSign
 	}
 
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
@@ -357,7 +367,7 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (string, error) {
 	signedData, txHash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgBurnNFT}, baseTx)
 	if err != nil {
 		log.Debug("delete nft by index", "BuildAndSign error:", err.Error())
-		return "", err
+		return "", types.ErrBuildAndSign
 	}
 
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
@@ -438,7 +448,7 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 	signedData, txHash, err := svc.base.BuildAndSign(msgBurnNFTs, baseTx)
 	if err != nil {
 		log.Debug("delete nft by batch", "BuildAndSign error:", err.Error())
-		return "", err
+		return "", types.ErrBuildAndSign
 	}
 
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {

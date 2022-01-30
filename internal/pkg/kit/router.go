@@ -222,21 +222,21 @@ func (c Controller) serverOptions(
 		} else {
 			switch appErr {
 			case types.ErrParams, types.ErrIdempotent, types.ErrNftStatus,
-				types.ErrNftClassStatus:
+				types.ErrNftClassStatus, types.ErrDataQuery:
 				w.WriteHeader(http.StatusBadRequest) //400
 			case types.ErrAuthenticate, types.ErrNotOwner, types.ErrNoPermission:
 				w.WriteHeader(http.StatusForbidden) //403
-			case types.ErrNftClassNotFound, types.ErrNftNotFound, types.ErrQuery:
+			case types.ErrNftClassNotFound, types.ErrNftNotFound:
 				w.WriteHeader(http.StatusNotFound) //404
 			default:
 				w.WriteHeader(http.StatusInternalServerError) //500
 			}
+			response = Response{ErrorResp: &ErrorResp{
+				CodeSpace: codeSpace,
+				Code:      appErr.Code(),
+				Message:   appErr.Error(),
+			}}
 		}
-		response = Response{ErrorResp: &ErrorResp{
-			CodeSpace: codeSpace,
-			Code:      appErr.Code(),
-			Message:   appErr.Error(),
-		}}
 		bz, _ := json.Marshal(response)
 		_, _ = w.Write(bz)
 	}

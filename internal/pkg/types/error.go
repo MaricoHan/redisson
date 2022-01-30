@@ -7,11 +7,13 @@ const (
 )
 
 const (
-	QueryFailed                    = "QUERY_FAILED"
-	CreateFailed                   = "CREATE_FAILED"
-	EditFailed                     = "EDIT_FAILED"
-	BurnFailed                     = "BURN_FAILED"
-	TransferFailed                 = "TRANSFER_FAILED"
+	QueryFailed    = "QUERY_FAILED"
+	CreateFailed   = "CREATE_FAILED"
+	EditFailed     = "EDIT_FAILED"
+	BurnFailed     = "BURN_FAILED"
+	TransferFailed = "TRANSFER_FAILED"
+
+	QueryDataFailed                = "QUERY_DATA_FAILED"
 	InternalFailed                 = "INTERNAL_FAILED"
 	AuthenticationFailed           = "AUTHENTICATION_FAILED"
 	ClientParamsError              = "CLIENT_PARAMS_ERROR"
@@ -25,7 +27,6 @@ const (
 	NotOwnerAccount                = "NOT_OWNER_ACCOUNT"
 	NotAppOfAccount                = "NOT_APP_OF_ACCOUNT"
 	StructureSignTransactionFailed = "STRUCTURE_SIGN_TRANSACTION_FAILED"
-	RepeatError                    = "REPEAT_ERROR"
 	TxStatusSuccesss               = "TX_STATUS_SUCCESSS"
 	TxStatusPending                = "TX_STATUS_PENDING"
 	TxStatusUndo                   = "TX_STATUS_UNDO"
@@ -39,6 +40,7 @@ var (
 	ErrBurn     = Register(RootCodeSpace, BurnFailed, "failed to burn")
 	ErrTransfer = Register(RootCodeSpace, TransferFailed, "failed to transfer")
 
+	ErrDataQuery        = Register(RootCodeSpace, QueryDataFailed, "failed to query data")
 	ErrInternal         = Register(RootCodeSpace, InternalFailed, "internal")
 	ErrAuthenticate     = Register(RootCodeSpace, AuthenticationFailed, "failed to authentication")
 	ErrParams           = Register(RootCodeSpace, ClientParamsError, "failed to client params")
