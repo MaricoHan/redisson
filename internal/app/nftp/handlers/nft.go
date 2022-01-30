@@ -462,11 +462,11 @@ func (h nft) Owner(ctx context.Context) string {
 func (h nft) Index(ctx context.Context) (uint64, error) {
 	rec := ctx.Value("index")
 	if rec == nil {
-		return 0, types.ErrIndexFormat
+		return 0, types.ErrParams
 	}
 	index, err := strconv.ParseUint(rec.(string), 10, 64)
 	if err != nil {
-		return 0, types.ErrIndexFormat
+		return 0, types.ErrParams
 	}
 
 	// return index
@@ -494,7 +494,7 @@ func (h nft) Status(ctx context.Context) (string, error) {
 func (h nft) Indices(ctx context.Context) ([]uint64, error) {
 	rec := ctx.Value("indices")
 	if rec == nil {
-		return nil, types.ErrIndicesFormat
+		return nil, types.ErrParams
 	}
 
 	// "1,2,3,4,..." to {1,2,3,4,...}
@@ -504,7 +504,7 @@ func (h nft) Indices(ctx context.Context) ([]uint64, error) {
 	for _, s := range strArr {
 		tmp, err := strconv.ParseUint(s, 10, 64)
 		if err != nil {
-			return nil, types.ErrIndicesFormat
+			return nil, types.ErrParams
 		}
 		indices = append(indices, tmp)
 	}

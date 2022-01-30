@@ -4,36 +4,56 @@ import "fmt"
 
 const RootCodeSpace = "nftp-open-api"
 
+const (
+	QueryFailed                    = "QUERY_FAILED"
+	CreateFailed                   = "CREATE_FAILED"
+	EditFailed                     = "EDIT_FAILED"
+	TransferFailed                 = "TRANSFER_FAILED"
+	InternalFailed                 = "INTERNAL_FAILED"
+	AuthenticationFailed           = "AUTHENTICATION_FAILED"
+	ClientParamsError              = "CLIENT_PARAMS_ERROR"
+	ConnectionChainFailed          = "CONNECTION_CHAIN_FAILED"
+	FrequentRequestsNotSupports    = "FREQUENT_REQUESTS_NOT_SUPPORTS"
+	NftclassNotExist               = "NFTCLASS_NOT_EXIST"
+	NftclassStatusAbnormal         = "NFTCLASS_STATUS_ABNORMAL"
+	NftNotExist                    = "NFT_NOT_EXIST"
+	NftStatusAbnormal              = "NFT_STATUS_ABNORMAL"
+	MaximumLimitExceeded           = "MAXIMUM_LIMIT_EXCEEDED"
+	NotOwnerAccount                = "NOT_OWNER_ACCOUNT"
+	NotAppOfAccount                = "NOT_APP_OF_ACCOUNT"
+	StructureSignTransactionFailed = "STRUCTURE_SIGN_TRANSACTION_FAILED"
+	RepeatError                    = "REPEAT_ERROR"
+	TxStatusSuccesss               = "TX_STATUS_SUCCESSS"
+	TxStatusPending                = "TX_STATUS_PENDING"
+	TxStatusUndo                   = "TX_STATUS_UNDO"
+	StructureSendTransactionFailed = "STRUCTURE_SEND_TRANSACTION_FAILED"
+)
+
 var (
-	// 增删改查统一错误码
-	ErrCreate   = Register(RootCodeSpace, "1001", "CREATE_FAILED")
-	ErrQuery    = Register(RootCodeSpace, "1002", "QUERY_FAILED")
-	ErrEdit     = Register(RootCodeSpace, "1003", "EDIT_FAILED")
-	ErrBurn     = Register(RootCodeSpace, "1004", "BURN_FAILED")
-	ErrTransfer = Register(RootCodeSpace, "1005", "TRANSFER_FAILED")
+	ErrCreate   = Register(RootCodeSpace, CreateFailed, "failed to create")
+	ErrQuery    = Register(RootCodeSpace, QueryFailed, "failed to query")
+	ErrEdit     = Register(RootCodeSpace, EditFailed, "failed to edit")
+	ErrBurn     = Register(RootCodeSpace, EditFailed, "failed to burn")
+	ErrTransfer = Register(RootCodeSpace, TransferFailed, "failed to transfer")
 
-	ErrInternal         = Register(RootCodeSpace, "1", "INTERNAL_FAILED")
-	ErrAuthenticate     = Register(RootCodeSpace, "2", "AUTHENTICATION_FAILED")
-	ErrParams           = Register(RootCodeSpace, "3", "CLIENT_PARAMS_ERROR")
-	ErrChainConn        = Register(RootCodeSpace, "4", "CONNECTION_CHAIN_FAILED")
-	ErrIdempotent       = Register(RootCodeSpace, "5", "FREQUENT_REQUESTS_NOT_SUPPORTS")
-	ErrNftClassNotFound = Register(RootCodeSpace, "6", "NFTCLASS_NOT_EXIST")
-	ErrNftClassStatus   = Register(RootCodeSpace, "7", "NFTCLASS_STATUS_ABNORMAL")
-	ErrNftNotFound      = Register(RootCodeSpace, "8", "NFT_NOT_EXIST")
-	ErrNftStatus        = Register(RootCodeSpace, "9", "NFT_STATUS_ABNORMAL")
-	ErrBatch            = Register(RootCodeSpace, "10", "BATCH_OPERATION_NFT_ERROR")
-	ErrLimit            = Register(RootCodeSpace, "11", "MAXIMUM_LIMIT_50")
-	ErrNotOwner         = Register(RootCodeSpace, "12", "NOT_OWNER_ACCOUNT")
-	ErrNoPermission     = Register(RootCodeSpace, "13", "NOT_APP_ OF_ACCOUNT")
-	ErrBuildAndSign     = Register(RootCodeSpace, "14", "STRUCTURE_SIGN_TRANSACTION_FAILED")
-
-	ErrIndexFormat     = Register(RootCodeSpace, "15", "Index format is invalid, must be unsigned numeric type")
-	ErrIndicesFormat   = Register(RootCodeSpace, "16", "Indices format is invalid, must be unsigned numeric type,such as:1,2,3,4...")
-	ErrRepeated        = Register(RootCodeSpace, "17", "Please do not fill in duplicate NFT in the request parameters")
-	ErrTXStatusSuccess = Register(RootCodeSpace, "18", "tx transaction success")
-	ErrTXStatusPending = Register(RootCodeSpace, "19", "tx transaction is in progress, please wait")
-	ErrTXStatusUndo    = Register(RootCodeSpace, "20", "tx transaction not executed, please wait")
-	ErrBuildAndSend    = Register(RootCodeSpace, "21", "failed to build and send")
+	ErrInternal         = Register(RootCodeSpace, InternalFailed, "internal")
+	ErrAuthenticate     = Register(RootCodeSpace, AuthenticationFailed, "failed to authentication")
+	ErrParams           = Register(RootCodeSpace, ClientParamsError, "failed to client params")
+	ErrChainConn        = Register(RootCodeSpace, ConnectionChainFailed, "failed to connection chain")
+	ErrIdempotent       = Register(RootCodeSpace, FrequentRequestsNotSupports, "failed to idempotent")
+	ErrNftClassNotFound = Register(RootCodeSpace, NftclassNotExist, "the NFT Class does not exist")
+	ErrNftClassStatus   = Register(RootCodeSpace, NftclassStatusAbnormal, "the NFT Class status is invalid")
+	ErrNftNotFound      = Register(RootCodeSpace, NftNotExist, "the NFT does not exist")
+	ErrNftStatus        = Register(RootCodeSpace, NftStatusAbnormal, "the NFT status is invalid")
+	ErrLimit            = Register(RootCodeSpace, MaximumLimitExceeded, "")
+	ErrNotOwner         = Register(RootCodeSpace, NotOwnerAccount, "This account is not the owner account")
+	ErrNoPermission     = Register(RootCodeSpace, NotAppOfAccount, "This account is not an in-app account")
+	ErrBuildAndSign     = Register(RootCodeSpace, StructureSignTransactionFailed, "failed to build and sign")
+	ErrRepeated         = Register(RootCodeSpace, RepeatError, "Please do not fill in duplicate NFT in the request parameters")
+	ErrTXStatusSuccess  = Register(RootCodeSpace, TxStatusSuccesss, "tx transaction success")
+	ErrTXStatusPending  = Register(RootCodeSpace, TxStatusPending, "tx transaction is in progress, please wait")
+	ErrTXStatusUndo     = Register(RootCodeSpace, TxStatusUndo, "tx transaction not executed, please wait")
+	ErrBuildAndSend     = Register(RootCodeSpace, StructureSendTransactionFailed, "failed to build and send")
 )
 
 var usedErrorCodes = map[string]*AppError{}
@@ -47,7 +67,7 @@ func setUsedErrorCodes(err *AppError) {
 }
 
 func appErrorID(codeSpace string, code string) string {
-	return fmt.Sprintf("%s:%d", codeSpace, code)
+	return fmt.Sprintf("%s:%s", codeSpace, code)
 }
 
 type IError interface {
@@ -80,7 +100,7 @@ func (e AppError) CodeSpace() string {
 
 func Register(codeSpace string, code string, description string) *AppError {
 	if e := getUsedErrorCodes(codeSpace, code); e != nil {
-		panic(fmt.Sprintf("error with code %d is already registered: %q", code, e.desc))
+		panic(fmt.Sprintf("error with code %s is already registered: %q", code, e.desc))
 	}
 
 	err := NewAppError(codeSpace, code, description)
