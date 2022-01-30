@@ -2,7 +2,12 @@ package types
 
 import "fmt"
 
-const RootCodeSpace = "nftp-open-api"
+const (
+	RootCodeSpace    = "Nftp-Open-Api"
+	AccountCodeSpace = "Account"
+	NftCodeSpace     = "NFT"
+	TxCodeSpace      = "Tx"
+)
 
 var (
 	ErrInternal               = Register(RootCodeSpace, "1", "internal")
@@ -106,4 +111,16 @@ func Register(codeSpace string, code string, description string) *AppError {
 	setUsedErrorCodes(err)
 
 	return err
+}
+
+func MatchingCodeSpace(path string) string {
+	switch path {
+	case "account":
+		return AccountCodeSpace
+	case "tx":
+		return TxCodeSpace
+	case "nft":
+		return NftCodeSpace
+	}
+	return RootCodeSpace
 }

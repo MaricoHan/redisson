@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
@@ -205,12 +206,14 @@ func (c Controller) serverOptions(
 	errorEncoderOption := func(ctx context.Context, err error, w http.ResponseWriter) {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		var response Response
+		urlPath := ctx.Value(httptransport.ContextKeyRequestPath)
+		url := strings.SplitN(urlPath.(string)[1:], "/", 3)
 		appErr, ok := err.(types.IError)
 		if !ok {
 			w.WriteHeader(http.StatusInternalServerError)
 			response = Response{
 				ErrorResp: &ErrorResp{
-					CodeSpace: types.ErrInternal.CodeSpace(),
+					CodeSpace: types.MatchingCodeSpace(url[0]),
 					Code:      types.ErrInternal.Code(),
 					Message:   types.ErrInternal.Error(),
 				},
@@ -220,22 +223,22 @@ func (c Controller) serverOptions(
 			switch appErr {
 			case types.ErrInternal, types.ErrMysqlConn, types.ErrChainConn, types.ErrRedisConn:
 				w.WriteHeader(http.StatusInternalServerError)
-				errResp.CodeSpace = types.ErrInternal.CodeSpace()
+				errResp.CodeSpace = types.MatchingCodeSpace(url[0])
 				errResp.Message = types.ErrInternal.Error()
 				errResp.Code = types.ErrInternal.Code()
 			case types.ErrAuthenticate:
 				w.WriteHeader(http.StatusForbidden)
-				errResp.CodeSpace = appErr.CodeSpace()
+				errResp.CodeSpace = types.MatchingCodeSpace(url[0])
 				errResp.Message = appErr.Error()
 				errResp.Code = appErr.Code()
 			case types.ErrGetTx, types.ErrNftStatus, types.ErrNftMissing, types.ErrNotFound:
 				w.WriteHeader(http.StatusNotFound)
-				errResp.CodeSpace = appErr.CodeSpace()
+				errResp.CodeSpace = types.MatchingCodeSpace(url[0])
 				errResp.Message = appErr.Error()
 				errResp.Code = appErr.Code()
 			default:
 				w.WriteHeader(http.StatusBadRequest)
-				errResp.CodeSpace = appErr.CodeSpace()
+				errResp.CodeSpace = types.MatchingCodeSpace(url[0])
 				errResp.Message = appErr.Error()
 				errResp.Code = appErr.Code()
 			}

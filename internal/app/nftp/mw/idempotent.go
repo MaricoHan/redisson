@@ -3,15 +3,11 @@ package mw
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"io/ioutil"
 	"net/http"
-	"time"
-
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/redis"
 )
 
 func IdempotentMiddleware(h http.Handler) http.Handler {
@@ -47,22 +43,22 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	appID := r.Header.Get("X-App-Id")
-	key := fmt.Sprintf("%s:%s", appID, req.OperationID)
-	ok, err := redis.Has(key)
-	if err != nil {
-		writeInternalResp(w)
-		return
-	}
-
-	if ok {
-		writeBadRequestResp(w, types.ErrIdempotent)
-		return
-	}
-
-	if err := redis.Set(key, "1", time.Second*60); err != nil {
-		writeBadRequestResp(w, types.ErrRedisConn)
-		return
-	}
+	//appID := r.Header.Get("X-App-Id")
+	//key := fmt.Sprintf("%s:%s", appID, req.OperationID)
+	//ok, err := redis.Has(key)
+	//if err != nil {
+	//	writeInternalResp(w)
+	//	return
+	//}
+	//
+	//if ok {
+	//	writeBadRequestResp(w, types.ErrIdempotent)
+	//	return
+	//}
+	//
+	//if err := redis.Set(key, "1", time.Second*60); err != nil {
+	//	writeBadRequestResp(w, types.ErrRedisConn)
+	//	return
+	//}
 	h.next.ServeHTTP(w, r)
 }
