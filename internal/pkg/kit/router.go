@@ -230,12 +230,12 @@ func (c Controller) serverOptions(
 			default:
 				w.WriteHeader(http.StatusBadRequest)
 			}
+			response = Response{ErrorResp: &ErrorResp{
+				CodeSpace: codeSpace,
+				Code:      appErr.Code(),
+				Message:   appErr.Error(),
+			}}
 		}
-		response = Response{ErrorResp: &ErrorResp{
-			CodeSpace: codeSpace,
-			Code:      appErr.Code(),
-			Message:   appErr.Error(),
-		}}
 		bz, _ := json.Marshal(response)
 		_, _ = w.Write(bz)
 	}
