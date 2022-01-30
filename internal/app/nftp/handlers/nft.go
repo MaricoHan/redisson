@@ -261,7 +261,7 @@ func (h nft) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 		params.Limit = 10
 	}
 	if params.Limit > 50 {
-		return nil, types.ErrLimit
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Limit")
 	}
 
 	startDateR := h.StartDate(ctx)
