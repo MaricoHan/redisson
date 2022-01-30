@@ -2,7 +2,9 @@ package types
 
 import "fmt"
 
-const RootCodeSpace = "nftp-open-api"
+const (
+	RootCodeSpace = "NFTP-OPEN-API"
+)
 
 var (
 	ErrInternal               = Register(RootCodeSpace, "1", "internal")
