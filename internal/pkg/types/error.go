@@ -2,7 +2,9 @@ package types
 
 import "fmt"
 
-const RootCodeSpace = "nftp-open-api"
+const (
+	RootCodeSpace = "NFTP-OPEN-API"
+)
 
 const (
 	QueryFailed                    = "QUERY_FAILED"

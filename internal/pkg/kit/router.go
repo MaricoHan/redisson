@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
@@ -205,45 +206,38 @@ func (c Controller) serverOptions(
 	errorEncoderOption := func(ctx context.Context, err error, w http.ResponseWriter) {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		var response Response
+		urlPath := ctx.Value(httptransport.ContextKeyRequestPath)
+		url := strings.SplitN(urlPath.(string)[1:], "/", 3)
+		codeSpace := strings.ToUpper(url[0])
 		appErr, ok := err.(types.IError)
 		if !ok {
 			w.WriteHeader(http.StatusInternalServerError)
 			response = Response{
 				ErrorResp: &ErrorResp{
-					CodeSpace: types.ErrInternal.CodeSpace(),
+					CodeSpace: codeSpace,
 					Code:      types.ErrInternal.Code(),
 					Message:   types.ErrInternal.Error(),
 				},
 			}
 		} else {
-			errResp := &ErrorResp{}
 			switch appErr {
 			case types.ErrInternal, types.ErrChainConn, types.ErrTransfer,
 				types.ErrCreate, types.ErrBurn, types.ErrEdit,
 				types.ErrBuildAndSign, types.ErrBuildAndSend:
 				w.WriteHeader(http.StatusInternalServerError) //500
-				errResp.CodeSpace = types.ErrInternal.CodeSpace()
-				errResp.Message = types.ErrInternal.Error()
-				errResp.Code = types.ErrInternal.Code()
 			case types.ErrAuthenticate, types.ErrNotOwner, types.ErrNoPermission:
 				w.WriteHeader(http.StatusForbidden) //403
-				errResp.CodeSpace = appErr.CodeSpace()
-				errResp.Message = appErr.Error()
-				errResp.Code = appErr.Code()
 			case types.ErrNftClassNotFound, types.ErrNftNotFound, types.ErrQuery:
 				w.WriteHeader(http.StatusNotFound) //404
-				errResp.CodeSpace = appErr.CodeSpace()
-				errResp.Message = appErr.Error()
-				errResp.Code = appErr.Code()
 			default:
 				w.WriteHeader(http.StatusBadRequest) //400
-				errResp.CodeSpace = appErr.CodeSpace()
-				errResp.Message = appErr.Error()
-				errResp.Code = appErr.Code()
 			}
-			response = Response{ErrorResp: errResp}
 		}
-
+		response = Response{ErrorResp: &ErrorResp{
+			CodeSpace: codeSpace,
+			Code:      appErr.Code(),
+			Message:   appErr.Error(),
+		}}
 		bz, _ := json.Marshal(response)
 		_, _ = w.Write(bz)
 	}
