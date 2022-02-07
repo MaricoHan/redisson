@@ -553,7 +553,12 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 		models.TNFTWhere.ClassID.EQ(params.ClassID),
 		models.TNFTWhere.Index.EQ(params.Index),
 	).OneG(context.Background())
-	if err != nil {
+	if err != nil && errors.Cause(err) == sql.ErrNoRows {
+		//404
+		return nil, types.ErrNftNotFound
+	} else if err != nil {
+		//500
+		log.Error("query nft operation history", "query nft error:", err.Error())
 		return nil, types.ErrQuery
 	}
 

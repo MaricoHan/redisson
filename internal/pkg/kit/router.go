@@ -226,7 +226,7 @@ func (c Controller) serverOptions(
 				w.WriteHeader(http.StatusBadRequest) //400
 			case types.ErrAuthenticate, types.ErrNotOwner, types.ErrNoPermission:
 				w.WriteHeader(http.StatusForbidden) //403
-			case types.ErrNftClassNotFound, types.ErrNftNotFound:
+			case types.ErrNftClassNotFound, types.ErrNftNotFound, types.ErrTxNotFound:
 				w.WriteHeader(http.StatusNotFound) //404
 			default:
 				w.WriteHeader(http.StatusInternalServerError) //500

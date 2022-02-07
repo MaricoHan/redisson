@@ -23,6 +23,7 @@ const (
 	NftclassStatusAbnormal         = "NFTCLASS_STATUS_ABNORMAL"
 	NftNotExist                    = "NFT_NOT_EXIST"
 	NftStatusAbnormal              = "NFT_STATUS_ABNORMAL"
+	TxNotExist                     = "TX_NOT_EXIST"
 	MaximumLimitExceeded           = "MAXIMUM_LIMIT_EXCEEDED"
 	NotOwnerAccount                = "NOT_OWNER_ACCOUNT"
 	NotAppOfAccount                = "NOT_APP_OF_ACCOUNT"
@@ -50,6 +51,7 @@ var (
 	ErrNftClassStatus   = Register(RootCodeSpace, NftclassStatusAbnormal, "the NFT Class status is invalid")
 	ErrNftNotFound      = Register(RootCodeSpace, NftNotExist, "the NFT does not exist")
 	ErrNftStatus        = Register(RootCodeSpace, NftStatusAbnormal, "the NFT status is invalid")
+	ErrTxNotFound       = Register(RootCodeSpace, TxNotExist, "the tx does not exist")
 	ErrLimit            = Register(RootCodeSpace, MaximumLimitExceeded, "")
 	ErrNotOwner         = Register(RootCodeSpace, NotOwnerAccount, "This account is not the owner account")
 	ErrNoPermission     = Register(RootCodeSpace, NotAppOfAccount, "This account is not an in-app account")

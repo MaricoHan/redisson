@@ -2,6 +2,9 @@ package service
 
 import (
 	"context"
+	"database/sql"
+	"github.com/friendsofgo/errors"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
@@ -21,7 +24,12 @@ func (svc *Tx) TxResultByTxHash(params dto.TxResultByTxHashP) (*dto.TxResultByTx
 		models.TTXWhere.Hash.EQ(params.Hash),
 		models.TTXWhere.AppID.EQ(params.AppID),
 	).OneG(context.Background())
-	if err != nil {
+	if err != nil && errors.Cause(err) == sql.ErrNoRows {
+		//404
+		return nil, types.ErrTxNotFound
+	} else if err != nil {
+		//500
+		log.Error("query tx by hash", "query tx error:", err.Error())
 		return nil, types.ErrQuery
 	}
 
