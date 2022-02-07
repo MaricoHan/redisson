@@ -38,6 +38,9 @@ func (h nftTransfer) TransferNftClassByID(ctx context.Context, request interface
 	if req.Recipient == "" {
 		return nil, types.ErrParams
 	}
+	if req.Recipient != "" && len(req.Recipient) > 128 {
+		return nil, types.ErrParams
+	}
 	params := dto.TransferNftClassByIDP{
 		ClassID:   h.ClassID(ctx),
 		Owner:     h.Owner(ctx),
@@ -52,7 +55,11 @@ func (h nftTransfer) TransferNftClassByID(ctx context.Context, request interface
 func (h nftTransfer) TransferNftByIndex(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
 	req := request.(*vo.TransferNftByIndexRequest)
-	if req.Recipient == "" {
+	if req.Recipient == "" || h.Index(ctx) == 0 {
+		return nil, types.ErrParams
+	}
+
+	if req.Recipient != "" && len(req.Recipient) > 128 {
 		return nil, types.ErrParams
 	}
 	params := dto.TransferNftByIndexP{
@@ -78,6 +85,9 @@ func (h nftTransfer) TransferNftByBatch(ctx context.Context, request interface{}
 		Owner:      h.Owner(ctx),
 		Recipients: req.Recipients,
 		AppID:      h.AppID(ctx),
+	}
+	if len(params.Recipients) > 50 {
+		return "", types.ErrParams
 	}
 	// 校验参数 end
 	return h.svc.TransferNftByBatch(params)

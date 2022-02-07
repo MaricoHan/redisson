@@ -2,7 +2,9 @@ package types
 
 import "fmt"
 
-const RootCodeSpace = "nftp-open-api"
+const (
+	RootCodeSpace = "NFTP-OPEN-API"
+)
 
 var (
 	ErrInternal               = Register(RootCodeSpace, "1", "internal")
@@ -35,19 +37,24 @@ var (
 	ErrNftBatchTransfer       = Register(RootCodeSpace, "28", "failed to batch transfer nft")
 	ErrNotOwner               = Register(RootCodeSpace, "29", "sender is not the nft‘s owner")
 	ErrNoPermission           = Register(RootCodeSpace, "30", "sender is not the one of the app‘s accounts")
-	ErrName                   = Register(RootCodeSpace, "31", "sender is not the nft‘s owner")
-	ErrNftClassesSet          = Register(RootCodeSpace, "32", "failed to set nft class")
-	ErrTxMsgInsert            = Register(RootCodeSpace, "33", "failed to insert txs")
-	ErrTxMsgGet               = Register(RootCodeSpace, "34", "failed to get txs")
+	ErrNftClassesSet          = Register(RootCodeSpace, "31", "failed to set nft class")
+	ErrIndexFormat            = Register(RootCodeSpace, "32", "Index format is invalid, must be unsigned numeric type")
+	ErrTxMsgInsert            = Register(RootCodeSpace, "33", "failed to insert ttx")
+	ErrTxMsgGet               = Register(RootCodeSpace, "34", "failed to get ttx")
 	ErrGetTx                  = Register(RootCodeSpace, "35", "failed to get tx by hash")
 	ErrGetNftOperationDetails = Register(RootCodeSpace, "36", "failed to get nft operation details")
-	ErrNftStatus              = Register(RootCodeSpace, "37", "One of these NFTs does not exist or its status is not active")
+	ErrNftStatus              = Register(RootCodeSpace, "37", "its status is not active")
 	ErrIndicesFormat          = Register(RootCodeSpace, "38", "Indices format is invalid, must be unsigned numeric type,such as:1,2,3,4...")
 	ErrNftClassStatus         = Register(RootCodeSpace, "39", "One of these NFT Class does not exist or its status is not active")
 	ErrClassStatus            = Register(RootCodeSpace, "40", "nftClass does not exist or its status is not active")
 	ErrNftStatusOne           = Register(RootCodeSpace, "41", "nft status is not active or burned")
 	ErrNftCountByClass        = Register(RootCodeSpace, "42", "Cannot get nft count by classId")
 	ErrNotFound               = Register(RootCodeSpace, "43", "Resource Not Found")
+	ErrRepeated               = Register(RootCodeSpace, "44", "Please do not fill in duplicate NFT in the request parameters")
+	ErrTXStatusSuccess        = Register(RootCodeSpace, "45", "tx transaction success")
+	ErrTXStatusPending        = Register(RootCodeSpace, "46", "tx transaction is in progress, please wait")
+	ErrTXStatusUndo           = Register(RootCodeSpace, "47", "tx transaction not executed, please wait")
+	ErrBuildAndSend           = Register(RootCodeSpace, "48", "failed to build and send")
 )
 
 var usedErrorCodes = map[string]*AppError{}

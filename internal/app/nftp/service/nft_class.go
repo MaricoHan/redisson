@@ -31,6 +31,17 @@ func NewNftClass(base *Base) *NftClass {
 }
 
 func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error) {
+	//owner不能为平台外账户或此应用外账户或非法账户
+	acc, err := models.TAccounts(
+		models.TAccountWhere.AppID.EQ(params.AppID),
+		models.TAccountWhere.Address.EQ(params.Owner)).OneG(context.Background())
+	if err != nil {
+		return nil, types.ErrParams
+	}
+	if acc == nil {
+		return nil, types.ErrParams
+	}
+
 	//platform address
 	classOne, err := models.TAccounts(
 		models.TAccountWhere.AppID.EQ(uint64(0)),
@@ -68,6 +79,20 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 	if err != nil {
 		log.Debug("create nft class", "BuildAndSign error:", err.Error())
 		return nil, err
+	}
+
+	//validate tx
+	txone, err := svc.base.ValidateTx(txHash)
+	if err != nil {
+		return nil, err
+	}
+	if txone != nil && txone.Status == models.TTXSStatusFailed {
+		baseTx.Memo = fmt.Sprintf("%d", txone.ID)
+		originData, txHash, err = svc.base.BuildAndSign(sdktype.Msgs{&createDenomMsg, &transferDenomMsg}, baseTx)
+		if err != nil {
+			log.Debug("create nft class", "BuildAndSign error:", err.Error())
+			return nil, types.ErrBuildAndSign
+		}
 	}
 
 	//transferInfo
@@ -125,7 +150,7 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 			orderBy := ""
 			switch params.SortBy {
 			case "DATE_DESC":
-				orderBy = fmt.Sprintf("%s desc", models.TClassColumns.CreateAt)
+				orderBy = fmt.Sprintf("%s DESC", models.TClassColumns.CreateAt)
 			case "DATE_ASC":
 				orderBy = fmt.Sprintf("%s ASC", models.TClassColumns.CreateAt)
 			}

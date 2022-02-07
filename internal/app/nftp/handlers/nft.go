@@ -53,13 +53,32 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 		Amount:    req.Amount,
 		Recipient: req.Recipient,
 	}
+	if req.Name == "" || len(req.Name) < 3 || len(req.Name) > 64 {
+		return nil, types.ErrParams
+	}
+
+	if req.Uri != "" && len(req.Uri) > 256 {
+		return nil, types.ErrParams
+	}
+
+	if req.UriHash != "" && len(req.UriHash) > 512 {
+		return nil, types.ErrParams
+	}
+
+	if req.Data != "" && len(req.Data) > 4096 {
+		return nil, types.ErrParams
+	}
+
+	if req.Recipient != "" && len(req.Recipient) > 128 {
+		return nil, types.ErrParams
+	}
+
 	if params.Amount == 0 {
 		params.Amount = 1
 	}
 	if params.Amount > 100 {
 		return nil, types.ErrParams
 	}
-
 	return h.svc.CreateNfts(params)
 }
 
@@ -67,12 +86,33 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 func (h nft) EditNftByIndex(ctx context.Context, request interface{}) (interface{}, error) {
 
 	req := request.(*vo.EditNftByIndexRequest)
+	if req.Name == "" || len(req.Name) < 3 || len(req.Name) > 64 {
+		return nil, types.ErrParams
+	}
+
+	if req.Uri != "" && len(req.Uri) > 256 {
+		return nil, types.ErrParams
+	}
+
+	if req.Data != "" && len(req.Data) > 4096 {
+		return nil, types.ErrParams
+	}
+
+	//check start
+	index, err := h.Index(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if index == 0 {
+		return nil, types.ErrParams
+	}
+	//check end
 
 	params := dto.EditNftByIndexP{
 		AppID:   h.AppID(ctx),
 		ClassId: h.ClassId(ctx),
 		Sender:  h.Owner(ctx),
-		Index:   h.Index(ctx),
+		Index:   index,
 
 		Name: req.Name,
 		Uri:  req.Uri,
@@ -86,17 +126,39 @@ func (h nft) EditNftByIndex(ctx context.Context, request interface{}) (interface
 // return the deleted results
 func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface{}, error) {
 	req := request.(*vo.EditNftByBatchRequest)
+
+	if len(*req) == 0 {
+		return nil, types.ErrParams
+	}
+
+	var nfts []*dto.EditNft
+	for _, v := range *req {
+		if v.Index == 0 || v.Name == "" {
+			return nil, types.ErrParams
+		}
+		nfts = append(nfts, v)
+	}
+
 	params := dto.EditNftByBatchP{
-		EditNfts: req.EditNftsR,
+		EditNfts: nfts,
 		AppID:    h.AppID(ctx),
 		ClassId:  h.ClassId(ctx),
 		Sender:   h.Owner(ctx),
 	}
-
 	//check start
 	//1. count limit :50
 	if len(params.EditNfts) > 50 {
 		return nil, types.ErrNftTooMany
+	}
+
+	// 2.judge whether the NFT is repeated
+	hash := make(map[uint64]bool)
+	for _, Nft := range params.EditNfts {
+		if hash[Nft.Index] == false {
+			hash[Nft.Index] = true
+		} else {
+			return "", types.ErrRepeated
+		}
 	}
 
 	//check end
@@ -106,11 +168,22 @@ func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface
 
 // DeleteNftByIndex Delete an nft and return the edited result
 func (h nft) DeleteNftByIndex(ctx context.Context, _ interface{}) (interface{}, error) {
+
+	//check start
+	index, err := h.Index(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if index == 0 {
+		return nil, types.ErrParams
+	}
+
+	//check end
 	params := dto.DeleteNftByIndexP{
 		AppID:   h.AppID(ctx),
 		ClassId: h.ClassId(ctx),
 		Sender:  h.Owner(ctx),
-		Index:   h.Index(ctx),
+		Index:   index,
 	}
 
 	return h.svc.DeleteNftByIndex(params)
@@ -123,7 +196,24 @@ func (h nft) DeleteNftByBatch(ctx context.Context, _ interface{}) (interface{}, 
 	// check start
 	indices, err := h.Indices(ctx)
 	if err != nil {
-		return nil, types.ErrIndicesFormat
+		return nil, err
+	}
+
+	// 2.judge whether the NFT is repeated
+	hash := make(map[uint64]bool)
+	for _, index := range indices {
+		if index == 0 {
+			return nil, types.ErrParams
+		}
+		if hash[index] == false {
+			hash[index] = true
+		} else {
+			return nil, types.ErrRepeated
+		}
+	}
+
+	if len(indices) > 50 {
+		return nil, types.ErrNftTooMany
 	}
 	//check end
 
@@ -173,7 +263,7 @@ func (h nft) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
-		startDateTime, err := time.Parse(timeLayout, startDateR)
+		startDateTime, err := time.Parse(timeLayout, startDateR+" 00:00:00")
 		if err != nil {
 			return nil, types.ErrParams
 		}
@@ -182,7 +272,7 @@ func (h nft) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 
 	endDateR := h.EndDate(ctx)
 	if endDateR != "" {
-		endDateTime, err := time.Parse(timeLayout, endDateR)
+		endDateTime, err := time.Parse(timeLayout, endDateR+" 23:59:59")
 		if err != nil {
 			return nil, types.ErrParams
 		}
@@ -195,6 +285,10 @@ func (h nft) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 		}
 	}
 	switch h.SortBy(ctx) {
+	case "ID_ASC":
+		params.SortBy = "ID_ASC"
+	case "ID_DESC":
+		params.SortBy = "ID_DESC"
 	case "DATE_ASC":
 		params.SortBy = "DATE_ASC"
 	case "DATE_DESC":
@@ -210,10 +304,21 @@ func (h nft) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 
 // NftByIndex return class details
 func (h nft) NftByIndex(ctx context.Context, _ interface{}) (interface{}, error) {
+
+	//check start
+	index, err := h.Index(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if index == 0 {
+		return nil, types.ErrParams
+	}
+
+	//check end
 	params := dto.NftByIndexP{
 		AppID:   h.AppID(ctx),
 		ClassId: h.ClassId(ctx),
-		Index:   h.Index(ctx),
+		Index:   index,
 	}
 
 	return h.svc.NftByIndex(params)
@@ -221,11 +326,21 @@ func (h nft) NftByIndex(ctx context.Context, _ interface{}) (interface{}, error)
 }
 
 // NftOperationHistoryByIndex return class details
-func (h nft) NftOperationHistoryByIndex(ctx context.Context, request interface{}) (interface{}, error) {
+func (h nft) NftOperationHistoryByIndex(ctx context.Context, _ interface{}) (interface{}, error) {
+
 	// 校验参数 start
+	//check start
+	index, err := h.Index(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if index == 0 {
+		return nil, types.ErrParams
+	}
+
 	params := dto.NftOperationHistoryByIndexP{
 		ClassID: h.ClassId(ctx),
-		Index:   h.Index(ctx),
+		Index:   index,
 		AppID:   h.AppID(ctx),
 	}
 
@@ -250,7 +365,7 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, request interface{}
 
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
-		startDateTime, err := time.Parse(timeLayoutWithoutHMS, startDateR)
+		startDateTime, err := time.Parse(timeLayout, startDateR+" 00:00:00")
 		if err != nil {
 			return nil, types.ErrParams
 		}
@@ -259,7 +374,7 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, request interface{}
 
 	endDateR := h.EndDate(ctx)
 	if endDateR != "" {
-		endDateTime, err := time.Parse(timeLayoutWithoutHMS, endDateR)
+		endDateTime, err := time.Parse(timeLayout, endDateR+" 23:59:59")
 		if err != nil {
 			return nil, types.ErrParams
 		}
@@ -294,7 +409,7 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, request interface{}
 
 func (h nft) Signer(ctx context.Context) string {
 	signer := ctx.Value("signer")
-	if signer == nil {
+	if signer == nil || signer == "" {
 		return ""
 	}
 	return signer.(string)
@@ -302,7 +417,7 @@ func (h nft) Signer(ctx context.Context) string {
 
 func (h nft) Operation(ctx context.Context) string {
 	operation := ctx.Value("operation")
-	if operation == nil {
+	if operation == nil || operation == "" {
 		return ""
 	}
 	return operation.(string)
@@ -310,7 +425,7 @@ func (h nft) Operation(ctx context.Context) string {
 
 func (h nft) Txhash(ctx context.Context) string {
 	txhash := ctx.Value("tx_hash")
-	if txhash == nil {
+	if txhash == nil || txhash == "" {
 		return ""
 	}
 	return txhash.(string)
@@ -338,25 +453,24 @@ func (h nft) ClassId(ctx context.Context) string {
 
 func (h nft) Owner(ctx context.Context) string {
 	owner := ctx.Value("owner")
-
 	if owner == nil {
 		return ""
 	}
 	return owner.(string)
 
 }
-func (h nft) Index(ctx context.Context) uint64 {
+func (h nft) Index(ctx context.Context) (uint64, error) {
 	rec := ctx.Value("index")
 	if rec == nil {
-		return 0
+		return 0, types.ErrIndexFormat
 	}
 	index, err := strconv.ParseUint(rec.(string), 10, 64)
 	if err != nil {
-		panic(err)
+		return 0, types.ErrIndexFormat
 	}
 
 	// return index
-	return index
+	return index, nil
 }
 func (h nft) TxHash(ctx context.Context) string {
 	txHash := ctx.Value("tx_hash")
@@ -368,7 +482,7 @@ func (h nft) TxHash(ctx context.Context) string {
 }
 func (h nft) Status(ctx context.Context) (string, error) {
 	status := ctx.Value("status")
-	if status == nil {
+	if status == nil || status == "" {
 		return models.TNFTSStatusActive, nil
 	}
 	if status != models.TNFTSStatusActive && status != models.TNFTSStatusBurned {
@@ -379,6 +493,9 @@ func (h nft) Status(ctx context.Context) (string, error) {
 
 func (h nft) Indices(ctx context.Context) ([]uint64, error) {
 	rec := ctx.Value("indices")
+	if rec == nil {
+		return nil, types.ErrIndicesFormat
+	}
 
 	// "1,2,3,4,..." to {1,2,3,4,...}
 	var indices []uint64
@@ -387,7 +504,7 @@ func (h nft) Indices(ctx context.Context) ([]uint64, error) {
 	for _, s := range strArr {
 		tmp, err := strconv.ParseUint(s, 10, 64)
 		if err != nil {
-			return nil, err
+			return nil, types.ErrIndicesFormat
 		}
 		indices = append(indices, tmp)
 	}

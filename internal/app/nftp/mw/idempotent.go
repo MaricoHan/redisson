@@ -8,10 +8,9 @@ import (
 	"net/http"
 	"time"
 
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
-
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/redis"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 )
 
 func IdempotentMiddleware(h http.Handler) http.Handler {
@@ -41,8 +40,7 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		writeBadRequestResp(w, types.ErrParams)
 		return
 	}
-
-	if len(req.OperationID) > 65 || len(req.OperationID) == 0 {
+	if len(req.OperationID) >= 65 || len(req.OperationID) == 0 {
 		writeBadRequestResp(w, types.NewAppError(types.RootCodeSpace, "3", "operation_id does not comply with the rules"))
 		return
 	}

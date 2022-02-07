@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 
@@ -62,24 +63,37 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	//sign
 	baseTx := svc.base.CreateBaseTx(params.Owner, "")
 	data, hash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
-
 	if err != nil {
 		log.Debug("transfer nft class", "BuildAndSign error:", err.Error())
 		return "", types.ErrBuildAndSign
 	}
 
-	//txs status = undo
-	txId, err := svc.base.TxIntoDataBase(params.AppID,
-		hash,
-		data,
-		models.TTXSOperationTypeTransferClass,
-		models.TTXSStatusUndo)
-	if err != nil {
-		log.Debug("transfer nft class", "Tx Into DataBase error:", err.Error())
-		return "", types.ErrTxMsgInsert
-	}
-
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
+		//validate tx
+		txone, err := svc.base.ValidateTx(hash)
+		if err != nil {
+			return err
+		}
+		if txone != nil && txone.Status == models.TTXSStatusFailed {
+			baseTx.Memo = fmt.Sprintf("%d", txone.ID)
+			data, hash, err = svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
+			if err != nil {
+				log.Debug("transfer nft class", "BuildAndSign error:", err.Error())
+				return types.ErrBuildAndSign
+			}
+		}
+
+		//txs status = undo
+		txId, err := svc.base.TxIntoDataBase(params.AppID,
+			hash,
+			data,
+			models.TTXSOperationTypeTransferClass,
+			models.TTXSStatusUndo, exec)
+		if err != nil {
+			log.Debug("transfer nft class", "Tx Into DataBase error:", err.Error())
+			return err
+		}
+
 		//class status = pending && lockby = txs.id
 		class.Status = models.TClassesStatusPending
 		class.LockedBy = null.Uint64From(txId)
@@ -124,7 +138,7 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 		models.TNFTWhere.Owner.EQ(params.Owner),
 	).OneG(context.Background())
 	if err != nil {
-		return "", types.ErrNftTransfer
+		return "", types.ErrNftMissing
 	}
 
 	if res.Status != models.TNFTSStatusActive {
@@ -150,18 +164,32 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 		return "", types.ErrBuildAndSign
 	}
 
-	//写入txs status = undo
-	txId, err := svc.base.TxIntoDataBase(params.AppID,
-		hash,
-		data,
-		models.TTXSOperationTypeTransferNFT,
-		models.TTXSStatusUndo)
-	if err != nil {
-		log.Debug("transfer nft by index", "Tx Into DataBase error:", err.Error())
-		return "", types.ErrTxMsgInsert
-	}
-
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
+		//validate tx
+		txone, err := svc.base.ValidateTx(hash)
+		if err != nil {
+			return err
+		}
+		if txone != nil && txone.Status == models.TTXSStatusFailed {
+			baseTx.Memo = fmt.Sprintf("%d", txone.ID)
+			data, hash, err = svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
+			if err != nil {
+				log.Debug("transfer nft by index", "BuildAndSign error:", err.Error())
+				return types.ErrBuildAndSign
+			}
+		}
+
+		//写入txs status = undo
+		txId, err := svc.base.TxIntoDataBase(params.AppID,
+			hash,
+			data,
+			models.TTXSOperationTypeTransferNFT,
+			models.TTXSStatusUndo, exec)
+		if err != nil {
+			log.Debug("transfer nft by index", "Tx Into DataBase error:", err.Error())
+			return types.ErrTxMsgInsert
+		}
+
 		res.Status = models.TNFTSStatusPending
 		res.LockedBy = null.Uint64From(txId)
 		ok, err := res.Update(context.Background(), exec, boil.Infer())
@@ -229,7 +257,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 		//msg
 		msg := nft.MsgTransferNFT{
 			Id:        res.NFTID,
-			DenomId:   string(params.ClassID),
+			DenomId:   params.ClassID,
 			Name:      res.Name.String,
 			URI:       res.URI.String,
 			Data:      res.Metadata.String,
@@ -237,7 +265,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			Recipient: recipient.Recipient,
 			UriHash:   res.URIHash.String,
 		}
-		msgs = append(sdktype.Msgs{&msg})
+		msgs = append(msgs, &msg)
 		indexMap[recipient.Index] = 0
 	}
 
@@ -249,18 +277,32 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 		return "", types.ErrBuildAndSign
 	}
 
-	//写入txs status = undo
-	txId, err := svc.base.TxIntoDataBase(params.AppID,
-		hash,
-		data,
-		models.TTXSOperationTypeTransferNFTBatch,
-		models.TTXSStatusUndo)
-	if err != nil {
-		log.Debug("transfer nft by batch", "Tx Into DataBase error:", err.Error())
-		return "", types.ErrTxMsgInsert
-	}
-
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
+		//validate tx
+		txone, err := svc.base.ValidateTx(hash)
+		if err != nil {
+			return err
+		}
+		if txone != nil && txone.Status == models.TTXSStatusFailed {
+			baseTx.Memo = fmt.Sprintf("%d", txone.ID)
+			data, hash, err = svc.base.BuildAndSign(msgs, baseTx)
+			if err != nil {
+				log.Debug("transfer nft by batch", "BuildAndSign error:", err.Error())
+				return types.ErrBuildAndSign
+			}
+		}
+
+		//写入txs status = undo
+		txId, err := svc.base.TxIntoDataBase(params.AppID,
+			hash,
+			data,
+			models.TTXSOperationTypeTransferNFTBatch,
+			models.TTXSStatusUndo, exec)
+		if err != nil {
+			log.Debug("transfer nft by batch", "Tx Into DataBase error:", err.Error())
+			return err
+		}
+
 		for _, modelResultR := range params.Recipients {
 			recipient := &dto.Recipient{
 				Index:     modelResultR.Index,

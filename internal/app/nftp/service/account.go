@@ -3,10 +3,10 @@ package service
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"strings"
-
-	"github.com/irisnet/core-sdk-go/common/crypto/codec"
+	"time"
 
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
@@ -26,8 +26,13 @@ import (
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 
+	"github.com/irisnet/core-sdk-go/common/crypto/codec"
+	"github.com/volatiletech/null/v8"
+
+	"github.com/irisnet/core-sdk-go/bank"
 	sdkcrypto "github.com/irisnet/core-sdk-go/common/crypto"
 	sdktype "github.com/irisnet/core-sdk-go/types"
+	sqltype "github.com/volatiletech/sqlboiler/v4/types"
 )
 
 const algo = "secp256k1"
@@ -36,75 +41,110 @@ const hdPathPrefix = hd.BIP44Prefix + "0'/0/"
 const defultKeyPassword = "12345678"
 
 type Account struct {
+	base *Base
 }
 
-func NewAccount() *Account {
-	return &Account{}
+func NewAccount(base *Base) *Account {
+	return &Account{base: base}
 }
 
 func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 	// 写入数据库
 	// sdk 创建账户
-	db, err := orm.GetDB().Begin()
-	if err != nil {
-		return nil, types.ErrMysqlConn
-	}
-	tAppOneObj, err := models.TApps(models.TAppWhere.ID.EQ(params.AppID)).One(context.Background(), db)
-	if err != nil {
-		return nil, types.ErrInternal
-	}
-
-	tAccounts := modext.TAccounts{}
-
 	var addresses []string
-	var i int64
-	accOffsetStart := tAppOneObj.AccOffset
-	for i = 0; i < params.Count; i++ {
-		index := accOffsetStart + i
-		hdPath := fmt.Sprintf("%s%d", hdPathPrefix, index)
-		res, err := sdkcrypto.NewMnemonicKeyManagerWithHDPath(
-			tAppOneObj.Mnemonic,
-			algo,
-			hdPath,
-		)
+	classOne, err := models.TAccounts(
+		models.TAccountWhere.AppID.EQ(uint64(0)),
+	).OneG(context.Background())
+	if err != nil {
+		return nil, types.ErrNotFound
+	}
+	tmsgs := modext.TMSGs{}
+	var msgs bank.MsgMultiSend
+	var resultTx sdktype.ResultTx
+	err = modext.Transaction(func(exec boil.ContextExecutor) error {
+		tAppOneObj, err := models.TApps(models.TAppWhere.ID.EQ(params.AppID)).One(context.Background(), exec)
 		if err != nil {
-			log.Debug("create account", "NewMnemonicKeyManagerWithHDPath error:", err.Error())
-			return nil, types.ErrAccountCreate
-		}
-		_, priv := res.Generate()
-
-		//privStr, err := res.ExportPrivKey(keyPassword)
-		//if err != nil {
-		//	return nil, types.ErrAccountCreate
-		//}
-
-		tmpAddress := sdktype.AccAddress(priv.PubKey().Address().Bytes()).String()
-
-		tmp := &models.TAccount{
-			AppID:    params.AppID,
-			Address:  tmpAddress,
-			AccIndex: uint64(index),
-			PriKey:   base64.StdEncoding.EncodeToString(codec.MarshalPrivKey(priv)),
-			PubKey:   base64.StdEncoding.EncodeToString(codec.MarshalPubkey(res.ExportPubKey())),
+			return types.ErrNotFound
 		}
 
-		tAccounts = append(tAccounts, tmp)
-		addresses = append(addresses, tmpAddress)
-	}
-	err = tAccounts.InsertAll(context.Background(), db)
+		tAccounts := modext.TAccounts{}
+		var i int64
+		accOffsetStart := tAppOneObj.AccOffset
+		for i = 0; i < params.Count; i++ {
+			index := accOffsetStart + i
+			hdPath := fmt.Sprintf("%s%d", hdPathPrefix, index)
+			res, err := sdkcrypto.NewMnemonicKeyManagerWithHDPath(
+				tAppOneObj.Mnemonic,
+				algo,
+				hdPath,
+			)
+			if err != nil {
+				log.Debug("create account", "NewMnemonicKeyManagerWithHDPath error:", err.Error())
+				return types.ErrAccountCreate
+			}
+			_, priv := res.Generate()
+
+			//privStr, err := res.ExportPrivKey(keyPassword)
+			//if err != nil {
+			//	return nil, types.ErrAccountCreate
+			//}
+
+			tmpAddress := sdktype.AccAddress(priv.PubKey().Address().Bytes()).String()
+
+			tmp := &models.TAccount{
+				AppID:    params.AppID,
+				Address:  tmpAddress,
+				AccIndex: uint64(index),
+				PriKey:   base64.StdEncoding.EncodeToString(codec.MarshalPrivKey(priv)),
+				PubKey:   base64.StdEncoding.EncodeToString(codec.MarshalPubkey(res.ExportPubKey())),
+			}
+
+			tAccounts = append(tAccounts, tmp)
+			addresses = append(addresses, tmpAddress)
+		}
+		err = tAccounts.InsertAll(context.Background(), exec)
+		if err != nil {
+			log.Debug("create account", "accounts insert error:", err.Error())
+			return types.ErrAccountCreate
+		}
+		tAppOneObj.AccOffset += params.Count
+		updateRes, err := tAppOneObj.Update(context.Background(), exec, boil.Infer())
+		if err != nil || updateRes == 0 {
+			return types.ErrInternal
+		}
+		msgs = svc.base.CreateGasMsg(classOne.Address, addresses)
+		tx := svc.base.CreateBaseTx(classOne.Address, defultKeyPassword)
+		resultTx, err = svc.base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
+		if err != nil {
+			log.Error("create account", "build and send, error:", err)
+			return types.ErrBuildAndSend
+		}
+		return nil
+	})
 	if err != nil {
-		log.Debug("create account", "accounts insert error:", err.Error())
+		return nil, err
+	}
+	for _, v := range msgs.Outputs {
+		message := map[string]string{
+			"recipient": v.Address,
+			"amount":    v.Coins.String()[0 : len(v.Coins.String())-6],
+		}
+		messageByte, _ := json.Marshal(message)
+		tmsgs = append(tmsgs, &models.TMSG{
+			AppID:     params.AppID,
+			TXHash:    resultTx.Hash,
+			Timestamp: null.TimeFrom(time.Now()),
+			Module:    "account",
+			Operation: "add_gas",
+			Signer:    classOne.Address,
+			Recipient: null.StringFrom(v.Address),
+			Message:   sqltype.JSON(messageByte),
+		})
+	}
+	err = tmsgs.InsertAll(context.Background(), boil.GetContextDB())
+	if err != nil {
+		log.Error("create account", "msgs create error:", err)
 		return nil, types.ErrAccountCreate
-	}
-
-	tAppOneObj.AccOffset += params.Count
-	updateRes, err := tAppOneObj.Update(context.Background(), db, boil.Infer())
-	if err != nil || updateRes == 0 {
-		return nil, types.ErrInternal
-	}
-	err = db.Commit()
-	if err != nil {
-		return nil, types.ErrInternal
 	}
 	return addresses, nil
 }
@@ -133,7 +173,7 @@ func (svc *Account) Accounts(params dto.AccountsP) (*dto.AccountsRes, error) {
 		orderBy := ""
 		switch params.SortBy {
 		case "DATE_DESC":
-			orderBy = fmt.Sprintf("%s desc", models.TAccountColumns.CreateAt)
+			orderBy = fmt.Sprintf("%s DESC", models.TAccountColumns.CreateAt)
 		case "DATE_ASC":
 			orderBy = fmt.Sprintf("%s ASC", models.TAccountColumns.CreateAt)
 		}
@@ -205,9 +245,9 @@ func (svc *Account) AccountsHistory(params dto.AccountsP) (*dto.AccountOperation
 		orderBy := ""
 		switch params.SortBy {
 		case "DATE_DESC":
-			orderBy = fmt.Sprintf("%s desc", models.TMSGColumns.CreateAt)
+			orderBy = fmt.Sprintf("%s DESC", models.TMSGColumns.Timestamp)
 		case "DATE_ASC":
-			orderBy = fmt.Sprintf("%s ASC", models.TMSGColumns.CreateAt)
+			orderBy = fmt.Sprintf("%s ASC", models.TMSGColumns.Timestamp)
 		}
 		queryMod = append(queryMod, qm.OrderBy(orderBy))
 	}
