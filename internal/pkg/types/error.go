@@ -28,7 +28,7 @@ const (
 	NotOwnerAccount                = "NOT_OWNER_ACCOUNT"
 	NotAppOfAccount                = "NOT_APP_OF_ACCOUNT"
 	StructureSignTransactionFailed = "STRUCTURE_SIGN_TRANSACTION_FAILED"
-	TxStatusSuccesss               = "TX_STATUS_SUCCESSS"
+	TxStatusSuccess                = "TX_STATUS_SUCCESS"
 	TxStatusPending                = "TX_STATUS_PENDING"
 	TxStatusUndo                   = "TX_STATUS_UNDO"
 	StructureSendTransactionFailed = "STRUCTURE_SEND_TRANSACTION_FAILED"
@@ -57,7 +57,7 @@ var (
 	ErrNoPermission     = Register(RootCodeSpace, NotAppOfAccount, "This account is not an in-app account")
 	ErrBuildAndSign     = Register(RootCodeSpace, StructureSignTransactionFailed, "failed to build and sign")
 	ErrBuildAndSend     = Register(RootCodeSpace, StructureSendTransactionFailed, "failed to build and send")
-	ErrTXStatusSuccess  = Register(RootCodeSpace, TxStatusSuccesss, "tx transaction success")
+	ErrTXStatusSuccess  = Register(RootCodeSpace, TxStatusSuccess, "tx transaction success")
 	ErrTXStatusPending  = Register(RootCodeSpace, TxStatusPending, "tx transaction is in progress, please wait")
 	ErrTXStatusUndo     = Register(RootCodeSpace, TxStatusUndo, "tx transaction not executed, please wait")
 )
