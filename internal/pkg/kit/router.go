@@ -222,7 +222,7 @@ func (c Controller) serverOptions(
 		} else {
 			switch appErr {
 			case types.ErrParams, types.ErrIdempotent, types.ErrNftStatus,
-				types.ErrNftClassStatus, types.ErrDataQuery:
+				types.ErrNftClassStatus, types.ErrDataQuery, types.ErrLimit:
 				w.WriteHeader(http.StatusBadRequest) //400
 			case types.ErrAuthenticate, types.ErrNotOwner, types.ErrNoPermission:
 				w.WriteHeader(http.StatusForbidden) //403

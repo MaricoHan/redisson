@@ -52,7 +52,7 @@ var (
 	ErrNftNotFound      = Register(RootCodeSpace, NftNotExist, "the NFT does not exist")
 	ErrNftStatus        = Register(RootCodeSpace, NftStatusAbnormal, "the NFT status is invalid")
 	ErrTxNotFound       = Register(RootCodeSpace, TxNotExist, "the tx does not exist")
-	ErrLimit            = Register(RootCodeSpace, MaximumLimitExceeded, "")
+	ErrLimit            = Register(RootCodeSpace, MaximumLimitExceeded, "Maximum Limit Exceeded")
 	ErrNotOwner         = Register(RootCodeSpace, NotOwnerAccount, "This account is not the owner account")
 	ErrNoPermission     = Register(RootCodeSpace, NotAppOfAccount, "This account is not an in-app account")
 	ErrBuildAndSign     = Register(RootCodeSpace, StructureSignTransactionFailed, "failed to build and sign")
