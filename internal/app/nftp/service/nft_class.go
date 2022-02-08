@@ -80,7 +80,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 		log.Debug("create nft class", "BuildAndSign error:", err.Error())
 		return nil, err
 	}
-	fmt.Println("txhash:", txHash)
+
 	//validate tx
 	txone, err := svc.base.ValidateTx(txHash)
 	if err != nil {
