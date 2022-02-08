@@ -2,8 +2,9 @@ package handlers
 
 import (
 	"context"
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"strconv"
+
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 )
 
 const timeLayout = "2006-01-02 15:04:05"

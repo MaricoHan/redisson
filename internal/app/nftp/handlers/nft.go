@@ -76,7 +76,7 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 	if params.Amount == 0 {
 		params.Amount = 1
 	}
-	if params.Amount > 100 {
+	if params.Amount > 100 || params.Amount < 0 {
 		return nil, types.ErrLimit
 	}
 	return h.svc.CreateNfts(params)
@@ -260,9 +260,6 @@ func (h nft) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 	if params.Limit == 0 {
 		params.Limit = 10
 	}
-	if params.Limit > 50 {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Limit")
-	}
 
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
@@ -361,9 +358,6 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, _ interface{}) (int
 
 	if params.Limit == 0 {
 		params.Limit = 10
-	}
-	if params.Limit > 50 {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Limit")
 	}
 
 	startDateR := h.StartDate(ctx)
