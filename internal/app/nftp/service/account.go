@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"gitlab.bianjie.ai/irita-paas/open-api/config"
 	"io/ioutil"
 	"strings"
 	"time"
@@ -15,6 +14,8 @@ import (
 	"github.com/irisnet/core-sdk-go/common/crypto/hd"
 
 	"github.com/volatiletech/sqlboiler/v4/boil"
+
+	"gitlab.bianjie.ai/irita-paas/open-api/config"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 
@@ -138,7 +139,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 					"chainClientName": fmt.Sprintf("%s%d%d", tAppOneObj.Name.String, tAppOneObj.ID, v.AccIndex),
 					"chainClientAddr": v.Address,
 				}
-				url := fmt.Sprintf("%s%s", config.Get().Server.BsnUrl, fmt.Sprintf("/api/%s/account/generate", config.Get().Server.BsnProjectId))
+				url := fmt.Sprintf("%s%s", config.Get().Server.BSNUrl, fmt.Sprintf("/api/%s/account/generate", config.Get().Server.BSNProjectId))
 				res, err := types.Post(url, "application/json", chainClient)
 				if err != nil {
 					log.Error("create account", "http post, error:", err)

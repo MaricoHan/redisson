@@ -51,7 +51,7 @@ func (h account) CreateAccount(ctx context.Context, request interface{}) (interf
 		return nil, types.ErrParams
 	}
 	if !config.Get().Server.AppEnv && params.Count > 10 {
-		params.Count = 10
+		return nil, types.ErrParams
 	}
 	// 校验参数 end
 	return h.svc.CreateAccount(params)
