@@ -54,30 +54,30 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 		Recipient: req.Recipient,
 	}
 	if req.Name == "" || len(req.Name) < 3 || len(req.Name) > 64 {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Name")
 	}
 
 	if req.Uri != "" && len(req.Uri) > 256 {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Uri")
 	}
 
 	if req.UriHash != "" && len(req.UriHash) > 512 {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid UriHash")
 	}
 
 	if req.Data != "" && len(req.Data) > 4096 {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Data")
 	}
 
 	if req.Recipient != "" && len(req.Recipient) > 128 {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
 	}
 
 	if params.Amount == 0 {
 		params.Amount = 1
 	}
 	if params.Amount > 100 {
-		return nil, types.ErrParams
+		return nil, types.ErrLimit
 	}
 	return h.svc.CreateNfts(params)
 }
@@ -87,15 +87,15 @@ func (h nft) EditNftByIndex(ctx context.Context, request interface{}) (interface
 
 	req := request.(*vo.EditNftByIndexRequest)
 	if req.Name == "" || len(req.Name) < 3 || len(req.Name) > 64 {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Name")
 	}
 
 	if req.Uri != "" && len(req.Uri) > 256 {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Uri")
 	}
 
 	if req.Data != "" && len(req.Data) > 4096 {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Data")
 	}
 
 	//check start
@@ -104,7 +104,7 @@ func (h nft) EditNftByIndex(ctx context.Context, request interface{}) (interface
 		return nil, err
 	}
 	if index == 0 {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Index")
 	}
 	//check end
 
@@ -133,8 +133,11 @@ func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface
 
 	var nfts []*dto.EditNft
 	for _, v := range *req {
-		if v.Index == 0 || v.Name == "" {
-			return nil, types.ErrParams
+		if v.Index == 0 {
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Index")
+		}
+		if v.Name == "" {
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Name")
 		}
 		nfts = append(nfts, v)
 	}
@@ -148,7 +151,7 @@ func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface
 	//check start
 	//1. count limit :50
 	if len(params.EditNfts) > 50 {
-		return nil, types.ErrNftTooMany
+		return nil, types.ErrLimit
 	}
 
 	// 2.judge whether the NFT is repeated
@@ -157,7 +160,7 @@ func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface
 		if hash[Nft.Index] == false {
 			hash[Nft.Index] = true
 		} else {
-			return "", types.ErrRepeated
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Repeated Index")
 		}
 	}
 
@@ -175,7 +178,7 @@ func (h nft) DeleteNftByIndex(ctx context.Context, _ interface{}) (interface{}, 
 		return nil, err
 	}
 	if index == 0 {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Index")
 	}
 
 	//check end
@@ -203,17 +206,17 @@ func (h nft) DeleteNftByBatch(ctx context.Context, _ interface{}) (interface{}, 
 	hash := make(map[uint64]bool)
 	for _, index := range indices {
 		if index == 0 {
-			return nil, types.ErrParams
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Index")
 		}
 		if hash[index] == false {
 			hash[index] = true
 		} else {
-			return nil, types.ErrRepeated
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Repeated Index")
 		}
 	}
 
 	if len(indices) > 50 {
-		return nil, types.ErrNftTooMany
+		return nil, types.ErrLimit
 	}
 	//check end
 
@@ -244,13 +247,13 @@ func (h nft) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 	}
 	offset, err := h.Offset(ctx)
 	if err != nil {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Offset")
 	}
 	params.Offset = offset
 
 	limit, err := h.Limit(ctx)
 	if err != nil {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Limit")
 	}
 	params.Limit = limit
 
@@ -258,14 +261,14 @@ func (h nft) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 		params.Limit = 10
 	}
 	if params.Limit > 50 {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Limit")
 	}
 
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
 		startDateTime, err := time.Parse(timeLayout, startDateR+" 00:00:00")
 		if err != nil {
-			return nil, types.ErrParams
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid StartDate")
 		}
 		params.StartDate = &startDateTime
 	}
@@ -274,14 +277,14 @@ func (h nft) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 	if endDateR != "" {
 		endDateTime, err := time.Parse(timeLayout, endDateR+" 23:59:59")
 		if err != nil {
-			return nil, types.ErrParams
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid EndDate")
 		}
 		params.EndDate = &endDateTime
 	}
 
 	if params.EndDate != nil && params.StartDate != nil {
 		if !params.EndDate.After(*params.StartDate) {
-			return nil, types.ErrParams
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "EndDate before StartDate")
 		}
 	}
 	switch h.SortBy(ctx) {
@@ -311,7 +314,7 @@ func (h nft) NftByIndex(ctx context.Context, _ interface{}) (interface{}, error)
 		return nil, err
 	}
 	if index == 0 {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Index")
 	}
 
 	//check end
@@ -335,7 +338,7 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, _ interface{}) (int
 		return nil, err
 	}
 	if index == 0 {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Index")
 	}
 
 	params := dto.NftOperationHistoryByIndexP{
@@ -346,13 +349,13 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, _ interface{}) (int
 
 	offset, err := h.Offset(ctx)
 	if err != nil {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Offset")
 	}
 	params.Offset = offset
 
 	limit, err := h.Limit(ctx)
 	if err != nil {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Limit")
 	}
 	params.Limit = limit
 
@@ -360,14 +363,14 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, _ interface{}) (int
 		params.Limit = 10
 	}
 	if params.Limit > 50 {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Limit")
 	}
 
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
 		startDateTime, err := time.Parse(timeLayout, startDateR+" 00:00:00")
 		if err != nil {
-			return nil, types.ErrParams
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid StartDate")
 		}
 		params.StartDate = &startDateTime
 	}
@@ -376,14 +379,14 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, _ interface{}) (int
 	if endDateR != "" {
 		endDateTime, err := time.Parse(timeLayout, endDateR+" 23:59:59")
 		if err != nil {
-			return nil, types.ErrParams
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid EndDate")
 		}
 		params.EndDate = &endDateTime
 	}
 
 	if params.EndDate != nil && params.StartDate != nil {
 		if !params.EndDate.After(*params.StartDate) {
-			return nil, types.ErrParams
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "EndDate before StartDate")
 		}
 	}
 	switch h.SortBy(ctx) {
@@ -400,7 +403,7 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, _ interface{}) (int
 	params.Operation = h.Operation(ctx)
 	if params.Operation != "" {
 		if !strings.Contains("mint/edit/transfer/burn", params.Operation) {
-			return nil, types.ErrParams
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Operation")
 		}
 	}
 	// 校验参数 end
@@ -462,11 +465,11 @@ func (h nft) Owner(ctx context.Context) string {
 func (h nft) Index(ctx context.Context) (uint64, error) {
 	rec := ctx.Value("index")
 	if rec == nil {
-		return 0, types.ErrIndexFormat
+		return 0, types.ErrParams
 	}
 	index, err := strconv.ParseUint(rec.(string), 10, 64)
 	if err != nil {
-		return 0, types.ErrIndexFormat
+		return 0, types.ErrParams
 	}
 
 	// return index
@@ -486,7 +489,7 @@ func (h nft) Status(ctx context.Context) (string, error) {
 		return models.TNFTSStatusActive, nil
 	}
 	if status != models.TNFTSStatusActive && status != models.TNFTSStatusBurned {
-		return "", types.ErrNftStatusOne
+		return "", types.ErrNftStatus
 	}
 	return status.(string), nil
 }
@@ -494,7 +497,7 @@ func (h nft) Status(ctx context.Context) (string, error) {
 func (h nft) Indices(ctx context.Context) ([]uint64, error) {
 	rec := ctx.Value("indices")
 	if rec == nil {
-		return nil, types.ErrIndicesFormat
+		return nil, types.ErrParams
 	}
 
 	// "1,2,3,4,..." to {1,2,3,4,...}
@@ -504,7 +507,7 @@ func (h nft) Indices(ctx context.Context) ([]uint64, error) {
 	for _, s := range strArr {
 		tmp, err := strconv.ParseUint(s, 10, 64)
 		if err != nil {
-			return nil, types.ErrIndicesFormat
+			return nil, types.ErrParams
 		}
 		indices = append(indices, tmp)
 	}

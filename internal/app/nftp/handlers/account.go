@@ -48,7 +48,7 @@ func (h account) CreateAccount(ctx context.Context, request interface{}) (interf
 	}
 
 	if params.Count > 1000 {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Count")
 	}
 	if config.Get().Server.Env == "prod" && params.Count > 10 {
 		return nil, types.ErrParams
@@ -67,13 +67,13 @@ func (h account) Accounts(ctx context.Context, _ interface{}) (interface{}, erro
 
 	offset, err := h.Offset(ctx)
 	if err != nil {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Offset")
 	}
 	params.Offset = offset
 
 	limit, err := h.Limit(ctx)
 	if err != nil {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Limit")
 	}
 	params.Limit = limit
 
@@ -81,14 +81,14 @@ func (h account) Accounts(ctx context.Context, _ interface{}) (interface{}, erro
 		params.Limit = 10
 	}
 	if params.Limit > 50 {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Limit")
 	}
 
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
 		startDateTime, err := time.Parse(timeLayout, startDateR+" 00:00:00")
 		if err != nil {
-			return nil, types.ErrParams
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid StartDate")
 		}
 		params.StartDate = &startDateTime
 	}
@@ -97,14 +97,14 @@ func (h account) Accounts(ctx context.Context, _ interface{}) (interface{}, erro
 	if endDateR != "" {
 		endDateTime, err := time.Parse(timeLayout, endDateR+" 23:59:59")
 		if err != nil {
-			return nil, types.ErrParams
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid EndDate")
 		}
 		params.EndDate = &endDateTime
 	}
 
 	if params.EndDate != nil && params.StartDate != nil {
 		if !params.EndDate.After(*params.StartDate) {
-			return nil, types.ErrParams
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "EndDate before StartDate")
 		}
 	}
 	switch h.SortBy(ctx) {
@@ -138,13 +138,13 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 
 	offset, err := h.Offset(ctx)
 	if err != nil {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Offset")
 	}
 	params.Offset = offset
 
 	limit, err := h.Limit(ctx)
 	if err != nil {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Limit")
 	}
 	params.Limit = limit
 
@@ -152,14 +152,14 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 		params.Limit = 10
 	}
 	if params.Limit > 50 {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Limit")
 	}
 
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
 		startDateTime, err := time.Parse(timeLayout, startDateR+" 00:00:00")
 		if err != nil {
-			return nil, types.ErrParams
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid StartDate")
 		}
 		params.StartDate = &startDateTime
 	}
@@ -168,14 +168,14 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 	if endDateR != "" {
 		endDateTime, err := time.Parse(timeLayout, endDateR+" 23:59:59")
 		if err != nil {
-			return nil, types.ErrParams
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid EndDate")
 		}
 		params.EndDate = &endDateTime
 	}
 
 	if params.EndDate != nil && params.StartDate != nil {
 		if !params.EndDate.After(*params.StartDate) {
-			return nil, types.ErrParams
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "EndDate before StartDate")
 		}
 	}
 	switch h.SortBy(ctx) {
