@@ -155,12 +155,12 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 				value := v
 				group.Go(func() error {
 					var bsnAccount BsnAccount
-					chainClient := map[string]interface{}{
+					params := map[string]interface{}{
 						"chainClientName": fmt.Sprintf("%s%d%d", tAppOneObj.Name.String, tAppOneObj.ID, value.AccIndex),
 						"chainClientAddr": value.Address,
 					}
 					url := fmt.Sprintf("%s%s", config.Get().Server.BSNUrl, fmt.Sprintf("/api/%s/account/generate", config.Get().Server.BSNProjectId))
-					res, err := http2.Post(errCtx, url, chainClient)
+					res, err := http2.Post(errCtx, url, params)
 					if err != nil {
 						return err
 					}
