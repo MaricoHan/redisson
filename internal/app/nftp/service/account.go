@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"strings"
 	"time"
 
@@ -136,7 +137,9 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 				return types.ErrBuildAndSend
 			}
 		} else {
-			group := new(errgroup.Group)
+			time := 5 * time.Second
+			ctx, _ := context.WithTimeout(context.Background(), time)
+			group, errCtx := errgroup.WithContext(ctx)
 			for _, v := range tAccounts {
 				group.Go(func() error {
 					var bsnAccount BsnAccount
@@ -145,21 +148,21 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 						"chainClientAddr": v.Address,
 					}
 					url := fmt.Sprintf("%s%s", config.Get().Server.BSNUrl, fmt.Sprintf("/api/%s/account/generate", config.Get().Server.BSNProjectId))
-					res, err := http2.Post(url, "application/json", chainClient)
+					res, err := http2.Request(url, "application/json", http.MethodPost, chainClient, time, errCtx)
 					if err != nil {
 						return err
 					}
 					defer res.Body.Close()
 					body, err := ioutil.ReadAll(res.Body)
 					json.Unmarshal(body, &bsnAccount)
-					if bsnAccount.Code != 0 {
+					if bsnAccount.Code != 0 || bsnAccount.Message == "" {
 						return errors.New(bsnAccount.Message)
 					}
 					return nil
 				})
 			}
 			if err := group.Wait(); err != nil {
-				log.Error("create account", "group, error:", err)
+				log.Error("create account", "group_error:", err)
 				return types.ErrAccountCreate
 			}
 		}
