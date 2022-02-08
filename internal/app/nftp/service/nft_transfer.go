@@ -2,7 +2,9 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
+	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 
@@ -26,18 +28,23 @@ func NewNftTransfer(base *Base) *NftTransfer {
 func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (string, error) {
 	//不能自己转让给自己
 	if params.Recipient == params.Owner {
-		return "", types.ErrParams
+		return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
 	}
 
 	//recipient不能为平台外账户或此应用外账户或非法账户
 	acc, err := models.TAccounts(
 		models.TAccountWhere.AppID.EQ(params.AppID),
 		models.TAccountWhere.Address.EQ(params.Recipient)).OneG(context.Background())
-	if err != nil {
-		return "", types.ErrParams
+	if err != nil && errors.Cause(err) == sql.ErrNoRows {
+		//400
+		return "", types.NewAppError(types.RootCodeSpace, types.QueryDataFailed, "recipient not found")
+	} else if err != nil {
+		//500
+		log.Error("transfer nft class", "query recipient error:", err.Error())
+		return "", types.ErrTransfer
 	}
 	if acc == nil {
-		return "", types.ErrParams
+		return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
 	}
 
 	//判断class
@@ -45,8 +52,13 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 		models.TClassWhere.ClassID.EQ(string(params.ClassID)),
 		models.TClassWhere.AppID.EQ(params.AppID),
 		models.TClassWhere.Owner.EQ(params.Owner)).OneG(context.Background())
-	if err != nil {
-		return "", types.ErrNftClassTransfer
+	if err != nil && errors.Cause(err) == sql.ErrNoRows {
+		//400
+		return "", types.NewAppError(types.RootCodeSpace, types.QueryDataFailed, "class not found")
+	} else if err != nil {
+		//500
+		log.Error("transfer nft class", "query class error:", err.Error())
+		return "", types.ErrTransfer
 	}
 
 	if class.Status != models.TClassesStatusActive {
@@ -100,10 +112,10 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 
 		ok, err := class.Update(context.Background(), exec, boil.Infer())
 		if err != nil {
-			return types.ErrNftClassTransfer
+			return types.ErrTransfer
 		}
 		if ok != 1 {
-			return types.ErrNftClassTransfer
+			return types.ErrTransfer
 		}
 
 		return nil
@@ -118,17 +130,22 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (string, error) {
 	//不能自己转让给自己
 	if params.Recipient == params.Owner {
-		return "", types.ErrParams
+		return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
 	}
 
 	acc, err := models.TAccounts(
 		models.TAccountWhere.AppID.EQ(params.AppID),
 		models.TAccountWhere.Address.EQ(params.Recipient)).OneG(context.Background())
-	if err != nil {
-		return "", types.ErrParams
+	if err != nil && errors.Cause(err) == sql.ErrNoRows {
+		//400
+		return "", types.NewAppError(types.RootCodeSpace, types.QueryDataFailed, "recipient not found")
+	} else if err != nil {
+		//500
+		log.Error("transfer nft", "query recipient error:", err.Error())
+		return "", types.ErrTransfer
 	}
 	if acc == nil {
-		return "", types.ErrParams
+		return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
 	}
 
 	//msg
@@ -137,8 +154,13 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 		models.TNFTWhere.AppID.EQ(params.AppID),
 		models.TNFTWhere.Owner.EQ(params.Owner),
 	).OneG(context.Background())
-	if err != nil {
-		return "", types.ErrNftMissing
+	if err != nil && errors.Cause(err) == sql.ErrNoRows {
+		//400
+		return "", types.NewAppError(types.RootCodeSpace, types.QueryDataFailed, "nft not found")
+	} else if err != nil {
+		//500
+		log.Error("transfer nft", "query nft error:", err.Error())
+		return "", types.ErrTransfer
 	}
 
 	if res.Status != models.TNFTSStatusActive {
@@ -187,17 +209,17 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 			models.TTXSStatusUndo, exec)
 		if err != nil {
 			log.Debug("transfer nft by index", "Tx Into DataBase error:", err.Error())
-			return types.ErrTxMsgInsert
+			return types.ErrTransfer
 		}
 
 		res.Status = models.TNFTSStatusPending
 		res.LockedBy = null.Uint64From(txId)
 		ok, err := res.Update(context.Background(), exec, boil.Infer())
 		if err != nil {
-			return types.ErrNftTransfer
+			return types.ErrTransfer
 		}
 		if ok != 1 {
-			return types.ErrNftTransfer
+			return types.ErrTransfer
 		}
 		return nil
 	})
@@ -217,37 +239,47 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			Recipient: modelResult.Recipient,
 		}
 		if recipient.Index == 0 {
-			return "", types.ErrParams
+			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Index")
 		}
 		if recipient.Recipient == "" {
-			return "", types.ErrParams
+			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
 		}
 		acc, err := models.TAccounts(
 			models.TAccountWhere.AppID.EQ(params.AppID),
 			models.TAccountWhere.Address.EQ(recipient.Recipient)).OneG(context.Background())
-		if err != nil {
-			return "", types.ErrParams
+		if err != nil && errors.Cause(err) == sql.ErrNoRows {
+			//400
+			return "", types.NewAppError(types.RootCodeSpace, types.QueryDataFailed, "recipient not found")
+		} else if err != nil {
+			//500
+			log.Error("transfer nft by batch", "query recipient error:", err.Error())
+			return "", types.ErrTransfer
 		}
 		if acc == nil {
-			return "", types.ErrParams
+			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
 		}
 
 		//不能自己转让给自己
 		if recipient.Recipient == params.Owner {
-			return "", types.ErrParams
+			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
 		}
 
 		//判断index是否重复
 		if _, ok := indexMap[recipient.Index]; ok {
-			return "", types.ErrParams
+			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Repeated Index")
 		}
 		res, err := models.TNFTS(models.TNFTWhere.Index.EQ(recipient.Index),
 			models.TNFTWhere.ClassID.EQ(string(params.ClassID)),
 			models.TNFTWhere.AppID.EQ(params.AppID),
 			models.TNFTWhere.Owner.EQ(params.Owner),
 		).OneG(context.Background())
-		if err != nil {
-			return "", types.ErrNftBatchTransfer
+		if err != nil && errors.Cause(err) == sql.ErrNoRows {
+			//400
+			return "", types.NewAppError(types.RootCodeSpace, types.QueryDataFailed, "nft not found")
+		} else if err != nil {
+			//500
+			log.Error("transfer nft by batch", "query nft error:", err.Error())
+			return "", types.ErrTransfer
 		}
 
 		if res.Status != models.TNFTSStatusActive {
@@ -309,18 +341,23 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 				Recipient: modelResultR.Recipient,
 			}
 			if recipient.Index == 0 {
-				return types.ErrParams
+				return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Index")
 			}
 			if recipient.Recipient == "" {
-				return types.ErrParams
+				return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
 			}
 			res, err := models.TNFTS(models.TNFTWhere.Index.EQ(recipient.Index),
 				models.TNFTWhere.ClassID.EQ(string(params.ClassID)),
 				models.TNFTWhere.AppID.EQ(params.AppID),
 				models.TNFTWhere.Owner.EQ(params.Owner),
 			).One(context.Background(), exec)
-			if err != nil {
-				return types.ErrNftBatchTransfer
+			if err != nil && errors.Cause(err) == sql.ErrNoRows {
+				//400
+				return types.NewAppError(types.RootCodeSpace, types.QueryDataFailed, "recipient not found")
+			} else if err != nil {
+				//500
+				log.Error("transfer nft by batch", "query recipient error:", err.Error())
+				return types.ErrTransfer
 			}
 
 			if res.Status != models.TNFTSStatusActive {
@@ -331,10 +368,10 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			res.LockedBy = null.Uint64From(txId)
 			ok, err := res.Update(context.Background(), exec, boil.Infer())
 			if err != nil {
-				return types.ErrNftBatchTransfer
+				return types.ErrTransfer
 			}
 			if ok != 1 {
-				return types.ErrNftClassesSet
+				return types.ErrNftClassNotFound
 			}
 		}
 		return nil

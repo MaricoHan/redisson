@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/friendsofgo/errors"
 	"strings"
 	"time"
 
@@ -32,7 +34,6 @@ import (
 	"github.com/irisnet/core-sdk-go/bank"
 	sdkcrypto "github.com/irisnet/core-sdk-go/common/crypto"
 	sdktype "github.com/irisnet/core-sdk-go/types"
-	sqltype "github.com/volatiletech/sqlboiler/v4/types"
 )
 
 const algo = "secp256k1"
@@ -55,16 +56,26 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 	classOne, err := models.TAccounts(
 		models.TAccountWhere.AppID.EQ(uint64(0)),
 	).OneG(context.Background())
-	if err != nil {
-		return nil, types.ErrNotFound
+	if err != nil && errors.Cause(err) == sql.ErrNoRows {
+		//400
+		return nil, types.NewAppError(types.RootCodeSpace, types.QueryDataFailed, "root account not found")
+	} else if err != nil {
+		//500
+		log.Error("create account", "query root account error:", err.Error())
+		return nil, types.ErrCreate
 	}
 	tmsgs := modext.TMSGs{}
 	var msgs bank.MsgMultiSend
 	var resultTx sdktype.ResultTx
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		tAppOneObj, err := models.TApps(models.TAppWhere.ID.EQ(params.AppID)).One(context.Background(), exec)
-		if err != nil {
-			return types.ErrNotFound
+		if err != nil && errors.Cause(err) == sql.ErrNoRows {
+			//400
+			return types.NewAppError(types.RootCodeSpace, types.QueryDataFailed, "app not found")
+		} else if err != nil {
+			//500
+			log.Error("create account", "query app error:", err.Error())
+			return types.ErrCreate
 		}
 
 		tAccounts := modext.TAccounts{}
@@ -79,8 +90,9 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 				hdPath,
 			)
 			if err != nil {
+				//500
 				log.Debug("create account", "NewMnemonicKeyManagerWithHDPath error:", err.Error())
-				return types.ErrAccountCreate
+				return types.ErrCreate
 			}
 			_, priv := res.Generate()
 
@@ -105,7 +117,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 		err = tAccounts.InsertAll(context.Background(), exec)
 		if err != nil {
 			log.Debug("create account", "accounts insert error:", err.Error())
-			return types.ErrAccountCreate
+			return types.ErrCreate
 		}
 		tAppOneObj.AccOffset += params.Count
 		updateRes, err := tAppOneObj.Update(context.Background(), exec, boil.Infer())
@@ -138,13 +150,13 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 			Operation: "add_gas",
 			Signer:    classOne.Address,
 			Recipient: null.StringFrom(v.Address),
-			Message:   sqltype.JSON(messageByte),
+			Message:   messageByte,
 		})
 	}
 	err = tmsgs.InsertAll(context.Background(), boil.GetContextDB())
 	if err != nil {
 		log.Error("create account", "msgs create error:", err)
-		return nil, types.ErrAccountCreate
+		return nil, types.ErrCreate
 	}
 	return addresses, nil
 }
@@ -194,8 +206,7 @@ func (svc *Account) Accounts(params dto.AccountsP) (*dto.AccountsRes, error) {
 		if strings.Contains(err.Error(), "records not exist") {
 			return result, nil
 		}
-
-		return nil, types.ErrMysqlConn
+		return nil, types.ErrInternal
 	}
 
 	result.TotalCount = total
@@ -266,8 +277,7 @@ func (svc *Account) AccountsHistory(params dto.AccountsP) (*dto.AccountOperation
 		if strings.Contains(err.Error(), "records not exist") {
 			return result, nil
 		}
-
-		return nil, types.ErrMysqlConn
+		return nil, types.ErrInternal
 	}
 
 	result.TotalCount = total

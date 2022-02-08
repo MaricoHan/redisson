@@ -36,31 +36,31 @@ func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 	// 校验参数 start
 	req := request.(*vo.CreateNftClassRequest)
 	if req.Name == "" || len(req.Name) < 3 || len(req.Name) > 64 {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Name")
 	}
 
 	if (req.Symbol != "" && len(req.Symbol) < 3) || (req.Symbol != "" && len(req.Symbol) > 64) {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Symbol")
 	}
 
 	if req.Description != "" && len(req.Description) > 2048 {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Description")
 	}
 
 	if req.Uri != "" && len(req.Uri) > 256 {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Uri")
 	}
 
 	if req.UriHash != "" && len(req.UriHash) > 512 {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid UriHash")
 	}
 
 	if req.Data != "" && len(req.Data) > 4096 {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Data")
 	}
 
 	if req.Owner == "" || len(req.Owner) > 128 {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Owner")
 	}
 
 	params := dto.CreateNftClassP{
@@ -88,13 +88,13 @@ func (h nftClass) Classes(ctx context.Context, _ interface{}) (interface{}, erro
 	}
 	offset, err := h.Offset(ctx)
 	if err != nil {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Offset")
 	}
 	params.Offset = offset
 
 	limit, err := h.Limit(ctx)
 	if err != nil {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Limit")
 	}
 	params.Limit = limit
 
@@ -102,11 +102,14 @@ func (h nftClass) Classes(ctx context.Context, _ interface{}) (interface{}, erro
 		params.Limit = 10
 	}
 
+	if params.Limit > 50 {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Limit")
+	}
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
 		startDateTime, err := time.Parse(timeLayoutWithoutHMS, startDateR)
 		if err != nil {
-			return nil, types.ErrParams
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid StartDate")
 		}
 		params.StartDate = &startDateTime
 	}
@@ -115,14 +118,14 @@ func (h nftClass) Classes(ctx context.Context, _ interface{}) (interface{}, erro
 	if endDateR != "" {
 		endDateTime, err := time.Parse(timeLayoutWithoutHMS, endDateR)
 		if err != nil {
-			return nil, types.ErrParams
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid EndDate")
 		}
 		params.EndDate = &endDateTime
 	}
 
 	if params.EndDate != nil && params.StartDate != nil {
 		if !params.EndDate.After(*params.StartDate) {
-			return nil, types.ErrParams
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "EndDate before StartDate")
 		}
 	}
 	switch h.SortBy(ctx) {
