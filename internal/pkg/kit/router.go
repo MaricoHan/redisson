@@ -136,19 +136,19 @@ func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFu
 		p.Set(reflect.Zero(p.Type()))
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			log.Error("Execute decode request failed", "error", err.Error())
-			return nil, types.NewAppError(types.RootCodeSpace, "3", err.Error())
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
 		}
 		switch p.Type().Kind() {
 		case reflect.Struct:
 			//validate request
 			if err := c.validate.Struct(req); err != nil {
 				log.Error("Execute decode request failed", "validate struct", err.Error(), "req:", req)
-				return nil, types.NewAppError(types.RootCodeSpace, "3", err.Error())
+				return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
 			}
 		case reflect.Array:
 			if err := c.validate.Var(req, ""); err != nil {
 				log.Error("Execute decode request failed", "validate struct", err.Error(), "req:", req)
-				return nil, types.NewAppError(types.RootCodeSpace, "3", err.Error())
+				return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
 			}
 		}
 		return req, nil
@@ -221,14 +221,15 @@ func (c Controller) serverOptions(
 			}
 		} else {
 			switch appErr {
-			case types.ErrInternal, types.ErrMysqlConn, types.ErrChainConn, types.ErrRedisConn:
-				w.WriteHeader(http.StatusInternalServerError)
-			case types.ErrAuthenticate:
-				w.WriteHeader(http.StatusForbidden)
-			case types.ErrGetTx, types.ErrNftStatus, types.ErrNftMissing, types.ErrNotFound:
-				w.WriteHeader(http.StatusNotFound)
+			case types.ErrParams, types.ErrIdempotent, types.ErrNftStatus,
+				types.ErrNftClassStatus, types.ErrDataQuery, types.ErrLimit:
+				w.WriteHeader(http.StatusBadRequest) //400
+			case types.ErrAuthenticate, types.ErrNotOwner, types.ErrNoPermission:
+				w.WriteHeader(http.StatusForbidden) //403
+			case types.ErrNftClassNotFound, types.ErrNftNotFound, types.ErrTxNotFound:
+				w.WriteHeader(http.StatusNotFound) //404
 			default:
-				w.WriteHeader(http.StatusBadRequest)
+				w.WriteHeader(http.StatusInternalServerError) //500
 			}
 			response = Response{ErrorResp: &ErrorResp{
 				CodeSpace: codeSpace,
