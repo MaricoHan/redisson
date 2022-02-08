@@ -56,7 +56,7 @@ type (
 		Address      string `mapstructure:"address"`
 		LogLevel     string `mapstructure:"log_level"`
 		LogFormat    string `mapstructure:"log_format"`
-		Env          string `mapstructure:"env"`
+		Env          string `mapstructure:"app_env"`
 		BSNUrl       string `mapstructure:"bsn_url"`
 		BSNProjectId string `mapstructure:"bsn_project_id"`
 	}
