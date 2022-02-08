@@ -5,22 +5,17 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
-	"time"
 )
 
-func Request(url, contentType, method string, body map[string]interface{}, timeout time.Duration, ctx context.Context) (*http.Response, error) {
-	client := &http.Client{
-		Timeout: timeout,
-	}
-	bodys, _ := json.Marshal(body)
-	request, err := http.NewRequestWithContext(ctx, method, url, strings.NewReader(string(bodys)))
+func Post(ctx context.Context, url string, body map[string]interface{}) (*http.Response, error) {
+	bodys, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
-	request.Header.Add("content-type", contentType)
-	res, err := client.Do(request)
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(bodys)))
 	if err != nil {
-		return res, err
+		return nil, err
 	}
-	return res, err
+	request.Header.Add("content-type", "application/json")
+	return http.DefaultClient.Do(request)
 }

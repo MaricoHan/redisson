@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"strings"
 	"time"
 
@@ -153,14 +152,15 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 			ctx, _ := context.WithTimeout(context.Background(), time)
 			group, errCtx := errgroup.WithContext(ctx)
 			for _, v := range tAccounts {
+				value := v
 				group.Go(func() error {
 					var bsnAccount BsnAccount
-					chainClient := map[string]interface{}{
-						"chainClientName": fmt.Sprintf("%s%d%d", tAppOneObj.Name.String, tAppOneObj.ID, v.AccIndex),
-						"chainClientAddr": v.Address,
+					params := map[string]interface{}{
+						"chainClientName": fmt.Sprintf("%s%d%d", tAppOneObj.Name.String, tAppOneObj.ID, value.AccIndex),
+						"chainClientAddr": value.Address,
 					}
 					url := fmt.Sprintf("%s%s", config.Get().Server.BSNUrl, fmt.Sprintf("/api/%s/account/generate", config.Get().Server.BSNProjectId))
-					res, err := http2.Request(url, "application/json", http.MethodPost, chainClient, time, errCtx)
+					res, err := http2.Post(errCtx, url, params)
 					if err != nil {
 						return err
 					}
