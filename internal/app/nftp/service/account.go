@@ -74,7 +74,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 	tmsgs := modext.TMSGs{}
 	var msgs bank.MsgMultiSend
 	var resultTx sdktype.ResultTx
-	appEnv := config.Get().Server.AppEnv
+	env := config.Get().Server.Env
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		tAppOneObj, err := models.TApps(models.TAppWhere.ID.EQ(params.AppID)).One(context.Background(), exec)
 		if err != nil {
@@ -127,7 +127,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 			return types.ErrInternal
 		}
 		// create chain account
-		if appEnv == "stage" {
+		if env == "stage" {
 			msgs = svc.base.CreateGasMsg(classOne.Address, addresses)
 			tx := svc.base.CreateBaseTx(classOne.Address, defultKeyPassword)
 			resultTx, err = svc.base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
@@ -168,7 +168,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	if appEnv == "stage" {
+	if env == "stage" {
 		for _, v := range msgs.Outputs {
 			message := map[string]string{
 				"recipient": v.Address,

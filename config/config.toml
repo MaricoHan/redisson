@@ -2,7 +2,7 @@
 address = ":8080"
 log_format = "text"
 log_level = "debug"
-app_env = "stage"
+env = "stage"
 bsn_url = "https://opbningxia.bsngate.com:18602"
 bsn_project_id = "43e8c1df993d4ab099b110b00bde4a12"
 
