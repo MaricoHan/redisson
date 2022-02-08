@@ -50,7 +50,7 @@ func (h account) CreateAccount(ctx context.Context, request interface{}) (interf
 	if params.Count > 1000 {
 		return nil, types.ErrParams
 	}
-	if !config.Get().Server.AppEnv && params.Count > 10 {
+	if config.Get().Server.AppEnv == "prod" && params.Count > 10 {
 		return nil, types.ErrParams
 	}
 	// 校验参数 end

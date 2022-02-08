@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"strings"
@@ -31,11 +32,13 @@ import (
 
 	"github.com/irisnet/core-sdk-go/common/crypto/codec"
 	"github.com/volatiletech/null/v8"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/irisnet/core-sdk-go/bank"
 	sdkcrypto "github.com/irisnet/core-sdk-go/common/crypto"
 	sdktype "github.com/irisnet/core-sdk-go/types"
 	sqltype "github.com/volatiletech/sqlboiler/v4/types"
+	http2 "gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/http"
 )
 
 const algo = "secp256k1"
@@ -124,7 +127,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 			return types.ErrInternal
 		}
 		// create chain account
-		if appEnv {
+		if appEnv == "stage" {
 			msgs = svc.base.CreateGasMsg(classOne.Address, addresses)
 			tx := svc.base.CreateBaseTx(classOne.Address, defultKeyPassword)
 			resultTx, err = svc.base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
@@ -133,25 +136,31 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 				return types.ErrBuildAndSend
 			}
 		} else {
+			group := new(errgroup.Group)
 			for _, v := range tAccounts {
-				var bsnAccount BsnAccount
-				chainClient := map[string]interface{}{
-					"chainClientName": fmt.Sprintf("%s%d%d", tAppOneObj.Name.String, tAppOneObj.ID, v.AccIndex),
-					"chainClientAddr": v.Address,
-				}
-				url := fmt.Sprintf("%s%s", config.Get().Server.BSNUrl, fmt.Sprintf("/api/%s/account/generate", config.Get().Server.BSNProjectId))
-				res, err := types.Post(url, "application/json", chainClient)
-				if err != nil {
-					log.Error("create account", "http post, error:", err)
-					return types.ErrAccountCreate
-				}
-				defer res.Body.Close()
-				body, err := ioutil.ReadAll(res.Body)
-				json.Unmarshal(body, &bsnAccount)
-				if bsnAccount.Code != 0 {
-					log.Error("create account", "http request result, ", bsnAccount.Message)
-					return types.ErrAccountCreate
-				}
+				group.Go(func() error {
+					var bsnAccount BsnAccount
+					chainClient := map[string]interface{}{
+						"chainClientName": fmt.Sprintf("%s%d%d", tAppOneObj.Name.String, tAppOneObj.ID, v.AccIndex),
+						"chainClientAddr": v.Address,
+					}
+					url := fmt.Sprintf("%s%s", config.Get().Server.BSNUrl, fmt.Sprintf("/api/%s/account/generate", config.Get().Server.BSNProjectId))
+					res, err := http2.Post(url, "application/json", chainClient)
+					if err != nil {
+						return err
+					}
+					defer res.Body.Close()
+					body, err := ioutil.ReadAll(res.Body)
+					json.Unmarshal(body, &bsnAccount)
+					if bsnAccount.Code != 0 {
+						return errors.New(bsnAccount.Message)
+					}
+					return nil
+				})
+			}
+			if err := group.Wait(); err != nil {
+				log.Error("create account", "group, error:", err)
+				return types.ErrAccountCreate
 			}
 		}
 		return nil
@@ -159,7 +168,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	if appEnv {
+	if appEnv == "stage" {
 		for _, v := range msgs.Outputs {
 			message := map[string]string{
 				"recipient": v.Address,
