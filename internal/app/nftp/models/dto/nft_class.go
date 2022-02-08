@@ -22,7 +22,7 @@ type NftClassesP struct {
 
 type NftClassesRes struct {
 	PageRes
-	NftClasses []*NftClass `json:"nft_class"`
+	NftClasses []*NftClass `json:"classes"`
 }
 
 type NftClass struct {

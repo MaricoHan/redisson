@@ -259,6 +259,7 @@ func (svc *NftClass) NftClassById(params dto.NftClassesP) (*dto.NftClassRes, err
 	result.Description = classOne.Description.String
 	result.UriHash = classOne.URIHash.String
 	result.NftCount = uint64(count)
+	result.TxHash = classOne.TXHash
 
 	return result, nil
 

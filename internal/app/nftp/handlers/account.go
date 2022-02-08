@@ -10,7 +10,6 @@ import (
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
-
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 )
 
@@ -80,9 +79,6 @@ func (h account) Accounts(ctx context.Context, _ interface{}) (interface{}, erro
 	if params.Limit == 0 {
 		params.Limit = 10
 	}
-	if params.Limit > 50 {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Limit")
-	}
 
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
@@ -150,9 +146,6 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 
 	if params.Limit == 0 {
 		params.Limit = 10
-	}
-	if params.Limit > 50 {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Limit")
 	}
 
 	startDateR := h.StartDate(ctx)

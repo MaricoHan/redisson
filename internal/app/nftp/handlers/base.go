@@ -3,6 +3,8 @@ package handlers
 import (
 	"context"
 	"strconv"
+
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 )
 
 const timeLayout = "2006-01-02 15:04:05"
@@ -29,7 +31,14 @@ func (h pageBasic) Offset(ctx context.Context) (int64, error) {
 	if offset == "" || offset == nil {
 		return 0, nil
 	}
-	return strconv.ParseInt(offset.(string), 10, 64)
+	offsetInt, err := strconv.ParseInt(offset.(string), 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	if offsetInt < 0 {
+		return 0, types.ErrParams
+	}
+	return offsetInt, nil
 }
 
 func (h pageBasic) Limit(ctx context.Context) (int64, error) {
@@ -37,7 +46,14 @@ func (h pageBasic) Limit(ctx context.Context) (int64, error) {
 	if limit == "" || limit == nil {
 		return 10, nil
 	}
-	return strconv.ParseInt(limit.(string), 10, 64)
+	limitInt, err := strconv.ParseInt(limit.(string), 10, 64)
+	if err != nil {
+		return 10, err
+	}
+	if limitInt < 1 || limitInt > 50 {
+		return 10, types.ErrParams
+	}
+	return limitInt, nil
 }
 
 func (h pageBasic) StartDate(ctx context.Context) string {
