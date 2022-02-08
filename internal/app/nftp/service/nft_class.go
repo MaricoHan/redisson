@@ -39,7 +39,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 		return nil, types.ErrParams
 	}
 	if acc == nil {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Owner")
 	}
 
 	//platform address
@@ -47,7 +47,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 		models.TAccountWhere.AppID.EQ(uint64(0)),
 	).OneG(context.Background())
 	if err != nil {
-		return nil, types.ErrGetAccountDetails
+		return nil, types.ErrQuery
 	}
 	pAddress := classOne.Address
 	//new classId
@@ -185,7 +185,7 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 
 		err = models.NewQuery(q1...).Bind(context.Background(), exec, &countRes)
 		if err != nil {
-			return types.ErrNftCountByClass
+			return types.ErrQuery
 		}
 		return err
 	})
@@ -221,7 +221,7 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 
 func (svc *NftClass) NftClassById(params dto.NftClassesP) (*dto.NftClassRes, error) {
 	if params.Id == "" {
-		return nil, types.ErrNftClassDetailsGet
+		return nil, types.ErrQuery
 	}
 	var err error
 	var classOne *models.TClass
@@ -232,7 +232,7 @@ func (svc *NftClass) NftClassById(params dto.NftClassesP) (*dto.NftClassRes, err
 			models.TClassWhere.AppID.EQ(params.AppID),
 		).One(context.Background(), exec)
 		if err != nil {
-			return types.ErrNftClassesGet
+			return types.ErrQuery
 		}
 
 		count, err = models.TNFTS(
@@ -240,12 +240,12 @@ func (svc *NftClass) NftClassById(params dto.NftClassesP) (*dto.NftClassRes, err
 			models.TNFTWhere.AppID.EQ(params.AppID),
 		).Count(context.Background(), exec)
 		if err != nil {
-			return types.ErrNftClassDetailsGet
+			return types.ErrQuery
 		}
 		return err
 	})
 	if err != nil {
-		return nil, types.ErrNotFound
+		return nil, err
 	}
 
 	result := &dto.NftClassRes{}

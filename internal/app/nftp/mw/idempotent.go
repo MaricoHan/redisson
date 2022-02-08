@@ -41,7 +41,7 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		return
 	}
 	if len(req.OperationID) >= 65 || len(req.OperationID) == 0 {
-		writeBadRequestResp(w, types.NewAppError(types.RootCodeSpace, "3", "operation_id does not comply with the rules"))
+		writeBadRequestResp(w, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "operation_id does not comply with the rules"))
 		return
 	}
 
@@ -59,7 +59,7 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 	}
 
 	if err := redis.Set(key, "1", time.Second*60); err != nil {
-		writeBadRequestResp(w, types.ErrRedisConn)
+		writeBadRequestResp(w, types.ErrInternal)
 		return
 	}
 	h.next.ServeHTTP(w, r)

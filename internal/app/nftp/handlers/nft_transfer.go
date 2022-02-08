@@ -36,10 +36,10 @@ func (h nftTransfer) TransferNftClassByID(ctx context.Context, request interface
 	// 校验参数 start
 	req := request.(*vo.TransferNftClassByIDRequest)
 	if req.Recipient == "" {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
 	}
 	if req.Recipient != "" && len(req.Recipient) > 128 {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
 	}
 	params := dto.TransferNftClassByIDP{
 		ClassID:   h.ClassID(ctx),
@@ -55,12 +55,16 @@ func (h nftTransfer) TransferNftClassByID(ctx context.Context, request interface
 func (h nftTransfer) TransferNftByIndex(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
 	req := request.(*vo.TransferNftByIndexRequest)
-	if req.Recipient == "" || h.Index(ctx) == 0 {
-		return nil, types.ErrParams
+	if req.Recipient == "" {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
+	}
+
+	if h.Index(ctx) == 0 {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Index")
 	}
 
 	if req.Recipient != "" && len(req.Recipient) > 128 {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
 	}
 	params := dto.TransferNftByIndexP{
 		ClassID:   h.ClassID(ctx),
@@ -78,7 +82,7 @@ func (h nftTransfer) TransferNftByBatch(ctx context.Context, request interface{}
 	// 校验参数 start
 	req := request.(*vo.TransferNftByBatchRequest)
 	if req.Recipients == nil {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipients")
 	}
 	params := dto.TransferNftByBatchP{
 		ClassID:    h.ClassID(ctx),
@@ -87,7 +91,7 @@ func (h nftTransfer) TransferNftByBatch(ctx context.Context, request interface{}
 		AppID:      h.AppID(ctx),
 	}
 	if len(params.Recipients) > 50 {
-		return "", types.ErrParams
+		return "", types.ErrLimit
 	}
 	// 校验参数 end
 	return h.svc.TransferNftByBatch(params)
