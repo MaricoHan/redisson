@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"gitlab.bianjie.ai/irita-paas/open-api/config"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
@@ -45,8 +46,12 @@ func (h account) CreateAccount(ctx context.Context, request interface{}) (interf
 	if params.Count == 0 {
 		params.Count = 1
 	}
+
 	if params.Count > 1000 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Count")
+	}
+	if config.Get().Server.Env == "prod" && params.Count > 10 {
+		return nil, types.ErrParams
 	}
 	// 校验参数 end
 	return h.svc.CreateAccount(params)
