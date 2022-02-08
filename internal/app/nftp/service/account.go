@@ -5,6 +5,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"gitlab.bianjie.ai/irita-paas/open-api/config"
+	"io/ioutil"
 	"strings"
 	"time"
 
@@ -40,6 +42,13 @@ const hdPathPrefix = hd.BIP44Prefix + "0'/0/"
 
 const defultKeyPassword = "12345678"
 
+type BsnAccount struct {
+	Code    int         `json:"code"`
+	Message string      `json:"message"`
+	Detail  string      `json:"detail"`
+	Data    interface{} `json:"data"`
+}
+
 type Account struct {
 	base *Base
 }
@@ -61,6 +70,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 	tmsgs := modext.TMSGs{}
 	var msgs bank.MsgMultiSend
 	var resultTx sdktype.ResultTx
+	appEnv := config.Get().Server.AppEnv
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		tAppOneObj, err := models.TApps(models.TAppWhere.ID.EQ(params.AppID)).One(context.Background(), exec)
 		if err != nil {
@@ -112,39 +122,65 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 		if err != nil || updateRes == 0 {
 			return types.ErrInternal
 		}
-		msgs = svc.base.CreateGasMsg(classOne.Address, addresses)
-		tx := svc.base.CreateBaseTx(classOne.Address, defultKeyPassword)
-		resultTx, err = svc.base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
-		if err != nil {
-			log.Error("create account", "build and send, error:", err)
-			return types.ErrBuildAndSend
+		// create chain account
+		if appEnv {
+			msgs = svc.base.CreateGasMsg(classOne.Address, addresses)
+			tx := svc.base.CreateBaseTx(classOne.Address, defultKeyPassword)
+			resultTx, err = svc.base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
+			if err != nil {
+				log.Error("create account", "build and send, error:", err)
+				return types.ErrBuildAndSend
+			}
+		} else {
+			for _, v := range tAccounts {
+				var bsnAccount BsnAccount
+				chainClient := map[string]interface{}{
+					"chainClientName": fmt.Sprintf("%s%d%d", tAppOneObj.Name.String, tAppOneObj.ID, v.AccIndex),
+					"chainClientAddr": v.Address,
+				}
+				url := fmt.Sprintf("%s%s", config.Get().Server.BsnUrl, fmt.Sprintf("/api/%s/account/generate", config.Get().Server.BsnProjectId))
+				res, err := types.Post(url, "application/json", chainClient)
+				if err != nil {
+					log.Error("create account", "http post, error:", err)
+					return types.ErrAccountCreate
+				}
+				defer res.Body.Close()
+				body, err := ioutil.ReadAll(res.Body)
+				json.Unmarshal(body, &bsnAccount)
+				if bsnAccount.Code != 0 {
+					log.Error("create account", "http request result, ", bsnAccount.Message)
+					return types.ErrAccountCreate
+				}
+			}
 		}
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
-	for _, v := range msgs.Outputs {
-		message := map[string]string{
-			"recipient": v.Address,
-			"amount":    v.Coins.String()[0 : len(v.Coins.String())-6],
+	if appEnv {
+		for _, v := range msgs.Outputs {
+			message := map[string]string{
+				"recipient": v.Address,
+				"amount":    v.Coins.String()[0 : len(v.Coins.String())-6],
+			}
+			messageByte, _ := json.Marshal(message)
+			tmsgs = append(tmsgs, &models.TMSG{
+				AppID:     params.AppID,
+				TXHash:    resultTx.Hash,
+				Timestamp: null.TimeFrom(time.Now()),
+				Module:    "account",
+				Operation: "add_gas",
+				Signer:    classOne.Address,
+				Recipient: null.StringFrom(v.Address),
+				Message:   sqltype.JSON(messageByte),
+			})
 		}
-		messageByte, _ := json.Marshal(message)
-		tmsgs = append(tmsgs, &models.TMSG{
-			AppID:     params.AppID,
-			TXHash:    resultTx.Hash,
-			Timestamp: null.TimeFrom(time.Now()),
-			Module:    "account",
-			Operation: "add_gas",
-			Signer:    classOne.Address,
-			Recipient: null.StringFrom(v.Address),
-			Message:   sqltype.JSON(messageByte),
-		})
-	}
-	err = tmsgs.InsertAll(context.Background(), boil.GetContextDB())
-	if err != nil {
-		log.Error("create account", "msgs create error:", err)
-		return nil, types.ErrAccountCreate
+		err = tmsgs.InsertAll(context.Background(), boil.GetContextDB())
+		if err != nil {
+			log.Error("create account", "msgs create error:", err)
+			return nil, types.ErrAccountCreate
+		}
 	}
 	return addresses, nil
 }

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"gitlab.bianjie.ai/irita-paas/open-api/config"
 	"strings"
 	"time"
 
@@ -45,8 +46,12 @@ func (h account) CreateAccount(ctx context.Context, request interface{}) (interf
 	if params.Count == 0 {
 		params.Count = 1
 	}
+
 	if params.Count > 1000 {
 		return nil, types.ErrParams
+	}
+	if !config.Get().Server.AppEnv && params.Count > 10 {
+		params.Count = 10
 	}
 	// 校验参数 end
 	return h.svc.CreateAccount(params)
