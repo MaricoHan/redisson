@@ -220,13 +220,13 @@ func (c Controller) serverOptions(
 				},
 			}
 		} else {
-			switch appErr {
-			case types.ErrParams, types.ErrIdempotent, types.ErrNftStatus,
-				types.ErrNftClassStatus, types.ErrDataQuery, types.ErrLimit:
+			switch appErr.Code() {
+			case types.ClientParamsError, types.FrequentRequestsNotSupports, types.NftStatusAbnormal,
+				types.NftclassStatusAbnormal, types.QueryDataFailed, types.MaximumLimitExceeded:
 				w.WriteHeader(http.StatusBadRequest) //400
-			case types.ErrAuthenticate, types.ErrNotOwner, types.ErrNoPermission:
+			case types.AuthenticationFailed, types.NotOwnerAccount, types.NotAppOfAccount:
 				w.WriteHeader(http.StatusForbidden) //403
-			case types.ErrNftClassNotFound, types.ErrNftNotFound, types.ErrTxNotFound:
+			case types.NftclassNotExist, types.NftNotExist, types.TxNotExist:
 				w.WriteHeader(http.StatusNotFound) //404
 			default:
 				w.WriteHeader(http.StatusInternalServerError) //500

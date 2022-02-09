@@ -38,6 +38,7 @@ func newAccount(svc *service.Account) *account {
 func (h account) CreateAccount(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
 	req := request.(*vo.CreateAccountRequest)
+
 	params := dto.CreateAccountP{
 		AppID: h.AppID(ctx),
 		Count: req.Count,
@@ -45,8 +46,7 @@ func (h account) CreateAccount(ctx context.Context, request interface{}) (interf
 	if params.Count == 0 {
 		params.Count = 1
 	}
-
-	if params.Count > 1000 {
+	if params.Count < 1 || params.Count > 1000 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Count")
 	}
 	if config.Get().Server.Env == "prod" && params.Count > 10 {

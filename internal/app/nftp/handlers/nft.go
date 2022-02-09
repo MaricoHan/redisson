@@ -53,23 +53,23 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 		Amount:    req.Amount,
 		Recipient: req.Recipient,
 	}
-	if req.Name == "" || len(req.Name) < 3 || len(req.Name) > 64 {
+	if req.Name == "" || len([]rune(strings.TrimSpace(req.Name))) < 3 || len([]rune(strings.TrimSpace(req.Name))) > 64 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Name")
 	}
 
-	if req.Uri != "" && len(req.Uri) > 256 {
+	if req.Uri != "" && len([]rune(strings.TrimSpace(req.Uri))) > 256 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Uri")
 	}
 
-	if req.UriHash != "" && len(req.UriHash) > 512 {
+	if req.UriHash != "" && len([]rune(strings.TrimSpace(req.UriHash))) > 512 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid UriHash")
 	}
 
-	if req.Data != "" && len(req.Data) > 4096 {
+	if req.Data != "" && len([]rune(strings.TrimSpace(req.Data))) > 4096 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Data")
 	}
 
-	if req.Recipient != "" && len(req.Recipient) > 128 {
+	if req.Recipient != "" && len([]rune(strings.TrimSpace(req.Recipient))) > 128 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
 	}
 
@@ -86,15 +86,15 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 func (h nft) EditNftByIndex(ctx context.Context, request interface{}) (interface{}, error) {
 
 	req := request.(*vo.EditNftByIndexRequest)
-	if req.Name == "" || len(req.Name) < 3 || len(req.Name) > 64 {
+	if req.Name == "" || len([]rune(strings.TrimSpace(req.Name))) < 3 || len([]rune(strings.TrimSpace(req.Name))) > 64 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Name")
 	}
 
-	if req.Uri != "" && len(req.Uri) > 256 {
+	if req.Uri != "" && len([]rune(strings.TrimSpace(req.Uri))) > 256 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Uri")
 	}
 
-	if req.Data != "" && len(req.Data) > 4096 {
+	if req.Data != "" && len([]rune(strings.TrimSpace(req.Data))) > 4096 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Data")
 	}
 

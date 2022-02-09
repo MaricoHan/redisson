@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
@@ -35,31 +36,31 @@ func newNftClass(svc *service.NftClass) *nftClass {
 func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
 	req := request.(*vo.CreateNftClassRequest)
-	if req.Name == "" || len(req.Name) < 3 || len(req.Name) > 64 {
+	if req.Name == "" || len([]rune(strings.TrimSpace(req.Name))) < 3 || len([]rune(strings.TrimSpace(req.Name))) > 64 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Name")
 	}
 
-	if (req.Symbol != "" && len(req.Symbol) < 3) || (req.Symbol != "" && len(req.Symbol) > 64) {
+	if (req.Symbol != "" && len([]rune(strings.TrimSpace(req.Symbol))) < 3) || (req.Symbol != "" && len([]rune(strings.TrimSpace(req.Symbol))) > 64) {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Symbol")
 	}
 
-	if req.Description != "" && len(req.Description) > 2048 {
+	if req.Description != "" && len([]rune(strings.TrimSpace(req.Description))) > 2048 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Description")
 	}
 
-	if req.Uri != "" && len(req.Uri) > 256 {
+	if req.Uri != "" && len([]rune(strings.TrimSpace(req.Uri))) > 256 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Uri")
 	}
 
-	if req.UriHash != "" && len(req.UriHash) > 512 {
+	if req.UriHash != "" && len([]rune(strings.TrimSpace(req.UriHash))) > 512 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid UriHash")
 	}
 
-	if req.Data != "" && len(req.Data) > 4096 {
+	if req.Data != "" && len([]rune(strings.TrimSpace(req.Data))) > 4096 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Data")
 	}
 
-	if req.Owner == "" || len(req.Owner) > 128 {
+	if req.Owner == "" || len([]rune(strings.TrimSpace(req.Owner))) > 128 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Owner")
 	}
 

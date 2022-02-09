@@ -2,8 +2,10 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"encoding/hex"
 	"fmt"
+	"github.com/friendsofgo/errors"
 	"strconv"
 	"strings"
 	"time"
@@ -165,8 +167,13 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 			int(params.Offset),
 			int(params.Limit),
 		)
-		if err != nil {
-			return err
+		if err != nil && errors.Cause(err) == sql.ErrNoRows {
+			//404
+			return types.ErrNftClassNotFound
+		} else if err != nil {
+			//500
+			log.Error("nft classes", "query nft class error:", err.Error())
+			return types.ErrQuery
 		}
 		result.TotalCount = total
 
