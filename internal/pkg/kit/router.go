@@ -3,7 +3,6 @@ package kit
 import (
 	"context"
 	"encoding/json"
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/metric"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -135,7 +134,6 @@ func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFu
 		}
 		p := reflect.ValueOf(req).Elem()
 		p.Set(reflect.Zero(p.Type()))
-		metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", r.Method, "uri", r.URL.String()}...).Add(1)
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			log.Error("Execute decode request failed", "error", err.Error())
 			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
