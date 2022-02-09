@@ -7,14 +7,16 @@ import (
 	"os/signal"
 	"syscall"
 
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/mw"
-
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/mw"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/config"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/helper"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/kit"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/metric"
 )
 
 //Server define a http Server
@@ -27,7 +29,6 @@ type Server struct {
 //Start a instance of the http server
 func Start() {
 	app := nftp.NewNFTPServer()
-
 	log.Info("Initialize nftp server ")
 	app.Initialize()
 
@@ -35,6 +36,9 @@ func Start() {
 	for _, rt := range app.GetEndpoints() {
 		s.RegisterEndpoint(rt)
 	}
+
+	// metric
+	metric.NewPrometheus().InitPrometheus()
 
 	lis, err := net.Listen("tcp", config.Get().Server.Address)
 	if err != nil {
@@ -45,6 +49,13 @@ func Start() {
 	go func() {
 		_ = s.svr.Serve(lis)
 	}()
+
+	helper.GoSafe(func() {
+		http.Handle("/metrics", promhttp.Handler())
+		http.ListenAndServe(config.Get().Server.PrometheusAddr, nil)
+	}, func(err error) {
+		log.Info("http server listenidg error: %s", err)
+	})
 
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
@@ -79,5 +90,6 @@ func (s *Server) RegisterEndpoint(end kit.Endpoint) {
 	for _, m := range s.middlewares {
 		h = m(h)
 	}
+
 	s.router.Handle(end.URI, h).Methods(end.Method)
 }
