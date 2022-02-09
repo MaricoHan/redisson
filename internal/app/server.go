@@ -1,7 +1,6 @@
 package app
 
 import (
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"net"
 	"net/http"
 	"os"
@@ -9,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/mw"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/config"
