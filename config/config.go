@@ -53,12 +53,13 @@ type (
 
 	// Server define a struct for http server
 	Server struct {
-		Address      string `mapstructure:"address"`
-		LogLevel     string `mapstructure:"log_level"`
-		LogFormat    string `mapstructure:"log_format"`
-		Env          string `mapstructure:"app_env"`
-		BSNUrl       string `mapstructure:"bsn_url"`
-		BSNProjectId string `mapstructure:"bsn_project_id"`
+		Address        string `mapstructure:"address"`
+		PrometheusAddr string `mapstructure:"prometheus_addr"`
+		LogLevel       string `mapstructure:"log_level"`
+		LogFormat      string `mapstructure:"log_format"`
+		Env            string `mapstructure:"app_env"`
+		BSNUrl         string `mapstructure:"bsn_url"`
+		BSNProjectId   string `mapstructure:"bsn_project_id"`
 	}
 )
 
