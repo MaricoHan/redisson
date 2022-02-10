@@ -70,7 +70,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 		models.TAccountWhere.AppID.EQ(uint64(0)),
 	).OneG(context.Background())
 	if err != nil && errors.Cause(err) == sql.ErrNoRows {
-		//400
+		//404
 		return nil, types.NewAppError(types.RootCodeSpace, types.QueryDataFailed, "root account not found")
 	} else if err != nil {
 		//500
@@ -84,7 +84,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		tAppOneObj, err := models.TApps(models.TAppWhere.ID.EQ(params.AppID)).One(context.Background(), exec)
 		if err != nil && errors.Cause(err) == sql.ErrNoRows {
-			//400
+			//404
 			return types.NewAppError(types.RootCodeSpace, types.QueryDataFailed, "app not found")
 		} else if err != nil {
 			//500
