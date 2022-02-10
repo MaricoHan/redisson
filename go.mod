@@ -12,6 +12,7 @@ require (
 	github.com/irisnet/core-sdk-go v0.0.0-20220125122946-76af4796219f
 	github.com/irisnet/irismod-sdk-go/nft v0.0.0-20220121065225-0b70859f7bed
 	github.com/pkg/errors v0.9.1
+	github.com/prometheus/client_golang v1.10.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.3.0
 	github.com/spf13/viper v1.10.0
@@ -19,6 +20,7 @@ require (
 	github.com/volatiletech/null/v8 v8.1.2
 	github.com/volatiletech/sqlboiler/v4 v4.8.3
 	gitlab.bianjie.ai/irita-paas/orms/orm-nft v0.0.0-00010101000000-000000000000
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	google.golang.org/grpc v1.42.0
 )
 
@@ -75,7 +77,6 @@ require (
 	github.com/mtibben/percent v0.2.1 // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
 	github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5 // indirect
-	github.com/prometheus/client_golang v1.10.0 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.23.0 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
@@ -100,7 +101,6 @@ require (
 	go.etcd.io/bbolt v1.3.5 // indirect
 	golang.org/x/crypto v0.0.0-20211108221036-ceb1ce70b4fa // indirect
 	golang.org/x/net v0.0.0-20210917221730-978cfadd31cf // indirect
-	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20211205182925-97ca703d548d // indirect
 	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1 // indirect
 	golang.org/x/text v0.3.7 // indirect
@@ -114,6 +114,6 @@ require (
 
 replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.4
 
-replace gitlab.bianjie.ai/irita-paas/orms/orm-nft => gitlab.bianjie.ai/irita-paas/orms/orm-nft.git v0.0.0-20220125063317-b7a73ff21e6b
+replace gitlab.bianjie.ai/irita-paas/orms/orm-nft => gitlab.bianjie.ai/irita-paas/orms/orm-nft.git v1.0.0-beta.0.20220209102800-0c57376d9a69
 
 replace github.com/tendermint/tendermint => github.com/bianjieai/tendermint v0.34.1-irita-210113

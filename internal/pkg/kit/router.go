@@ -222,11 +222,12 @@ func (c Controller) serverOptions(
 		} else {
 			switch appErr.Code() {
 			case types.ClientParamsError, types.FrequentRequestsNotSupports, types.NftStatusAbnormal,
-				types.NftclassStatusAbnormal, types.QueryDataFailed, types.MaximumLimitExceeded:
+				types.NftclassStatusAbnormal, types.MaximumLimitExceeded,
+				types.NotOwnerAccount, types.NotAppOfAccount:
 				w.WriteHeader(http.StatusBadRequest) //400
-			case types.AuthenticationFailed, types.NotOwnerAccount, types.NotAppOfAccount:
+			case types.AuthenticationFailed:
 				w.WriteHeader(http.StatusForbidden) //403
-			case types.NftclassNotExist, types.NftNotExist, types.TxNotExist:
+			case types.NftclassNotExist, types.NftNotExist, types.TxNotExist, types.QueryDataFailed:
 				w.WriteHeader(http.StatusNotFound) //404
 			default:
 				w.WriteHeader(http.StatusInternalServerError) //500

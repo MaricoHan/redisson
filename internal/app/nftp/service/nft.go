@@ -45,7 +45,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) ([]string, error) {
 			models.TClassWhere.ClassID.EQ(params.ClassId),
 		).One(context.Background(), exec)
 		if err != nil && errors.Cause(err) == sql.ErrNoRows {
-			//400
+			//404
 			return types.NewAppError(types.RootCodeSpace, types.QueryDataFailed, "class not found")
 		} else if err != nil {
 			//500
@@ -157,11 +157,11 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
 		return "", types.ErrNftNotFound
 	}
 
-	// judge whether the Caller is the owner：400
+	// judge whether the Caller is the owner：404
 	if params.Sender != tNft.Owner {
 		return "", types.ErrNotOwner
 	}
-	// judge whether the Caller is one of the APP's address：400
+	// judge whether the Caller is one of the APP's address：404
 	if tNft.AppID != params.AppID {
 		return "", types.ErrNoPermission
 	}
@@ -239,7 +239,7 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 			models.TNFTWhere.ClassID.EQ(params.ClassId),
 			models.TNFTWhere.Index.EQ(EditNft.Index)).One(context.Background(), boil.GetContextDB())
 		if err != nil && errors.Cause(err) == sql.ErrNoRows {
-			//400
+			//404
 			return "", types.NewAppError(types.RootCodeSpace, types.QueryDataFailed, "the NFT does not exist")
 		} else if err != nil {
 			//500
@@ -255,11 +255,11 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 			return "", types.ErrNftStatus
 		}
 
-		// judge whether the Caller is the owner：400
+		// judge whether the Caller is the owner：404
 		if params.Sender != tNft.Owner {
 			return "", types.ErrNotOwner
 		}
-		// judge whether the Caller is one of the APP's address：400
+		// judge whether the Caller is one of the APP's address：404
 		if tNft.AppID != params.AppID {
 			return "", types.ErrNoPermission
 		}
@@ -357,12 +357,12 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (string, error) {
 		return "", types.ErrNftStatus
 	}
 
-	// judge whether the Caller is the owner：400
+	// judge whether the Caller is the owner：404
 	if params.Sender != tNft.Owner {
 		return "", types.ErrNotOwner
 	}
 
-	// judge whether the Caller is one of the APP's address：400
+	// judge whether the Caller is one of the APP's address：404
 	if tNft.AppID != params.AppID {
 		return "", types.ErrNoPermission
 	}
@@ -430,7 +430,7 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 			models.TNFTWhere.ClassID.EQ(params.ClassId),
 			models.TNFTWhere.Index.EQ(index)).One(context.Background(), boil.GetContextDB())
 		if err != nil && errors.Cause(err) == sql.ErrNoRows {
-			//400
+			//404
 			return "", types.NewAppError(types.RootCodeSpace, types.QueryDataFailed, "the NFT does not exist")
 		} else if err != nil {
 			//500
