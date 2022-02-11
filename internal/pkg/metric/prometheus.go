@@ -75,7 +75,7 @@ func (p *prometheusModel) InitPrometheus() {
 		Subsystem: "api",
 		Name:      "root_balance_amount",
 		Help:      "root balance amount",
-	}, []string{})
+	}, []string{"address", "denom"})
 
 	// sync_tx_failed_total
 	syncTxFailedTotal := metricsprometheus.NewGaugeFrom(prometheus.GaugeOpts{
@@ -152,7 +152,7 @@ func (p *prometheusModel) InitPrometheus() {
 		Subsystem: "sync",
 		Name:      "tx_pending_seconds",
 		Help:      "tx pending seconds",
-	}, []string{})
+	}, []string{"tx_hash", "interval"})
 
 	apiMysqlException.With([]string{}...).Set(0)
 	apiRedisException.With([]string{}...).Set(0)
@@ -166,7 +166,6 @@ func (p *prometheusModel) InitPrometheus() {
 	syncNftTotal.With([]string{}...).Set(0)
 	syncClassTotal.With([]string{}...).Set(0)
 	syncTxUndoSeconds.With([]string{}...).Set(0)
-	syncTxPendingSeconds.With([]string{}...).Set(0)
 
 	p.ApiMysqlException = apiMysqlException
 	p.ApiRedisException = apiRedisException
