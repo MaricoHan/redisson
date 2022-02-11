@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/go-redis/redis/v8"
 	"github.com/robfig/cron/v3"
 	"github.com/volatiletech/null/v8"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/chain"
@@ -100,9 +99,9 @@ func ProcessTimer() {
 			metric.NewPrometheus().SyncMysqlException.With().Set(-1) //监控mysql连接
 		}
 
-		if err := redis.Client.Ping(redis.Client{}, context.Background()); err != nil {
-			metric.NewPrometheus().SyncRedisException.With().Set(-1) //监控redis连接
-		}
+		//if err := redis.Client.Ping(redis.Client{}, context.Background()); err != nil {
+		//	metric.NewPrometheus().SyncRedisException.With().Set(-1) //监控redis连接
+		//}
 
 		if _, err := chain.GetSdkClient().GenConn(); err != nil {
 			metric.NewPrometheus().SyncChainConnError.With().Set(-1) //访问链异常
