@@ -5,11 +5,11 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
-	"github.com/friendsofgo/errors"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/friendsofgo/errors"
 	sdktype "github.com/irisnet/core-sdk-go/types"
 	"github.com/irisnet/irismod-sdk-go/nft"
 	"github.com/tendermint/tendermint/crypto/tmhash"
@@ -76,8 +76,9 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 		Sender:    pAddress,
 		Recipient: params.Owner,
 	}
-
-	originData, txHash, err := svc.base.BuildAndSign(sdktype.Msgs{&createDenomMsg, &transferDenomMsg}, baseTx)
+	originData, txHash, _ := svc.base.BuildAndSign(sdktype.Msgs{&createDenomMsg, &transferDenomMsg}, baseTx)
+	baseTx.Gas = svc.base.calculateGas(originData)
+	originData, txHash, err = svc.base.BuildAndSign(sdktype.Msgs{&createDenomMsg, &transferDenomMsg}, baseTx)
 	if err != nil {
 		log.Debug("create nft class", "BuildAndSign error:", err.Error())
 		return nil, err
@@ -250,6 +251,7 @@ func (svc *NftClass) NftClassById(params dto.NftClassesP) (*dto.NftClassRes, err
 		count, err = models.TNFTS(
 			models.TNFTWhere.ClassID.EQ(params.Id),
 			models.TNFTWhere.AppID.EQ(params.AppID),
+			models.TNFTWhere.Status.EQ(models.TNFTSStatusActive),
 		).Count(context.Background(), exec)
 		if err != nil {
 			return types.ErrInternal

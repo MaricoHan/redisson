@@ -57,8 +57,10 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Name")
 	}
 
-	if req.Uri != "" && len([]rune(strings.TrimSpace(req.Uri))) > 256 {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Uri")
+	if req.Uri != "" {
+		if err := h.base.UriCheck(req.Uri); err != nil {
+			return nil, err
+		}
 	}
 
 	if req.UriHash != "" && len([]rune(strings.TrimSpace(req.UriHash))) > 512 {
@@ -90,8 +92,10 @@ func (h nft) EditNftByIndex(ctx context.Context, request interface{}) (interface
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Name")
 	}
 
-	if req.Uri != "" && len([]rune(strings.TrimSpace(req.Uri))) > 256 {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Uri")
+	if req.Uri != "" {
+		if err := h.base.UriCheck(req.Uri); err != nil {
+			return nil, err
+		}
 	}
 
 	if req.Data != "" && len([]rune(strings.TrimSpace(req.Data))) > 4096 {

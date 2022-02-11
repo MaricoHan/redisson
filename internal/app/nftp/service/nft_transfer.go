@@ -4,12 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
 	"github.com/friendsofgo/errors"
+	sdktype "github.com/irisnet/core-sdk-go/types"
+	"github.com/irisnet/irismod-sdk-go/nft"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 
-	sdktype "github.com/irisnet/core-sdk-go/types"
-	"github.com/irisnet/irismod-sdk-go/nft"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
@@ -74,7 +75,9 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 
 	//sign
 	baseTx := svc.base.CreateBaseTx(params.Owner, "")
-	data, hash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
+	data, hash, _ := svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
+	baseTx.Gas = svc.base.calculateGas(data)
+	data, hash, err = svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
 	if err != nil {
 		log.Debug("transfer nft class", "BuildAndSign error:", err.Error())
 		return "", types.ErrBuildAndSign
@@ -182,7 +185,9 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 
 	//build and sign
 	baseTx := svc.base.CreateBaseTx(params.Owner, "")
-	data, hash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
+	data, hash, _ := svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
+	baseTx.Gas = svc.base.calculateGas(data)
+	data, hash, err = svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
 	if err != nil {
 		log.Debug("transfer nft by index", "BuildAndSign error:", err.Error())
 		return "", types.ErrBuildAndSign
@@ -305,6 +310,8 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 
 	//sign
 	baseTx := svc.base.CreateBaseTx(params.Owner, "")
+	data, hash, _ := svc.base.BuildAndSign(msgs, baseTx)
+	baseTx.Gas = svc.base.calculateGas(data)
 	data, hash, err := svc.base.BuildAndSign(msgs, baseTx)
 	if err != nil {
 		log.Debug("transfer nft by batch", "BuildAndSign error:", err.Error())
