@@ -4,13 +4,17 @@ import (
 	"bytes"
 	"context"
 	"crypto/sha256"
+	"database/sql"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/friendsofgo/errors"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/metric"
 	"io/ioutil"
 	"net/http"
 	"sort"
+	"time"
 
 	"github.com/gorilla/mux"
 
@@ -32,6 +36,26 @@ type authHandler struct {
 
 func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Debug("user request", "method:", r.Method, "url:", r.URL.Path)
+	createTime := time.Now()
+	defer func(createTime time.Time) {
+		interval := time.Now().Sub(createTime)
+		metric.NewPrometheus().ApiHttpRequestRtSeconds.With([]string{
+			"method",
+			r.Method,
+			"uri",
+			r.RequestURI,
+		}...).Observe(float64(interval))
+	}(createTime)
+	root, err := models.TAccounts(
+		models.TAccountWhere.AppID.EQ(uint64(0)),
+	).OneG(context.Background())
+	if err != nil && errors.Cause(err) == sql.ErrNoRows {
+		//404
+	} else if err != nil {
+		//500
+		log.Error("query root balance", "query root error:", err.Error())
+	}
+	metric.NewPrometheus().ApiRootBalanceAmount.With([]string{"address", root.Address, "denom", "gas"}...).Set(float64(root.Gas.Uint64)) //系统root账户余额
 	appKey := r.Header.Get("X-Api-Key")
 	appKeyResult, err := models.TAppKeys(
 		qm.Select(models.TAppKeyColumns.APISecret),
