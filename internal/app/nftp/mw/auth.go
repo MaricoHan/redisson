@@ -7,11 +7,10 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"io/ioutil"
 	"net/http"
 	"sort"
-
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 
 	"github.com/gorilla/mux"
 

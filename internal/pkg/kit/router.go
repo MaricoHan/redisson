@@ -240,6 +240,7 @@ func (c Controller) serverOptions(
 			default:
 				metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "500"}...).Add(1)
 				w.WriteHeader(http.StatusInternalServerError) //500
+				appErr = types.ErrInternal
 			}
 			response = Response{ErrorResp: &ErrorResp{
 				CodeSpace: codeSpace,
