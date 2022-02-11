@@ -7,12 +7,6 @@ const (
 )
 
 const (
-	QueryFailed    = "QUERY_FAILED"
-	CreateFailed   = "CREATE_FAILED"
-	EditFailed     = "EDIT_FAILED"
-	BurnFailed     = "BURN_FAILED"
-	TransferFailed = "TRANSFER_FAILED"
-
 	QueryDataFailed                = "QUERY_DATA_FAILED"
 	InternalFailed                 = "INTERNAL_FAILED"
 	AuthenticationFailed           = "AUTHENTICATION_FAILED"
@@ -35,12 +29,6 @@ const (
 )
 
 var (
-	ErrCreate   = Register(RootCodeSpace, CreateFailed, "failed to create")
-	ErrQuery    = Register(RootCodeSpace, QueryFailed, "failed to query")
-	ErrEdit     = Register(RootCodeSpace, EditFailed, "failed to edit")
-	ErrBurn     = Register(RootCodeSpace, BurnFailed, "failed to burn")
-	ErrTransfer = Register(RootCodeSpace, TransferFailed, "failed to transfer")
-
 	ErrDataQuery        = Register(RootCodeSpace, QueryDataFailed, "failed to query data")
 	ErrInternal         = Register(RootCodeSpace, InternalFailed, "internal")
 	ErrAuthenticate     = Register(RootCodeSpace, AuthenticationFailed, "failed to authentication")
