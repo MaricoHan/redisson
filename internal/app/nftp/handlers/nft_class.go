@@ -48,8 +48,10 @@ func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Description")
 	}
 
-	if err := h.base.UriCheck(req.Uri); err != nil {
-		return nil, err
+	if req.Uri != "" {
+		if err := h.base.UriCheck(req.Uri); err != nil {
+			return nil, err
+		}
 	}
 
 	if req.UriHash != "" && len([]rune(strings.TrimSpace(req.UriHash))) > 512 {
