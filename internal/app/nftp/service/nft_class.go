@@ -193,8 +193,7 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 
 		err = models.NewQuery(q1...).Bind(context.Background(), exec, &countRes)
 		if err != nil {
-			//return types.ErrInternal
-			return types.ErrDataQuery
+			return types.ErrInternal
 		}
 		return err
 	})
