@@ -3,6 +3,8 @@ package mw
 import (
 	"context"
 	"database/sql"
+	"time"
+
 	"github.com/friendsofgo/errors"
 	"github.com/go-redis/redis/v8"
 	"github.com/robfig/cron/v3"
@@ -12,7 +14,6 @@ import (
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/metric"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
-	"time"
 )
 
 func ProcessTimer() {
