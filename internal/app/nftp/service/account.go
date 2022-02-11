@@ -75,7 +75,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 	} else if err != nil {
 		//500
 		log.Error("create account", "query root account error:", err.Error())
-		return nil, types.ErrCreate
+		return nil, types.ErrInternal
 	}
 	tmsgs := modext.TMSGs{}
 	var msgs bank.MsgMultiSend
@@ -89,7 +89,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 		} else if err != nil {
 			//500
 			log.Error("create account", "query app error:", err.Error())
-			return types.ErrCreate
+			return types.ErrInternal
 		}
 
 		tAccounts := modext.TAccounts{}
@@ -106,7 +106,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 			if err != nil {
 				//500
 				log.Debug("create account", "NewMnemonicKeyManagerWithHDPath error:", err.Error())
-				return types.ErrCreate
+				return types.ErrInternal
 			}
 			_, priv := res.Generate()
 
@@ -131,7 +131,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 		err = tAccounts.InsertAll(context.Background(), exec)
 		if err != nil {
 			log.Debug("create account", "accounts insert error:", err.Error())
-			return types.ErrCreate
+			return types.ErrInternal
 		}
 		tAppOneObj.AccOffset += params.Count
 		updateRes, err := tAppOneObj.Update(context.Background(), exec, boil.Infer())
@@ -175,7 +175,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 			}
 			if err := group.Wait(); err != nil {
 				log.Error("create account", "group_error:", err)
-				return types.ErrCreate
+				return types.ErrInternal
 			}
 		}
 		return nil
@@ -204,7 +204,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 		err = tmsgs.InsertAll(context.Background(), boil.GetContextDB())
 		if err != nil {
 			log.Error("create account", "msgs create error:", err)
-			return nil, types.ErrCreate
+			return nil, types.ErrInternal
 		}
 	}
 	return addresses, nil

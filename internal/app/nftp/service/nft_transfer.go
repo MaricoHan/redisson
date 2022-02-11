@@ -41,7 +41,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	} else if err != nil {
 		//500
 		log.Error("transfer nft class", "query recipient error:", err.Error())
-		return "", types.ErrTransfer
+		return "", types.ErrInternal
 	}
 	if acc == nil {
 		return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
@@ -58,7 +58,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	} else if err != nil {
 		//500
 		log.Error("transfer nft class", "query class error:", err.Error())
-		return "", types.ErrTransfer
+		return "", types.ErrInternal
 	}
 
 	if class.Status != models.TClassesStatusActive {
@@ -112,10 +112,12 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 
 		ok, err := class.Update(context.Background(), exec, boil.Infer())
 		if err != nil {
-			return types.ErrTransfer
+			//500
+			log.Error("transfer nft class", "update class error:", err.Error())
+			return types.ErrInternal
 		}
 		if ok != 1 {
-			return types.ErrTransfer
+			return types.ErrInternal
 		}
 
 		return nil
@@ -142,7 +144,7 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 	} else if err != nil {
 		//500
 		log.Error("transfer nft", "query recipient error:", err.Error())
-		return "", types.ErrTransfer
+		return "", types.ErrInternal
 	}
 	if acc == nil {
 		return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
@@ -160,7 +162,7 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 	} else if err != nil {
 		//500
 		log.Error("transfer nft", "query nft error:", err.Error())
-		return "", types.ErrTransfer
+		return "", types.ErrInternal
 	}
 
 	if res.Status != models.TNFTSStatusActive {
@@ -209,17 +211,17 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 			models.TTXSStatusUndo, exec)
 		if err != nil {
 			log.Debug("transfer nft by index", "Tx Into DataBase error:", err.Error())
-			return types.ErrTransfer
+			return types.ErrInternal
 		}
 
 		res.Status = models.TNFTSStatusPending
 		res.LockedBy = null.Uint64From(txId)
 		ok, err := res.Update(context.Background(), exec, boil.Infer())
 		if err != nil {
-			return types.ErrTransfer
+			return types.ErrInternal
 		}
 		if ok != 1 {
-			return types.ErrTransfer
+			return types.ErrInternal
 		}
 		return nil
 	})
@@ -253,7 +255,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 		} else if err != nil {
 			//500
 			log.Error("transfer nft by batch", "query recipient error:", err.Error())
-			return "", types.ErrTransfer
+			return "", types.ErrInternal
 		}
 		if acc == nil {
 			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
@@ -279,7 +281,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 		} else if err != nil {
 			//500
 			log.Error("transfer nft by batch", "query nft error:", err.Error())
-			return "", types.ErrTransfer
+			return "", types.ErrInternal
 		}
 
 		if res.Status != models.TNFTSStatusActive {
@@ -357,7 +359,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			} else if err != nil {
 				//500
 				log.Error("transfer nft by batch", "query recipient error:", err.Error())
-				return types.ErrTransfer
+				return types.ErrInternal
 			}
 
 			if res.Status != models.TNFTSStatusActive {
@@ -368,10 +370,10 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			res.LockedBy = null.Uint64From(txId)
 			ok, err := res.Update(context.Background(), exec, boil.Infer())
 			if err != nil {
-				return types.ErrTransfer
+				return types.ErrInternal
 			}
 			if ok != 1 {
-				return types.ErrNftClassNotFound
+				return types.ErrNftNotFound
 			}
 		}
 		return nil

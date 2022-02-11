@@ -49,7 +49,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 		models.TAccountWhere.AppID.EQ(uint64(0)),
 	).OneG(context.Background())
 	if err != nil {
-		return nil, types.ErrQuery
+		return nil, types.ErrInternal
 	}
 	pAddress := classOne.Address
 	//new classId
@@ -173,7 +173,7 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 		} else if err != nil {
 			//500
 			log.Error("nft classes", "query nft class error:", err.Error())
-			return types.ErrQuery
+			return types.ErrInternal
 		}
 		result.TotalCount = total
 
@@ -192,7 +192,7 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 
 		err = models.NewQuery(q1...).Bind(context.Background(), exec, &countRes)
 		if err != nil {
-			return types.ErrQuery
+			return types.ErrInternal
 		}
 		return err
 	})
@@ -228,7 +228,7 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 
 func (svc *NftClass) NftClassById(params dto.NftClassesP) (*dto.NftClassRes, error) {
 	if params.Id == "" {
-		return nil, types.ErrQuery
+		return nil, types.ErrInternal
 	}
 	var err error
 	var classOne *models.TClass
@@ -238,8 +238,13 @@ func (svc *NftClass) NftClassById(params dto.NftClassesP) (*dto.NftClassRes, err
 			models.TClassWhere.ClassID.EQ(params.Id),
 			models.TClassWhere.AppID.EQ(params.AppID),
 		).One(context.Background(), exec)
-		if err != nil {
-			return types.ErrQuery
+		if err != nil && errors.Cause(err) == sql.ErrNoRows {
+			//404
+			return types.NewAppError(types.RootCodeSpace, types.QueryDataFailed, "class not found")
+		} else if err != nil {
+			//500
+			log.Error("transfer nft class", "query class error:", err.Error())
+			return types.ErrInternal
 		}
 
 		count, err = models.TNFTS(
@@ -247,7 +252,7 @@ func (svc *NftClass) NftClassById(params dto.NftClassesP) (*dto.NftClassRes, err
 			models.TNFTWhere.AppID.EQ(params.AppID),
 		).Count(context.Background(), exec)
 		if err != nil {
-			return types.ErrQuery
+			return types.ErrInternal
 		}
 		return err
 	})

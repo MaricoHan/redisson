@@ -1,15 +1,15 @@
 package app
 
 import (
+	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/mw"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
-
-	"github.com/gorilla/mux"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/mw"
+	"time"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/config"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp"
@@ -30,8 +30,8 @@ type Server struct {
 func Start() {
 	app := nftp.NewNFTPServer()
 	log.Info("Initialize nftp server ")
+	time.Now()
 	app.Initialize()
-
 	s := NewServer()
 	for _, rt := range app.GetEndpoints() {
 		s.RegisterEndpoint(rt)

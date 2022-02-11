@@ -23,6 +23,8 @@ type prometheusModel struct {
 	SyncClassLockedTotal    *metricsprometheus.Gauge     // sync_class_locked_total 系统锁定的class总量
 	SyncNftTotal            *metricsprometheus.Gauge     // sync_nft_total 系统创建的nft总量
 	SyncClassTotal          *metricsprometheus.Gauge     // sync_class_total 系统创建的class总量
+	SyncTxUndoSeconds       *metricsprometheus.Gauge     // sync_tx_undo_seconds 还未广播的交易
+	SyncTxPendingSeconds    *metricsprometheus.Gauge     // sync_tx_pending_seconds 广播完成，但是还未同步到交易状态的交易
 }
 
 var (
@@ -59,14 +61,14 @@ func (p *prometheusModel) InitPrometheus() {
 		Subsystem: "api",
 		Name:      "http_request_total",
 		Help:      "http request total",
-	}, []string{})
+	}, []string{"code", "method", "uri"})
 
 	// api_http_request_rt_seconds
 	apiHttpRequestRtSeconds := metricsprometheus.NewHistogramFrom(prometheus.HistogramOpts{
 		Subsystem: "api",
 		Name:      "http_request_rt_seconds",
 		Help:      "http request rt seconds",
-	}, []string{})
+	}, []string{"method", "uri"})
 
 	// api_root_balance_amount
 	apiRootBalanceAmout := metricsprometheus.NewGaugeFrom(prometheus.GaugeOpts{
@@ -138,6 +140,20 @@ func (p *prometheusModel) InitPrometheus() {
 		Help:      "class total",
 	}, []string{})
 
+	// sync_tx_undo_seconds
+	syncTxUndoSeconds := metricsprometheus.NewGaugeFrom(prometheus.GaugeOpts{
+		Subsystem: "sync",
+		Name:      "tx_undo_seconds",
+		Help:      "tx undo seconds",
+	}, []string{})
+
+	// sync_tx_pending_seconds
+	syncTxPendingSeconds := metricsprometheus.NewGaugeFrom(prometheus.GaugeOpts{
+		Subsystem: "sync",
+		Name:      "tx_pending_seconds",
+		Help:      "tx pending seconds",
+	}, []string{})
+
 	apiMysqlException.With([]string{}...).Set(0)
 	apiRedisException.With([]string{}...).Set(0)
 	syncTxFailedTotal.With([]string{}...).Set(0)
@@ -149,6 +165,8 @@ func (p *prometheusModel) InitPrometheus() {
 	syncClassLockedTotal.With([]string{}...).Set(0)
 	syncNftTotal.With([]string{}...).Set(0)
 	syncClassTotal.With([]string{}...).Set(0)
+	syncTxUndoSeconds.With([]string{}...).Set(0)
+	syncTxPendingSeconds.With([]string{}...).Set(0)
 
 	p.ApiMysqlException = apiMysqlException
 	p.ApiRedisException = apiRedisException
@@ -164,4 +182,6 @@ func (p *prometheusModel) InitPrometheus() {
 	p.SyncClassLockedTotal = syncClassLockedTotal
 	p.SyncNftTotal = syncNftTotal
 	p.SyncClassTotal = syncClassTotal
+	p.SyncTxUndoSeconds = syncTxUndoSeconds
+	p.SyncTxPendingSeconds = syncTxPendingSeconds
 }
