@@ -20,6 +20,10 @@ var (
 	ErrNotObtained = redislock.ErrNotObtained
 )
 
+func GetDB() *redis.Client {
+	return rdb
+}
+
 // Connect connect tht redis server
 func Connect(addr, password string, db int) {
 	rdb = redis.NewClient(&redis.Options{

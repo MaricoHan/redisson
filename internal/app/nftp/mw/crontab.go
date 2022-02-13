@@ -3,6 +3,7 @@ package mw
 import (
 	"context"
 	"database/sql"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/redis"
 	"time"
 
 	"github.com/friendsofgo/errors"
@@ -11,6 +12,7 @@ import (
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/chain"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/metric"
+	_ "gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/redis"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 )
@@ -99,9 +101,9 @@ func ProcessTimer() {
 			metric.NewPrometheus().SyncMysqlException.With().Set(-1) //监控mysql连接
 		}
 
-		//if err := redis.Client.Ping(redis.Client{}, context.Background()); err != nil {
-		//	metric.NewPrometheus().SyncRedisException.With().Set(-1) //监控redis连接
-		//}
+		if err := redis.GetDB().Ping(context.Background()); err != nil {
+			metric.NewPrometheus().SyncRedisException.With().Set(-1) //监控redis连接
+		}
 
 		if _, err := chain.GetSdkClient().GenConn(); err != nil {
 			metric.NewPrometheus().SyncChainConnError.With().Set(-1) //访问链异常
