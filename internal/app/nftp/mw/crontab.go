@@ -3,7 +3,6 @@ package mw
 import (
 	"context"
 	"database/sql"
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/redis"
 	"time"
 
 	"github.com/friendsofgo/errors"
@@ -12,7 +11,7 @@ import (
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/chain"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/metric"
-	_ "gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/redis"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/redis"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 )
