@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/friendsofgo/errors"
 	sdktype "github.com/irisnet/core-sdk-go/types"
@@ -36,7 +37,8 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	acc, err := models.TAccounts(
 		models.TAccountWhere.AppID.EQ(params.AppID),
 		models.TAccountWhere.Address.EQ(params.Recipient)).OneG(context.Background())
-	if err != nil && errors.Cause(err) == sql.ErrNoRows {
+	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
+		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
 		//404
 		return "", types.NewAppError(types.RootCodeSpace, types.QueryDataFailed, "recipient not found")
 	} else if err != nil {
@@ -53,7 +55,8 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 		models.TClassWhere.ClassID.EQ(string(params.ClassID)),
 		models.TClassWhere.AppID.EQ(params.AppID),
 		models.TClassWhere.Owner.EQ(params.Owner)).OneG(context.Background())
-	if err != nil && errors.Cause(err) == sql.ErrNoRows {
+	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
+		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
 		//404
 		return "", types.NewAppError(types.RootCodeSpace, types.QueryDataFailed, "class not found")
 	} else if err != nil {
@@ -141,7 +144,8 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 	acc, err := models.TAccounts(
 		models.TAccountWhere.AppID.EQ(params.AppID),
 		models.TAccountWhere.Address.EQ(params.Recipient)).OneG(context.Background())
-	if err != nil && errors.Cause(err) == sql.ErrNoRows {
+	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
+		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
 		//404
 		return "", types.NewAppError(types.RootCodeSpace, types.QueryDataFailed, "recipient not found")
 	} else if err != nil {
@@ -159,13 +163,18 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 		models.TNFTWhere.AppID.EQ(params.AppID),
 		models.TNFTWhere.Owner.EQ(params.Owner),
 	).OneG(context.Background())
-	if err != nil && errors.Cause(err) == sql.ErrNoRows {
+	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
+		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
 		//404
 		return "", types.NewAppError(types.RootCodeSpace, types.QueryDataFailed, "nft not found")
 	} else if err != nil {
 		//500
 		log.Error("transfer nft", "query nft error:", err.Error())
 		return "", types.ErrInternal
+	}
+
+	if res.Status == models.TNFTSStatusBurned {
+		return "", types.NewAppError(types.RootCodeSpace, types.QueryDataFailed, "nft not found")
 	}
 
 	if res.Status != models.TNFTSStatusActive {
@@ -251,19 +260,17 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 		if recipient.Recipient == "" {
 			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
 		}
-		acc, err := models.TAccounts(
+		_, err := models.TAccounts(
 			models.TAccountWhere.AppID.EQ(params.AppID),
 			models.TAccountWhere.Address.EQ(recipient.Recipient)).OneG(context.Background())
-		if err != nil && errors.Cause(err) == sql.ErrNoRows {
-			//404
-			return "", types.NewAppError(types.RootCodeSpace, types.QueryDataFailed, "recipient not found")
+		if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
+			(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
+			//400
+			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "recipient not found")
 		} else if err != nil {
 			//500
 			log.Error("transfer nft by batch", "query recipient error:", err.Error())
 			return "", types.ErrInternal
-		}
-		if acc == nil {
-			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
 		}
 
 		//不能自己转让给自己
@@ -280,9 +287,10 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			models.TNFTWhere.AppID.EQ(params.AppID),
 			models.TNFTWhere.Owner.EQ(params.Owner),
 		).OneG(context.Background())
-		if err != nil && errors.Cause(err) == sql.ErrNoRows {
-			//404
-			return "", types.NewAppError(types.RootCodeSpace, types.QueryDataFailed, "nft not found")
+		if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
+			(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
+			//400
+			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "nft not found")
 		} else if err != nil {
 			//500
 			log.Error("transfer nft by batch", "query nft error:", err.Error())
@@ -360,9 +368,10 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 				models.TNFTWhere.AppID.EQ(params.AppID),
 				models.TNFTWhere.Owner.EQ(params.Owner),
 			).One(context.Background(), exec)
-			if err != nil && errors.Cause(err) == sql.ErrNoRows {
-				//404
-				return types.NewAppError(types.RootCodeSpace, types.QueryDataFailed, "recipient not found")
+			if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
+				(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
+				//400
+				return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "recipient not found")
 			} else if err != nil {
 				//500
 				log.Error("transfer nft by batch", "query recipient error:", err.Error())

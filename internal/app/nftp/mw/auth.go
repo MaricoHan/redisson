@@ -4,18 +4,20 @@ import (
 	"bytes"
 	"context"
 	"crypto/sha256"
+	"database/sql"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"sort"
+	"time"
 
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
-
+	"github.com/friendsofgo/errors"
 	"github.com/gorilla/mux"
-
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/metric"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 )
 
@@ -33,6 +35,41 @@ type authHandler struct {
 
 func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Debug("user request", "method:", r.Method, "url:", r.URL.Path)
+	createTime := time.Now()
+	defer func(createTime time.Time) {
+		interval := time.Now().Sub(createTime)
+		metric.NewPrometheus().ApiHttpRequestRtSeconds.With([]string{
+			"method",
+			r.Method,
+			"uri",
+			r.RequestURI,
+		}...).Observe(float64(interval))
+	}(createTime)
+	root, err := models.TAccounts(
+		models.TAccountWhere.AppID.EQ(uint64(0)),
+	).OneG(context.Background())
+	if err != nil && errors.Cause(err) == sql.ErrNoRows {
+		//404
+	} else if err != nil {
+		//500
+		log.Error("query root balance", "query root error:", err.Error())
+	}
+	metric.NewPrometheus().ApiRootBalanceAmount.With([]string{"address", root.Address, "denom", "gas"}...).Set(float64(root.Gas.Uint64)) //系统root账户余额
+
+	txsPending, err := models.TTXS(
+		models.TTXWhere.Status.EQ(models.TTXSStatusPending),
+	).AllG(context.Background())
+	if err != nil && errors.Cause(err) == sql.ErrNoRows {
+		//404
+	} else if err != nil {
+		//500
+		log.Error("query tx pending total", "query tx error:", err.Error())
+	}
+	for _, tx := range txsPending {
+		interval := time.Now().Sub(tx.CreateAt.Time)
+		metric.NewPrometheus().SyncTxPendingSeconds.With([]string{"tx_hash", tx.Hash, "interval", interval.String()}...).Set(0) //系统未完成的交易
+	}
+
 	appKey := r.Header.Get("X-Api-Key")
 	appKeyResult, err := models.TAppKeys(
 		qm.Select(models.TAppKeyColumns.APISecret),

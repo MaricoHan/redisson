@@ -228,18 +228,20 @@ func (c Controller) serverOptions(
 			switch appErr.Code() {
 			case types.ClientParamsError, types.FrequentRequestsNotSupports, types.NftStatusAbnormal,
 				types.NftclassStatusAbnormal, types.MaximumLimitExceeded,
-				types.NotOwnerAccount, types.NotAppOfAccount:
+				types.NotAppOfAccount:
 				metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "400"}...).Add(1)
 				w.WriteHeader(http.StatusBadRequest) //400
 			case types.AuthenticationFailed:
 				metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "403"}...).Add(1)
 				w.WriteHeader(http.StatusForbidden) //403
-			case types.NftclassNotExist, types.NftNotExist, types.TxNotExist, types.QueryDataFailed:
+			case types.NftclassNotExist, types.NftNotExist, types.TxNotExist, types.QueryDataFailed,
+				types.NotOwnerAccount:
 				metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "404"}...).Add(1)
 				w.WriteHeader(http.StatusNotFound) //404
 			default:
 				metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "500"}...).Add(1)
 				w.WriteHeader(http.StatusInternalServerError) //500
+				appErr = types.ErrInternal
 			}
 			response = Response{ErrorResp: &ErrorResp{
 				CodeSpace: codeSpace,
