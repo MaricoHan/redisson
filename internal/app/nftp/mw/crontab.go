@@ -17,6 +17,15 @@ import (
 )
 
 func ProcessTimer() {
+	metric.NewPrometheus().SyncTxPendingTotal.With().Set(0)
+	metric.NewPrometheus().SyncTxFailedTotal.With().Set(0)
+	metric.NewPrometheus().SyncNftLockedTotal.With().Set(0)
+	metric.NewPrometheus().SyncNftTotal.With().Set(0)
+	metric.NewPrometheus().SyncClassLockedTotal.With().Set(0)
+	metric.NewPrometheus().SyncClassTotal.With().Set(0)
+	metric.NewPrometheus().SyncMysqlException.With().Set(0)
+	metric.NewPrometheus().SyncRedisException.With().Set(0)
+	metric.NewPrometheus().SyncChainConnError.With().Set(0)
 	crontab := cron.New(cron.WithSeconds())
 	spec := "*/10 * * * * ?" //每十秒一次
 	task := func() {
@@ -32,7 +41,7 @@ func ProcessTimer() {
 		for _, tx := range txsPending {
 			metric.NewPrometheus().SyncTxPendingTotal.With().Add(1) //系统未完成的交易总量
 			interval := time.Now().Sub(tx.CreateAt.Time)
-			metric.NewPrometheus().SyncTxPendingSeconds.With([]string{"tx_hash", tx.Hash, "interval", interval.String()}...).Set(-1) //系统未完成的交易
+			metric.NewPrometheus().SyncTxPendingSeconds.With([]string{"tx_hash", tx.Hash, "interval", interval.String()}...).Set(0) //系统未完成的交易
 		}
 
 		txsFailed, err := models.TTXS(

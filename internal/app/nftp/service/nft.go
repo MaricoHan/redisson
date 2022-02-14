@@ -154,9 +154,9 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
 		return "", types.ErrInternal
 	}
 
-	// nft does not exist ：404
-	if tNft == nil || tNft.Status != models.TNFTSStatusActive {
-		return "", types.ErrNftNotFound
+	// nft status ：400
+	if tNft.Status != models.TNFTSStatusActive {
+		return "", types.ErrNftStatus
 	}
 
 	// judge whether the Caller is the owner：404
@@ -255,6 +255,7 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 		if tNft == nil {
 			return "", types.NewAppError(types.RootCodeSpace, types.QueryDataFailed, "the NFT does not exist")
 		}
+
 		if tNft.Status != models.TNFTSStatusActive {
 			return "", types.ErrNftStatus
 		}
@@ -353,14 +354,14 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (string, error) {
 		return "", types.ErrInternal
 	}
 
-	// nft does not exist or status is not active：404
-	if tNft == nil || tNft.Status != models.TNFTSStatusActive {
-		return "", types.ErrNftNotFound
-	}
-
 	// pending：400
 	if tNft.Status == models.TNFTSStatusPending {
 		return "", types.ErrNftStatus
+	}
+
+	// nft does not exist or status is not active：404
+	if tNft.Status != models.TNFTSStatusActive {
+		return "", types.ErrNftNotFound
 	}
 
 	// judge whether the Caller is the owner：404
