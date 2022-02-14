@@ -3,8 +3,6 @@ package mw
 import (
 	"context"
 	"database/sql"
-	"time"
-
 	"github.com/friendsofgo/errors"
 	"github.com/robfig/cron/v3"
 	"github.com/volatiletech/null/v8"
@@ -17,18 +15,19 @@ import (
 )
 
 func ProcessTimer() {
-	metric.NewPrometheus().SyncTxPendingTotal.With().Set(0)
-	metric.NewPrometheus().SyncTxFailedTotal.With().Set(0)
-	metric.NewPrometheus().SyncNftLockedTotal.With().Set(0)
-	metric.NewPrometheus().SyncNftTotal.With().Set(0)
-	metric.NewPrometheus().SyncClassLockedTotal.With().Set(0)
-	metric.NewPrometheus().SyncClassTotal.With().Set(0)
-	metric.NewPrometheus().SyncMysqlException.With().Set(0)
-	metric.NewPrometheus().SyncRedisException.With().Set(0)
-	metric.NewPrometheus().SyncChainConnError.With().Set(0)
 	crontab := cron.New(cron.WithSeconds())
 	spec := "*/10 * * * * ?" //每十秒一次
 	task := func() {
+		metric.NewPrometheus().SyncTxPendingTotal.With().Set(0)
+		metric.NewPrometheus().SyncTxFailedTotal.With().Set(0)
+		metric.NewPrometheus().SyncNftLockedTotal.With().Set(0)
+		metric.NewPrometheus().SyncNftTotal.With().Set(0)
+		metric.NewPrometheus().SyncClassLockedTotal.With().Set(0)
+		metric.NewPrometheus().SyncClassTotal.With().Set(0)
+		metric.NewPrometheus().SyncMysqlException.With().Set(0)
+		metric.NewPrometheus().SyncRedisException.With().Set(0)
+		metric.NewPrometheus().SyncChainConnError.With().Set(0)
+
 		txsPending, err := models.TTXS(
 			models.TTXWhere.Status.EQ(models.TTXSStatusPending),
 		).AllG(context.Background())
@@ -38,10 +37,8 @@ func ProcessTimer() {
 			//500
 			log.Error("query tx pending total", "query tx error:", err.Error())
 		}
-		for _, tx := range txsPending {
+		for _ = range txsPending {
 			metric.NewPrometheus().SyncTxPendingTotal.With().Add(1) //系统未完成的交易总量
-			interval := time.Now().Sub(tx.CreateAt.Time)
-			metric.NewPrometheus().SyncTxPendingSeconds.With([]string{"tx_hash", tx.Hash, "interval", interval.String()}...).Set(0) //系统未完成的交易
 		}
 
 		txsFailed, err := models.TTXS(
@@ -109,7 +106,7 @@ func ProcessTimer() {
 			metric.NewPrometheus().SyncMysqlException.With().Set(-1) //监控mysql连接
 		}
 
-		if err := redis.GetDB().Ping(context.Background()); err != nil {
+		if !redis.RedisPing() {
 			metric.NewPrometheus().SyncRedisException.With().Set(-1) //监控redis连接
 		}
 

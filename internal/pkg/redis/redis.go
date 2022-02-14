@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/bsm/redislock"
-	"github.com/go-redis/redis/v8"
+	redis "github.com/go-redis/redis/v8"
 )
 
 const prefix = "nftp"
@@ -20,8 +20,12 @@ var (
 	ErrNotObtained = redislock.ErrNotObtained
 )
 
-func GetDB() *redis.Client {
-	return rdb
+func RedisPing() bool {
+	conn := rdb.Conn(context.Background())
+	if conn == nil {
+		return false
+	}
+	return true
 }
 
 // Connect connect tht redis server
