@@ -278,6 +278,7 @@ func (svc *Account) AccountsHistory(params dto.AccountsP) (*dto.AccountOperation
 	queryMod := []qm.QueryMod{
 		qm.From(models.TableNames.TMSGS),
 		models.TMSGWhere.AppID.EQ(params.AppID),
+		models.TMSGWhere.Operation.NEQ(models.TMSGSOperationSysIssueClass),
 	}
 
 	if params.Account != "" {
