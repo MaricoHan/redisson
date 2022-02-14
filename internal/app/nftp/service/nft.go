@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-
 	sdktype "github.com/irisnet/core-sdk-go/types"
 	"github.com/irisnet/irismod-sdk-go/nft"
 	"github.com/tendermint/tendermint/crypto/tmhash"
@@ -50,7 +49,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) ([]string, error) {
 		} else if err != nil {
 			//500
 			log.Error("create nfts", "query class error:", err.Error())
-			return types.ErrCreate
+			return types.ErrInternal
 		}
 		if classOne.Status != models.TNFTSStatusActive {
 			return types.ErrNftClassStatus
@@ -83,7 +82,10 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) ([]string, error) {
 			msgs = append(msgs, &createNft)
 		}
 		baseTx := svc.base.CreateBaseTx(classOne.Owner, "")
-		originData, thash, err := svc.base.BuildAndSign(msgs, baseTx)
+		originData, thash, _ := svc.base.BuildAndSign(msgs, baseTx)
+		baseTx.Gas = svc.base.calculateGas(originData)
+		originData, thash, err = svc.base.BuildAndSign(msgs, baseTx)
+
 		if err != nil {
 			log.Debug("create nfts", "buildandsign error:", err.Error())
 			return types.ErrBuildAndSend
@@ -114,7 +116,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) ([]string, error) {
 		err = ttx.Insert(context.Background(), exec, boil.Infer())
 		if err != nil {
 			log.Error("create nft", "ttx insert error: ", err)
-			return types.ErrCreate
+			return types.ErrInternal
 		}
 		classOne.Status = models.TTXSStatusPending
 		classOne.Offset = classOne.Offset + uint64(params.Amount)
@@ -122,7 +124,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) ([]string, error) {
 		ok, err := classOne.Update(context.Background(), exec, boil.Infer())
 		if err != nil {
 			log.Error("create nft", "class status update error: ", err)
-			return types.ErrCreate
+			return types.ErrInternal
 		}
 		if ok != 1 {
 			return types.ErrNftClassNotFound
@@ -149,7 +151,7 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
 	} else if err != nil {
 		//500
 		log.Error("edit nft by index", "query nft error:", err.Error())
-		return "", types.ErrEdit
+		return "", types.ErrInternal
 	}
 
 	// nft does not exist ：404
@@ -184,6 +186,8 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
 
 	// build and sign transaction
 	baseTx := svc.base.CreateBaseTx(params.Sender, "")
+	originData, txHash, _ := svc.base.BuildAndSign(sdktype.Msgs{&msgEditNFT}, baseTx)
+	baseTx.Gas = svc.base.calculateGas(originData)
 	signedData, txHash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgEditNFT}, baseTx)
 	if err != nil {
 		log.Debug("edit nft by index", "BuildAndSign error:", err.Error())
@@ -244,7 +248,7 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 		} else if err != nil {
 			//500
 			log.Error("edit nft by batch", "query nft error:", err.Error())
-			return "", types.ErrEdit
+			return "", types.ErrInternal
 		}
 
 		// nft does not exist or status is not active：400
@@ -282,6 +286,8 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 
 	// build and sign transaction
 	baseTx := svc.base.CreateBaseTx(params.Sender, "")
+	originData, txHash, _ := svc.base.BuildAndSign(msgEditNFTs, baseTx)
+	baseTx.Gas = svc.base.calculateGas(originData)
 	signedData, txHash, err := svc.base.BuildAndSign(msgEditNFTs, baseTx)
 	if err != nil {
 		log.Debug("edit nft by batch", "BuildAndSign error:", err.Error())
@@ -344,7 +350,7 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (string, error) {
 	} else if err != nil {
 		//500
 		log.Error("delete nft by index", "query nft error:", err.Error())
-		return "", types.ErrEdit
+		return "", types.ErrInternal
 	}
 
 	// nft does not exist or status is not active：404
@@ -375,6 +381,8 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (string, error) {
 
 	// build and sign transaction
 	baseTx := svc.base.CreateBaseTx(params.Sender, "")
+	originData, txHash, _ := svc.base.BuildAndSign(sdktype.Msgs{&msgBurnNFT}, baseTx)
+	baseTx.Gas = svc.base.calculateGas(originData)
 	signedData, txHash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgBurnNFT}, baseTx)
 	if err != nil {
 		log.Debug("delete nft by index", "BuildAndSign error:", err.Error())
@@ -435,7 +443,7 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 		} else if err != nil {
 			//500
 			log.Error("delete nft by batch", "query nft error:", err.Error())
-			return "", types.ErrBurn
+			return "", types.ErrInternal
 		}
 
 		// nft does not exist or status is not active：400
@@ -463,6 +471,8 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 
 	// build and sign transaction
 	baseTx := svc.base.CreateBaseTx(params.Sender, "")
+	originData, txHash, _ := svc.base.BuildAndSign(msgBurnNFTs, baseTx)
+	baseTx.Gas = svc.base.calculateGas(originData)
 	signedData, txHash, err := svc.base.BuildAndSign(msgBurnNFTs, baseTx)
 	if err != nil {
 		log.Debug("delete nft by batch", "BuildAndSign error:", err.Error())
@@ -577,7 +587,7 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 	} else if err != nil {
 		//500
 		log.Error("query nft operation history", "query nft error:", err.Error())
-		return nil, types.ErrQuery
+		return nil, types.ErrInternal
 	}
 
 	queryMod := []qm.QueryMod{
@@ -629,7 +639,7 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 		if strings.Contains(err.Error(), "records not exist") {
 			return result, nil
 		}
-		return nil, types.ErrQuery
+		return nil, types.ErrInternal
 	}
 
 	result.TotalCount = total

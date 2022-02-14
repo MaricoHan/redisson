@@ -30,7 +30,7 @@ func (svc *Tx) TxResultByTxHash(params dto.TxResultByTxHashP) (*dto.TxResultByTx
 	} else if err != nil {
 		//500
 		log.Error("query tx by hash", "query tx error:", err.Error())
-		return nil, types.ErrQuery
+		return nil, types.ErrInternal
 	}
 
 	//result

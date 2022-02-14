@@ -40,7 +40,7 @@ func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Name")
 	}
 
-	if (req.Symbol != "" && len([]rune(strings.TrimSpace(req.Symbol))) < 3) || (req.Symbol != "" && len([]rune(strings.TrimSpace(req.Symbol))) > 64) {
+	if (req.Symbol != "" && len([]rune(strings.TrimSpace(req.Symbol))) != 0 && len([]rune(strings.TrimSpace(req.Symbol))) < 3) || (req.Symbol != "" && len([]rune(strings.TrimSpace(req.Symbol))) != 0 && len([]rune(strings.TrimSpace(req.Symbol))) > 64) {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Symbol")
 	}
 
@@ -48,8 +48,10 @@ func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Description")
 	}
 
-	if req.Uri != "" && len([]rune(strings.TrimSpace(req.Uri))) > 256 {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Uri")
+	if req.Uri != "" {
+		if err := h.base.UriCheck(req.Uri); err != nil {
+			return nil, err
+		}
 	}
 
 	if req.UriHash != "" && len([]rune(strings.TrimSpace(req.UriHash))) > 512 {
