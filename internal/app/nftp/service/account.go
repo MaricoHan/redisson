@@ -6,40 +6,30 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"golang.org/x/sync/errgroup"
 	"io/ioutil"
 	"strings"
 	"time"
 
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-
-	"github.com/irisnet/core-sdk-go/common/crypto/hd"
-
-	"github.com/volatiletech/sqlboiler/v4/boil"
-
-	"gitlab.bianjie.ai/irita-paas/open-api/config"
-
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
-
-	"gitlab.bianjie.ai/irita-paas/orms/orm-nft"
-
-	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"
-
-	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
-
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
-
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
-
 	"github.com/friendsofgo/errors"
-	"github.com/irisnet/core-sdk-go/common/crypto/codec"
-	"github.com/volatiletech/null/v8"
-	"golang.org/x/sync/errgroup"
-
 	"github.com/irisnet/core-sdk-go/bank"
 	sdkcrypto "github.com/irisnet/core-sdk-go/common/crypto"
+	"github.com/irisnet/core-sdk-go/common/crypto/codec"
+	"github.com/irisnet/core-sdk-go/common/crypto/hd"
 	sdktype "github.com/irisnet/core-sdk-go/types"
+	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	sqltype "github.com/volatiletech/sqlboiler/v4/types"
+
+	"gitlab.bianjie.ai/irita-paas/open-api/config"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	http2 "gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/http"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
+	"gitlab.bianjie.ai/irita-paas/orms/orm-nft"
+	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
+	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"
 )
 
 const algo = "secp256k1"
@@ -75,7 +65,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 	} else if err != nil {
 		//500
 		log.Error("create account", "query root account error:", err.Error())
-		return nil, types.ErrCreate
+		return nil, types.ErrInternal
 	}
 	tmsgs := modext.TMSGs{}
 	var msgs bank.MsgMultiSend
@@ -89,7 +79,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 		} else if err != nil {
 			//500
 			log.Error("create account", "query app error:", err.Error())
-			return types.ErrCreate
+			return types.ErrInternal
 		}
 
 		tAccounts := modext.TAccounts{}
@@ -106,7 +96,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 			if err != nil {
 				//500
 				log.Debug("create account", "NewMnemonicKeyManagerWithHDPath error:", err.Error())
-				return types.ErrCreate
+				return types.ErrInternal
 			}
 			_, priv := res.Generate()
 
@@ -131,7 +121,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 		err = tAccounts.InsertAll(context.Background(), exec)
 		if err != nil {
 			log.Debug("create account", "accounts insert error:", err.Error())
-			return types.ErrCreate
+			return types.ErrInternal
 		}
 		tAppOneObj.AccOffset += params.Count
 		updateRes, err := tAppOneObj.Update(context.Background(), exec, boil.Infer())
@@ -142,6 +132,8 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 		if env == "stage" {
 			msgs = svc.base.CreateGasMsg(classOne.Address, addresses)
 			tx := svc.base.CreateBaseTx(classOne.Address, defultKeyPassword)
+			resultTx, _ := svc.base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
+			tx.Gas = svc.base.calculateGas(resultTx.Data)
 			resultTx, err = svc.base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
 			if err != nil {
 				log.Error("create account", "build and send, error:", err)
@@ -175,7 +167,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 			}
 			if err := group.Wait(); err != nil {
 				log.Error("create account", "group_error:", err)
-				return types.ErrCreate
+				return types.ErrInternal
 			}
 		}
 		return nil
@@ -204,7 +196,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 		err = tmsgs.InsertAll(context.Background(), boil.GetContextDB())
 		if err != nil {
 			log.Error("create account", "msgs create error:", err)
-			return nil, types.ErrCreate
+			return nil, types.ErrInternal
 		}
 	}
 	return addresses, nil

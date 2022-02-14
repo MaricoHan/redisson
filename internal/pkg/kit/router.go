@@ -3,6 +3,7 @@ package kit
 import (
 	"context"
 	"encoding/json"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/metric"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -161,6 +162,9 @@ func (c Controller) encodeResponse(ctx context.Context, w http.ResponseWriter, r
 	response := Response{
 		Data: resp,
 	}
+	method := ctx.Value(httptransport.ContextKeyRequestMethod)
+	uri := ctx.Value(httptransport.ContextKeyRequestURI)
+	metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "200"}...).Add(1)
 	return httptransport.EncodeJSONResponse(ctx, w, response)
 }
 
@@ -176,7 +180,6 @@ func (c Controller) serverOptions(
 			log.Error("Parse form failed", "error", err.Error())
 			return ctx
 		}
-
 		improveValue := func(vs []string) interface{} {
 			if len(vs) == 1 {
 				return vs[0]
@@ -198,7 +201,6 @@ func (c Controller) serverOptions(
 		for k, v := range request.Header {
 			ctx = context.WithValue(ctx, k, v)
 		}
-
 		return ctx
 	}
 
@@ -206,11 +208,14 @@ func (c Controller) serverOptions(
 	errorEncoderOption := func(ctx context.Context, err error, w http.ResponseWriter) {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		var response Response
+		method := ctx.Value(httptransport.ContextKeyRequestMethod)
+		uri := ctx.Value(httptransport.ContextKeyRequestURI)
 		urlPath := ctx.Value(httptransport.ContextKeyRequestPath)
 		url := strings.SplitN(urlPath.(string)[1:], "/", 3)
 		codeSpace := strings.ToUpper(url[0])
 		appErr, ok := err.(types.IError)
 		if !ok {
+			metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "500"}...).Add(1)
 			w.WriteHeader(http.StatusInternalServerError)
 			response = Response{
 				ErrorResp: &ErrorResp{
@@ -224,13 +229,18 @@ func (c Controller) serverOptions(
 			case types.ClientParamsError, types.FrequentRequestsNotSupports, types.NftStatusAbnormal,
 				types.NftclassStatusAbnormal, types.MaximumLimitExceeded,
 				types.NotOwnerAccount, types.NotAppOfAccount:
+				metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "400"}...).Add(1)
 				w.WriteHeader(http.StatusBadRequest) //400
 			case types.AuthenticationFailed:
+				metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "403"}...).Add(1)
 				w.WriteHeader(http.StatusForbidden) //403
 			case types.NftclassNotExist, types.NftNotExist, types.TxNotExist, types.QueryDataFailed:
+				metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "404"}...).Add(1)
 				w.WriteHeader(http.StatusNotFound) //404
 			default:
+				metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "500"}...).Add(1)
 				w.WriteHeader(http.StatusInternalServerError) //500
+				appErr = types.ErrInternal
 			}
 			response = Response{ErrorResp: &ErrorResp{
 				CodeSpace: codeSpace,
@@ -241,7 +251,6 @@ func (c Controller) serverOptions(
 		bz, _ := json.Marshal(response)
 		_, _ = w.Write(bz)
 	}
-
 	var options []httptransport.ServerOption
 	before = append(
 		[]httptransport.RequestFunc{httptransport.PopulateRequestContext, copyParams},

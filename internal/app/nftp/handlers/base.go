@@ -3,7 +3,9 @@ package handlers
 import (
 	"context"
 	"strconv"
+	"strings"
 
+	"github.com/asaskevich/govalidator"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 )
 
@@ -21,6 +23,20 @@ func (h base) AppID(ctx context.Context) uint64 {
 	}
 	appID, _ := strconv.ParseInt(keysListString[0], 10, 64)
 	return uint64(appID)
+}
+
+func (h base) UriCheck(uri string) error {
+	u := strings.TrimSpace(uri)
+	if len([]rune(u)) == 0 || len([]rune(u)) > 256 {
+		return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Uri")
+	}
+
+	isUri := govalidator.IsRequestURI(u)
+	if !isUri {
+		return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Uri")
+	}
+
+	return nil
 }
 
 type pageBasic struct {

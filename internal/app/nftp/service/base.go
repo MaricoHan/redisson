@@ -7,12 +7,12 @@ import (
 	"encoding/hex"
 	"strings"
 
+	sdk "github.com/irisnet/core-sdk-go"
 	"github.com/irisnet/core-sdk-go/bank"
+	sdktype "github.com/irisnet/core-sdk-go/types"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 
-	sdk "github.com/irisnet/core-sdk-go"
-	sdktype "github.com/irisnet/core-sdk-go/types"
 	"gitlab.bianjie.ai/irita-paas/open-api/config"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
@@ -128,4 +128,7 @@ func (m Base) CreateGasMsg(inputAddress string, outputAddress []string) bank.Msg
 		Outputs: outputs,
 	}
 	return msg
+}
+func (m Base) calculateGas(origindata []byte) uint64 {
+	return config.Get().Chain.GasCoefficient * uint64(len(origindata))
 }
