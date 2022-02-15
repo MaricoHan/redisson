@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"strings"
 	"time"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/config"
@@ -32,6 +31,23 @@ type account struct {
 func newAccount(svc *service.Account) *account {
 	return &account{svc: svc}
 }
+
+var (
+	// ModuleOperation 定义验证模块
+	ModuleOperation = map[string]map[string]string{
+		"account": {
+			"add_gas": "add_gas",
+		},
+		"nft": {
+			"transfer_class": "transfer_class",
+			"mint":           "mint",
+			"edit":           "edit",
+			"transfer":       "transfer",
+			"burn":           "burn",
+			"issue_class":    "issue_class",
+		},
+	}
+)
 
 // CreateAccount Create one or more accounts
 // return creation result
@@ -183,11 +199,11 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 	params.Module = h.module(ctx)
 	params.Operation = h.operation(ctx)
 	if params.Module != "" && params.Operation != "" {
-		if params.Module != "account" && params.Module != "nft" {
+		operation, ok := ModuleOperation[params.Module]
+		if !ok {
 			return nil, types.ErrParams
-		} else if params.Module == "account" && params.Operation != "add_gas" {
-			return nil, types.ErrParams
-		} else if params.Module == "nft" && !strings.Contains("transfer_class/mint/edit/transfer/burn/issue_class", params.Operation) {
+		}
+		if _, ok = operation[params.Operation]; !ok {
 			return nil, types.ErrParams
 		}
 	}
