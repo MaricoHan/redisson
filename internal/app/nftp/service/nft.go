@@ -269,6 +269,10 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 			return "", types.ErrInternal
 		}
 
+		if tNft.Status == models.TNFTSStatusBurned {
+			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the NFT does not exist")
+		}
+
 		// nft status is not active：400
 		if tNft.Status != models.TNFTSStatusActive {
 			return "", types.ErrNftStatus
@@ -373,7 +377,7 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (string, error) {
 	}
 
 	// 404
-	if tNft.Status != models.TNFTSStatusBurned {
+	if tNft.Status == models.TNFTSStatusBurned {
 		return "", types.ErrNftNotFound
 	}
 
@@ -467,6 +471,10 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 			//500
 			log.Error("delete nft by batch", "query nft error:", err.Error())
 			return "", types.ErrInternal
+		}
+
+		if tNft.Status == models.TNFTSStatusBurned {
+			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the NFT does not exist")
 		}
 
 		// nft does not exist or status is not active：400

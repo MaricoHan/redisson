@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -49,6 +50,7 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 	key := fmt.Sprintf("%s:%s", appID, req.OperationID)
 	ok, err := redis.Has(key)
 	if err != nil {
+		log.Error("redis connect", "error", "redis connect")
 		writeInternalResp(w)
 		return
 	}
@@ -59,6 +61,7 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 	}
 
 	if err := redis.Set(key, "1", time.Second*60); err != nil {
+		log.Error("redis connect timeout", "error", "redis connect")
 		writeBadRequestResp(w, types.ErrInternal)
 		return
 	}

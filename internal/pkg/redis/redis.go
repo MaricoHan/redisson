@@ -5,13 +5,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/bsm/redislock"
 	redis "github.com/go-redis/redis/v8"
 )
 
-const prefix = "nftp"
+const (
+	prefix       = "nftp"
+	ErrRedisConn = "dial tcp 127.0.0.1:6379: connect: connection refused"
+)
 
 var (
 	rdb    *redis.Client
@@ -21,11 +25,11 @@ var (
 )
 
 func RedisPing() bool {
-	conn := rdb.Conn(context.Background())
-	if conn == nil {
-		return false
+	result := rdb.Ping(context.Background())
+	if strings.Contains(result.String(), "PONG") {
+		return true
 	}
-	return true
+	return false
 }
 
 // Connect connect tht redis server

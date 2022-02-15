@@ -64,7 +64,6 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 		log.Error("transfer nft class", "query class error:", err.Error())
 		return "", types.ErrInternal
 	}
-
 	if class.Status != models.TClassesStatusActive {
 		return "", types.ErrNftClassStatus
 	}
@@ -297,6 +296,10 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			return "", types.ErrInternal
 		}
 
+		if res.Status == models.TNFTSStatusBurned {
+			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "nft not found")
+		}
+
 		if res.Status != models.TNFTSStatusActive {
 			return "", types.ErrNftStatus
 		}
@@ -371,13 +374,16 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
 				(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
 				//400
-				return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "recipient not found")
+				return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "nft not found")
 			} else if err != nil {
 				//500
 				log.Error("transfer nft by batch", "query recipient error:", err.Error())
 				return types.ErrInternal
 			}
 
+			if res.Status == models.TNFTSStatusBurned {
+				return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "nft not found")
+			}
 			if res.Status != models.TNFTSStatusActive {
 				return types.ErrNftStatus
 			}
