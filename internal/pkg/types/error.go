@@ -7,7 +7,6 @@ const (
 )
 
 const (
-	QueryDataFailed                = "QUERY_DATA_FAILED"
 	InternalFailed                 = "INTERNAL_FAILED"
 	AuthenticationFailed           = "AUTHENTICATION_FAILED"
 	ClientParamsError              = "CLIENT_PARAMS_ERROR"
@@ -25,7 +24,6 @@ const (
 )
 
 var (
-	ErrDataQuery       = Register(RootCodeSpace, QueryDataFailed, "failed to query data")
 	ErrInternal        = Register(RootCodeSpace, InternalFailed, "internal")
 	ErrAuthenticate    = Register(RootCodeSpace, AuthenticationFailed, "failed to authentication")
 	ErrParams          = Register(RootCodeSpace, ClientParamsError, "failed to client params")

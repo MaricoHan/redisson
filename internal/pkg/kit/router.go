@@ -233,7 +233,7 @@ func (c Controller) serverOptions(
 			case types.AuthenticationFailed:
 				metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "403"}...).Add(1)
 				w.WriteHeader(http.StatusForbidden) //403
-			case types.QueryDataFailed, types.NotFound:
+			case types.NotFound:
 				metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "404"}...).Add(1)
 				w.WriteHeader(http.StatusNotFound) //404
 			default:
