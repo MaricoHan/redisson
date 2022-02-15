@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -12,6 +11,8 @@ import (
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/redis"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
+
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 )
 
 func IdempotentMiddleware(h http.Handler) http.Handler {

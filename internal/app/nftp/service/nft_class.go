@@ -77,8 +77,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 		Recipient: params.Owner,
 	}
 	originData, txHash, _ := svc.base.BuildAndSign(sdktype.Msgs{&createDenomMsg, &transferDenomMsg}, baseTx)
-	//baseTx.Gas = svc.base.calculateGas(originData)
-	baseTx.Gas = uint64(3000000)
+	baseTx.Gas = svc.base.calculateGas(originData)
 	originData, txHash, err = svc.base.BuildAndSign(sdktype.Msgs{&createDenomMsg, &transferDenomMsg}, baseTx)
 	if err != nil {
 		log.Debug("create nft class", "BuildAndSign error:", err.Error())
