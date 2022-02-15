@@ -7,6 +7,7 @@ const (
 )
 
 const (
+	// InternalFailed		error code
 	InternalFailed                 = "INTERNAL_FAILED"
 	AuthenticationFailed           = "AUTHENTICATION_FAILED"
 	ClientParamsError              = "CLIENT_PARAMS_ERROR"
@@ -21,6 +22,46 @@ const (
 	TxStatusPending                = "TX_STATUS_PENDING"
 	TxStatusUndo                   = "TX_STATUS_UNDO"
 	StructureSendTransactionFailed = "STRUCTURE_SEND_TRANSACTION_FAILED"
+
+	// ErrOffset		error msg handle
+	ErrOffset         = "offset format error"
+	ErrOffsetInt      = "offset cannot be less than 0"
+	ErrLimitParam     = "limit is invalid"
+	ErrLimitParamInt  = "limit must be between 1 and 50"
+	ErrCountLen       = "count length error"
+	ErrStartDate      = "startDate format error"
+	ErrEndDate        = "endDate format error"
+	ErrDate           = "endDate before startDate"
+	ErrRecipient      = "recipient cannot be empty"
+	ErrRecipientLen   = "recipient length error"
+	ErrIndex          = "index format error"
+	ErrIndexLen       = "index cannot be empty"
+	ErrIndexInt       = "index cannot be 0"
+	ErrRecipients     = "recipients cannot be empty"
+	ErrName           = "name cannot be empty"
+	ErrNameLen        = "name length error"
+	ErrSymbolLen      = "symbol length error"
+	ErrDescriptionLen = "description length error"
+	ErrUri            = "uri format error"
+	ErrUriLen         = "uri length error"
+	ErrUriHashLen     = "uriHash length error"
+	ErrDataLen        = "data length error"
+	ErrOwner          = "owner cannot be empty"
+	ErrOwnerLen       = "owner length error"
+	ErrSortBy         = "sortBy is invalid"
+	ErrIndices        = "indices format error"
+	ErrIndicesLen     = "indices cannot be empty"
+	ErrOperation      = "operation is invalid"
+	ErrAmountInt      = "amount must be between 1 and 100"
+	ErrRepeat         = "index is repeat"
+
+	// ErrSelfTransfer		error msg service
+	ErrSelfTransfer      = "recipient cannot be owner"
+	ErrRecipientFound    = "recipient not found"
+	ErrNftFound          = "nft not found"
+	ErrNftStatusMsg      = "nft status is invalid"
+	ErrNftClassStatusMsg = "nft class status is invalid"
+	ErrOwnerFound        = "owner not found"
 )
 
 var (
@@ -29,8 +70,8 @@ var (
 	ErrParams          = Register(RootCodeSpace, ClientParamsError, "failed to client params")
 	ErrChainConn       = Register(RootCodeSpace, ConnectionChainFailed, "failed to connection chain")
 	ErrIdempotent      = Register(RootCodeSpace, FrequentRequestsNotSupports, "failed to idempotent")
-	ErrNftClassStatus  = Register(RootCodeSpace, NftclassStatusAbnormal, "the nft class status is invalid")
-	ErrNftStatus       = Register(RootCodeSpace, NftStatusAbnormal, "the nft status is invalid")
+	ErrNftClassStatus  = Register(RootCodeSpace, NftclassStatusAbnormal, ErrNftClassStatusMsg)
+	ErrNftStatus       = Register(RootCodeSpace, NftStatusAbnormal, ErrNftStatusMsg)
 	ErrNotFound        = Register(RootCodeSpace, NotFound, "resource not found")
 	ErrLimit           = Register(RootCodeSpace, MaximumLimitExceeded, "maximum limit exceeded")
 	ErrBuildAndSign    = Register(RootCodeSpace, StructureSignTransactionFailed, "failed to build and sign")

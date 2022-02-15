@@ -40,7 +40,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
 		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
 		//400
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "owner not found")
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOwnerFound)
 	} else if err != nil {
 		//500
 		log.Error("create nft class", "query owner error:", err.Error())
@@ -204,7 +204,7 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 		return err
 	})
 	if err != nil {
-		if strings.Contains(err.Error(), "records not exist") {
+		if strings.Contains(err.Error(), SqlNoFound()) {
 			return result, nil
 		}
 		return result, err

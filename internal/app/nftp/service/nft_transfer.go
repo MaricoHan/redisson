@@ -31,7 +31,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	//不能自己转让给自己
 	//400
 	if params.Recipient == params.Owner {
-		return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "recipient cannot be owner")
+		return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrSelfTransfer)
 	}
 
 	//recipient不能为平台外账户或此应用外账户或非法账户
@@ -41,7 +41,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
 		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
 		//400
-		return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "recipient not found")
+		return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientFound)
 	} else if err != nil {
 		//500
 		log.Error("transfer nft class", "query recipient error:", err.Error())
@@ -138,7 +138,7 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 	//不能自己转让给自己
 	//400
 	if params.Recipient == params.Owner {
-		return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "recipient cannot be owner")
+		return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrSelfTransfer)
 	}
 
 	//recipient不能为平台外账户或此应用外账户或非法账户
@@ -148,7 +148,7 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (stri
 	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
 		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
 		//400
-		return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "recipient not found")
+		return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientFound)
 	} else if err != nil {
 		//500
 		log.Error("transfer nft", "query recipient error:", err.Error())
@@ -257,18 +257,18 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 
 		//index校验 400
 		if recipient.Index == 0 {
-			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+string(i)+" index in the list cannot be 0")
+			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+string(i)+"th "+types.ErrIndexInt)
 		}
 
 		//recipient不能为空 400
 		if recipient.Recipient == "" {
-			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+string(i)+" recipient in the list cannot be empty")
+			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+string(i)+"th "+types.ErrRecipient)
 		}
 
 		//不能自己转让给自己
 		//400
 		if recipient.Recipient == params.Owner {
-			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+string(i)+" recipient in the list cannot be owner")
+			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+string(i)+"th "+types.ErrSelfTransfer)
 		}
 
 		//recipient不能为平台外账户或此应用外账户或非法账户
@@ -278,7 +278,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 		if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
 			(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
 			//400
-			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+string(i)+" recipient in the list not found")
+			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+string(i)+"th "+types.ErrRecipientFound)
 		} else if err != nil {
 			//500
 			log.Error("transfer nft by batch", "query recipient error:", err.Error())
@@ -287,7 +287,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 
 		//判断index是否重复
 		if _, ok := indexMap[recipient.Index]; ok {
-			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+string(i)+" index in the list cannot repeat")
+			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+string(i)+"th "+types.ErrRepeat)
 		}
 
 		res, err := models.TNFTS(models.TNFTWhere.Index.EQ(recipient.Index),
@@ -298,7 +298,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 		if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
 			(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
 			//400
-			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+string(i)+" nft in the list not found")
+			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+string(i)+"th "+types.ErrNftFound)
 		} else if err != nil {
 			//500
 			log.Error("transfer nft by batch", "query nft error:", err.Error())
@@ -307,12 +307,12 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 
 		//400
 		if res.Status == models.TNFTSStatusBurned {
-			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+string(i)+" nft in the list not found")
+			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+string(i)+"th "+types.ErrNftFound)
 		}
 
 		//400
 		if res.Status != models.TNFTSStatusActive {
-			return "", types.NewAppError(types.RootCodeSpace, types.NftStatusAbnormal, "the "+string(i)+" nft in the list status is invalid")
+			return "", types.NewAppError(types.RootCodeSpace, types.NftStatusAbnormal, "the "+string(i)+"th "+types.ErrNftStatusMsg)
 		}
 
 		//msg
@@ -373,12 +373,12 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			}
 			//index校验 400
 			if recipient.Index == 0 {
-				return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, string(j)+" index cannot be 0")
+				return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+string(j)+"th "+types.ErrIndexInt)
 			}
 
 			//recipient不能为空 400
 			if recipient.Recipient == "" {
-				return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, string(j)+" recipient cannot be empty")
+				return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+string(j)+"th "+types.ErrRecipient)
 			}
 			res, err := models.TNFTS(models.TNFTWhere.Index.EQ(recipient.Index),
 				models.TNFTWhere.ClassID.EQ(params.ClassID),
@@ -388,7 +388,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
 				(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
 				//400
-				return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "nft not found")
+				return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+string(j)+"th "+types.ErrNftFound)
 			} else if err != nil {
 				//500
 				log.Error("transfer nft by batch", "query recipient error:", err.Error())
@@ -396,7 +396,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (stri
 			}
 
 			if res.Status == models.TNFTSStatusBurned {
-				return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "nft not found")
+				return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+string(j)+"th "+types.ErrNftFound)
 			}
 
 			if res.Status != models.TNFTSStatusActive {
