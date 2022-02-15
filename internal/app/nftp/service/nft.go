@@ -251,7 +251,7 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 		if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
 			(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
 			//400
-			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, string(i)+" nft not found")
+			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+string(i)+" nft in the list not found")
 		} else if err != nil {
 			//500
 			log.Error("edit nft by batch", "query nft error:", err.Error())
@@ -259,7 +259,7 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 		}
 
 		if tNft.Status == models.TNFTSStatusBurned {
-			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, string(i)+" nft not found")
+			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+string(i)+" nft in the list not found")
 		}
 
 		//400
@@ -427,7 +427,7 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (string, error) {
 func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 	// create rawMsgs
 	var msgBurnNFTs sdktype.Msgs
-	for _, index := range params.Indices {
+	for i, index := range params.Indices {
 		tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID),
 			models.TNFTWhere.ClassID.EQ(params.ClassId),
 			models.TNFTWhere.Index.EQ(index),
@@ -436,7 +436,7 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 		if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
 			(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
 			//400
-			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "nft not found")
+			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+string(i)+" nft in the list not found")
 		} else if err != nil {
 			//500
 			log.Error("delete nft by batch", "query nft error:", err.Error())
@@ -444,7 +444,7 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 		}
 
 		if tNft.Status == models.TNFTSStatusBurned {
-			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "nft not found")
+			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+string(i)+" nft in the list not found")
 		}
 
 		//400

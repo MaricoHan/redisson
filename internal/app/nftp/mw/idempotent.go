@@ -51,7 +51,7 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 	key := fmt.Sprintf("%s:%s", appID, req.OperationID)
 	ok, err := redis.Has(key)
 	if err != nil {
-		log.Error("redis connect", "error", "redis connect")
+		log.Error("redis connect", "error", log.ErrRedisConn)
 		writeInternalResp(w)
 		return
 	}
@@ -62,7 +62,7 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 	}
 
 	if err := redis.Set(key, "1", time.Second*60); err != nil {
-		log.Error("redis connect timeout", "error", "redis connect")
+		log.Error("redis connect timeout", "error", log.ErrRedisConn)
 		writeBadRequestResp(w, types.ErrInternal)
 		return
 	}

@@ -9,12 +9,14 @@ import (
 type DefaultFieldHook struct {
 }
 
+const ErrRedisConn = "redis connect"
+
 func (hook *DefaultFieldHook) Fire(entry *logrus.Entry) error {
 	err, _ := entry.Data["error"]
 	switch err {
 	case sql.ErrConnDone:
 		metric.NewPrometheus().ApiMysqlException.With([]string{}...).Set(-1)
-	case "redis connect":
+	case ErrRedisConn:
 		metric.NewPrometheus().ApiRedisException.With([]string{}...).Set(-1)
 	}
 	return nil
