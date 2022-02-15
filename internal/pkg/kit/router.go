@@ -3,14 +3,11 @@ package kit
 import (
 	"context"
 	"encoding/json"
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/metric"
 	"net/http"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
-
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 
 	"github.com/go-kit/kit/endpoint"
 	httptransport "github.com/go-kit/kit/transport/http"
@@ -18,7 +15,12 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 
+	en2 "github.com/go-playground/locales/en"
+	ut "github.com/go-playground/universal-translator"
+	entranslations "github.com/go-playground/validator/v10/translations/en"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/metric"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 )
 
 // TimeLayout time format
@@ -53,8 +55,14 @@ type (
 	}
 )
 
+var trans ut.Translator
+
 func NewController() Controller {
-	return Controller{validator.New()}
+	validate := validator.New()
+	en := en2.New()
+	trans, _ = ut.New(en, en).GetTranslator("en")
+	entranslations.RegisterDefaultTranslations(validate, trans)
+	return Controller{validate}
 }
 
 // MakeHandler create a http hander for request
@@ -144,12 +152,12 @@ func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFu
 			//validate request
 			if err := c.validate.Struct(req); err != nil {
 				log.Error("Execute decode request failed", "validate struct", err.Error(), "req:", req)
-				return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
+				return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, Translate(err))
 			}
 		case reflect.Array:
 			if err := c.validate.Var(req, ""); err != nil {
 				log.Error("Execute decode request failed", "validate struct", err.Error(), "req:", req)
-				return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
+				return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, Translate(err))
 			}
 		}
 		return req, nil
@@ -261,4 +269,13 @@ func (c Controller) serverOptions(
 	options = append(options, append(mid, httptransport.ServerErrorEncoder(errorEncoderOption))...)
 	options = append(options, httptransport.ServerAfter(after...))
 	return options
+}
+
+// Translate 错误返回
+func Translate(err error) (errMsg string) {
+	errs := err.(validator.ValidationErrors)
+	for _, err := range errs {
+		errMsg = err.Translate(trans)
+	}
+	return
 }
