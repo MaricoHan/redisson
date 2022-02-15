@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"context"
-	"strings"
+	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 	"time"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/config"
@@ -32,6 +32,23 @@ type account struct {
 func newAccount(svc *service.Account) *account {
 	return &account{svc: svc}
 }
+
+var (
+	// ModuleOperation 定义验证模块
+	ModuleOperation = map[string]map[string]string{
+		models.TMSGSModuleAccount: {
+			models.TMSGSOperationAddGas: models.TMSGSOperationAddGas,
+		},
+		models.TMSGSModuleNFT: {
+			models.TMSGSOperationIssueClass:    models.TMSGSOperationIssueClass,
+			models.TMSGSOperationTransferClass: models.TMSGSOperationTransferClass,
+			models.TMSGSOperationMint:          models.TMSGSOperationMint,
+			models.TMSGSOperationEdit:          models.TMSGSOperationEdit,
+			models.TMSGSOperationTransfer:      models.TMSGSOperationTransfer,
+			models.TMSGSOperationBurn:          models.TMSGSOperationBurn,
+		},
+	}
+)
 
 // CreateAccount Create one or more accounts
 // return creation result
@@ -184,9 +201,11 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 	params.Module = h.module(ctx)
 	params.Operation = h.operation(ctx)
 	if params.Module != "" && params.Operation != "" {
-		if params.Module == "account" && params.Operation != "add_gas" {
+		operation, ok := ModuleOperation[params.Module]
+		if !ok {
 			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOperation)
-		} else if params.Module == "nft" && !strings.Contains("transfer_class/mint/edit/transfer/burn/issue_class", params.Operation) {
+		}
+		if _, ok = operation[params.Operation]; !ok {
 			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOperation)
 		}
 	}
