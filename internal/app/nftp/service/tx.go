@@ -29,7 +29,7 @@ func (svc *Tx) TxResultByTxHash(params dto.TxResultByTxHashP) (*dto.TxResultByTx
 	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
 		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
 		//404
-		return nil, types.ErrTxNotFound
+		return nil, types.ErrNotFound
 	} else if err != nil {
 		//500
 		log.Error("query tx by hash", "query tx error:", err.Error())
