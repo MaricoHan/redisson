@@ -13,14 +13,10 @@ const (
 	ClientParamsError              = "CLIENT_PARAMS_ERROR"
 	ConnectionChainFailed          = "CONNECTION_CHAIN_FAILED"
 	FrequentRequestsNotSupports    = "FREQUENT_REQUESTS_NOT_SUPPORTS"
-	NftclassNotExist               = "NFTCLASS_NOT_EXIST"
 	NftclassStatusAbnormal         = "NFTCLASS_STATUS_ABNORMAL"
-	NftNotExist                    = "NFT_NOT_EXIST"
 	NftStatusAbnormal              = "NFT_STATUS_ABNORMAL"
-	TxNotExist                     = "TX_NOT_EXIST"
+	NotFound                       = "NOT_FOUND"
 	MaximumLimitExceeded           = "MAXIMUM_LIMIT_EXCEEDED"
-	NotOwnerAccount                = "NOT_OWNER_ACCOUNT"
-	NotAppOfAccount                = "NOT_APP_OF_ACCOUNT"
 	StructureSignTransactionFailed = "STRUCTURE_SIGN_TRANSACTION_FAILED"
 	TxStatusSuccess                = "TX_STATUS_SUCCESS"
 	TxStatusPending                = "TX_STATUS_PENDING"
@@ -29,25 +25,21 @@ const (
 )
 
 var (
-	ErrDataQuery        = Register(RootCodeSpace, QueryDataFailed, "failed to query data")
-	ErrInternal         = Register(RootCodeSpace, InternalFailed, "internal")
-	ErrAuthenticate     = Register(RootCodeSpace, AuthenticationFailed, "failed to authentication")
-	ErrParams           = Register(RootCodeSpace, ClientParamsError, "failed to client params")
-	ErrChainConn        = Register(RootCodeSpace, ConnectionChainFailed, "failed to connection chain")
-	ErrIdempotent       = Register(RootCodeSpace, FrequentRequestsNotSupports, "failed to idempotent")
-	ErrNftClassNotFound = Register(RootCodeSpace, NftclassNotExist, "the NFT Class does not exist")
-	ErrNftClassStatus   = Register(RootCodeSpace, NftclassStatusAbnormal, "the NFT Class status is invalid")
-	ErrNftNotFound      = Register(RootCodeSpace, NftNotExist, "the NFT does not exist")
-	ErrNftStatus        = Register(RootCodeSpace, NftStatusAbnormal, "the NFT status is invalid")
-	ErrTxNotFound       = Register(RootCodeSpace, TxNotExist, "the tx does not exist")
-	ErrLimit            = Register(RootCodeSpace, MaximumLimitExceeded, "Maximum Limit Exceeded")
-	ErrNotOwner         = Register(RootCodeSpace, NotOwnerAccount, "This account is not the owner account")
-	ErrNoPermission     = Register(RootCodeSpace, NotAppOfAccount, "This account is not an in-app account")
-	ErrBuildAndSign     = Register(RootCodeSpace, StructureSignTransactionFailed, "failed to build and sign")
-	ErrBuildAndSend     = Register(RootCodeSpace, StructureSendTransactionFailed, "failed to build and send")
-	ErrTXStatusSuccess  = Register(RootCodeSpace, TxStatusSuccess, "tx transaction success")
-	ErrTXStatusPending  = Register(RootCodeSpace, TxStatusPending, "tx transaction is in progress, please wait")
-	ErrTXStatusUndo     = Register(RootCodeSpace, TxStatusUndo, "tx transaction not executed, please wait")
+	ErrDataQuery       = Register(RootCodeSpace, QueryDataFailed, "failed to query data")
+	ErrInternal        = Register(RootCodeSpace, InternalFailed, "internal")
+	ErrAuthenticate    = Register(RootCodeSpace, AuthenticationFailed, "failed to authentication")
+	ErrParams          = Register(RootCodeSpace, ClientParamsError, "failed to client params")
+	ErrChainConn       = Register(RootCodeSpace, ConnectionChainFailed, "failed to connection chain")
+	ErrIdempotent      = Register(RootCodeSpace, FrequentRequestsNotSupports, "failed to idempotent")
+	ErrNftClassStatus  = Register(RootCodeSpace, NftclassStatusAbnormal, "the nft class status is invalid")
+	ErrNftStatus       = Register(RootCodeSpace, NftStatusAbnormal, "the nft status is invalid")
+	ErrNotFound        = Register(RootCodeSpace, NotFound, "resource not found")
+	ErrLimit           = Register(RootCodeSpace, MaximumLimitExceeded, "maximum limit exceeded")
+	ErrBuildAndSign    = Register(RootCodeSpace, StructureSignTransactionFailed, "failed to build and sign")
+	ErrBuildAndSend    = Register(RootCodeSpace, StructureSendTransactionFailed, "failed to build and send")
+	ErrTXStatusSuccess = Register(RootCodeSpace, TxStatusSuccess, "tx transaction success")
+	ErrTXStatusPending = Register(RootCodeSpace, TxStatusPending, "tx transaction is in progress, please wait")
+	ErrTXStatusUndo    = Register(RootCodeSpace, TxStatusUndo, "tx transaction not executed, please wait")
 )
 
 var usedErrorCodes = map[string]*AppError{}
