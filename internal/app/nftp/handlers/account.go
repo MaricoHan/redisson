@@ -183,7 +183,9 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 	params.Module = h.module(ctx)
 	params.Operation = h.operation(ctx)
 	if params.Module != "" && params.Operation != "" {
-		if params.Module == "account" && params.Operation != "add_gas" {
+		if params.Module != "account" && params.Module != "nft" {
+			return nil, types.ErrParams
+		} else if params.Module == "account" && params.Operation != "add_gas" {
 			return nil, types.ErrParams
 		} else if params.Module == "nft" && !strings.Contains("transfer_class/mint/edit/transfer/burn/issue_class", params.Operation) {
 			return nil, types.ErrParams
