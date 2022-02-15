@@ -168,7 +168,8 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 			int(params.Offset),
 			int(params.Limit),
 		)
-		if err != nil && errors.Cause(err) == sql.ErrNoRows {
+		if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
+			(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
 			//404
 			return types.ErrNftClassNotFound
 		} else if err != nil {
@@ -239,7 +240,8 @@ func (svc *NftClass) NftClassById(params dto.NftClassesP) (*dto.NftClassRes, err
 			models.TClassWhere.ClassID.EQ(params.Id),
 			models.TClassWhere.AppID.EQ(params.AppID),
 		).One(context.Background(), exec)
-		if err != nil && errors.Cause(err) == sql.ErrNoRows {
+		if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
+			(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
 			//404
 			return types.NewAppError(types.RootCodeSpace, types.QueryDataFailed, "class not found")
 		} else if err != nil {

@@ -24,6 +24,10 @@ type Base struct {
 	coins     sdktype.DecCoins
 }
 
+func SqlNoFound() string {
+	return "records not exist"
+}
+
 func NewBase(sdkClient sdk.Client, gas uint64, denom string, amount int64) *Base {
 	return &Base{
 		sdkClient: sdkClient,
@@ -81,7 +85,7 @@ func (m Base) TxIntoDataBase(AppID uint64, txHash string, signedData []byte, ope
 // ValidateTx validate tx status
 func (m Base) ValidateTx(hash string) (*models.TTX, error) {
 	tx, err := models.TTXS(models.TTXWhere.Hash.EQ(hash)).OneG(context.Background())
-	if err == sql.ErrNoRows {
+	if err == sql.ErrNoRows || strings.Contains(err.Error(), SqlNoFound()) {
 		return tx, nil
 	} else if err != nil {
 		return tx, err

@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 	"database/sql"
+	"strings"
+
 	"github.com/friendsofgo/errors"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 
@@ -24,7 +26,8 @@ func (svc *Tx) TxResultByTxHash(params dto.TxResultByTxHashP) (*dto.TxResultByTx
 		models.TTXWhere.Hash.EQ(params.Hash),
 		models.TTXWhere.AppID.EQ(params.AppID),
 	).OneG(context.Background())
-	if err != nil && errors.Cause(err) == sql.ErrNoRows {
+	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
+		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
 		//404
 		return nil, types.ErrTxNotFound
 	} else if err != nil {
