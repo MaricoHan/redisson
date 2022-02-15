@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 	"time"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/config"
@@ -35,16 +36,16 @@ func newAccount(svc *service.Account) *account {
 var (
 	// ModuleOperation 定义验证模块
 	ModuleOperation = map[string]map[string]string{
-		"account": {
-			"add_gas": "add_gas",
+		models.TMSGSModuleAccount: {
+			models.TMSGSOperationAddGas: models.TMSGSOperationAddGas,
 		},
-		"nft": {
-			"transfer_class": "transfer_class",
-			"mint":           "mint",
-			"edit":           "edit",
-			"transfer":       "transfer",
-			"burn":           "burn",
-			"issue_class":    "issue_class",
+		models.TMSGSModuleNFT: {
+			models.TMSGSOperationIssueClass:    models.TMSGSOperationIssueClass,
+			models.TMSGSOperationTransferClass: models.TMSGSOperationTransferClass,
+			models.TMSGSOperationMint:          models.TMSGSOperationMint,
+			models.TMSGSOperationEdit:          models.TMSGSOperationEdit,
+			models.TMSGSOperationTransfer:      models.TMSGSOperationTransfer,
+			models.TMSGSOperationBurn:          models.TMSGSOperationBurn,
 		},
 	}
 )
