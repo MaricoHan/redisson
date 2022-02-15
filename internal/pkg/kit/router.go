@@ -17,7 +17,7 @@ import (
 
 	en2 "github.com/go-playground/locales/en"
 	ut "github.com/go-playground/universal-translator"
-	enTranslations "github.com/go-playground/validator/v10/translations/en"
+	entranslations "github.com/go-playground/validator/v10/translations/en"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/metric"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
@@ -61,7 +61,7 @@ func NewController() Controller {
 	validate := validator.New()
 	en := en2.New()
 	trans, _ = ut.New(en, en).GetTranslator("en")
-	enTranslations.RegisterDefaultTranslations(validate, trans)
+	entranslations.RegisterDefaultTranslations(validate, trans)
 	return Controller{validate}
 }
 
