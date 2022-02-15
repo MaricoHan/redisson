@@ -264,7 +264,7 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 
 		//400
 		if tNft.Status != models.TNFTSStatusActive {
-			return "", types.ErrNftStatus
+			return "", types.NewAppError(types.RootCodeSpace, types.NftStatusAbnormal, "the "+string(i)+"th "+types.ErrNftStatusMsg)
 		}
 
 		msgEditNFT := nft.MsgEditNFT{
@@ -454,7 +454,7 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 
 		//400
 		if tNft.Status != models.TNFTSStatusActive {
-			return "", types.ErrNftStatus
+			return "", types.NewAppError(types.RootCodeSpace, types.NftStatusAbnormal, "the "+string(i)+"th "+types.ErrNftStatusMsg)
 		}
 
 		// create rawMsg
