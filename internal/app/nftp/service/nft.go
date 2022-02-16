@@ -425,7 +425,6 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (*dto.TxRes, erro
 	if err != nil {
 		return nil, err
 	}
-
 	result := &dto.TxRes{}
 	result.TxHash = txHash
 	return result, nil

@@ -529,7 +529,7 @@ func (h nft) Status(ctx context.Context) (string, error) {
 
 func (h nft) Indices(ctx context.Context) ([]uint64, error) {
 	rec := ctx.Value("indices")
-	if rec == nil && rec == "" {
+	if rec == nil || rec == "" {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrIndicesLen)
 	}
 
