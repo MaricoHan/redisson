@@ -32,7 +32,7 @@ func (h base) UriCheck(str *string) error {
 		return nil
 	}
 	if len([]rune(u)) > 256 {
-		return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Uri")
+		return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrUriLen)
 	}
 
 	isUri := govalidator.IsRequestURI(u)

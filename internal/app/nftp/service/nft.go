@@ -37,7 +37,7 @@ func NewNft(base *Base) *Nft {
 
 func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) (*dto.TxRes, error) {
 	var err error
-	var thash string
+	var txHash string
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		classOne, err := models.TClasses(
 			models.TClassWhere.AppID.EQ(params.AppID),
@@ -92,22 +92,22 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) (*dto.TxRes, error) {
 			msgs = append(msgs, &createNft)
 		}
 		baseTx := svc.base.CreateBaseTx(classOne.Owner, "")
-		originData, thash, _ := svc.base.BuildAndSign(msgs, baseTx)
+		originData, tHash, _ := svc.base.BuildAndSign(msgs, baseTx)
 		baseTx.Gas = svc.base.mintNftsGas(originData, uint64(params.Amount))
-		originData, thash, err = svc.base.BuildAndSign(msgs, baseTx)
+		originData, tHash, err = svc.base.BuildAndSign(msgs, baseTx)
 		if err != nil {
 			log.Debug("create nfts", "buildandsign error:", err.Error())
 			return types.ErrBuildAndSign
 		}
 
 		//validate tx
-		txone, err := svc.base.ValidateTx(thash)
+		txone, err := svc.base.ValidateTx(tHash)
 		if err != nil {
 			return err
 		}
 		if txone != nil && txone.Status == models.TTXSStatusFailed {
 			baseTx.Memo = fmt.Sprintf("%d", txone.ID)
-			originData, thash, err = svc.base.BuildAndSign(msgs, baseTx)
+			originData, tHash, err = svc.base.BuildAndSign(msgs, baseTx)
 			if err != nil {
 				log.Debug("create nfts", "buildandsign error:", err.Error())
 				return types.ErrBuildAndSign
@@ -117,7 +117,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) (*dto.TxRes, error) {
 		//transferInfo
 		ttx := models.TTX{
 			AppID:         params.AppID,
-			Hash:          thash,
+			Hash:          tHash,
 			Timestamp:     null.Time{Time: time.Now()},
 			OriginData:    null.BytesFromPtr(&originData),
 			OperationType: models.TTXSOperationTypeMintNFT,
@@ -128,6 +128,8 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) (*dto.TxRes, error) {
 			log.Error("create nft", "ttx insert error: ", err)
 			return types.ErrInternal
 		}
+
+		txHash = tHash
 
 		//class locked
 		classOne.Status = models.TTXSStatusPending
@@ -148,7 +150,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) (*dto.TxRes, error) {
 	}
 
 	result := &dto.TxRes{}
-	result.TxHash = thash
+	result.TxHash = txHash
 	return result, nil
 }
 
@@ -178,23 +180,13 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (*dto.TxRes, error) {
 		return nil, types.ErrNftStatus
 	}
 
-	uri := params.Uri
-	if params.Uri == "" {
-		uri = tNft.URI.String
-	}
-
-	data := params.Uri
-	if params.Data == "" {
-		uri = tNft.Metadata.String
-	}
-
 	// create rawMsg
 	msgEditNFT := nft.MsgEditNFT{
 		Id:      tNft.NFTID,
 		DenomId: tNft.ClassID,
 		Name:    params.Name,
-		URI:     uri,
-		Data:    data,
+		URI:     params.Uri,
+		Data:    params.Data,
 		Sender:  params.Sender,
 		UriHash: "[do-not-modify]",
 	}
@@ -277,22 +269,12 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (*dto.TxRes, error) {
 			return nil, types.NewAppError(types.RootCodeSpace, types.NftStatusAbnormal, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrNftStatusMsg)
 		}
 
-		uri := EditNft.Uri
-		if EditNft.Uri == "" {
-			uri = tNft.URI.String
-		}
-
-		data := EditNft.Uri
-		if EditNft.Data == "" {
-			uri = tNft.Metadata.String
-		}
-
 		msgEditNFT := nft.MsgEditNFT{
 			Id:      tNft.NFTID,
 			DenomId: tNft.ClassID,
 			Name:    EditNft.Name,
-			URI:     uri,
-			Data:    data,
+			URI:     EditNft.Uri,
+			Data:    EditNft.Data,
 			Sender:  params.Sender,
 			UriHash: "[do-not-modify]",
 		}
@@ -437,7 +419,6 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (*dto.TxRes, erro
 	if err != nil {
 		return nil, err
 	}
-
 	result := &dto.TxRes{}
 	result.TxHash = txHash
 	return result, nil

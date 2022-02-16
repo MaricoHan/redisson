@@ -2,10 +2,14 @@ package handlers
 
 import (
 	"context"
-	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
+	"fmt"
+
 	"time"
 
+	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
+
 	"gitlab.bianjie.ai/irita-paas/open-api/config"
+
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
@@ -100,7 +104,7 @@ func (h account) Accounts(ctx context.Context, _ interface{}) (interface{}, erro
 
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
-		startDateTime, err := time.Parse(timeLayout, startDateR+" 00:00:00")
+		startDateTime, err := time.Parse(timeLayout, fmt.Sprintf("%s 00:00:00", startDateR))
 		if err != nil {
 			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrStartDate)
 		}
@@ -109,7 +113,7 @@ func (h account) Accounts(ctx context.Context, _ interface{}) (interface{}, erro
 
 	endDateR := h.EndDate(ctx)
 	if endDateR != "" {
-		endDateTime, err := time.Parse(timeLayout, endDateR+" 23:59:59")
+		endDateTime, err := time.Parse(timeLayout, fmt.Sprintf("%s 23:59:59", endDateR))
 		if err != nil {
 			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrEndDate)
 		}
@@ -168,7 +172,7 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
-		startDateTime, err := time.Parse(timeLayout, startDateR+" 00:00:00")
+		startDateTime, err := time.Parse(timeLayout, fmt.Sprintf("%s 00:00:00", startDateR))
 		if err != nil {
 			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrStartDate)
 		}
@@ -177,7 +181,7 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 
 	endDateR := h.EndDate(ctx)
 	if endDateR != "" {
-		endDateTime, err := time.Parse(timeLayout, endDateR+" 23:59:59")
+		endDateTime, err := time.Parse(timeLayout, fmt.Sprintf("%s 23:59:59", endDateR))
 		if err != nil {
 			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrEndDate)
 		}
@@ -200,6 +204,16 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 
 	params.Module = h.module(ctx)
 	params.Operation = h.operation(ctx)
+
+	if params.Module == "" {
+		params.Operation = ""
+	} else {
+		_, ok := ModuleOperation[params.Module]
+		if !ok {
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrModule)
+		}
+	}
+
 	if params.Module != "" && params.Operation != "" {
 		operation, ok := ModuleOperation[params.Module]
 		if !ok {
@@ -210,9 +224,6 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 		}
 	}
 
-	if params.Module == "" && params.Operation != "" {
-		params.Operation = ""
-	}
 	return h.svc.AccountsHistory(params)
 }
 
