@@ -62,10 +62,8 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrNameLen)
 	}
 
-	if req.Uri != "" {
-		if err := h.base.UriCheck(req.Uri); err != nil {
-			return nil, err
-		}
+	if err := h.base.UriCheck(&req.Uri); err != nil {
+		return nil, err
 	}
 
 	if req.UriHash != "" && len([]rune(strings.TrimSpace(req.UriHash))) > 512 {
@@ -102,10 +100,8 @@ func (h nft) EditNftByIndex(ctx context.Context, request interface{}) (interface
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrNameLen)
 	}
 
-	if req.Uri != "" {
-		if err := h.base.UriCheck(req.Uri); err != nil {
-			return nil, err
-		}
+	if err := h.base.UriCheck(&req.Uri); err != nil {
+		return nil, err
 	}
 
 	if req.Data != "" && len([]rune(strings.TrimSpace(req.Data))) > 4096 {
