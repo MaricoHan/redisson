@@ -8,9 +8,9 @@ const (
 
 const (
 	// InternalFailed		error code
-	InternalFailed                 = "INTERNAL_FAILED"
-	AuthenticationFailed           = "AUTHENTICATION_FAILED"
-	ClientParamsError              = "CLIENT_PARAMS_ERROR"
+	InternalFailed                 = "INTERNAL_ERROR"
+	AuthenticationFailed           = "FORBIDDEN"
+	ClientParamsError              = "PARAMS_ERROR"
 	ConnectionChainFailed          = "CONNECTION_CHAIN_FAILED"
 	FrequentRequestsNotSupports    = "FREQUENT_REQUESTS_NOT_SUPPORTS"
 	NftClassStatusAbnormal         = "NFT_CLASS_STATUS_ABNORMAL"
