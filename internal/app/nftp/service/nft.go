@@ -37,7 +37,7 @@ func NewNft(base *Base) *Nft {
 
 func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) (*dto.TxRes, error) {
 	var err error
-	var thash string
+	var txhash string
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		classOne, err := models.TClasses(
 			models.TClassWhere.AppID.EQ(params.AppID),
@@ -129,6 +129,8 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) (*dto.TxRes, error) {
 			return types.ErrInternal
 		}
 
+		txhash = thash
+
 		//class locked
 		classOne.Status = models.TTXSStatusPending
 		classOne.Offset = classOne.Offset + uint64(params.Amount)
@@ -148,7 +150,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) (*dto.TxRes, error) {
 	}
 
 	result := &dto.TxRes{}
-	result.TxHash = thash
+	result.TxHash = txhash
 	return result, nil
 }
 
