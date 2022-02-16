@@ -93,7 +93,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) (*dto.TxRes, error) {
 		}
 		baseTx := svc.base.CreateBaseTx(classOne.Owner, "")
 		originData, tHash, _ := svc.base.BuildAndSign(msgs, baseTx)
-		baseTx.Gas = svc.base.calculateGas(originData)
+		baseTx.Gas = svc.base.mintNftsGas(originData, uint64(params.Amount))
 		originData, tHash, err = svc.base.BuildAndSign(msgs, baseTx)
 		if err != nil {
 			log.Debug("create nfts", "buildandsign error:", err.Error())
@@ -193,8 +193,6 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (*dto.TxRes, error) {
 
 	// build and sign transaction
 	baseTx := svc.base.CreateBaseTx(params.Sender, "")
-	originData, txHash, _ := svc.base.BuildAndSign(sdktype.Msgs{&msgEditNFT}, baseTx)
-	baseTx.Gas = svc.base.calculateGas(originData)
 	signedData, txHash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgEditNFT}, baseTx)
 	if err != nil {
 		log.Debug("edit nft by index", "BuildAndSign error:", err.Error())
@@ -285,8 +283,6 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (*dto.TxRes, error) {
 
 	// build and sign transaction
 	baseTx := svc.base.CreateBaseTx(params.Sender, "")
-	originData, txHash, _ := svc.base.BuildAndSign(msgEditNFTs, baseTx)
-	baseTx.Gas = svc.base.calculateGas(originData)
 	signedData, txHash, err := svc.base.BuildAndSign(msgEditNFTs, baseTx)
 	if err != nil {
 		log.Debug("edit nft by batch", "BuildAndSign error:", err.Error())
@@ -378,8 +374,6 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (*dto.TxRes, erro
 
 	// build and sign transaction
 	baseTx := svc.base.CreateBaseTx(params.Sender, "")
-	originData, txHash, _ := svc.base.BuildAndSign(sdktype.Msgs{&msgBurnNFT}, baseTx)
-	baseTx.Gas = svc.base.calculateGas(originData)
 	signedData, txHash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgBurnNFT}, baseTx)
 	if err != nil {
 		log.Debug("delete nft by index", "BuildAndSign error:", err.Error())
@@ -469,8 +463,6 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (*dto.TxRes, erro
 
 	// build and sign transaction
 	baseTx := svc.base.CreateBaseTx(params.Sender, "")
-	originData, txHash, _ := svc.base.BuildAndSign(msgBurnNFTs, baseTx)
-	baseTx.Gas = svc.base.calculateGas(originData)
 	signedData, txHash, err := svc.base.BuildAndSign(msgBurnNFTs, baseTx)
 	if err != nil {
 		log.Debug("delete nft by batch", "BuildAndSign error:", err.Error())
@@ -725,7 +717,7 @@ func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
 	var modelResults []*models.TNFT
 	var total int64
 	var classByIds []*dto.NftClassByIds
-	classIds := []string{}
+	var classIds []string
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		total, err = modext.PageQueryByOffset(
 			context.Background(),

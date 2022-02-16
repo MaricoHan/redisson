@@ -123,8 +123,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, e
 		if env == "stage" {
 			msgs = svc.base.CreateGasMsg(classOne.Address, addresses)
 			tx := svc.base.CreateBaseTx(classOne.Address, defultKeyPassword)
-			resultTx, _ := svc.base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
-			tx.Gas = svc.base.calculateGas(resultTx.Data)
+			tx.Gas = uint64(types.CreateAccountGas * config.Get().Chain.GasCoefficient)
 			resultTx, err = svc.base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
 			if err != nil {
 				log.Error("create account", "build and send, error:", err)
