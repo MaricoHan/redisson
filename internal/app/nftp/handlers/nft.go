@@ -46,16 +46,6 @@ func newNft(svc *service.Nft) *nft {
 func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
 	req := request.(*vo.CreateNftsRequest)
-	params := dto.CreateNftsRequest{
-		AppID:     h.AppID(ctx),
-		ClassId:   h.ClassId(ctx),
-		Name:      req.Name,
-		Uri:       req.Uri,
-		UriHash:   req.UriHash,
-		Data:      req.Data,
-		Amount:    req.Amount,
-		Recipient: req.Recipient,
-	}
 
 	if req.Name == "" {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrName)
@@ -65,7 +55,7 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrNameLen)
 	}
 
-	if err := h.base.UriCheck(&req.Uri); err != nil {
+	if err := h.base.UriCheck(req.Uri); err != nil {
 		return nil, err
 	}
 
@@ -79,6 +69,17 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 
 	if req.Recipient != "" && len([]rune(strings.TrimSpace(req.Recipient))) > 128 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientLen)
+	}
+
+	params := dto.CreateNftsRequest{
+		AppID:     h.AppID(ctx),
+		ClassId:   h.ClassId(ctx),
+		Name:      strings.TrimSpace(req.Name),
+		Uri:       strings.TrimSpace(req.Uri),
+		UriHash:   strings.TrimSpace(req.UriHash),
+		Data:      strings.TrimSpace(req.Data),
+		Amount:    req.Amount,
+		Recipient: strings.TrimSpace(req.Recipient),
 	}
 
 	if params.Amount == 0 {
@@ -103,7 +104,7 @@ func (h nft) EditNftByIndex(ctx context.Context, request interface{}) (interface
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrNameLen)
 	}
 
-	if err := h.base.UriCheck(&req.Uri); err != nil {
+	if err := h.base.UriCheck(req.Uri); err != nil {
 		return nil, err
 	}
 
@@ -128,9 +129,9 @@ func (h nft) EditNftByIndex(ctx context.Context, request interface{}) (interface
 		Sender:  h.Owner(ctx),
 		Index:   index,
 
-		Name: req.Name,
-		Uri:  req.Uri,
-		Data: req.Data,
+		Name: strings.TrimSpace(req.Name),
+		Uri:  strings.TrimSpace(req.Uri),
+		Data: strings.TrimSpace(req.Data),
 	}
 
 	return h.svc.EditNftByIndex(params)

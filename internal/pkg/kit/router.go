@@ -145,7 +145,7 @@ func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFu
 		p.Set(reflect.Zero(p.Type()))
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			log.Error("Execute decode request failed", "error", err.Error())
-			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, Translate(err))
 		}
 		switch p.Type().Kind() {
 		case reflect.Struct:
