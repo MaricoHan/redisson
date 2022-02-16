@@ -47,39 +47,45 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 	// 校验参数 start
 	req := request.(*vo.CreateNftsRequest)
 
-	if req.Name == "" {
+	name := strings.TrimSpace(req.Name)
+	uri := strings.TrimSpace(req.Uri)
+	uriHash := strings.TrimSpace(req.UriHash)
+	data := strings.TrimSpace(req.Data)
+	recipient := strings.TrimSpace(req.Recipient)
+
+	if name == "" {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrName)
 	}
 
-	if len([]rune(strings.TrimSpace(req.Name))) < 3 || len([]rune(strings.TrimSpace(req.Name))) > 64 {
+	if len([]rune(name)) < 3 || len([]rune(name)) > 64 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrNameLen)
 	}
 
-	if err := h.base.UriCheck(req.Uri); err != nil {
+	if err := h.base.UriCheck(uri); err != nil {
 		return nil, err
 	}
 
-	if req.UriHash != "" && len([]rune(strings.TrimSpace(req.UriHash))) > 512 {
+	if uriHash != "" && len([]rune(uriHash)) > 512 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrUriHashLen)
 	}
 
-	if req.Data != "" && len([]rune(strings.TrimSpace(req.Data))) > 4096 {
+	if data != "" && len([]rune(data)) > 4096 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrDataLen)
 	}
 
-	if req.Recipient != "" && len([]rune(strings.TrimSpace(req.Recipient))) > 128 {
+	if recipient != "" && len([]rune(recipient)) > 128 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientLen)
 	}
 
 	params := dto.CreateNftsRequest{
 		AppID:     h.AppID(ctx),
 		ClassId:   h.ClassId(ctx),
-		Name:      strings.TrimSpace(req.Name),
-		Uri:       strings.TrimSpace(req.Uri),
-		UriHash:   strings.TrimSpace(req.UriHash),
-		Data:      strings.TrimSpace(req.Data),
+		Name:      name,
+		Uri:       uri,
+		UriHash:   uriHash,
+		Data:      data,
 		Amount:    req.Amount,
-		Recipient: strings.TrimSpace(req.Recipient),
+		Recipient: recipient,
 	}
 
 	if params.Amount == 0 {
@@ -96,19 +102,22 @@ func (h nft) EditNftByIndex(ctx context.Context, request interface{}) (interface
 
 	req := request.(*vo.EditNftByIndexRequest)
 
-	if req.Name == "" {
+	name := strings.TrimSpace(req.Name)
+	uri := strings.TrimSpace(req.Uri)
+	data := strings.TrimSpace(req.Data)
+	if name == "" {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrName)
 	}
 
-	if len([]rune(strings.TrimSpace(req.Name))) < 3 || len([]rune(strings.TrimSpace(req.Name))) > 64 {
+	if len([]rune(name)) < 3 || len([]rune(name)) > 64 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrNameLen)
 	}
 
-	if err := h.base.UriCheck(req.Uri); err != nil {
+	if err := h.base.UriCheck(uri); err != nil {
 		return nil, err
 	}
 
-	if req.Data != "" && len([]rune(strings.TrimSpace(req.Data))) > 4096 {
+	if data != "" && len([]rune(data)) > 4096 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrDataLen)
 	}
 
@@ -129,9 +138,9 @@ func (h nft) EditNftByIndex(ctx context.Context, request interface{}) (interface
 		Sender:  h.Owner(ctx),
 		Index:   index,
 
-		Name: strings.TrimSpace(req.Name),
-		Uri:  strings.TrimSpace(req.Uri),
-		Data: strings.TrimSpace(req.Data),
+		Name: name,
+		Uri:  uri,
+		Data: data,
 	}
 
 	return h.svc.EditNftByIndex(params)
@@ -148,32 +157,34 @@ func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface
 
 	var nfts []*dto.EditNft
 	for i, v := range *req {
+		v.Name = strings.TrimSpace(v.Name)
+		v.Uri = strings.TrimSpace(v.Uri)
+		v.Data = strings.TrimSpace(v.Data)
 
 		if v.Index == 0 {
-			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrIndexInt)
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrIndexLen+" or "+types.ErrIndexInt)
 		}
 
 		if v.Name == "" {
 			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrName)
 		}
 
-		if len([]rune(strings.TrimSpace(v.Name))) < 3 || len([]rune(strings.TrimSpace(v.Name))) > 64 {
+		if len([]rune(v.Name)) < 3 || len([]rune(v.Name)) > 64 {
 			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrNameLen)
 		}
 
 		if v.Uri != "" {
-			u := strings.TrimSpace(v.Uri)
-			if len([]rune(u)) > 256 {
+			if len([]rune(v.Uri)) > 256 {
 				return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrUriLen)
 			}
 
-			isUri := govalidator.IsRequestURI(u)
+			isUri := govalidator.IsRequestURI(v.Uri)
 			if !isUri {
 				return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrUri)
 			}
 		}
 
-		if v.Data != "" && len([]rune(strings.TrimSpace(v.Data))) > 4096 {
+		if v.Data != "" && len([]rune(v.Data)) > 4096 {
 			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrDataLen)
 		}
 

@@ -55,6 +55,7 @@ const (
 	ErrModule         = "module is invalid"
 	ErrAmountInt      = "amount must be between 1 and 100"
 	ErrRepeat         = "index is repeat"
+	ErrClientParams   = "client params error"
 
 	// ErrSelfTransfer		error msg service
 	ErrSelfTransfer      = "recipient cannot be owner"
@@ -68,7 +69,7 @@ const (
 var (
 	ErrInternal        = Register(RootCodeSpace, InternalFailed, "internal")
 	ErrAuthenticate    = Register(RootCodeSpace, AuthenticationFailed, "authentication failed")
-	ErrParams          = Register(RootCodeSpace, ClientParamsError, "client params error")
+	ErrParams          = Register(RootCodeSpace, ClientParamsError, ErrClientParams)
 	ErrChainConn       = Register(RootCodeSpace, ConnectionChainFailed, "connection chain failed")
 	ErrIdempotent      = Register(RootCodeSpace, FrequentRequestsNotSupports, "frequent requests not supports")
 	ErrNftClassStatus  = Register(RootCodeSpace, NftClassStatusAbnormal, ErrNftClassStatusMsg)
