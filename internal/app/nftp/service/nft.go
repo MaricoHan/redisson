@@ -37,7 +37,7 @@ func NewNft(base *Base) *Nft {
 
 func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) (*dto.TxRes, error) {
 	var err error
-	var txhash string
+	var txHash string
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		classOne, err := models.TClasses(
 			models.TClassWhere.AppID.EQ(params.AppID),
@@ -92,22 +92,22 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) (*dto.TxRes, error) {
 			msgs = append(msgs, &createNft)
 		}
 		baseTx := svc.base.CreateBaseTx(classOne.Owner, "")
-		originData, thash, _ := svc.base.BuildAndSign(msgs, baseTx)
+		originData, tHash, _ := svc.base.BuildAndSign(msgs, baseTx)
 		baseTx.Gas = svc.base.calculateGas(originData)
-		originData, thash, err = svc.base.BuildAndSign(msgs, baseTx)
+		originData, tHash, err = svc.base.BuildAndSign(msgs, baseTx)
 		if err != nil {
 			log.Debug("create nfts", "buildandsign error:", err.Error())
 			return types.ErrBuildAndSign
 		}
 
 		//validate tx
-		txone, err := svc.base.ValidateTx(thash)
+		txone, err := svc.base.ValidateTx(tHash)
 		if err != nil {
 			return err
 		}
 		if txone != nil && txone.Status == models.TTXSStatusFailed {
 			baseTx.Memo = fmt.Sprintf("%d", txone.ID)
-			originData, thash, err = svc.base.BuildAndSign(msgs, baseTx)
+			originData, tHash, err = svc.base.BuildAndSign(msgs, baseTx)
 			if err != nil {
 				log.Debug("create nfts", "buildandsign error:", err.Error())
 				return types.ErrBuildAndSign
@@ -117,7 +117,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) (*dto.TxRes, error) {
 		//transferInfo
 		ttx := models.TTX{
 			AppID:         params.AppID,
-			Hash:          thash,
+			Hash:          tHash,
 			Timestamp:     null.Time{Time: time.Now()},
 			OriginData:    null.BytesFromPtr(&originData),
 			OperationType: models.TTXSOperationTypeMintNFT,
@@ -129,7 +129,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) (*dto.TxRes, error) {
 			return types.ErrInternal
 		}
 
-		txhash = thash
+		txHash = tHash
 
 		//class locked
 		classOne.Status = models.TTXSStatusPending
@@ -150,7 +150,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) (*dto.TxRes, error) {
 	}
 
 	result := &dto.TxRes{}
-	result.TxHash = txhash
+	result.TxHash = txHash
 	return result, nil
 }
 
