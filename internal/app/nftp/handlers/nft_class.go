@@ -116,7 +116,7 @@ func (h nftClass) Classes(ctx context.Context, _ interface{}) (interface{}, erro
 
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
-		startDateTime, err := time.Parse(timeLayoutWithoutHMS, startDateR)
+		startDateTime, err := time.Parse(timeLayoutWithoutHMS, startDateR+" 00:00:00")
 		if err != nil {
 			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrStartDate)
 		}
@@ -125,7 +125,7 @@ func (h nftClass) Classes(ctx context.Context, _ interface{}) (interface{}, erro
 
 	endDateR := h.EndDate(ctx)
 	if endDateR != "" {
-		endDateTime, err := time.Parse(timeLayoutWithoutHMS, endDateR)
+		endDateTime, err := time.Parse(timeLayoutWithoutHMS, endDateR+" 23:59:59")
 		if err != nil {
 			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrEndDate)
 		}
