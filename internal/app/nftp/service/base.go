@@ -152,8 +152,8 @@ func (m Base) mintNftsGas(originData []byte, amount uint64) uint64 {
 Estimated gas required to create denom
 It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048352
 */
-func (m Base) createDenomGas(origindata []byte) uint64 {
-	l := uint64(len(origindata))
+func (m Base) createDenomGas(data []byte) uint64 {
+	l := uint64(len(data))
 	if l == types.CreateMinDENOMDataSize {
 		return uint64(types.CreateMinDENOMGas * config.Get().Chain.GasCoefficient)
 	}

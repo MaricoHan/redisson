@@ -158,7 +158,7 @@ func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface
 		}
 
 		if v.Uri != "" {
-			if err := h.base.UriCheck(v.Uri); err != nil {
+			if err := h.base.UriCheck(&v.Uri); err != nil {
 				return nil, err
 			}
 		}
