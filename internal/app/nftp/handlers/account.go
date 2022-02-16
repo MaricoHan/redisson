@@ -200,6 +200,18 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 
 	params.Module = h.module(ctx)
 	params.Operation = h.operation(ctx)
+
+	if params.Module == "" && params.Operation != "" {
+		params.Operation = ""
+	}
+
+	if params.Module != "" {
+		_, ok := ModuleOperation[params.Module]
+		if !ok {
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrModule)
+		}
+	}
+
 	if params.Module != "" && params.Operation != "" {
 		operation, ok := ModuleOperation[params.Module]
 		if !ok {
@@ -210,9 +222,6 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 		}
 	}
 
-	if params.Module == "" && params.Operation != "" {
-		params.Operation = ""
-	}
 	return h.svc.AccountsHistory(params)
 }
 

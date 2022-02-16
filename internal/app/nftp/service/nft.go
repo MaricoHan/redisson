@@ -180,23 +180,13 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (*dto.TxRes, error) {
 		return nil, types.ErrNftStatus
 	}
 
-	uri := params.Uri
-	if params.Uri == "" {
-		uri = tNft.URI.String
-	}
-
-	data := params.Uri
-	if params.Data == "" {
-		uri = tNft.Metadata.String
-	}
-
 	// create rawMsg
 	msgEditNFT := nft.MsgEditNFT{
 		Id:      tNft.NFTID,
 		DenomId: tNft.ClassID,
 		Name:    params.Name,
-		URI:     uri,
-		Data:    data,
+		URI:     params.Uri,
+		Data:    params.Data,
 		Sender:  params.Sender,
 		UriHash: "[do-not-modify]",
 	}
@@ -281,22 +271,12 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (*dto.TxRes, error) {
 			return nil, types.NewAppError(types.RootCodeSpace, types.NftStatusAbnormal, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrNftStatusMsg)
 		}
 
-		uri := EditNft.Uri
-		if EditNft.Uri == "" {
-			uri = tNft.URI.String
-		}
-
-		data := EditNft.Uri
-		if EditNft.Data == "" {
-			uri = tNft.Metadata.String
-		}
-
 		msgEditNFT := nft.MsgEditNFT{
 			Id:      tNft.NFTID,
 			DenomId: tNft.ClassID,
 			Name:    EditNft.Name,
-			URI:     uri,
-			Data:    data,
+			URI:     EditNft.Uri,
+			Data:    EditNft.Data,
 			Sender:  params.Sender,
 			UriHash: "[do-not-modify]",
 		}
