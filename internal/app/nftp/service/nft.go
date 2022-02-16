@@ -253,7 +253,7 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (*dto.TxRes, error) {
 		if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
 			(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
 			//400
-			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+string(i)+"th "+types.ErrNftFound)
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrNftFound)
 		} else if err != nil {
 			//500
 			log.Error("edit nft by batch", "query nft error:", err.Error())
@@ -261,12 +261,12 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (*dto.TxRes, error) {
 		}
 
 		if tNft.Status == models.TNFTSStatusBurned {
-			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+string(i)+"th "+types.ErrNftFound)
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrNftFound)
 		}
 
 		//400
 		if tNft.Status != models.TNFTSStatusActive {
-			return nil, types.NewAppError(types.RootCodeSpace, types.NftStatusAbnormal, "the "+string(i)+"th "+types.ErrNftStatusMsg)
+			return nil, types.NewAppError(types.RootCodeSpace, types.NftStatusAbnormal, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrNftStatusMsg)
 		}
 
 		msgEditNFT := nft.MsgEditNFT{
@@ -441,9 +441,7 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (*dto.TxRes, erro
 		if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
 			(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
 			//400
-			return nil, types.NewAppError(types.RootCodeSpace,
-				types.ClientParamsError,
-				"the "+string(i)+"th "+types.ErrNftFound)
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrNftFound)
 		} else if err != nil {
 			//500
 			log.Error("delete nft by batch", "query nft error:", err.Error())
@@ -451,14 +449,12 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (*dto.TxRes, erro
 		}
 
 		if tNft.Status == models.TNFTSStatusBurned {
-			return nil, types.NewAppError(types.RootCodeSpace,
-				types.ClientParamsError,
-				"the "+string(i)+"th "+types.ErrNftFound)
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrNftFound)
 		}
 
 		//400
 		if tNft.Status != models.TNFTSStatusActive {
-			return nil, types.NewAppError(types.RootCodeSpace, types.NftStatusAbnormal, "the "+string(i)+"th "+types.ErrNftStatusMsg)
+			return nil, types.NewAppError(types.RootCodeSpace, types.NftStatusAbnormal, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrNftStatusMsg)
 		}
 
 		// create rawMsg

@@ -311,7 +311,7 @@ func (h nft) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 	}
 
 	if params.EndDate != nil && params.StartDate != nil {
-		if !params.EndDate.After(*params.StartDate) {
+		if params.EndDate.Before(*params.StartDate) {
 			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrDate)
 		}
 	}
@@ -410,7 +410,7 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, _ interface{}) (int
 	}
 
 	if params.EndDate != nil && params.StartDate != nil {
-		if !params.EndDate.After(*params.StartDate) {
+		if params.EndDate.Before(*params.StartDate) {
 			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrDate)
 		}
 	}

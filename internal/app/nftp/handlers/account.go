@@ -117,7 +117,7 @@ func (h account) Accounts(ctx context.Context, _ interface{}) (interface{}, erro
 	}
 
 	if params.EndDate != nil && params.StartDate != nil {
-		if !params.EndDate.After(*params.StartDate) {
+		if params.EndDate.Before(*params.StartDate) {
 			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrDate)
 		}
 	}
@@ -185,7 +185,7 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 	}
 
 	if params.EndDate != nil && params.StartDate != nil {
-		if !params.EndDate.After(*params.StartDate) {
+		if params.EndDate.Before(*params.StartDate) {
 			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrDate)
 		}
 	}
