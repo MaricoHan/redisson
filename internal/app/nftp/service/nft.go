@@ -583,7 +583,7 @@ func (svc *Nft) NftOperationHistoryByIndex(params dto.NftOperationHistoryByIndex
 			Limit:      params.Limit,
 			TotalCount: 0,
 		},
-		OperationRecords: nil,
+		OperationRecords: []*dto.OperationRecord{},
 	}
 	res, err := models.TNFTS(
 		models.TNFTWhere.AppID.EQ(params.AppID),
