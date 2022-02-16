@@ -203,7 +203,7 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 	if params.Module != "" && params.Operation != "" {
 		operation, ok := ModuleOperation[params.Module]
 		if !ok {
-			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOperation)
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrModule)
 		}
 		if _, ok = operation[params.Operation]; !ok {
 			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOperation)

@@ -13,7 +13,7 @@ const (
 	ClientParamsError              = "CLIENT_PARAMS_ERROR"
 	ConnectionChainFailed          = "CONNECTION_CHAIN_FAILED"
 	FrequentRequestsNotSupports    = "FREQUENT_REQUESTS_NOT_SUPPORTS"
-	NftclassStatusAbnormal         = "NFTCLASS_STATUS_ABNORMAL"
+	NftClassStatusAbnormal         = "NFT_CLASS_STATUS_ABNORMAL"
 	NftStatusAbnormal              = "NFT_STATUS_ABNORMAL"
 	NotFound                       = "NOT_FOUND"
 	MaximumLimitExceeded           = "MAXIMUM_LIMIT_EXCEEDED"
@@ -26,7 +26,7 @@ const (
 	// ErrOffset		error msg handle
 	ErrOffset         = "offset format error"
 	ErrOffsetInt      = "offset cannot be less than 0"
-	ErrLimitParam     = "limit is invalid"
+	ErrLimitParam     = "limit format error"
 	ErrLimitParamInt  = "limit must be between 1 and 50"
 	ErrCountLen       = "count length error"
 	ErrStartDate      = "startDate format error"
@@ -52,6 +52,7 @@ const (
 	ErrIndices        = "indices format error"
 	ErrIndicesLen     = "indices cannot be empty"
 	ErrOperation      = "operation is invalid"
+	ErrModule         = "module is invalid"
 	ErrAmountInt      = "amount must be between 1 and 100"
 	ErrRepeat         = "index is repeat"
 
@@ -66,16 +67,16 @@ const (
 
 var (
 	ErrInternal        = Register(RootCodeSpace, InternalFailed, "internal")
-	ErrAuthenticate    = Register(RootCodeSpace, AuthenticationFailed, "failed to authentication")
-	ErrParams          = Register(RootCodeSpace, ClientParamsError, "failed to client params")
-	ErrChainConn       = Register(RootCodeSpace, ConnectionChainFailed, "failed to connection chain")
-	ErrIdempotent      = Register(RootCodeSpace, FrequentRequestsNotSupports, "failed to idempotent")
-	ErrNftClassStatus  = Register(RootCodeSpace, NftclassStatusAbnormal, ErrNftClassStatusMsg)
+	ErrAuthenticate    = Register(RootCodeSpace, AuthenticationFailed, "authentication failed")
+	ErrParams          = Register(RootCodeSpace, ClientParamsError, "client params error")
+	ErrChainConn       = Register(RootCodeSpace, ConnectionChainFailed, "connection chain failed")
+	ErrIdempotent      = Register(RootCodeSpace, FrequentRequestsNotSupports, "frequent requests not supports")
+	ErrNftClassStatus  = Register(RootCodeSpace, NftClassStatusAbnormal, ErrNftClassStatusMsg)
 	ErrNftStatus       = Register(RootCodeSpace, NftStatusAbnormal, ErrNftStatusMsg)
 	ErrNotFound        = Register(RootCodeSpace, NotFound, "resource not found")
 	ErrLimit           = Register(RootCodeSpace, MaximumLimitExceeded, "maximum limit exceeded")
-	ErrBuildAndSign    = Register(RootCodeSpace, StructureSignTransactionFailed, "failed to build and sign")
-	ErrBuildAndSend    = Register(RootCodeSpace, StructureSendTransactionFailed, "failed to build and send")
+	ErrBuildAndSign    = Register(RootCodeSpace, StructureSignTransactionFailed, "build and sign transaction failed")
+	ErrBuildAndSend    = Register(RootCodeSpace, StructureSendTransactionFailed, "build and send transaction failed")
 	ErrTXStatusSuccess = Register(RootCodeSpace, TxStatusSuccess, "tx transaction success")
 	ErrTXStatusPending = Register(RootCodeSpace, TxStatusPending, "tx transaction is in progress, please wait")
 	ErrTXStatusUndo    = Register(RootCodeSpace, TxStatusUndo, "tx transaction not executed, please wait")
