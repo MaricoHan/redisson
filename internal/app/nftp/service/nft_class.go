@@ -32,7 +32,7 @@ func NewNftClass(base *Base) *NftClass {
 	return &NftClass{base: base}
 }
 
-func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error) {
+func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, error) {
 	//owner不能为平台外账户或此应用外账户或非法账户
 	_, err := models.TAccounts(
 		models.TAccountWhere.AppID.EQ(params.AppID),
@@ -40,7 +40,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
 		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
 		//400
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "owner not found")
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOwnerFound)
 	} else if err != nil {
 		//500
 		log.Error("create nft class", "query owner error:", err.Error())
@@ -116,9 +116,9 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 	if err != nil {
 		return nil, types.ErrInternal
 	}
-	var hashs []string
-	hashs = append(hashs, txHash)
-	return hashs, nil
+	result := &dto.TxRes{}
+	result.TxHash = txHash
+	return result, nil
 }
 
 func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, error) {
@@ -204,7 +204,7 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 		return err
 	})
 	if err != nil {
-		if strings.Contains(err.Error(), "records not exist") {
+		if strings.Contains(err.Error(), SqlNoFound()) {
 			return result, nil
 		}
 		return result, err

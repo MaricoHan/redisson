@@ -19,8 +19,6 @@ import (
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-	sqltype "github.com/volatiletech/sqlboiler/v4/types"
-
 	"gitlab.bianjie.ai/irita-paas/open-api/config"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	http2 "gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/http"
@@ -51,7 +49,7 @@ func NewAccount(base *Base) *Account {
 	return &Account{base: base}
 }
 
-func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
+func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, error) {
 	// 写入数据库
 	// sdk 创建账户
 	var addresses []string
@@ -183,7 +181,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 				Operation: "add_gas",
 				Signer:    classOne.Address,
 				Recipient: null.StringFrom(v.Address),
-				Message:   sqltype.JSON(messageByte),
+				Message:   messageByte,
 			})
 		}
 		err = tmsgs.InsertAll(context.Background(), boil.GetContextDB())
@@ -192,7 +190,9 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) ([]string, error) {
 			return nil, types.ErrInternal
 		}
 	}
-	return addresses, nil
+	result := &dto.AccountRes{}
+	result.Accounts = addresses
+	return result, nil
 }
 
 func (svc *Account) Accounts(params dto.AccountsP) (*dto.AccountsRes, error) {
@@ -237,7 +237,7 @@ func (svc *Account) Accounts(params dto.AccountsP) (*dto.AccountsRes, error) {
 	)
 	if err != nil {
 		// records not exist
-		if strings.Contains(err.Error(), "records not exist") {
+		if strings.Contains(err.Error(), SqlNoFound()) {
 			return result, nil
 		}
 		return nil, types.ErrInternal
@@ -309,7 +309,7 @@ func (svc *Account) AccountsHistory(params dto.AccountsP) (*dto.AccountOperation
 	)
 	if err != nil {
 		// records not exist
-		if strings.Contains(err.Error(), "records not exist") {
+		if strings.Contains(err.Error(), SqlNoFound()) {
 			return result, nil
 		}
 		return nil, types.ErrInternal

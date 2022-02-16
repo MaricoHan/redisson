@@ -17,6 +17,10 @@ type AccountsP struct {
 	Operation string `json:"operation"`
 }
 
+type AccountRes struct {
+	Accounts []string `json:"accounts"`
+}
+
 type AccountsRes struct {
 	PageRes
 	Accounts []*Account `json:"accounts"`

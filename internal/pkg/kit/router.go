@@ -235,7 +235,7 @@ func (c Controller) serverOptions(
 		} else {
 			switch appErr.Code() {
 			case types.ClientParamsError, types.FrequentRequestsNotSupports, types.NftStatusAbnormal,
-				types.NftclassStatusAbnormal, types.MaximumLimitExceeded:
+				types.NftClassStatusAbnormal, types.MaximumLimitExceeded:
 				metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "400"}...).Add(1)
 				w.WriteHeader(http.StatusBadRequest) //400
 			case types.AuthenticationFailed:
@@ -273,7 +273,7 @@ func (c Controller) serverOptions(
 func Translate(err error) (errMsg string) {
 	errs := err.(validator.ValidationErrors)
 	for _, err := range errs {
-		errMsg = err.Translate(trans)
+		errMsg = strings.ToLower(err.Translate(trans))
 	}
 	return
 }

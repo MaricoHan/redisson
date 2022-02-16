@@ -15,3 +15,7 @@ type PageRes struct {
 	Limit      int64 `json:"limit" `
 	TotalCount int64 `json:"total_count"`
 }
+
+type TxRes struct {
+	TxHash string `json:"tx_hash"`
+}
