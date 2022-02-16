@@ -77,9 +77,8 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 
 	//sign
 	baseTx := svc.base.CreateBaseTx(params.Owner, "")
-	data, hash, _ := svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
-	baseTx.Gas = svc.base.calculateGas(data)
-	data, hash, err = svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
+	baseTx.Gas = svc.base.transferDenomGas(class)
+	data, hash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
 	if err != nil {
 		log.Debug("transfer nft class", "BuildAndSign error:", err.Error())
 		return nil, types.ErrBuildAndSign
@@ -184,7 +183,7 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (*dto
 
 	msgs := nft.MsgTransferNFT{
 		Id:        res.NFTID,
-		DenomId:   string(params.ClassID),
+		DenomId:   params.ClassID,
 		Name:      res.Name.String,
 		URI:       res.URI.String,
 		Data:      res.Metadata.String,
@@ -196,7 +195,7 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (*dto
 	//build and sign
 	baseTx := svc.base.CreateBaseTx(params.Owner, "")
 	data, hash, _ := svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
-	baseTx.Gas = svc.base.calculateGas(data)
+	baseTx.Gas = svc.base.transferOneNftGas(data)
 	data, hash, err = svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
 	if err != nil {
 		log.Debug("transfer nft by index", "BuildAndSign error:", err.Error())
@@ -252,6 +251,7 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (*dto
 func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (*dto.TxRes, error) {
 	indexMap := map[uint64]int{}
 	var msgs sdktype.Msgs
+	var amount uint64
 	for i, modelResult := range params.Recipients {
 		recipient := &dto.Recipient{
 			Index:     modelResult.Index,
@@ -331,12 +331,13 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (*dto
 		}
 		msgs = append(msgs, &msg)
 		indexMap[recipient.Index] = 0
+		amount += 1
 	}
 
 	//sign
 	baseTx := svc.base.CreateBaseTx(params.Owner, "")
 	data, hash, _ := svc.base.BuildAndSign(msgs, baseTx)
-	baseTx.Gas = svc.base.calculateGas(data)
+	baseTx.Gas = svc.base.transferNftsGas(data, amount)
 	data, hash, err := svc.base.BuildAndSign(msgs, baseTx)
 	if err != nil {
 		log.Debug("transfer nft by batch", "BuildAndSign error:", err.Error())
