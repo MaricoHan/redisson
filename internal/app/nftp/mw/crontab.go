@@ -2,12 +2,9 @@ package mw
 
 import (
 	"context"
-	"database/sql"
-	"github.com/friendsofgo/errors"
 	"github.com/robfig/cron/v3"
 	"github.com/volatiletech/null/v8"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/chain"
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/metric"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/redis"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft"
@@ -28,76 +25,40 @@ func ProcessTimer() {
 		metric.NewPrometheus().SyncRedisException.With().Set(0)
 		metric.NewPrometheus().SyncChainConnError.With().Set(0)
 
-		txsPending, err := models.TTXS(
+		txsPending, _ := models.TTXS(
 			models.TTXWhere.Status.EQ(models.TTXSStatusPending),
 		).AllG(context.Background())
-		if err != nil && errors.Cause(err) == sql.ErrNoRows {
-			//404
-		} else if err != nil {
-			//500
-			log.Error("query tx pending total", "query tx error:", err.Error())
-		}
 		for _ = range txsPending {
 			metric.NewPrometheus().SyncTxPendingTotal.With().Add(1) //系统未完成的交易总量
 		}
 
-		txsFailed, err := models.TTXS(
+		txsFailed, _ := models.TTXS(
 			models.TTXWhere.Status.EQ(models.TTXSStatusFailed),
 		).AllG(context.Background())
-		if err != nil && errors.Cause(err) == sql.ErrNoRows {
-			//404
-		} else if err != nil {
-			//500
-			log.Error("query tx failed total", "query tx error:", err.Error())
-		}
 		for _ = range txsFailed {
 			metric.NewPrometheus().SyncTxFailedTotal.With().Add(1) //系统失败的交易总量
 		}
 
-		nftLocked, err := models.TNFTS(
+		nftLocked, _ := models.TNFTS(
 			models.TNFTWhere.LockedBy.NEQ(null.Uint64FromPtr(nil)),
 		).AllG(context.Background())
-		if err != nil && errors.Cause(err) == sql.ErrNoRows {
-			//404
-		} else if err != nil {
-			//500
-			log.Error("query nft locked total", "query nft error:", err.Error())
-		}
 		for _ = range nftLocked {
 			metric.NewPrometheus().SyncNftLockedTotal.With().Add(1) //系统锁定的nft总量
 		}
 
-		nft, err := models.TNFTS().AllG(context.Background())
-		if err != nil && errors.Cause(err) == sql.ErrNoRows {
-			//404
-		} else if err != nil {
-			//500
-			log.Error("query nft total", "query nft error:", err.Error())
-		}
+		nft, _ := models.TNFTS().AllG(context.Background())
 		for _ = range nft {
 			metric.NewPrometheus().SyncNftTotal.With().Add(1) //系统创建的nft总量
 		}
 
-		nftClassLocked, err := models.TClasses(
+		nftClassLocked, _ := models.TClasses(
 			models.TClassWhere.LockedBy.NEQ(null.Uint64FromPtr(nil)),
 		).AllG(context.Background())
-		if err != nil && errors.Cause(err) == sql.ErrNoRows {
-			//404
-		} else if err != nil {
-			//500
-			log.Error("query nft class locked total", "query nft class error:", err.Error())
-		}
 		for _ = range nftClassLocked {
 			metric.NewPrometheus().SyncClassLockedTotal.With().Add(1) //系统锁定的class总量
 		}
 
-		nftClass, err := models.TClasses().AllG(context.Background())
-		if err != nil && errors.Cause(err) == sql.ErrNoRows {
-			//404
-		} else if err != nil {
-			//500
-			log.Error("query nft class total", "query nft class error:", err.Error())
-		}
+		nftClass, _ := models.TClasses().AllG(context.Background())
 		for _ = range nftClass {
 			metric.NewPrometheus().SyncClassTotal.With().Add(1) //系统创建的class总量
 		}
