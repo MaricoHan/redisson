@@ -237,7 +237,6 @@ func (m Base) transferNftsGas(data []byte, amount uint64) uint64 {
 	return uint64(u)
 }
 
-// 计算查询出的NFT占用的字节大小
 func (m Base) lenOfNft(tNft *models.TNFT) uint64 {
 	len1 := len(tNft.Status + tNft.NFTID + tNft.Owner + tNft.ClassID + tNft.TXHash + tNft.Name.String + tNft.Metadata.String + tNft.URIHash.String + tNft.URI.String)
 	len2 := 4 * 8
@@ -245,13 +244,13 @@ func (m Base) lenOfNft(tNft *models.TNFT) uint64 {
 	return uint64(len1 + len2 + len3)
 }
 func (m Base) editNftGas(nftLen, signLen uint64) uint64 {
-	gas := 48130 + 7*nftLen + 42*signLen
+	gas := types.EditNFTBaseGas + types.EditNFTLenCoefficient*nftLen + types.EditNFTSignLenCoefficient*signLen
 	res := float64(gas) * config.Get().Chain.GasCoefficient
 	return uint64(res)
 }
 
 func (m Base) editBatchNftGas(nftLen, signLen uint64) uint64 {
-	gas := 65420 + 8*nftLen + 42*signLen
+	gas := types.EditBatchNFTBaseGas + types.EditBatchNFTLenCoefficient*nftLen + types.EditBatchNFTSignLenCoefficient*signLen
 	res := float64(gas) * config.Get().Chain.GasCoefficient
 	return uint64(res)
 }
