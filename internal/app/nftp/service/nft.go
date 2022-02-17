@@ -177,21 +177,14 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
 	if params.Sender != tNft.Owner {
 		return "", types.ErrNotOwner
 	}
-	// judge whether the Caller is one of the APP's address：400
-	if tNft.AppID != params.AppID {
-		return "", types.ErrNoPermission
-	}
 
-	nftName := "[do-not-modify]"
-	if params.Name != "" {
-		nftName = params.Name
-	}
+	//tNftLen := svc.base.lenOfNft(tNft)
 
 	// create rawMsg
 	msgEditNFT := nft.MsgEditNFT{
 		Id:      tNft.NFTID,
 		DenomId: tNft.ClassID,
-		Name:    nftName,
+		Name:    params.Name,
 		URI:     params.Uri,
 		Data:    params.Data,
 		Sender:  params.Sender,
@@ -203,6 +196,8 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (string, error) {
 	originData, txHash, _ := svc.base.BuildAndSign(sdktype.Msgs{&msgEditNFT}, baseTx)
 	baseTx.Gas = svc.base.calculateGas(originData)
 	signedData, txHash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgEditNFT}, baseTx)
+	fmt.Println("sign数据长度：", len(signedData))
+
 	if err != nil {
 		log.Debug("edit nft by index", "BuildAndSign error:", err.Error())
 		return "", types.ErrBuildAndSign
@@ -254,6 +249,8 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 
 	// create rawMsgs
 	var msgEditNFTs sdktype.Msgs
+
+	var allLen int
 	for _, EditNft := range params.EditNfts { // create every rawMsg
 		// get NFT by app_id,class_id and index
 		tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID),
@@ -279,10 +276,12 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 			return "", types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "not owner")
 		}
 
-		// judge whether the Caller is one of the APP's address：400
-		if tNft.AppID != params.AppID {
-			return "", types.ErrNoPermission
-		}
+		//计算查询出的NFT占用的字节大小
+		len1 := len(tNft.Status + tNft.NFTID + tNft.Owner + tNft.ClassID + tNft.TXHash + tNft.Name.String + tNft.Metadata.String + tNft.URIHash.String + tNft.URI.String)
+		len2 := 4 * 8
+		len3 := len(tNft.CreateAt.String() + tNft.UpdateAt.String() + tNft.Timestamp.Time.String())
+		dataLen := len1 + len2 + len3
+		allLen += dataLen
 
 		nftName := "[do-not-modify]"
 		if EditNft.Name != "" {
@@ -299,12 +298,15 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (string, error) {
 		}
 		msgEditNFTs = append(msgEditNFTs, &msgEditNFT)
 	}
+	fmt.Println("NFTs的数据大小：", allLen)
 
 	// build and sign transaction
 	baseTx := svc.base.CreateBaseTx(params.Sender, "")
-	originData, txHash, _ := svc.base.BuildAndSign(msgEditNFTs, baseTx)
-	baseTx.Gas = svc.base.calculateGas(originData)
+
+	baseTx.Gas = 4e6
 	signedData, txHash, err := svc.base.BuildAndSign(msgEditNFTs, baseTx)
+	fmt.Println("sign的数据大小", len(signedData))
+
 	if err != nil {
 		log.Debug("edit nft by batch", "BuildAndSign error:", err.Error())
 		return "", types.ErrBuildAndSign
@@ -373,7 +375,7 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (string, error) {
 	}
 
 	// 404
-	if tNft.Status != models.TNFTSStatusBurned {
+	if tNft.Status == models.TNFTSStatusBurned {
 		return "", types.ErrNftNotFound
 	}
 
@@ -387,10 +389,13 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (string, error) {
 		return "", types.ErrNotOwner
 	}
 
-	// judge whether the Caller is one of the APP's address：400
-	if tNft.AppID != params.AppID {
-		return "", types.ErrNoPermission
-	}
+	//计算查询出的NFT占用的字节大小
+	len1 := len(tNft.Status + tNft.NFTID + tNft.Owner + tNft.ClassID + tNft.TXHash + tNft.Name.String + tNft.Metadata.String + tNft.URIHash.String + tNft.URI.String)
+	len2 := 4 * 8
+	len3 := len(tNft.CreateAt.String() + tNft.UpdateAt.String() + tNft.Timestamp.Time.String())
+	dataLen := len1 + len2 + len3
+	fmt.Println("NFT的数据大小：", dataLen)
+
 	// create rawMsg
 	msgBurnNFT := nft.MsgBurnNFT{
 		Id:      tNft.NFTID,
@@ -454,6 +459,7 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (string, error) {
 func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 	// create rawMsgs
 	var msgBurnNFTs sdktype.Msgs
+	var allLen int
 	for _, index := range params.Indices { // create every rawMsg
 		//get NFT by app_id,class_id and index
 		tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID),
@@ -484,6 +490,13 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 			return "", types.ErrNoPermission
 		}
 
+		//计算查询出的NFT占用的字节大小
+		len1 := len(tNft.Status + tNft.NFTID + tNft.Owner + tNft.ClassID + tNft.TXHash + tNft.Name.String + tNft.Metadata.String + tNft.URIHash.String + tNft.URI.String)
+		len2 := 4 * 8
+		len3 := len(tNft.CreateAt.String() + tNft.UpdateAt.String() + tNft.Timestamp.Time.String())
+		dataLen := len1 + len2 + len3
+		allLen += dataLen
+
 		// create rawMsg
 		msgBurnNFT := nft.MsgBurnNFT{
 			Id:      tNft.NFTID,
@@ -492,12 +505,14 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (string, error) {
 		}
 		msgBurnNFTs = append(msgBurnNFTs, &msgBurnNFT)
 	}
+	fmt.Println("NFTS的数据大小：", allLen)
 
 	// build and sign transaction
 	baseTx := svc.base.CreateBaseTx(params.Sender, "")
-	originData, txHash, _ := svc.base.BuildAndSign(msgBurnNFTs, baseTx)
-	baseTx.Gas = svc.base.calculateGas(originData)
+	//originData, txHash, _ := svc.base.BuildAndSign(msgBurnNFTs, baseTx)
+	//baseTx.Gas = svc.base.calculateGas(originData)
 	signedData, txHash, err := svc.base.BuildAndSign(msgBurnNFTs, baseTx)
+
 	if err != nil {
 		log.Debug("delete nft by batch", "BuildAndSign error:", err.Error())
 		return "", types.ErrBuildAndSign

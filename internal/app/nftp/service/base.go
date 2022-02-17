@@ -134,5 +134,13 @@ func (m Base) CreateGasMsg(inputAddress string, outputAddress []string) bank.Msg
 	return msg
 }
 func (m Base) calculateGas(origindata []byte) uint64 {
-	return config.Get().Chain.GasCoefficient * uint64(len(origindata))
+	return 2000000
+}
+func (m Base) lenOfNft(tNft *models.TNFT) int {
+	// 计算查询出的NFT占用的字节大小
+	len1 := len(tNft.Status + tNft.NFTID + tNft.Owner + tNft.ClassID + tNft.TXHash + tNft.Name.String + tNft.Metadata.String + tNft.URIHash.String + tNft.URI.String)
+	len2 := 4 * 8 // 4个uint64
+	len3 := len(tNft.CreateAt.String() + tNft.UpdateAt.String() + tNft.Timestamp.Time.String())
+
+	return len1 + len2 + len3
 }
