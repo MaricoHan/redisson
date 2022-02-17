@@ -142,7 +142,6 @@ func (h authHandler) Signature(r *http.Request, apiSecret string, timestamp stri
 
 	// sort params
 	sortParams := sortMapParams(params)
-
 	if sortParams != nil {
 		sortParamsBytes, _ := json.Marshal(sortParams)
 		hexHash = hash(string(sortParamsBytes) + timestamp + apiSecret)

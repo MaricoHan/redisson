@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"gitlab.bianjie.ai/irita-paas/open-api/config"
@@ -89,6 +90,5 @@ func (s *Server) RegisterEndpoint(end kit.Endpoint) {
 	for _, m := range s.middlewares {
 		h = m(h)
 	}
-
-	s.router.Handle(end.URI, h).Methods(end.Method)
+	s.router.Handle(fmt.Sprintf("/v1beta1%s", end.URI), h).Methods(end.Method)
 }
