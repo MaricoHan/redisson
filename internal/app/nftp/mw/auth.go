@@ -82,6 +82,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		models.TAppKeyWhere.APIKey.EQ(appKey),
 	).OneG(context.Background())
 	if err != nil {
+		log.Error("server http", "params error:", err)
 		writeForbiddenResp(w)
 		return
 	}

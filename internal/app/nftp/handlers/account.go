@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 
 	"time"
 
@@ -71,6 +72,7 @@ func (h account) CreateAccount(ctx context.Context, request interface{}) (interf
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrCountLen)
 	}
 	if config.Get().Server.Env == "prod" && params.Count > 10 {
+		log.Error("create account", "params error:", "config.Get().Server.Env == \"prod\" && params.Count > 10")
 		return nil, types.ErrParams
 	}
 	// 校验参数 end

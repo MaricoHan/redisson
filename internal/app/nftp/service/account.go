@@ -311,6 +311,7 @@ func (svc *Account) AccountsHistory(params dto.AccountsP) (*dto.AccountOperation
 		if strings.Contains(err.Error(), SqlNoFound()) {
 			return result, nil
 		}
+		log.Error("account history", "query error:", err)
 		return nil, types.ErrInternal
 	}
 
