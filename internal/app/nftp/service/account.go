@@ -272,7 +272,7 @@ func (svc *Account) AccountsHistory(params dto.AccountsP) (*dto.AccountOperation
 	}
 
 	if params.Account != "" {
-		queryMod = append(queryMod, models.TMSGWhere.Signer.EQ(params.Account))
+		queryMod = append(queryMod, qm.SQL("select * where "))
 	}
 	if params.Module != "" {
 		queryMod = append(queryMod, models.TMSGWhere.Module.EQ(params.Module))

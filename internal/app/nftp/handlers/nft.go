@@ -65,15 +65,15 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 		return nil, err
 	}
 
-	if uriHash != "" && len([]rune(uriHash)) > 512 {
+	if len([]rune(uriHash)) > 512 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrUriHashLen)
 	}
 
-	if data != "" && len([]rune(data)) > 4096 {
+	if len([]rune(data)) > 4096 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrDataLen)
 	}
 
-	if recipient != "" && len([]rune(recipient)) > 128 {
+	if len([]rune(recipient)) > 128 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientLen)
 	}
 
@@ -117,7 +117,7 @@ func (h nft) EditNftByIndex(ctx context.Context, request interface{}) (interface
 		return nil, err
 	}
 
-	if data != "" && len([]rune(data)) > 4096 {
+	if len([]rune(data)) > 4096 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrDataLen)
 	}
 
@@ -174,6 +174,7 @@ func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface
 		}
 
 		if v.Uri != "" {
+
 			if len([]rune(v.Uri)) > 256 {
 				return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrUriLen)
 			}
@@ -184,7 +185,7 @@ func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface
 			}
 		}
 
-		if v.Data != "" && len([]rune(v.Data)) > 4096 {
+		if len([]rune(v.Data)) > 4096 {
 			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrDataLen)
 		}
 

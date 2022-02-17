@@ -54,11 +54,11 @@ func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrNameLen)
 	}
 
-	if (symbol != "" && len([]rune(symbol)) < 3) || (symbol != "" && len([]rune(symbol)) > 64) {
+	if (symbol != "" && len([]rune(symbol)) < 3) || len([]rune(symbol)) > 64 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrSymbolLen)
 	}
 
-	if description != "" && len([]rune(description)) > 2048 {
+	if len([]rune(description)) > 2048 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrDescriptionLen)
 	}
 
@@ -66,11 +66,11 @@ func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 		return nil, err
 	}
 
-	if uriHash != "" && len([]rune(uriHash)) > 512 {
+	if len([]rune(uriHash)) > 512 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrUriHashLen)
 	}
 
-	if data != "" && len([]rune(data)) > 4096 {
+	if len([]rune(data)) > 4096 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrDataLen)
 	}
 
