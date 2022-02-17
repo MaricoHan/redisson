@@ -2,10 +2,14 @@ package handlers
 
 import (
 	"context"
-	"strings"
+	"fmt"
+
 	"time"
 
+	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
+
 	"gitlab.bianjie.ai/irita-paas/open-api/config"
+
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
@@ -33,6 +37,23 @@ func newAccount(svc *service.Account) *account {
 	return &account{svc: svc}
 }
 
+var (
+	// ModuleOperation 定义验证模块
+	ModuleOperation = map[string]map[string]string{
+		models.TMSGSModuleAccount: {
+			models.TMSGSOperationAddGas: models.TMSGSOperationAddGas,
+		},
+		models.TMSGSModuleNFT: {
+			models.TMSGSOperationIssueClass:    models.TMSGSOperationIssueClass,
+			models.TMSGSOperationTransferClass: models.TMSGSOperationTransferClass,
+			models.TMSGSOperationMint:          models.TMSGSOperationMint,
+			models.TMSGSOperationEdit:          models.TMSGSOperationEdit,
+			models.TMSGSOperationTransfer:      models.TMSGSOperationTransfer,
+			models.TMSGSOperationBurn:          models.TMSGSOperationBurn,
+		},
+	}
+)
+
 // CreateAccount Create one or more accounts
 // return creation result
 func (h account) CreateAccount(ctx context.Context, request interface{}) (interface{}, error) {
@@ -47,7 +68,7 @@ func (h account) CreateAccount(ctx context.Context, request interface{}) (interf
 		params.Count = 1
 	}
 	if params.Count < 1 || params.Count > 1000 {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Count")
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrCountLen)
 	}
 	if config.Get().Server.Env == "prod" && params.Count > 10 {
 		return nil, types.ErrParams
@@ -66,14 +87,15 @@ func (h account) Accounts(ctx context.Context, _ interface{}) (interface{}, erro
 
 	offset, err := h.Offset(ctx)
 	if err != nil {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Offset")
+		return nil, err
 	}
 	params.Offset = offset
 
 	limit, err := h.Limit(ctx)
 	if err != nil {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Limit")
+		return nil, err
 	}
+
 	params.Limit = limit
 
 	if params.Limit == 0 {
@@ -82,25 +104,25 @@ func (h account) Accounts(ctx context.Context, _ interface{}) (interface{}, erro
 
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
-		startDateTime, err := time.Parse(timeLayout, startDateR+" 00:00:00")
+		startDateTime, err := time.Parse(timeLayout, fmt.Sprintf("%s 00:00:00", startDateR))
 		if err != nil {
-			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid StartDate")
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrStartDate)
 		}
 		params.StartDate = &startDateTime
 	}
 
 	endDateR := h.EndDate(ctx)
 	if endDateR != "" {
-		endDateTime, err := time.Parse(timeLayout, endDateR+" 23:59:59")
+		endDateTime, err := time.Parse(timeLayout, fmt.Sprintf("%s 23:59:59", endDateR))
 		if err != nil {
-			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid EndDate")
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrEndDate)
 		}
 		params.EndDate = &endDateTime
 	}
 
 	if params.EndDate != nil && params.StartDate != nil {
-		if !params.EndDate.After(*params.StartDate) {
-			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "EndDate before StartDate")
+		if params.EndDate.Before(*params.StartDate) {
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrDate)
 		}
 	}
 	switch h.SortBy(ctx) {
@@ -109,7 +131,7 @@ func (h account) Accounts(ctx context.Context, _ interface{}) (interface{}, erro
 	case "DATE_DESC":
 		params.SortBy = "DATE_DESC"
 	default:
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrSortBy)
 	}
 
 	// 校验参数 end
@@ -134,13 +156,13 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 
 	offset, err := h.Offset(ctx)
 	if err != nil {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Offset")
+		return nil, err
 	}
 	params.Offset = offset
 
 	limit, err := h.Limit(ctx)
 	if err != nil {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Limit")
+		return nil, err
 	}
 	params.Limit = limit
 
@@ -150,25 +172,25 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 
 	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
-		startDateTime, err := time.Parse(timeLayout, startDateR+" 00:00:00")
+		startDateTime, err := time.Parse(timeLayout, fmt.Sprintf("%s 00:00:00", startDateR))
 		if err != nil {
-			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid StartDate")
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrStartDate)
 		}
 		params.StartDate = &startDateTime
 	}
 
 	endDateR := h.EndDate(ctx)
 	if endDateR != "" {
-		endDateTime, err := time.Parse(timeLayout, endDateR+" 23:59:59")
+		endDateTime, err := time.Parse(timeLayout, fmt.Sprintf("%s 23:59:59", endDateR))
 		if err != nil {
-			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid EndDate")
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrEndDate)
 		}
 		params.EndDate = &endDateTime
 	}
 
 	if params.EndDate != nil && params.StartDate != nil {
-		if !params.EndDate.After(*params.StartDate) {
-			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "EndDate before StartDate")
+		if params.EndDate.Before(*params.StartDate) {
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrDate)
 		}
 	}
 	switch h.SortBy(ctx) {
@@ -177,22 +199,31 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 	case "DATE_DESC":
 		params.SortBy = "DATE_DESC"
 	default:
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrSortBy)
 	}
 
 	params.Module = h.module(ctx)
 	params.Operation = h.operation(ctx)
-	if params.Module != "" && params.Operation != "" {
-		if params.Module == "account" && params.Operation != "add_gas" {
-			return nil, types.ErrParams
-		} else if params.Module == "nft" && !strings.Contains("transfer_class/mint/edit/transfer/burn/issue_class", params.Operation) {
-			return nil, types.ErrParams
+
+	if params.Module == "" {
+		params.Operation = ""
+	} else {
+		_, ok := ModuleOperation[params.Module]
+		if !ok {
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrModule)
 		}
 	}
 
-	if params.Module == "" && params.Operation != "" {
-		params.Operation = ""
+	if params.Module != "" && params.Operation != "" {
+		operation, ok := ModuleOperation[params.Module]
+		if !ok {
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrModule)
+		}
+		if _, ok = operation[params.Operation]; !ok {
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOperation)
+		}
 	}
+
 	return h.svc.AccountsHistory(params)
 }
 

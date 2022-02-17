@@ -133,14 +133,106 @@ func (m Base) CreateGasMsg(inputAddress string, outputAddress []string) bank.Msg
 	}
 	return msg
 }
-func (m Base) calculateGas(origindata []byte) uint64 {
-	return 2000000
-}
-func (m Base) lenOfNft(tNft *models.TNFT) int {
-	// 计算查询出的NFT占用的字节大小
-	len1 := len(tNft.Status + tNft.NFTID + tNft.Owner + tNft.ClassID + tNft.TXHash + tNft.Name.String + tNft.Metadata.String + tNft.URIHash.String + tNft.URI.String)
-	len2 := 4 * 8 // 4个uint64
-	len3 := len(tNft.CreateAt.String() + tNft.UpdateAt.String() + tNft.Timestamp.Time.String())
 
-	return len1 + len2 + len3
+/**
+Estimated gas required to issue nft
+It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048328
+*/
+func (m Base) mintNftsGas(originData []byte, amount uint64) uint64 {
+	l := uint64(len(originData))
+	if l == types.MintMinNFTDataSize {
+		return uint64(float64(types.MintMinNFTGas) * config.Get().Chain.GasCoefficient)
+	}
+	res := (l-types.MintMinNFTIncreaseDataSize*(amount-1)-types.MintMinNFTDataSize)*types.MintNFTCoefficient + types.MintMinNFTGas + types.MintMinNFTIncreaseGas*(amount-1)
+	u := float64(res) * config.Get().Chain.GasCoefficient
+	return uint64(u)
+}
+
+/**
+Estimated gas required to create denom
+It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048352
+*/
+func (m Base) createDenomGas(data []byte) uint64 {
+	l := uint64(len(data))
+	if l == types.CreateMinDENOMDataSize {
+		return uint64(types.CreateMinDENOMGas * config.Get().Chain.GasCoefficient)
+	}
+	u := (l-types.CreateMinDENOMDataSize)*types.CreateDENOMCoefficient + types.CreateMinDENOMGas
+	return uint64(float64(u) * config.Get().Chain.GasCoefficient)
+}
+
+/**
+Estimated gas required to transfer denom
+It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048356
+*/
+func (m Base) transferDenomGas(class *models.TClass) uint64 {
+	l := len([]byte(class.ClassID)) + len([]byte(class.Status)) + len([]byte(class.Owner)) + len([]byte(class.TXHash)) + len([]byte(string(class.AppID))) + len([]byte(string(class.ID))) + len([]byte(string(class.Offset)))
+	if class.LockedBy.Valid {
+		l += len([]byte(string(class.LockedBy.Uint64)))
+	}
+	if class.Timestamp.Valid {
+		l += len([]byte(class.Timestamp.Time.String()))
+	}
+	if class.URIHash.Valid {
+		l += len([]byte(class.URIHash.String))
+	}
+	if class.URI.Valid {
+		l += len([]byte(class.URI.String))
+	}
+	if class.Name.Valid {
+		l += len([]byte(class.Name.String))
+	}
+	if class.Symbol.Valid {
+		l += len([]byte(class.Symbol.String))
+	}
+	if class.Description.Valid {
+		l += len([]byte(class.Description.String))
+	}
+	if class.Metadata.Valid {
+		l += len([]byte(class.Metadata.String))
+	}
+	if class.Extra1.Valid {
+		l += len([]byte(class.Extra1.String))
+	}
+	if class.Extra2.Valid {
+		l += len([]byte(class.Extra2.String))
+	}
+	if class.UpdateAt.String() != "" {
+		l += len([]byte(class.UpdateAt.String()))
+	}
+	if class.CreateAt.String() != "" {
+		l += len([]byte(class.CreateAt.String()))
+	}
+	if l == types.TransferMinDENOMDataSize {
+		return uint64(types.TransferMinDENOMGas * config.Get().Chain.GasCoefficient)
+	}
+	res := (float64(l-types.TransferMinDENOMDataSize)*types.TransferDENOMCoefficient + types.TransferMinDENOMGas) * config.Get().Chain.GasCoefficient
+	return uint64(res)
+}
+
+/**
+Estimated gas required to transfer one nft
+It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048358
+*/
+func (m Base) transferOneNftGas(data []byte) uint64 {
+	l := len(data)
+	if l == types.TransferMinNFTDataSize {
+		return uint64(types.TransferMinNFTGas * config.Get().Chain.GasCoefficient)
+	}
+	res := float64((l-types.TransferMinNFTDataSize)*types.TransferNFTCoefficient+types.TransferMinNFTGas) * config.Get().Chain.GasCoefficient
+	return uint64(res)
+}
+
+/**
+Estimated gas required to transfer more nft
+It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048358
+*/
+func (m Base) transferNftsGas(data []byte, amount uint64) uint64 {
+	l := uint64(len(data))
+	if l == types.TransferMinNFTDataSize {
+		return uint64(float64(types.TransferMinNFTGas) * config.Get().Chain.GasCoefficient)
+	}
+	res := (l-types.TransferMinNFTIncreaseDataSize*(amount-1)-types.TransferMinNFTDataSize)*types.TransferNFTCoefficient + types.TransferMinNFTGas + types.TransferMinNFTIncreaseGas*(amount-1)
+	u := float64(res) * config.Get().Chain.GasCoefficient
+	return uint64(u)
 }

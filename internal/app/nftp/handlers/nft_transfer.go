@@ -36,10 +36,10 @@ func (h nftTransfer) TransferNftClassByID(ctx context.Context, request interface
 	// 校验参数 start
 	req := request.(*vo.TransferNftClassByIDRequest)
 	if req.Recipient == "" {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipient)
 	}
 	if req.Recipient != "" && len(req.Recipient) > 128 {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientLen)
 	}
 	params := dto.TransferNftClassByIDP{
 		ClassID:   h.ClassID(ctx),
@@ -56,20 +56,25 @@ func (h nftTransfer) TransferNftByIndex(ctx context.Context, request interface{}
 	// 校验参数 start
 	req := request.(*vo.TransferNftByIndexRequest)
 	if req.Recipient == "" {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipient)
 	}
 
-	if h.Index(ctx) == 0 {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Index")
+	index, err := h.Index(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if index == 0 {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrIndexInt)
 	}
 
 	if req.Recipient != "" && len(req.Recipient) > 128 {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipient")
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientLen)
 	}
 	params := dto.TransferNftByIndexP{
 		ClassID:   h.ClassID(ctx),
 		Owner:     h.Owner(ctx),
-		Index:     h.Index(ctx),
+		Index:     index,
 		Recipient: req.Recipient,
 		AppID:     h.AppID(ctx),
 	}
@@ -82,7 +87,7 @@ func (h nftTransfer) TransferNftByBatch(ctx context.Context, request interface{}
 	// 校验参数 start
 	req := request.(*vo.TransferNftByBatchRequest)
 	if req.Recipients == nil {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Recipients")
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipients)
 	}
 	params := dto.TransferNftByBatchP{
 		ClassID:    h.ClassID(ctx),
@@ -113,14 +118,16 @@ func (h nftTransfer) Owner(ctx context.Context) string {
 	return owner.(string)
 }
 
-func (h nftTransfer) Index(ctx context.Context) uint64 {
-	index := ctx.Value("index")
-	if index == nil {
-		return 0
+func (h nftTransfer) Index(ctx context.Context) (uint64, error) {
+	rec := ctx.Value("index")
+	if rec == nil {
+		return 0, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrIndexLen)
 	}
-	parseUint, err := strconv.ParseUint(index.(string), 10, 64)
+	index, err := strconv.ParseUint(rec.(string), 10, 64)
 	if err != nil {
-		panic(err)
+		return 0, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrIndex)
 	}
-	return parseUint
+
+	// return index
+	return index, nil
 }

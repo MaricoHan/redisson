@@ -35,6 +35,10 @@ type authHandler struct {
 
 func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Debug("user request", "method:", r.Method, "url:", r.URL.Path)
+
+	metric.NewPrometheus().ApiMysqlException.With([]string{}...).Set(0)
+	metric.NewPrometheus().ApiRedisException.With([]string{}...).Set(0)
+
 	createTime := time.Now()
 	defer func(createTime time.Time) {
 		interval := time.Now().Sub(createTime)
@@ -45,6 +49,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			r.RequestURI,
 		}...).Observe(float64(interval))
 	}(createTime)
+
 	root, err := models.TAccounts(
 		models.TAccountWhere.AppID.EQ(uint64(0)),
 	).OneG(context.Background())

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/bsm/redislock"
@@ -21,11 +22,11 @@ var (
 )
 
 func RedisPing() bool {
-	conn := rdb.Conn(context.Background())
-	if conn == nil {
-		return false
+	result := rdb.Ping(context.Background())
+	if strings.Contains(result.String(), "PONG") {
+		return true
 	}
-	return true
+	return false
 }
 
 // Connect connect tht redis server

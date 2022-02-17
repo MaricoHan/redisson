@@ -2,11 +2,10 @@ package handlers
 
 import (
 	"context"
-	"strconv"
-	"strings"
-
 	"github.com/asaskevich/govalidator"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
+	"strconv"
+	"strings"
 )
 
 const timeLayout = "2006-01-02 15:04:05"
@@ -25,15 +24,20 @@ func (h base) AppID(ctx context.Context) uint64 {
 	return uint64(appID)
 }
 
-func (h base) UriCheck(uri string) error {
+func (h base) UriCheck(str *string) error {
+	uri := *str
 	u := strings.TrimSpace(uri)
-	if len([]rune(u)) == 0 || len([]rune(u)) > 256 {
-		return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Uri")
+	if len([]rune(u)) == 0 {
+		*str = ""
+		return nil
+	}
+	if len([]rune(u)) > 256 {
+		return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrUriLen)
 	}
 
 	isUri := govalidator.IsRequestURI(u)
 	if !isUri {
-		return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Uri")
+		return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrUri)
 	}
 
 	return nil
@@ -49,10 +53,10 @@ func (h pageBasic) Offset(ctx context.Context) (int64, error) {
 	}
 	offsetInt, err := strconv.ParseInt(offset.(string), 10, 64)
 	if err != nil {
-		return 0, err
+		return 0, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOffset)
 	}
 	if offsetInt < 0 {
-		return 0, types.ErrParams
+		return 0, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOffsetInt)
 	}
 	return offsetInt, nil
 }
@@ -64,10 +68,10 @@ func (h pageBasic) Limit(ctx context.Context) (int64, error) {
 	}
 	limitInt, err := strconv.ParseInt(limit.(string), 10, 64)
 	if err != nil {
-		return 10, err
+		return 10, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrLimitParam)
 	}
 	if limitInt < 1 || limitInt > 50 {
-		return 10, types.ErrParams
+		return 10, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrLimitParamInt)
 	}
 	return limitInt, nil
 }

@@ -32,16 +32,19 @@ func NewNftClass(base *Base) *NftClass {
 	return &NftClass{base: base}
 }
 
-func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error) {
+func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, error) {
 	//owner不能为平台外账户或此应用外账户或非法账户
-	acc, err := models.TAccounts(
+	_, err := models.TAccounts(
 		models.TAccountWhere.AppID.EQ(params.AppID),
 		models.TAccountWhere.Address.EQ(params.Owner)).OneG(context.Background())
-	if err != nil {
-		return nil, types.ErrParams
-	}
-	if acc == nil {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "Invalid Owner")
+	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
+		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
+		//400
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOwnerFound)
+	} else if err != nil {
+		//500
+		log.Error("create nft class", "query owner error:", err.Error())
+		return nil, types.ErrInternal
 	}
 
 	//platform address
@@ -52,11 +55,13 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 		return nil, types.ErrInternal
 	}
 	pAddress := classOne.Address
+
 	//new classId
 	var data = []byte(params.Owner)
 	data = append(data, []byte(params.Name)...)
 	data = append(data, []byte(strconv.FormatInt(time.Now().Unix(), 10))...)
 	classId := nftp + strings.ToLower(hex.EncodeToString(tmhash.Sum(data)))
+
 	//txMsg, Platform side created
 	baseTx := svc.base.CreateBaseTx(pAddress, defultKeyPassword)
 	createDenomMsg := nft.MsgIssueDenom{
@@ -77,11 +82,11 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 		Recipient: params.Owner,
 	}
 	originData, txHash, _ := svc.base.BuildAndSign(sdktype.Msgs{&createDenomMsg, &transferDenomMsg}, baseTx)
-	baseTx.Gas = svc.base.calculateGas(originData)
+	baseTx.Gas = svc.base.createDenomGas(originData)
 	originData, txHash, err = svc.base.BuildAndSign(sdktype.Msgs{&createDenomMsg, &transferDenomMsg}, baseTx)
 	if err != nil {
 		log.Debug("create nft class", "BuildAndSign error:", err.Error())
-		return nil, err
+		return nil, types.ErrBuildAndSign
 	}
 
 	//validate tx
@@ -109,11 +114,11 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) ([]string, error
 	}
 	err = ttx.InsertG(context.Background(), boil.Infer())
 	if err != nil {
-		return nil, err
+		return nil, types.ErrInternal
 	}
-	var hashs []string
-	hashs = append(hashs, txHash)
-	return hashs, nil
+	result := &dto.TxRes{}
+	result.TxHash = txHash
+	return result, nil
 }
 
 func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, error) {
@@ -171,7 +176,7 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 		if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
 			(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
 			//404
-			return types.ErrNftClassNotFound
+			return types.ErrNotFound
 		} else if err != nil {
 			//500
 			log.Error("nft classes", "query nft class error:", err.Error())
@@ -199,7 +204,7 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 		return err
 	})
 	if err != nil {
-		if strings.Contains(err.Error(), "records not exist") {
+		if strings.Contains(err.Error(), SqlNoFound()) {
 			return result, nil
 		}
 		return result, err
@@ -229,9 +234,6 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 }
 
 func (svc *NftClass) NftClassById(params dto.NftClassesP) (*dto.NftClassRes, error) {
-	if params.Id == "" {
-		return nil, types.ErrInternal
-	}
 	var err error
 	var classOne *models.TClass
 	var count int64
@@ -243,10 +245,10 @@ func (svc *NftClass) NftClassById(params dto.NftClassesP) (*dto.NftClassRes, err
 		if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
 			(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
 			//404
-			return types.NewAppError(types.RootCodeSpace, types.QueryDataFailed, "class not found")
+			return types.ErrNotFound
 		} else if err != nil {
 			//500
-			log.Error("transfer nft class", "query class error:", err.Error())
+			log.Error("nft class by id", "query class error:", err.Error())
 			return types.ErrInternal
 		}
 
