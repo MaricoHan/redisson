@@ -1,5 +1,6 @@
 [server]
 address = ":8080"
+router_prefix = "v1beta1"
 prometheus_addr = ":9090"
 log_format = "text"
 log_level = "debug"

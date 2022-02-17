@@ -90,5 +90,5 @@ func (s *Server) RegisterEndpoint(end kit.Endpoint) {
 	for _, m := range s.middlewares {
 		h = m(h)
 	}
-	s.router.Handle(fmt.Sprintf("/v1beta1%s", end.URI), h).Methods(end.Method)
+	s.router.Handle(fmt.Sprintf("/%s%s", config.Get().Server.RouterPrefix, end.URI), h).Methods(end.Method)
 }
