@@ -272,7 +272,7 @@ func (svc *Account) AccountsHistory(params dto.AccountsP) (*dto.AccountOperation
 	}
 
 	if params.Account != "" {
-		queryMod = append(queryMod, qm.SQL("select * where "))
+		queryMod = append(queryMod, qm.Where("signer = ? OR recipient = ?", params.Account, params.Account))
 	}
 	if params.Module != "" {
 		queryMod = append(queryMod, models.TMSGWhere.Module.EQ(params.Module))
