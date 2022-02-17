@@ -122,10 +122,14 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, err
 }
 
 func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, error) {
-	result := &dto.NftClassesRes{}
-	result.Offset = params.Offset
-	result.Limit = params.Limit
-	result.NftClasses = []*dto.NftClass{}
+	result := &dto.NftClassesRes{
+		PageRes: dto.PageRes{
+			Offset:     params.Offset,
+			Limit:      params.Limit,
+			TotalCount: 0,
+		},
+		NftClasses: []*dto.NftClass{},
+	}
 	var modelResults []*models.TClass
 	var countRes []*dto.NftCount
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
@@ -173,12 +177,11 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 			int(params.Offset),
 			int(params.Limit),
 		)
-		if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
-			(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
-			//404
-			return types.ErrNotFound
-		} else if err != nil {
-			//500
+		if err != nil {
+			// records not exist
+			if strings.Contains(err.Error(), SqlNoFound()) {
+				return nil
+			}
 			log.Error("nft classes", "query nft class error:", err.Error())
 			return types.ErrInternal
 		}
@@ -229,7 +232,9 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 		}
 		nftClasses = append(nftClasses, nftClass)
 	}
-	result.NftClasses = nftClasses
+	if nftClasses != nil {
+		result.NftClasses = nftClasses
+	}
 	return result, nil
 }
 
