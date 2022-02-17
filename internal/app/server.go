@@ -76,6 +76,7 @@ func NewServer() Server {
 	}
 
 	r := mux.NewRouter()
+	r = r.PathPrefix(fmt.Sprintf("/%s", config.Get().Server.RouterPrefix)).Subrouter()
 	svr := http.Server{Handler: r}
 
 	return Server{
@@ -91,5 +92,5 @@ func (s *Server) RegisterEndpoint(end kit.Endpoint) {
 	for _, m := range s.middlewares {
 		h = m(h)
 	}
-	s.router.Handle(fmt.Sprintf("/%s%s", config.Get().Server.RouterPrefix, end.URI), h).Methods(end.Method)
+	s.router.Handle(end.URI, h).Methods(end.Method)
 }
