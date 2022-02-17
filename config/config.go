@@ -61,6 +61,7 @@ type (
 		Env            string `mapstructure:"app_env"`
 		BSNUrl         string `mapstructure:"bsn_url"`
 		BSNProjectId   string `mapstructure:"bsn_project_id"`
+		RouterPrefix   string `mapstructure:"router_prefix"`
 	}
 )
 

@@ -2,6 +2,12 @@ package app
 
 import (
 	"fmt"
+	"net"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"gitlab.bianjie.ai/irita-paas/open-api/config"
@@ -11,11 +17,6 @@ import (
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/kit"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/metric"
-	"net"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 //Server define a http Server
@@ -90,5 +91,5 @@ func (s *Server) RegisterEndpoint(end kit.Endpoint) {
 	for _, m := range s.middlewares {
 		h = m(h)
 	}
-	s.router.Handle(fmt.Sprintf("/v1beta1%s", end.URI), h).Methods(end.Method)
+	s.router.Handle(fmt.Sprintf("/%s%s", config.Get().Server.RouterPrefix, end.URI), h).Methods(end.Method)
 }
