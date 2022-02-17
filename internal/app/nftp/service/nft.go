@@ -317,7 +317,7 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (*dto.TxRes, error) {
 	signedData, txHash, err := svc.base.BuildAndSign(msgEditNFTs, baseTx)
 
 	// set gas
-	baseTx.Gas = svc.base.editNftGas(nftsLen, uint64(len(signedData)))
+	baseTx.Gas = svc.base.editBatchNftGas(nftsLen, uint64(len(signedData)))
 	signedData, txHash, err = svc.base.BuildAndSign(msgEditNFTs, baseTx)
 
 	if err != nil {
