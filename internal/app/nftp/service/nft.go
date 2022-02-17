@@ -491,7 +491,7 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (*dto.TxRes, erro
 	baseTx := svc.base.CreateBaseTx(params.Sender, "")
 	signedData, txHash, err := svc.base.BuildAndSign(msgBurnNFTs, baseTx)
 	// set gas
-	baseTx.Gas = svc.base.deleteBatchNftGas(nftsLen, uint64(len(signedData)))
+	baseTx.Gas = svc.base.deleteBatchNftGas(nftsLen, uint64(len(params.Indices)))
 	signedData, txHash, err = svc.base.BuildAndSign(msgBurnNFTs, baseTx)
 
 	if err != nil {
