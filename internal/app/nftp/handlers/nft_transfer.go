@@ -40,7 +40,7 @@ func (h nftTransfer) TransferNftClassByID(ctx context.Context, request interface
 	if recipient == "" {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipient)
 	}
-	if recipient != "" && len([]rune(recipient)) > 128 {
+	if len([]rune(recipient)) > 128 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientLen)
 	}
 	params := dto.TransferNftClassByIDP{
@@ -71,7 +71,7 @@ func (h nftTransfer) TransferNftByIndex(ctx context.Context, request interface{}
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrIndexInt)
 	}
 
-	if recipient != "" && len([]rune(recipient)) > 128 {
+	if len([]rune(recipient)) > 128 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientLen)
 	}
 	params := dto.TransferNftByIndexP{

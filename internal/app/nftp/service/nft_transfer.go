@@ -269,6 +269,10 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (*dto
 			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrRecipient)
 		}
 
+		if len([]rune(recipient.Recipient)) > 128 {
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrRecipientLen)
+		}
+
 		//不能自己转让给自己
 		//400
 		if recipient.Recipient == params.Owner {
