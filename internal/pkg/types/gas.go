@@ -26,5 +26,6 @@ const (
 	TransferNFTCoefficient         = 43
 
 	//account
-	CreateAccountGas = 80000
+	CreateAccountGas         = 80000
+	CreateAccountIncreaseGas = 12749
 )

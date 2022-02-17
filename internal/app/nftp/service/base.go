@@ -237,3 +237,13 @@ func (m Base) transferNftsGas(data []byte, amount uint64) uint64 {
 	u := float64(res) * config.Get().Chain.GasCoefficient
 	return uint64(u)
 }
+
+/**
+Estimated gas required to create account
+*/
+func (m Base) createAccount(count uint64) uint64 {
+	count -= 1
+	res := types.CreateAccountGas + types.CreateAccountIncreaseGas*(count)
+	u := float64(res) * config.Get().Chain.GasCoefficient
+	return uint64(u)
+}
