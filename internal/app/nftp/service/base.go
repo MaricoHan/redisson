@@ -140,10 +140,11 @@ It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageI
 */
 func (m Base) mintNftsGas(originData []byte, amount uint64) uint64 {
 	l := uint64(len(originData))
-	if l == types.MintMinNFTDataSize {
+	if l <= types.MintMinNFTDataSize {
 		return uint64(float64(types.MintMinNFTGas) * config.Get().Chain.GasCoefficient)
 	}
-	res := (l-types.MintMinNFTIncreaseDataSize*(amount-1)-types.MintMinNFTDataSize)*types.MintNFTCoefficient + types.MintMinNFTGas + types.MintMinNFTIncreaseGas*(amount-1)
+	amount -= 1
+	res := (l-types.MintMinNFTIncreaseDataSize*(amount)-types.MintMinNFTDataSize)*types.MintNFTCoefficient + types.MintMinNFTGas + types.MintMinNFTIncreaseGas*(amount)
 	u := float64(res) * config.Get().Chain.GasCoefficient
 	return uint64(u)
 }
@@ -154,7 +155,7 @@ It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageI
 */
 func (m Base) createDenomGas(data []byte) uint64 {
 	l := uint64(len(data))
-	if l == types.CreateMinDENOMDataSize {
+	if l <= types.CreateMinDENOMDataSize {
 		return uint64(types.CreateMinDENOMGas * config.Get().Chain.GasCoefficient)
 	}
 	u := (l-types.CreateMinDENOMDataSize)*types.CreateDENOMCoefficient + types.CreateMinDENOMGas
@@ -203,7 +204,7 @@ func (m Base) transferDenomGas(class *models.TClass) uint64 {
 	if class.CreateAt.String() != "" {
 		l += len([]byte(class.CreateAt.String()))
 	}
-	if l == types.TransferMinDENOMDataSize {
+	if l <= types.TransferMinDENOMDataSize {
 		return uint64(types.TransferMinDENOMGas * config.Get().Chain.GasCoefficient)
 	}
 	res := (float64(l-types.TransferMinDENOMDataSize)*types.TransferDENOMCoefficient + types.TransferMinDENOMGas) * config.Get().Chain.GasCoefficient
@@ -216,7 +217,7 @@ It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageI
 */
 func (m Base) transferOneNftGas(data []byte) uint64 {
 	l := len(data)
-	if l == types.TransferMinNFTDataSize {
+	if l <= types.TransferMinNFTDataSize {
 		return uint64(types.TransferMinNFTGas * config.Get().Chain.GasCoefficient)
 	}
 	res := float64((l-types.TransferMinNFTDataSize)*types.TransferNFTCoefficient+types.TransferMinNFTGas) * config.Get().Chain.GasCoefficient
@@ -229,7 +230,7 @@ It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageI
 */
 func (m Base) transferNftsGas(data []byte, amount uint64) uint64 {
 	l := uint64(len(data))
-	if l == types.TransferMinNFTDataSize {
+	if l <= types.TransferMinNFTDataSize {
 		return uint64(float64(types.TransferMinNFTGas) * config.Get().Chain.GasCoefficient)
 	}
 	res := (l-types.TransferMinNFTIncreaseDataSize*(amount-1)-types.TransferMinNFTDataSize)*types.TransferNFTCoefficient + types.TransferMinNFTGas + types.TransferMinNFTIncreaseGas*(amount-1)

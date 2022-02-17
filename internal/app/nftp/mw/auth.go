@@ -108,10 +108,10 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// 2. 验证签名
 	// todo
 	// 生产的时候打开
-	//if !h.Signature(r, appKeyResult.APISecret, reqTimestampStr, reqSignature) {
-	//	writeForbiddenResp(w)
-	//	return
-	//}
+	if !h.Signature(r, appKeyResult.APISecret, reqTimestampStr, reqSignature) {
+		writeForbiddenResp(w)
+		return
+	}
 	fmt.Println(h.Signature(r, appKeyResult.APISecret, reqTimestampStr, reqSignature))
 	r.Header.Set("X-App-Id", fmt.Sprintf("%d", appKeyResult.AppID))
 	h.next.ServeHTTP(w, r)
