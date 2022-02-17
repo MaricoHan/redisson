@@ -236,3 +236,35 @@ func (m Base) transferNftsGas(data []byte, amount uint64) uint64 {
 	u := float64(res) * config.Get().Chain.GasCoefficient
 	return uint64(u)
 }
+
+// 计算查询出的NFT占用的字节大小
+func (m Base) lenOfNft(tNft *models.TNFT) uint64 {
+	len1 := len(tNft.Status + tNft.NFTID + tNft.Owner + tNft.ClassID + tNft.TXHash + tNft.Name.String + tNft.Metadata.String + tNft.URIHash.String + tNft.URI.String)
+	len2 := 4 * 8
+	len3 := len(tNft.CreateAt.String() + tNft.UpdateAt.String() + tNft.Timestamp.Time.String())
+	return uint64(len1 + len2 + len3)
+}
+func (m Base) editNftGas(nftLen, signLen uint64) uint64 {
+	gas := 48130 + 7*nftLen + 42*signLen
+	res := float64(gas) * config.Get().Chain.GasCoefficient
+	return uint64(res)
+}
+
+func (m Base) editBatchNftGas(nftLen, signLen uint64) uint64 {
+	gas := 65420 + 8*nftLen + 42*signLen
+	res := float64(gas) * config.Get().Chain.GasCoefficient
+	return uint64(res)
+}
+
+func (m Base) deleteNftGas(nftLen uint64) uint64 {
+	gas := types.DeleteNFTBaseGas + (nftLen-types.DeleteNFTBaseLen)*types.DeleteNFTCoefficient
+	res := float64(gas) * config.Get().Chain.GasCoefficient
+	return uint64(res)
+}
+func (m Base) deleteBatchNftGas(nftLen, n uint64) uint64 {
+	basLen := types.DeleteBatchNFTBaseLen + types.DeleteBatchNFTBaseLenCoefficient*(n-1)
+	baseGas := types.DeleteBatchNFTBaseGas + types.DeleteBatchNFTBaseGasCoefficient*(n-1)
+	gas := (nftLen-basLen)*types.DeleteBatchCoefficient + baseGas
+	res := float64(gas) * config.Get().Chain.GasCoefficient
+	return uint64(res)
+}

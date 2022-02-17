@@ -194,6 +194,13 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (*dto.TxRes, error) {
 	// build and sign transaction
 	baseTx := svc.base.CreateBaseTx(params.Sender, "")
 	signedData, txHash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgEditNFT}, baseTx)
+
+	// get gas
+	nftLen := svc.base.lenOfNft(tNft)
+	baseTx.Gas = svc.base.editNftGas(nftLen, uint64(len(signedData)))
+
+	signedData, txHash, err = svc.base.BuildAndSign(sdktype.Msgs{&msgEditNFT}, baseTx)
+
 	if err != nil {
 		log.Debug("edit nft by index", "BuildAndSign error:", err.Error())
 		return nil, types.ErrBuildAndSign
@@ -244,6 +251,7 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (*dto.TxRes, error) {
 func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (*dto.TxRes, error) {
 	// create rawMsgs
 	var msgEditNFTs sdktype.Msgs
+	var nftsLen uint64
 	for i, EditNft := range params.EditNfts {
 		tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID),
 			models.TNFTWhere.ClassID.EQ(params.ClassId),
@@ -268,6 +276,9 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (*dto.TxRes, error) {
 		if tNft.Status != models.TNFTSStatusActive {
 			return nil, types.NewAppError(types.RootCodeSpace, types.NftStatusAbnormal, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrNftStatusMsg)
 		}
+		// get nftLen
+		nftLen := svc.base.lenOfNft(tNft)
+		nftsLen += nftLen
 
 		msgEditNFT := nft.MsgEditNFT{
 			Id:      tNft.NFTID,
@@ -284,6 +295,11 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (*dto.TxRes, error) {
 	// build and sign transaction
 	baseTx := svc.base.CreateBaseTx(params.Sender, "")
 	signedData, txHash, err := svc.base.BuildAndSign(msgEditNFTs, baseTx)
+
+	// set gas
+	baseTx.Gas = svc.base.editNftGas(nftsLen, uint64(len(signedData)))
+	signedData, txHash, err = svc.base.BuildAndSign(msgEditNFTs, baseTx)
+
 	if err != nil {
 		log.Debug("edit nft by batch", "BuildAndSign error:", err.Error())
 		return nil, types.ErrBuildAndSign
@@ -374,7 +390,14 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (*dto.TxRes, erro
 
 	// build and sign transaction
 	baseTx := svc.base.CreateBaseTx(params.Sender, "")
+
+	// get gas
+	nftLen := svc.base.lenOfNft(tNft)
+	// set gas
+	baseTx.Gas = svc.base.deleteNftGas(nftLen)
+
 	signedData, txHash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgBurnNFT}, baseTx)
+
 	if err != nil {
 		log.Debug("delete nft by index", "BuildAndSign error:", err.Error())
 		return nil, types.ErrBuildAndSign
@@ -427,6 +450,7 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (*dto.TxRes, erro
 func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (*dto.TxRes, error) {
 	// create rawMsgs
 	var msgBurnNFTs sdktype.Msgs
+	var nftsLen uint64
 	for i, index := range params.Indices {
 		tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID),
 			models.TNFTWhere.ClassID.EQ(params.ClassId),
@@ -452,6 +476,9 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (*dto.TxRes, erro
 			return nil, types.NewAppError(types.RootCodeSpace, types.NftStatusAbnormal, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrNftStatusMsg)
 		}
 
+		nftLen := svc.base.lenOfNft(tNft)
+		nftsLen += nftLen
+
 		// create rawMsg
 		msgBurnNFT := nft.MsgBurnNFT{
 			Id:      tNft.NFTID,
@@ -464,6 +491,10 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (*dto.TxRes, erro
 	// build and sign transaction
 	baseTx := svc.base.CreateBaseTx(params.Sender, "")
 	signedData, txHash, err := svc.base.BuildAndSign(msgBurnNFTs, baseTx)
+	// set gas
+	baseTx.Gas = svc.base.deleteBatchNftGas(nftsLen, uint64(len(signedData)))
+	signedData, txHash, err = svc.base.BuildAndSign(msgBurnNFTs, baseTx)
+
 	if err != nil {
 		log.Debug("delete nft by batch", "BuildAndSign error:", err.Error())
 		return nil, types.ErrBuildAndSign

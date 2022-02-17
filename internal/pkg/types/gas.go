@@ -27,4 +27,16 @@ const (
 
 	//account
 	CreateAccountGas = 80000
+
+	//delete nft
+	DeleteNFTBaseLen     = 371
+	DeleteNFTBaseGas     = 62019
+	DeleteNFTCoefficient = 4
+
+	//delete batch nft
+	DeleteBatchNFTBaseLen            = 373
+	DeleteBatchNFTBaseLenCoefficient = 373
+	DeleteBatchNFTBaseGas            = 63105
+	DeleteBatchNFTBaseGasCoefficient = 9612
+	DeleteBatchCoefficient           = 3
 )

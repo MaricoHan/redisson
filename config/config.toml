@@ -25,7 +25,7 @@ project_id = "a36dc219dbdd4dbe809766accbed0ac6"
 project_key = ""
 chain_account_addr = ""
 
-gas_coefficient = 1.2
+gas_coefficient = 1.5
 gas = 400000
 amount = 200000
 account_gas = 4000000
