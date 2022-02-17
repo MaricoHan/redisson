@@ -104,7 +104,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		writeForbiddenResp(w)
 		return
 	}
-	fmt.Println(h.Signature(r, appKeyResult.APISecret, reqTimestampStr, reqSignature))
+	log.Info("signature:", h.Signature(r, appKeyResult.APISecret, reqTimestampStr, reqSignature))
 	r.Header.Set("X-App-Id", fmt.Sprintf("%d", appKeyResult.AppID))
 	h.next.ServeHTTP(w, r)
 }
