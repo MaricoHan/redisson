@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"crypto/sha256"
-	"database/sql"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -13,7 +12,6 @@ import (
 	"sort"
 	"time"
 
-	"github.com/friendsofgo/errors"
 	"github.com/gorilla/mux"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
@@ -53,23 +51,17 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	root, err := models.TAccounts(
 		models.TAccountWhere.AppID.EQ(uint64(0)),
 	).OneG(context.Background())
-	if err != nil && errors.Cause(err) == sql.ErrNoRows {
-		//404
-	} else if err != nil {
+	if err != nil {
 		//500
 		log.Error("query root balance", "query root error:", err.Error())
+		writeInternalResp(w)
+		return
 	}
 	metric.NewPrometheus().ApiRootBalanceAmount.With([]string{"address", root.Address, "denom", "gas"}...).Set(float64(root.Gas.Uint64)) //系统root账户余额
 
-	txsPending, err := models.TTXS(
+	txsPending, _ := models.TTXS(
 		models.TTXWhere.Status.EQ(models.TTXSStatusPending),
 	).AllG(context.Background())
-	if err != nil && errors.Cause(err) == sql.ErrNoRows {
-		//404
-	} else if err != nil {
-		//500
-		log.Error("query tx pending total", "query tx error:", err.Error())
-	}
 	for _, tx := range txsPending {
 		interval := time.Now().Sub(tx.CreateAt.Time)
 		metric.NewPrometheus().SyncTxPendingSeconds.With([]string{"tx_hash", tx.Hash, "interval", interval.String()}...).Set(0) //系统未完成的交易
