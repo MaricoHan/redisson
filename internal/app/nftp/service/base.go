@@ -243,23 +243,41 @@ func (m Base) lenOfNft(tNft *models.TNFT) uint64 {
 	len3 := len(tNft.CreateAt.String() + tNft.UpdateAt.String() + tNft.Timestamp.Time.String())
 	return uint64(len1 + len2 + len3)
 }
+
+/**
+Estimated gas required to transfer more nft
+It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049122
+*/
 func (m Base) editNftGas(nftLen, signLen uint64) uint64 {
 	gas := types.EditNFTBaseGas + types.EditNFTLenCoefficient*nftLen + types.EditNFTSignLenCoefficient*signLen
 	res := float64(gas) * config.Get().Chain.GasCoefficient
 	return uint64(res)
 }
 
+/**
+Estimated gas required to transfer more nft
+It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049126
+*/
 func (m Base) editBatchNftGas(nftLen, signLen uint64) uint64 {
 	gas := types.EditBatchNFTBaseGas + types.EditBatchNFTLenCoefficient*nftLen + types.EditBatchNFTSignLenCoefficient*signLen
 	res := float64(gas) * config.Get().Chain.GasCoefficient
 	return uint64(res)
 }
 
+/**
+Estimated gas required to transfer more nft
+It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049119
+*/
 func (m Base) deleteNftGas(nftLen uint64) uint64 {
 	gas := types.DeleteNFTBaseGas + (nftLen-types.DeleteNFTBaseLen)*types.DeleteNFTCoefficient
 	res := float64(gas) * config.Get().Chain.GasCoefficient
 	return uint64(res)
 }
+
+/**
+Estimated gas required to transfer more nft
+It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049124
+*/
 func (m Base) deleteBatchNftGas(nftLen, n uint64) uint64 {
 	basLen := types.DeleteBatchNFTBaseLen + types.DeleteBatchNFTBaseLenCoefficient*(n-1)
 	baseGas := types.DeleteBatchNFTBaseGas + types.DeleteBatchNFTBaseGasCoefficient*(n-1)
