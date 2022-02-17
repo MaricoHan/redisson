@@ -391,7 +391,6 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (*dto.TxRes, erro
 	// build and sign transaction
 	baseTx := svc.base.CreateBaseTx(params.Sender, "")
 
-	// get gas
 	nftLen := svc.base.lenOfNft(tNft)
 	// set gas
 	baseTx.Gas = svc.base.deleteNftGas(nftLen)
