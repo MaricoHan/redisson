@@ -27,4 +27,26 @@ const (
 
 	//account
 	CreateAccountGas = 80000
+
+	// edit nft
+	EditNFTBaseGas            = 48130
+	EditNFTLenCoefficient     = 7
+	EditNFTSignLenCoefficient = 42
+
+	// edit batch nft
+	EditBatchNFTBaseGas            = 65420
+	EditBatchNFTLenCoefficient     = 8
+	EditBatchNFTSignLenCoefficient = 42
+
+	// delete nft
+	DeleteNFTBaseLen     = 371
+	DeleteNFTBaseGas     = 62019
+	DeleteNFTCoefficient = 4
+
+	// delete batch nft
+	DeleteBatchNFTBaseLen            = 373
+	DeleteBatchNFTBaseLenCoefficient = 373
+	DeleteBatchNFTBaseGas            = 63105
+	DeleteBatchNFTBaseGasCoefficient = 9612
+	DeleteBatchCoefficient           = 3
 )
