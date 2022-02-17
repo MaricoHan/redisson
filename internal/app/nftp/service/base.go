@@ -246,7 +246,7 @@ func (m Base) lenOfNft(tNft *models.TNFT) uint64 {
 }
 
 /**
-Estimated gas required to transfer more nft
+Estimated gas required to edit nft
 It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049122
 */
 func (m Base) editNftGas(nftLen, signLen uint64) uint64 {
@@ -256,7 +256,7 @@ func (m Base) editNftGas(nftLen, signLen uint64) uint64 {
 }
 
 /**
-Estimated gas required to transfer more nft
+Estimated gas required to edit nfts
 It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049126
 */
 func (m Base) editBatchNftGas(nftLen, signLen uint64) uint64 {
@@ -266,7 +266,7 @@ func (m Base) editBatchNftGas(nftLen, signLen uint64) uint64 {
 }
 
 /**
-Estimated gas required to transfer more nft
+Estimated gas required to delete nft
 It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049119
 */
 func (m Base) deleteNftGas(nftLen uint64) uint64 {
@@ -276,7 +276,7 @@ func (m Base) deleteNftGas(nftLen uint64) uint64 {
 }
 
 /**
-Estimated gas required to transfer more nft
+Estimated gas required to delete nfts
 It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049124
 */
 func (m Base) deleteBatchNftGas(nftLen, n uint64) uint64 {
@@ -289,8 +289,9 @@ func (m Base) deleteBatchNftGas(nftLen, n uint64) uint64 {
 
 /**
 Estimated gas required to create account
+It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049266
 */
-func (m Base) createAccount(count uint64) uint64 {
+func (m Base) createAccount(count int64) uint64 {
 	count -= 1
 	res := types.CreateAccountGas + types.CreateAccountIncreaseGas*(count)
 	u := float64(res) * config.Get().Chain.GasCoefficient
