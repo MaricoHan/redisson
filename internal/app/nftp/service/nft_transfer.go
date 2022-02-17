@@ -257,15 +257,20 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (*dto
 			Index:     modelResult.Index,
 			Recipient: modelResult.Recipient,
 		}
+		recipient.Recipient = strings.TrimSpace(recipient.Recipient)
 
 		//index校验 400
 		if recipient.Index == 0 {
-			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrIndexInt)
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrIndexLen+" or "+types.ErrIndexInt)
 		}
 
 		//recipient不能为空 400
 		if recipient.Recipient == "" {
 			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrRecipient)
+		}
+
+		if len([]rune(recipient.Recipient)) > 128 {
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrRecipientLen)
 		}
 
 		//不能自己转让给自己
@@ -375,6 +380,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (*dto
 				Index:     modelResultR.Index,
 				Recipient: modelResultR.Recipient,
 			}
+			recipient.Recipient = strings.TrimSpace(recipient.Recipient)
 			//index校验 400
 			if recipient.Index == 0 {
 				return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", j+1)+"th "+types.ErrIndexInt)

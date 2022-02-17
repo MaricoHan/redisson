@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"strconv"
+	"strings"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 
@@ -35,16 +36,17 @@ func newNftTransfer(svc *service.NftTransfer) *nftTransfer {
 func (h nftTransfer) TransferNftClassByID(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
 	req := request.(*vo.TransferNftClassByIDRequest)
-	if req.Recipient == "" {
+	recipient := strings.TrimSpace(req.Recipient)
+	if recipient == "" {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipient)
 	}
-	if req.Recipient != "" && len(req.Recipient) > 128 {
+	if len([]rune(recipient)) > 128 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientLen)
 	}
 	params := dto.TransferNftClassByIDP{
 		ClassID:   h.ClassID(ctx),
 		Owner:     h.Owner(ctx),
-		Recipient: req.Recipient,
+		Recipient: recipient,
 		AppID:     h.AppID(ctx),
 	}
 	//校验参数 end
@@ -55,7 +57,8 @@ func (h nftTransfer) TransferNftClassByID(ctx context.Context, request interface
 func (h nftTransfer) TransferNftByIndex(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
 	req := request.(*vo.TransferNftByIndexRequest)
-	if req.Recipient == "" {
+	recipient := strings.TrimSpace(req.Recipient)
+	if recipient == "" {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipient)
 	}
 
@@ -68,14 +71,14 @@ func (h nftTransfer) TransferNftByIndex(ctx context.Context, request interface{}
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrIndexInt)
 	}
 
-	if req.Recipient != "" && len(req.Recipient) > 128 {
+	if len([]rune(recipient)) > 128 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientLen)
 	}
 	params := dto.TransferNftByIndexP{
 		ClassID:   h.ClassID(ctx),
 		Owner:     h.Owner(ctx),
 		Index:     index,
-		Recipient: req.Recipient,
+		Recipient: recipient,
 		AppID:     h.AppID(ctx),
 	}
 	// 校验参数 end

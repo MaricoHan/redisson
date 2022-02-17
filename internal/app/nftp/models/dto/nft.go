@@ -118,7 +118,7 @@ type NftOperationHistoryByIndexP struct {
 
 type BNftOperationHistoryByIndexRes struct {
 	PageRes
-	OperationRecords []*OperationRecord
+	OperationRecords []*OperationRecord `json:"operation_records"`
 }
 
 type OperationRecord struct {

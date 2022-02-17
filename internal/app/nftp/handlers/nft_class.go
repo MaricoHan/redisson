@@ -38,51 +38,59 @@ func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 	// 校验参数 start
 	req := request.(*vo.CreateNftClassRequest)
 
-	if req.Name == "" {
+	name := strings.TrimSpace(req.Name)
+	description := strings.TrimSpace(req.Description)
+	symbol := strings.TrimSpace(req.Symbol)
+	uri := strings.TrimSpace(req.Uri)
+	uriHash := strings.TrimSpace(req.UriHash)
+	data := strings.TrimSpace(req.Data)
+	owner := strings.TrimSpace(req.Owner)
+
+	if name == "" {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrName)
 	}
 
-	if len([]rune(strings.TrimSpace(req.Name))) < 3 || len([]rune(strings.TrimSpace(req.Name))) > 64 {
+	if len([]rune(name)) < 3 || len([]rune(name)) > 64 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrNameLen)
 	}
 
-	if (req.Symbol != "" && len([]rune(strings.TrimSpace(req.Symbol))) != 0 && len([]rune(strings.TrimSpace(req.Symbol))) < 3) || (req.Symbol != "" && len([]rune(strings.TrimSpace(req.Symbol))) != 0 && len([]rune(strings.TrimSpace(req.Symbol))) > 64) {
+	if (symbol != "" && len([]rune(symbol)) < 3) || len([]rune(symbol)) > 64 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrSymbolLen)
 	}
 
-	if req.Description != "" && len([]rune(strings.TrimSpace(req.Description))) > 2048 {
+	if len([]rune(description)) > 2048 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrDescriptionLen)
 	}
 
-	if err := h.base.UriCheck(&req.Uri); err != nil {
+	if err := h.base.UriCheck(uri); err != nil {
 		return nil, err
 	}
 
-	if req.UriHash != "" && len([]rune(strings.TrimSpace(req.UriHash))) > 512 {
+	if len([]rune(uriHash)) > 512 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrUriHashLen)
 	}
 
-	if req.Data != "" && len([]rune(strings.TrimSpace(req.Data))) > 4096 {
+	if len([]rune(data)) > 4096 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrDataLen)
 	}
 
-	if req.Owner == "" {
+	if owner == "" {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOwner)
 	}
 
-	if len([]rune(strings.TrimSpace(req.Owner))) > 128 {
+	if len([]rune(owner)) > 128 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOwnerLen)
 	}
 
 	params := dto.CreateNftClassP{
 		AppID:       h.AppID(ctx),
-		Name:        req.Name,
-		Symbol:      req.Symbol,
-		Description: req.Description,
-		Uri:         req.Uri,
-		UriHash:     req.UriHash,
-		Data:        req.Data,
-		Owner:       req.Owner,
+		Name:        name,
+		Symbol:      symbol,
+		Description: description,
+		Uri:         uri,
+		UriHash:     uriHash,
+		Data:        data,
+		Owner:       owner,
 	}
 	return h.svc.CreateNftClass(params)
 }

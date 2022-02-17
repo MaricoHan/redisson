@@ -2,10 +2,10 @@ package handlers
 
 import (
 	"context"
+	"strconv"
+
 	"github.com/asaskevich/govalidator"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
-	"strconv"
-	"strings"
 )
 
 const timeLayout = "2006-01-02 15:04:05"
@@ -24,18 +24,15 @@ func (h base) AppID(ctx context.Context) uint64 {
 	return uint64(appID)
 }
 
-func (h base) UriCheck(str *string) error {
-	uri := *str
-	u := strings.TrimSpace(uri)
-	if len([]rune(u)) == 0 {
-		*str = ""
+func (h base) UriCheck(uri string) error {
+	if len([]rune(uri)) == 0 {
 		return nil
 	}
-	if len([]rune(u)) > 256 {
+	if len([]rune(uri)) > 256 {
 		return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrUriLen)
 	}
 
-	isUri := govalidator.IsRequestURI(u)
+	isUri := govalidator.IsRequestURI(uri)
 	if !isUri {
 		return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrUri)
 	}
