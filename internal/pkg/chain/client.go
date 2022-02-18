@@ -32,7 +32,7 @@ func GetDenom() string {
 	return denom
 }
 
-func NewSdkClient(conf configs.Chain, db *sql.DB) {
+func NewSdkClient(appEnv string, conf configs.Chain, db *sql.DB) {
 	authToken := NewAuthToken(conf.ProjectID, conf.ProjectKey, conf.ChainAccountAddr)
 	// overwrite grpcOpts
 	grpcOpts := []grpc.DialOption{
@@ -45,9 +45,16 @@ func NewSdkClient(conf configs.Chain, db *sql.DB) {
 		httpHeader.Set("x-api-key", authToken.GetProjectKey())
 	}
 
+	var chainAlgo string
+	switch appEnv {
+	case "stage":
+		chainAlgo = ""
+	default:
+		chainAlgo = "secp256k1"
+	}
 	options := []sdktype.Option{
 		sdktype.KeyDAOOption(NewMsqlKeyDao(db)),
-		sdktype.AlgoOption("secp256k1"),
+		sdktype.AlgoOption(chainAlgo),
 		sdktype.TimeoutOption(60),
 		sdktype.CachedOption(false),
 		sdktype.GRPCOptions(grpcOpts),

@@ -139,7 +139,6 @@ func (h authHandler) Signature(r *http.Request, apiSecret string, timestamp stri
 	for k, v := range paramsBody {
 		params[k] = v
 	}
-
 	// sort params
 	sortParams := sortMapParams(params)
 	if sortParams != nil {
