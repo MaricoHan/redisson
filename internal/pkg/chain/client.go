@@ -53,7 +53,7 @@ func NewSdkClient(appEnv string, conf configs.Chain, db *sql.DB) {
 		chainAlgo = "secp256k1"
 	}
 	options := []sdktype.Option{
-		sdktype.KeyDAOOption(NewMsqlKeyDao(db)),
+		sdktype.KeyDAOOption(NewMsqlKeyDao(db, chainAlgo)),
 		sdktype.AlgoOption(chainAlgo),
 		sdktype.TimeoutOption(60),
 		sdktype.CachedOption(false),
