@@ -220,7 +220,7 @@ func (c Controller) serverOptions(
 		uri := ctx.Value(httptransport.ContextKeyRequestURI)
 		urlPath := ctx.Value(httptransport.ContextKeyRequestPath)
 		url := strings.SplitN(urlPath.(string)[1:], "/", 3)
-		codeSpace := strings.ToUpper(url[0])
+		codeSpace := strings.ToUpper(url[1])
 		appErr, ok := err.(types.IError)
 		if !ok {
 			metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "500"}...).Add(1)
