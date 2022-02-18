@@ -48,7 +48,7 @@ func (s NFTPServer) Initialize() {
 		orm.WriteOption(log.Log),
 	)
 	// 链客户端初始化
-	chain.NewSdkClient(conf.Chain, orm.GetDB())
+	chain.NewSdkClient(conf.Server.Env, conf.Chain, orm.GetDB())
 }
 
 func (s NFTPServer) Stop() {
