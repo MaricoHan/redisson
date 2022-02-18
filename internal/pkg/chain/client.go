@@ -48,7 +48,7 @@ func NewSdkClient(appEnv string, conf configs.Chain, db *sql.DB) {
 	var chainAlgo string
 	switch appEnv {
 	case "stage":
-		chainAlgo = ""
+		chainAlgo = "sm2"
 	default:
 		chainAlgo = "secp256k1"
 	}
