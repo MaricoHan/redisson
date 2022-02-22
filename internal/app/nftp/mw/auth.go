@@ -7,7 +7,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"gitlab.bianjie.ai/irita-paas/open-api/config"
 	"io/ioutil"
 	"net/http"
 	"sort"
@@ -15,6 +14,8 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+
+	"gitlab.bianjie.ai/irita-paas/open-api/config"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/metric"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
