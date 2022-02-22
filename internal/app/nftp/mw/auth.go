@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"gitlab.bianjie.ai/irita-paas/open-api/config"
 	"io/ioutil"
 	"net/http"
 	"sort"
@@ -100,7 +101,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// 2. 验证签名
 	// todo
 	// 生产的时候打开
-	if !h.Signature(r, appKeyResult.APISecret, reqTimestampStr, reqSignature) {
+	if config.Get().Server.SignatureAuth && !h.Signature(r, appKeyResult.APISecret, reqTimestampStr, reqSignature) {
 		writeForbiddenResp(w)
 		return
 	}
