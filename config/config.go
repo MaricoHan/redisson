@@ -62,6 +62,7 @@ type (
 		BSNUrl         string `mapstructure:"bsn_url"`
 		BSNProjectId   string `mapstructure:"bsn_project_id"`
 		RouterPrefix   string `mapstructure:"router_prefix"`
+		SignatureAuth  bool   `mapstructure:"signature_auth"`
 	}
 )
 

@@ -14,6 +14,8 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+
+	"gitlab.bianjie.ai/irita-paas/open-api/config"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/metric"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
@@ -100,7 +102,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// 2. 验证签名
 	// todo
 	// 生产的时候打开
-	if !h.Signature(r, appKeyResult.APISecret, reqTimestampStr, reqSignature) {
+	if config.Get().Server.SignatureAuth && !h.Signature(r, appKeyResult.APISecret, reqTimestampStr, reqSignature) {
 		writeForbiddenResp(w)
 		return
 	}
