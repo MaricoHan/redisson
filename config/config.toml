@@ -5,7 +5,7 @@ prometheus_addr = ":9090"
 log_format = "text"
 log_level = "debug"
 app_env = "stage"
-signature_auth = "true"
+signature_auth = "false"
 bsn_url = "https://opbningxia.bsngate.com:18602"
 bsn_project_id = "43e8c1df993d4ab099b110b00bde4a12"
 
