@@ -59,14 +59,6 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	metric.NewPrometheus().ApiRootBalanceAmount.With([]string{"address", root.Address, "denom", "gas"}...).Set(float64(root.Gas.Uint64)) //系统root账户余额
 
-	txsPending, _ := models.TTXS(
-		models.TTXWhere.Status.EQ(models.TTXSStatusPending),
-	).AllG(context.Background())
-	for _, tx := range txsPending {
-		interval := time.Now().Sub(tx.CreateAt.Time)
-		metric.NewPrometheus().SyncTxPendingSeconds.With([]string{"tx_hash", tx.Hash, "interval", interval.String()}...).Set(0) //系统未完成的交易
-	}
-
 	appKey := r.Header.Get("X-Api-Key")
 	appKeyResult, err := models.TAppKeys(
 		qm.Select(models.TAppKeyColumns.APISecret),

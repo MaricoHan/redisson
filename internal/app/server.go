@@ -38,8 +38,6 @@ func Start() {
 
 	// metric
 	metric.NewPrometheus().InitPrometheus()
-	//time
-	mw.ProcessTimer()
 
 	lis, err := net.Listen("tcp", config.Get().Server.Address)
 	if err != nil {

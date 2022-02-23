@@ -121,6 +121,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 			return types.ErrInternal
 		}
 		if ok != 1 {
+			log.Error("transfer nft class", "update class error:", err.Error())
 			return types.ErrInternal
 		}
 
