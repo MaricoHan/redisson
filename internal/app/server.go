@@ -38,7 +38,7 @@ func Start() {
 
 	// metric
 	metric.NewPrometheus().InitPrometheus()
-	//time
+	//crontab
 	mw.ProcessTimer()
 
 	lis, err := net.Listen("tcp", config.Get().Server.Address)

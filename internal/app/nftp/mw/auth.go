@@ -36,11 +36,9 @@ type authHandler struct {
 func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Debug("user request", "method:", r.Method, "url:", r.URL.Path)
 
-	metric.NewPrometheus().ApiMysqlException.With([]string{}...).Set(0)
-	metric.NewPrometheus().ApiRedisException.With([]string{}...).Set(0)
-
 	createTime := time.Now()
 	defer func(createTime time.Time) {
+		//监控响应时间
 		interval := time.Now().Sub(createTime)
 		metric.NewPrometheus().ApiHttpRequestRtSeconds.With([]string{
 			"method",
@@ -48,26 +46,19 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			"uri",
 			r.RequestURI,
 		}...).Observe(float64(interval))
+
+		//请求完成监控根账户余额
+		root, err := models.TAccounts(
+			models.TAccountWhere.AppID.EQ(uint64(0)),
+		).OneG(context.Background())
+		if err != nil {
+			//500
+			log.Error("query root balance", "query root error:", err.Error())
+			writeInternalResp(w)
+			return
+		}
+		metric.NewPrometheus().ApiRootBalanceAmount.With([]string{"address", root.Address, "denom", "gas"}...).Set(float64(root.Gas.Uint64)) //系统root账户余额
 	}(createTime)
-
-	root, err := models.TAccounts(
-		models.TAccountWhere.AppID.EQ(uint64(0)),
-	).OneG(context.Background())
-	if err != nil {
-		//500
-		log.Error("query root balance", "query root error:", err.Error())
-		writeInternalResp(w)
-		return
-	}
-	metric.NewPrometheus().ApiRootBalanceAmount.With([]string{"address", root.Address, "denom", "gas"}...).Set(float64(root.Gas.Uint64)) //系统root账户余额
-
-	txsPending, _ := models.TTXS(
-		models.TTXWhere.Status.EQ(models.TTXSStatusPending),
-	).AllG(context.Background())
-	for _, tx := range txsPending {
-		interval := time.Now().Sub(tx.CreateAt.Time)
-		metric.NewPrometheus().SyncTxPendingSeconds.With([]string{"tx_hash", tx.Hash, "interval", interval.String()}...).Set(0) //系统未完成的交易
-	}
 
 	appKey := r.Header.Get("X-Api-Key")
 	appKeyResult, err := models.TAppKeys(
