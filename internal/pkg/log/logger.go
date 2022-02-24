@@ -42,7 +42,6 @@ type (
 
 func init() {
 	log := logrus.New()
-	log.AddHook(&DefaultFieldHook{})
 	log.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
 	log.SetOutput(os.Stdout)
 	log.SetLevel(logrus.DebugLevel)
