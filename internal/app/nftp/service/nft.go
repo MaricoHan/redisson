@@ -242,7 +242,6 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (*dto.TxRes, error) {
 		taskId = svc.base.EncodeData(code)
 		txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData,
 			models.TTXSOperationTypeEditNFT, models.TTXSStatusUndo, messageByte, params.Sender, taskId, int64(baseTx.Gas), exec)
-
 		if err != nil {
 			log.Debug("edit nft by index", "Tx into database error:", err.Error())
 			return err
@@ -336,6 +335,7 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (*dto.TxRes, error) {
 		return nil, types.ErrBuildAndSign
 	}
 
+	var taskId string
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		//validate tx
 		txone, err := svc.base.ValidateTx(txHash)
@@ -352,7 +352,11 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (*dto.TxRes, error) {
 		}
 
 		// Tx into database
-		txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData, models.TTXSOperationTypeEditNFTBatch, models.TTXSStatusUndo, exec)
+		messageByte, _ := json.Marshal(msgEditNFTs)
+		code := fmt.Sprintf("%s%s%s", params.Sender, models.TTXSOperationTypeEditNFTBatch, time.Now().String())
+		taskId = svc.base.EncodeData(code)
+		txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData,
+			models.TTXSOperationTypeEditNFTBatch, models.TTXSStatusUndo, messageByte, params.Sender, taskId, int64(baseTx.Gas), exec)
 		if err != nil {
 			log.Debug("edit nft by batch", "Tx into database error:", err.Error())
 			return err
@@ -381,9 +385,7 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (*dto.TxRes, error) {
 		return nil, err
 	}
 
-	result := &dto.TxRes{}
-	result.TxHash = txHash
-	return result, nil
+	return &dto.TxRes{TxHash: taskId}, nil
 }
 
 func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (*dto.TxRes, error) {
@@ -433,6 +435,7 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (*dto.TxRes, erro
 		return nil, types.ErrBuildAndSign
 	}
 
+	var taskId string
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		//validate tx
 		txone, err := svc.base.ValidateTx(txHash)
@@ -449,8 +452,13 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (*dto.TxRes, erro
 		}
 
 		// Tx into database
+		messageByte, _ := json.Marshal(msgBurnNFT)
+		code := fmt.Sprintf("%s%s%s", params.Sender, models.TTXSOperationTypeBurnNFT, time.Now().String())
+		taskId = svc.base.EncodeData(code)
+		// Tx into database
 		txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData,
-			models.TTXSOperationTypeBurnNFT, models.TTXSStatusUndo, exec)
+			models.TTXSOperationTypeBurnNFT, models.TTXSStatusUndo, messageByte, params.Sender, taskId, int64(baseTx.Gas), exec)
+
 		if err != nil {
 			log.Debug("delete nft by index", "Tx into database error:", err.Error())
 			return err
@@ -472,9 +480,7 @@ func (svc *Nft) DeleteNftByIndex(params dto.DeleteNftByIndexP) (*dto.TxRes, erro
 	if err != nil {
 		return nil, err
 	}
-	result := &dto.TxRes{}
-	result.TxHash = txHash
-	return result, nil
+	return &dto.TxRes{TxHash: taskId}, nil
 }
 
 func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (*dto.TxRes, error) {
@@ -530,6 +536,7 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (*dto.TxRes, erro
 		return nil, types.ErrBuildAndSign
 	}
 
+	var taskId string
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		//validate tx
 		txone, err := svc.base.ValidateTx(txHash)
@@ -546,12 +553,18 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (*dto.TxRes, erro
 		}
 
 		// Tx into database
+		messageByte, _ := json.Marshal(msgBurnNFTs)
+		code := fmt.Sprintf("%s%s%s", params.Sender, models.TTXSOperationTypeBurnNFTBatch, time.Now().String())
+		taskId = svc.base.EncodeData(code)
+		// Tx into database
 		txId, err := svc.base.TxIntoDataBase(
 			params.AppID,
 			txHash,
 			signedData,
 			models.TTXSOperationTypeBurnNFTBatch,
-			models.TTXSStatusUndo, exec)
+			models.TTXSStatusUndo,
+			messageByte, params.Sender,
+			taskId, int64(baseTx.Gas), exec)
 		if err != nil {
 			log.Debug("delete nft by batch", "Tx into database error:", err.Error())
 			return err
