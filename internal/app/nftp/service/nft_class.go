@@ -114,7 +114,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, err
 	}
 	err = ttx.InsertG(context.Background(), boil.Infer())
 	if err != nil {
-		return nil, types.ErrInternal
+		return nil, err
 	}
 	result := &dto.TxRes{}
 	result.TxHash = txHash

@@ -5,17 +5,17 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
-	"strings"
-
+	cm "github.com/cosmos/cosmos-sdk/types"
 	sdk "github.com/irisnet/core-sdk-go"
 	"github.com/irisnet/core-sdk-go/bank"
+	"github.com/irisnet/core-sdk-go/feegrant"
 	sdktype "github.com/irisnet/core-sdk-go/types"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
-
 	"gitlab.bianjie.ai/irita-paas/open-api/config"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
+	"strings"
 )
 
 type Base struct {
@@ -296,4 +296,28 @@ func (m Base) createAccount(count int64) uint64 {
 	res := types.CreateAccountGas + types.CreateAccountIncreaseGas*(count)
 	u := float64(res) * config.Get().Chain.GasCoefficient
 	return uint64(u)
+}
+
+func (m Base) UseGrantedFees(address string,msg []sdktype.Msg) ([]byte, string, error) {
+	//platform address
+	classOne, err := models.TAccounts(
+		models.TAccountWhere.AppID.EQ(uint64(0)),
+	).OneG(context.Background())
+	if err != nil {
+		return nil,"",types.ErrInternal
+	}
+	pAddress := classOne.Address
+
+	granter, _ := cm.AccAddressFromBech32(pAddress)
+	grantee, _ := cm.AccAddressFromBech32(address)
+	atom := sdktype.NewCoins(sdktype.NewInt64Coin("ugas", 400000000))
+	var grant feegrant.FeeAllowanceI
+
+	grant.Accept(atom,msg)
+	msgGrant, _ := feegrant.NewMsgGrantAllowance(grant, sdktype.AccAddress(granter), sdktype.AccAddress(grantee))
+
+	baseTx := m.CreateBaseTx(pAddress, defultKeyPassword)
+
+	sigData, hash, err := m.BuildAndSign(sdktype.Msgs{msgGrant}, baseTx)
+	return sigData, hash, err
 }

@@ -3,6 +3,7 @@ module gitlab.bianjie.ai/irita-paas/open-api
 go 1.17
 
 require (
+	github.com/cosmos/cosmos-sdk v0.44.4
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 	github.com/bsm/redislock v0.7.2
 	github.com/friendsofgo/errors v0.9.2
@@ -116,6 +117,10 @@ require (
 
 replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.4
 
-replace gitlab.bianjie.ai/irita-paas/orms/orm-nft => gitlab.bianjie.ai/irita-paas/orms/orm-nft.git v1.0.0-beta.0.20220211095340-2f119bb6786e
+replace github.com/cosmos/cosmos-sdk => github.com/bianjieai/cosmos-sdk v0.44.2-irita-20211102
+
+replace gitlab.bianjie.ai/irita-paas/orms/orm-nft => gitlab.bianjie.ai/irita-paas/orms/orm-nft.git v1.0.0-beta.0.20220224113833-fea10f141b08
 
 replace github.com/tendermint/tendermint => github.com/bianjieai/tendermint v0.34.1-irita-210113
+
+replace github.com/irisnet/core-sdk-go v0.0.0-20220125122946-76af4796219f => /usr/local/needsoft/work/core-sdk-go
