@@ -50,6 +50,8 @@ type (
 		Denom          string  `mapstructure:"denom"`
 		Amount         int64   `mapstructure:"amount"`
 		AccoutGas      int64   `mapstructure:"account_gas"`
+
+		ChainEncryption string `mapstructure:"chain_encryption"`
 	}
 
 	// Server define a struct for http server
