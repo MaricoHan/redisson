@@ -28,6 +28,20 @@ func SqlNoFound() string {
 	return "records not exist"
 }
 
+func QueryRootAccount() (string, *types.AppError) {
+	//platform address
+	classOne, err := models.TAccounts(
+		models.TAccountWhere.ChainID.EQ(uint64(0)),
+	).OneG(context.Background())
+	if err != nil {
+		//500
+		log.Error("create account", "query root error:", err.Error())
+		return "", types.ErrInternal
+	}
+	pAddress := classOne.Address
+	return pAddress, nil
+}
+
 func NewBase(sdkClient sdk.Client, gas uint64, denom string, amount int64) *Base {
 	return &Base{
 		sdkClient: sdkClient,
@@ -48,6 +62,11 @@ func (m Base) CreateBaseTx(keyName, keyPassword string) sdktype.BaseTx {
 }
 
 func (m Base) BuildAndSign(msgs sdktype.Msgs, baseTx sdktype.BaseTx) ([]byte, string, error) {
+	pAddress, error := QueryRootAccount()
+	if error != nil{
+		return nil, "", error
+	}
+	baseTx.FeePayer = sdktype.AccAddress(pAddress)
 	sigData, err := m.sdkClient.BuildAndSign(msgs, baseTx)
 	if err != nil {
 		return nil, "", err
@@ -303,17 +322,10 @@ func (m Base) createAccount(count int64) uint64 {
 }
 
 func (m Base) Grant(address string) (string, error) {
-	//platform address
-	classOne, err := models.TAccounts(
-		models.TAccountWhere.ChainID.EQ(uint64(0)),
-	).OneG(context.Background())
-	if err != nil {
-		//500
-		log.Error("create account", "query root error:", err.Error())
-		return "",types.ErrInternal
+	pAddress, error := QueryRootAccount()
+	if error != nil{
+		return "",error
 	}
-	pAddress := classOne.Address
-
 	granter, _ := sdktype.AccAddressFromBech32(pAddress)
 	grantee, _ := sdktype.AccAddressFromBech32(address)
 
@@ -329,7 +341,7 @@ func (m Base) Grant(address string) (string, error) {
 	if err != nil {
 		//500
 		log.Error("create account", "msg grant allowance error:", err.Error())
-		return "",types.ErrInternal
+		return "", types.ErrInternal
 	}
 
 	baseTx := m.CreateBaseTx(pAddress, defultKeyPassword)
@@ -337,7 +349,7 @@ func (m Base) Grant(address string) (string, error) {
 	if err != nil {
 		//500
 		log.Error("create account", "fee grant error:", err.Error())
-		return "",types.ErrInternal
+		return "", types.ErrInternal
 	}
 
 	return res.Hash, nil

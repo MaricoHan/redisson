@@ -3,21 +3,11 @@ package service
 import (
 	"context"
 	"encoding/base64"
-	"encoding/json"
-	"errors"
 	"fmt"
-	http2 "gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/http"
-	"golang.org/x/sync/errgroup"
-	"io/ioutil"
-	"strings"
-	"time"
-
-	"github.com/irisnet/core-sdk-go/bank"
 	sdkcrypto "github.com/irisnet/core-sdk-go/common/crypto"
 	"github.com/irisnet/core-sdk-go/common/crypto/codec"
 	"github.com/irisnet/core-sdk-go/common/crypto/hd"
 	sdktype "github.com/irisnet/core-sdk-go/types"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"gitlab.bianjie.ai/irita-paas/open-api/config"
@@ -27,6 +17,7 @@ import (
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"
+	"strings"
 )
 
 const algo = "secp256k1"
@@ -53,19 +44,8 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, e
 	// 写入数据库
 	// sdk 创建账户
 	var addresses []string
-	classOne, err := models.TAccounts(
-		models.TAccountWhere.ChainID.EQ(uint64(0)),
-	).OneG(context.Background())
-	if err != nil {
-		//500
-		log.Error("create account", "query root account error:", err.Error())
-		return nil, types.ErrInternal
-	}
-	tmsgs := modext.TMSGs{}
-	var msgs bank.MsgMultiSend
-	var resultTx sdktype.ResultTx
-	env := config.Get().Server.Env
-	err = modext.Transaction(func(exec boil.ContextExecutor) error {
+
+	err := modext.Transaction(func(exec boil.ContextExecutor) error {
 		tAppOneObj, err := models.TApps(models.TAppWhere.ID.EQ(1)).One(context.Background(), exec)
 		if err != nil {
 			//500
@@ -90,11 +70,6 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, e
 				return types.ErrInternal
 			}
 			_, priv := res.Generate()
-
-			//privStr, err := res.ExportPrivKey(keyPassword)
-			//if err != nil {
-			//	return nil, types.ErrAccountCreate
-			//}
 
 			tmpAddress := sdktype.AccAddress(priv.PubKey().Address().Bytes()).String()
 
@@ -123,78 +98,15 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, e
 		tAppOneObj.AccOffset += params.Count
 		updateRes, err := tAppOneObj.Update(context.Background(), exec, boil.Infer())
 		if err != nil || updateRes == 0 {
+			log.Debug("create account", "apps insert error:", err.Error())
 			return types.ErrInternal
-		}
-		// create chain account
-		if env == "stage" {
-			//msgs = svc.base.CreateGasMsg(classOne.Address, addresses)
-			//tx := svc.base.CreateBaseTx(classOne.Address, defultKeyPassword)
-			//tx.Gas = svc.base.createAccount(params.Count)
-			//resultTx, err = svc.base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
-			//if err != nil {
-			//	log.Error("create account", "build and send, error:", err)
-			//	return types.ErrBuildAndSend
-			//}
-		} else {
-			time := 5 * time.Second
-			ctx, _ := context.WithTimeout(context.Background(), time)
-			group, errCtx := errgroup.WithContext(ctx)
-			for _, v := range tAccounts {
-				value := v
-				group.Go(func() error {
-					var bsnAccount BsnAccount
-					params := map[string]interface{}{
-						"chainClientName": fmt.Sprintf("%s%d%d", tAppOneObj.Name.String, tAppOneObj.ID, value.AccIndex),
-						"chainClientAddr": value.Address,
-					}
-					url := fmt.Sprintf("%s%s", config.Get().Server.BSNUrl, fmt.Sprintf("/api/%s/account/generate", config.Get().Server.BSNProjectId))
-					res, err := http2.Post(errCtx, url, params)
-					if err != nil {
-						return err
-					}
-					defer res.Body.Close()
-					body, err := ioutil.ReadAll(res.Body)
-					json.Unmarshal(body, &bsnAccount)
-					if bsnAccount.Code != 0 || bsnAccount.Message == "" {
-						return errors.New(bsnAccount.Message)
-					}
-					return nil
-				})
-			}
-			if err := group.Wait(); err != nil {
-				log.Error("create account", "group_error:", err)
-				return types.ErrInternal
-			}
 		}
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
-	if env == "stage" {
-		for _, v := range msgs.Outputs {
-			message := map[string]string{
-				"recipient": v.Address,
-				"amount":    v.Coins.String()[0 : len(v.Coins.String())-6],
-			}
-			messageByte, _ := json.Marshal(message)
-			tmsgs = append(tmsgs, &models.TMSG{
-				ChainID:   params.ChainId,
-				TXHash:    resultTx.Hash,
-				Timestamp: null.TimeFrom(time.Now()),
-				Module:    "account",
-				Operation: "add_gas",
-				Signer:    classOne.Address,
-				Recipient: null.StringFrom(v.Address),
-				Message:   messageByte,
-			})
-		}
-		err = tmsgs.InsertAll(context.Background(), boil.GetContextDB())
-		if err != nil {
-			log.Error("create account", "msgs create error:", err)
-			return nil, types.ErrInternal
-		}
-	}
+
 	result := &dto.AccountRes{}
 	result.Accounts = addresses
 	return result, nil
