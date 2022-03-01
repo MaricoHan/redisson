@@ -45,16 +45,26 @@ type (
 		ProjectKey       string `mapstructure:"project_key"`
 		ChainAccountAddr string `mapstructure:"chain_account_addr"`
 
-		Gas    uint64 `mapstructure:"gas"`
-		Denom  string `mapstructure:"denom"`
-		Amount int64  `mapstructure:"amount"`
+		GasCoefficient float64 `mapstructure:"gas_coefficient"`
+		Gas            uint64  `mapstructure:"gas"`
+		Denom          string  `mapstructure:"denom"`
+		Amount         int64   `mapstructure:"amount"`
+		AccoutGas      int64   `mapstructure:"account_gas"`
+
+		ChainEncryption string `mapstructure:"chain_encryption"`
 	}
 
 	// Server define a struct for http server
 	Server struct {
-		Address   string `mapstructure:"address"`
-		LogLevel  string `mapstructure:"log_level"`
-		LogFormat string `mapstructure:"log_format"`
+		Address        string `mapstructure:"address"`
+		PrometheusAddr string `mapstructure:"prometheus_addr"`
+		LogLevel       string `mapstructure:"log_level"`
+		LogFormat      string `mapstructure:"log_format"`
+		Env            string `mapstructure:"app_env"`
+		BSNUrl         string `mapstructure:"bsn_url"`
+		BSNProjectId   string `mapstructure:"bsn_project_id"`
+		RouterPrefix   string `mapstructure:"router_prefix"`
+		SignatureAuth  bool   `mapstructure:"signature_auth"`
 	}
 )
 

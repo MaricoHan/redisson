@@ -15,11 +15,12 @@ import (
 const algo = "secp256k1"
 
 type MysqlKeyDao struct {
-	db *sql.DB
+	db   *sql.DB
+	algo string
 }
 
-func NewMsqlKeyDao(db *sql.DB) MysqlKeyDao {
-	return MysqlKeyDao{db: db}
+func NewMsqlKeyDao(db *sql.DB, algo string) MysqlKeyDao {
+	return MysqlKeyDao{db: db, algo: algo}
 }
 
 // Write will use user password to encrypt data and save to file, the file name is user name
@@ -52,7 +53,7 @@ func (k MysqlKeyDao) Read(name, password string) (keystore.KeyInfo, error) {
 
 	store := keystore.KeyInfo{
 		Name:         name,
-		Algo:         algo,
+		Algo:         k.algo,
 		PrivKeyArmor: string(priKey),
 		PubKey:       pubKeyBytes,
 	}

@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"reflect"
 	"strconv"
+	"strings"
 	"time"
-
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 
 	"github.com/go-kit/kit/endpoint"
 	httptransport "github.com/go-kit/kit/transport/http"
@@ -15,7 +15,12 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 
+	en2 "github.com/go-playground/locales/en"
+	ut "github.com/go-playground/universal-translator"
+	entranslations "github.com/go-playground/validator/v10/translations/en"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/metric"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 )
 
 // TimeLayout time format
@@ -50,8 +55,14 @@ type (
 	}
 )
 
+var trans ut.Translator
+
 func NewController() Controller {
-	return Controller{validator.New()}
+	validate := validator.New()
+	en := en2.New()
+	trans, _ = ut.New(en, en).GetTranslator("en")
+	entranslations.RegisterDefaultTranslations(validate, trans)
+	return Controller{validate}
 }
 
 // MakeHandler create a http hander for request
@@ -130,14 +141,24 @@ func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFu
 		if req == nil {
 			return nil, err
 		}
+		p := reflect.ValueOf(req).Elem()
+		p.Set(reflect.Zero(p.Type()))
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			log.Error("Execute decode request failed", "error", err.Error())
-			return nil, types.UpdateDescription(types.RootCodeSpace, "3", err.Error())
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrClientParams)
 		}
-
-		//validate request
-		if err := c.validate.Struct(req); err != nil {
-			return nil, types.UpdateDescription(types.RootCodeSpace, "3", err.Error())
+		switch p.Type().Kind() {
+		case reflect.Struct:
+			//validate request
+			if err := c.validate.Struct(req); err != nil {
+				log.Error("Execute decode request failed", "validate struct", err.Error(), "req:", req)
+				return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, Translate(err))
+			}
+		case reflect.Array:
+			if err := c.validate.Var(req, ""); err != nil {
+				log.Error("Execute decode request failed", "validate struct", err.Error(), "req:", req)
+				return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, Translate(err))
+			}
 		}
 		return req, nil
 	}
@@ -149,6 +170,9 @@ func (c Controller) encodeResponse(ctx context.Context, w http.ResponseWriter, r
 	response := Response{
 		Data: resp,
 	}
+	method := ctx.Value(httptransport.ContextKeyRequestMethod)
+	uri := ctx.Value(httptransport.ContextKeyRequestURI)
+	metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "200"}...).Add(1)
 	return httptransport.EncodeJSONResponse(ctx, w, response)
 }
 
@@ -160,19 +184,16 @@ func (c Controller) serverOptions(
 	//copy params from Form,PostForm to Context
 	copyParams := func(ctx context.Context, request *http.Request) context.Context {
 		log.Debug("Merge request params to Context", "method", "serverBefore")
-
 		if err := request.ParseForm(); err != nil {
 			log.Error("Parse form failed", "error", err.Error())
 			return ctx
 		}
-
 		improveValue := func(vs []string) interface{} {
 			if len(vs) == 1 {
 				return vs[0]
 			}
 			return vs
 		}
-
 		for k, v := range request.Form {
 			ctx = context.WithValue(ctx, k, improveValue(v))
 		}
@@ -188,7 +209,6 @@ func (c Controller) serverOptions(
 		for k, v := range request.Header {
 			ctx = context.WithValue(ctx, k, v)
 		}
-
 		return ctx
 	}
 
@@ -196,77 +216,48 @@ func (c Controller) serverOptions(
 	errorEncoderOption := func(ctx context.Context, err error, w http.ResponseWriter) {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		var response Response
+		method := ctx.Value(httptransport.ContextKeyRequestMethod)
+		uri := ctx.Value(httptransport.ContextKeyRequestURI)
+		urlPath := ctx.Value(httptransport.ContextKeyRequestPath)
+		url := strings.SplitN(urlPath.(string)[1:], "/", 3)
+		codeSpace := strings.ToUpper(url[1])
 		appErr, ok := err.(types.IError)
 		if !ok {
+			metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "500"}...).Add(1)
 			w.WriteHeader(http.StatusInternalServerError)
 			response = Response{
 				ErrorResp: &ErrorResp{
-					CodeSpace: types.ErrInternal.CodeSpace(),
+					CodeSpace: codeSpace,
 					Code:      types.ErrInternal.Code(),
 					Message:   types.ErrInternal.Error(),
 				},
 			}
 		} else {
-			errResp := &ErrorResp{}
-			switch appErr {
-			case types.ErrInternal, types.ErrMysqlConn, types.ErrChainConn, types.ErrRedisConn:
-				w.WriteHeader(http.StatusInternalServerError)
-				errResp.CodeSpace = types.ErrInternal.CodeSpace()
-				errResp.Message = types.ErrInternal.Error()
-				errResp.Code = types.ErrInternal.Code()
-
-			case types.ErrAuthenticate:
-				w.WriteHeader(http.StatusForbidden)
-				errResp.CodeSpace = appErr.CodeSpace()
-				errResp.Message = appErr.Error()
-				errResp.Code = appErr.Code()
-			case types.ErrParams, types.ErrAccountCreate,
-				types.ErrGetAccountDetails,
-				types.ErrNftClassCreate,
-				types.ErrNftClassesGet,
-				types.ErrNftClassDetailsGet,
-				types.ErrNftCreate,
-				types.ErrNftGet,
-				types.ErrNftDetailsGet,
-				types.ErrNftOptionHistoryGet,
-				types.ErrNftEdit,
-				types.ErrNftBatchEdit,
-				types.ErrNftBurn,
-				types.ErrNftBatchBurn,
-				types.ErrTxResult,
-				types.ErrNotOwner,
-				types.ErrNoPermission,
-				types.ErrGetNftOperationDetails,
-				types.ErrNftClassTransfer,
-				types.ErrBuildAndSign,
-				types.ErrNftTransfer,
-				types.ErrNftBatchTransfer,
-				types.ErrGetTx,
-				types.ErrNftBurnPend,
-				types.ErrNftStatus,
-				types.ErrNftClassesSet,
-				types.ErrTxMsgGet,
-				types.ErrTxMsgInsert,
-				types.ErrIndicesFormat:
-				w.WriteHeader(http.StatusBadRequest)
-				errResp.CodeSpace = appErr.CodeSpace()
-				errResp.Message = appErr.Error()
-				errResp.Code = appErr.Code()
-
-			case types.ErrNftMissing:
-				w.WriteHeader(http.StatusNotFound)
-				errResp.CodeSpace = appErr.CodeSpace()
-				errResp.Message = appErr.Error()
-				errResp.Code = appErr.Code()
+			switch appErr.Code() {
+			case types.ClientParamsError, types.FrequentRequestsNotSupports, types.NftStatusAbnormal,
+				types.NftClassStatusAbnormal, types.MaximumLimitExceeded:
+				metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "400"}...).Add(1)
+				w.WriteHeader(http.StatusBadRequest) //400
+			case types.AuthenticationFailed:
+				metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "403"}...).Add(1)
+				w.WriteHeader(http.StatusForbidden) //403
+			case types.NotFound:
+				metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "404"}...).Add(1)
+				w.WriteHeader(http.StatusNotFound) //404
+			default:
+				metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "500"}...).Add(1)
+				w.WriteHeader(http.StatusInternalServerError) //500
+				appErr = types.ErrInternal
 			}
-
-			response = Response{ErrorResp: errResp}
+			response = Response{ErrorResp: &ErrorResp{
+				CodeSpace: codeSpace,
+				Code:      appErr.Code(),
+				Message:   appErr.Error(),
+			}}
 		}
-
 		bz, _ := json.Marshal(response)
 		_, _ = w.Write(bz)
 	}
-
 	var options []httptransport.ServerOption
 	before = append(
 		[]httptransport.RequestFunc{httptransport.PopulateRequestContext, copyParams},
@@ -276,4 +267,13 @@ func (c Controller) serverOptions(
 	options = append(options, append(mid, httptransport.ServerErrorEncoder(errorEncoderOption))...)
 	options = append(options, httptransport.ServerAfter(after...))
 	return options
+}
+
+// Translate 错误返回
+func Translate(err error) (errMsg string) {
+	errs := err.(validator.ValidationErrors)
+	for _, err := range errs {
+		errMsg = strings.ToLower(err.Translate(trans))
+	}
+	return
 }

@@ -2,47 +2,85 @@ package types
 
 import "fmt"
 
-const RootCodeSpace = "nftp-open-api"
+const (
+	RootCodeSpace = "NFTP-OPEN-API"
+)
+
+const (
+	// InternalFailed		error code
+	InternalFailed                 = "INTERNAL_ERROR"
+	AuthenticationFailed           = "FORBIDDEN"
+	ClientParamsError              = "PARAMS_ERROR"
+	ConnectionChainFailed          = "CONNECTION_CHAIN_FAILED"
+	FrequentRequestsNotSupports    = "FREQUENT_REQUESTS_NOT_SUPPORTS"
+	NftClassStatusAbnormal         = "NFT_CLASS_STATUS_ABNORMAL"
+	NftStatusAbnormal              = "NFT_STATUS_ABNORMAL"
+	NotFound                       = "NOT_FOUND"
+	MaximumLimitExceeded           = "MAXIMUM_LIMIT_EXCEEDED"
+	StructureSignTransactionFailed = "STRUCTURE_SIGN_TRANSACTION_FAILED"
+	TxStatusSuccess                = "TX_STATUS_SUCCESS"
+	TxStatusPending                = "TX_STATUS_PENDING"
+	TxStatusUndo                   = "TX_STATUS_UNDO"
+	StructureSendTransactionFailed = "STRUCTURE_SEND_TRANSACTION_FAILED"
+
+	// ErrOffset		error msg handle
+	ErrOffset         = "offset format error"
+	ErrOffsetInt      = "offset cannot be less than 0"
+	ErrLimitParam     = "limit format error"
+	ErrLimitParamInt  = "limit must be between 1 and 50"
+	ErrCountLen       = "count length error"
+	ErrStartDate      = "startDate format error"
+	ErrEndDate        = "endDate format error"
+	ErrDate           = "endDate before startDate"
+	ErrRecipient      = "recipient is a required field"
+	ErrRecipientLen   = "recipient length error"
+	ErrIndex          = "index format error"
+	ErrIndexLen       = "index is a required field"
+	ErrIndexInt       = "index cannot be 0"
+	ErrRecipients     = "recipients is a required field"
+	ErrName           = "name is a required field"
+	ErrNameLen        = "name length error"
+	ErrSymbolLen      = "symbol length error"
+	ErrDescriptionLen = "description length error"
+	ErrUri            = "uri format error"
+	ErrUriLen         = "uri length error"
+	ErrUriHashLen     = "uriHash length error"
+	ErrDataLen        = "data length error"
+	ErrOwner          = "owner is a required field"
+	ErrOwnerLen       = "owner length error"
+	ErrSortBy         = "sortBy is invalid"
+	ErrIndices        = "indices format error"
+	ErrIndicesLen     = "indices is a required field"
+	ErrOperation      = "operation is invalid"
+	ErrModule         = "module is invalid"
+	ErrAmountInt      = "amount must be between 1 and 100"
+	ErrRepeat         = "index is repeat"
+	ErrClientParams   = "client params error"
+
+	// ErrSelfTransfer		error msg service
+	ErrSelfTransfer      = "recipient cannot be owner"
+	ErrRecipientFound    = "recipient not found"
+	ErrNftFound          = "nft not found"
+	ErrNftStatusMsg      = "nft status is invalid"
+	ErrNftClassStatusMsg = "nft class status is invalid"
+	ErrOwnerFound        = "owner not found"
+)
 
 var (
-	ErrInternal               = Register(RootCodeSpace, "1", "internal")
-	ErrAuthenticate           = Register(RootCodeSpace, "2", "failed to authentication ")
-	ErrParams                 = Register(RootCodeSpace, "3", "failed to client params")
-	ErrMysqlConn              = Register(RootCodeSpace, "4", "failed to connection mysql")
-	ErrRedisConn              = Register(RootCodeSpace, "5", "failed to connection redis")
-	ErrChainConn              = Register(RootCodeSpace, "6", "failed to connection chain")
-	ErrAccountCreate          = Register(RootCodeSpace, "7", "failed to create chain account")
-	ErrGetAccountDetails      = Register(RootCodeSpace, "8", "failed to get chain account details")
-	ErrNftClassCreate         = Register(RootCodeSpace, "9", "failed to create nft class")
-	ErrNftClassesGet          = Register(RootCodeSpace, "10", "failed to get nft class list")
-	ErrNftClassDetailsGet     = Register(RootCodeSpace, "11", "failed to get nft class details")
-	ErrNftCreate              = Register(RootCodeSpace, "12", "failed to create nft class")
-	ErrNftGet                 = Register(RootCodeSpace, "13", "failed to get nft list")
-	ErrNftDetailsGet          = Register(RootCodeSpace, "14", "failed to get nft details")
-	ErrNftOptionHistoryGet    = Register(RootCodeSpace, "15", "failed to get nft option history")
-	ErrNftEdit                = Register(RootCodeSpace, "16", "failed to edit nft")
-	ErrNftBatchEdit           = Register(RootCodeSpace, "17", "failed to batch edit nft")
-	ErrNftBurn                = Register(RootCodeSpace, "18", "failed to burn nft")
-	ErrNftBatchBurn           = Register(RootCodeSpace, "19", "failed to batch burn nft")
-	ErrTxResult               = Register(RootCodeSpace, "20", "failed to get tx result")
-	ErrIdempotent             = Register(RootCodeSpace, "21", "failed to idempotent")
-	ErrNftTooMany             = Register(RootCodeSpace, "22", "The maximum number of NFTs to edit is 50")
-	ErrNftMissing             = Register(RootCodeSpace, "23", "Cannot find the NFT")
-	ErrNftBurnPend            = Register(RootCodeSpace, "24", "The platform has received the destruction request and put it on the chain, but it has not been packaged and confirmed")
-	ErrNftClassTransfer       = Register(RootCodeSpace, "25", "failed to transfer nft class")
-	ErrBuildAndSign           = Register(RootCodeSpace, "26", "failed to build and sign")
-	ErrNftTransfer            = Register(RootCodeSpace, "27", "failed to transfer nft")
-	ErrNftBatchTransfer       = Register(RootCodeSpace, "28", "failed to batch transfer nft")
-	ErrNotOwner               = Register(RootCodeSpace, "29", "sender is not the nft‘s owner")
-	ErrNoPermission           = Register(RootCodeSpace, "30", "sender is not the one of the app‘s accounts")
-	ErrName                   = Register(RootCodeSpace, "31", "sender is not the nft‘s owner")
-	ErrNftClassesSet          = Register(RootCodeSpace, "32", "failed to set nft class")
-	ErrTxMsgInsert            = Register(RootCodeSpace, "33", "failed to insert ttx")
-	ErrTxMsgGet               = Register(RootCodeSpace, "34", "failed to get ttx")
-	ErrGetTx                  = Register(RootCodeSpace, "35", "failed to get tx by hash")
-	ErrGetNftOperationDetails = Register(RootCodeSpace, "36", "failed to get nft operation details")
-	ErrNftStatus              = Register(RootCodeSpace, "37", "One of these NFTs does not exist or its status is not active")
-	ErrIndicesFormat          = Register(RootCodeSpace, "38", "Indices format is invalid, must be unsigned numeric type,such as:1,2,3,4...")
+	ErrInternal        = Register(RootCodeSpace, InternalFailed, "internal")
+	ErrAuthenticate    = Register(RootCodeSpace, AuthenticationFailed, "authentication failed")
+	ErrParams          = Register(RootCodeSpace, ClientParamsError, ErrClientParams)
+	ErrChainConn       = Register(RootCodeSpace, ConnectionChainFailed, "connection chain failed")
+	ErrIdempotent      = Register(RootCodeSpace, FrequentRequestsNotSupports, "frequent requests not supports")
+	ErrNftClassStatus  = Register(RootCodeSpace, NftClassStatusAbnormal, ErrNftClassStatusMsg)
+	ErrNftStatus       = Register(RootCodeSpace, NftStatusAbnormal, ErrNftStatusMsg)
+	ErrNotFound        = Register(RootCodeSpace, NotFound, "resource not found")
+	ErrLimit           = Register(RootCodeSpace, MaximumLimitExceeded, "maximum limit exceeded")
+	ErrBuildAndSign    = Register(RootCodeSpace, StructureSignTransactionFailed, "build and sign transaction failed")
+	ErrBuildAndSend    = Register(RootCodeSpace, StructureSendTransactionFailed, "build and send transaction failed")
+	ErrTXStatusSuccess = Register(RootCodeSpace, TxStatusSuccess, "tx transaction success")
+	ErrTXStatusPending = Register(RootCodeSpace, TxStatusPending, "tx transaction is in progress, please wait")
+	ErrTXStatusUndo    = Register(RootCodeSpace, TxStatusUndo, "tx transaction not executed, please wait")
 )
 
 var usedErrorCodes = map[string]*AppError{}
@@ -56,7 +94,7 @@ func setUsedErrorCodes(err *AppError) {
 }
 
 func appErrorID(codeSpace string, code string) string {
-	return fmt.Sprintf("%s:%d", codeSpace, code)
+	return fmt.Sprintf("%s:%s", codeSpace, code)
 }
 
 type IError interface {
@@ -89,20 +127,11 @@ func (e AppError) CodeSpace() string {
 
 func Register(codeSpace string, code string, description string) *AppError {
 	if e := getUsedErrorCodes(codeSpace, code); e != nil {
-		panic(fmt.Sprintf("error with code %d is already registered: %q", code, e.desc))
+		panic(fmt.Sprintf("error with code %s is already registered: %q", code, e.desc))
 	}
 
 	err := NewAppError(codeSpace, code, description)
 	setUsedErrorCodes(err)
 
 	return err
-}
-
-func UpdateDescription(codeSpace string, code string, description string) *AppError {
-	e := getUsedErrorCodes(codeSpace, code)
-	if e == nil {
-		panic(fmt.Sprintf("error with code %d No registered: %q", code, e.desc))
-	}
-	e.desc = description
-	return e
 }

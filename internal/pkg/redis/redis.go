@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/bsm/redislock"
-	"github.com/go-redis/redis/v8"
+	redis "github.com/go-redis/redis/v8"
 )
 
 const prefix = "nftp"
@@ -19,6 +20,14 @@ var (
 
 	ErrNotObtained = redislock.ErrNotObtained
 )
+
+func RedisPing() bool {
+	result := rdb.Ping(context.Background())
+	if strings.Contains(result.String(), "PONG") {
+		return true
+	}
+	return false
+}
 
 // Connect connect tht redis server
 func Connect(addr, password string, db int) {
