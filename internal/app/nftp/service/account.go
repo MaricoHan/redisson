@@ -4,13 +4,14 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
+	http2 "gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/http"
 	"golang.org/x/sync/errgroup"
 	"io/ioutil"
 	"strings"
 	"time"
 
-	"github.com/friendsofgo/errors"
 	"github.com/irisnet/core-sdk-go/bank"
 	sdkcrypto "github.com/irisnet/core-sdk-go/common/crypto"
 	"github.com/irisnet/core-sdk-go/common/crypto/codec"
@@ -21,7 +22,6 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"gitlab.bianjie.ai/irita-paas/open-api/config"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
-	http2 "gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/http"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft"
@@ -97,12 +97,13 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, e
 			//}
 
 			tmpAddress := sdktype.AccAddress(priv.PubKey().Address().Bytes()).String()
-			_, _, err = svc.base.Grant(tmpAddress)
+
+			// fee grant
+			_, err = svc.base.Grant(tmpAddress)
 			if err != nil {
-				//500
-				log.Error("create account", "fee grant error:", err.Error())
-				return types.ErrInternal
+				return err
 			}
+
 			tmp := &models.TAccount{
 				ChainID:  params.ChainId,
 				Address:  tmpAddress,
@@ -126,14 +127,14 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, e
 		}
 		// create chain account
 		if env == "stage" {
-			msgs = svc.base.CreateGasMsg(classOne.Address, addresses)
-			tx := svc.base.CreateBaseTx(classOne.Address, defultKeyPassword)
-			tx.Gas = svc.base.createAccount(params.Count)
-			resultTx, err = svc.base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
-			if err != nil {
-				log.Error("create account", "build and send, error:", err)
-				return types.ErrBuildAndSend
-			}
+			//msgs = svc.base.CreateGasMsg(classOne.Address, addresses)
+			//tx := svc.base.CreateBaseTx(classOne.Address, defultKeyPassword)
+			//tx.Gas = svc.base.createAccount(params.Count)
+			//resultTx, err = svc.base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
+			//if err != nil {
+			//	log.Error("create account", "build and send, error:", err)
+			//	return types.ErrBuildAndSend
+			//}
 		} else {
 			time := 5 * time.Second
 			ctx, _ := context.WithTimeout(context.Background(), time)

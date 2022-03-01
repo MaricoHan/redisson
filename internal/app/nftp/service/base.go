@@ -12,6 +12,7 @@ import (
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"gitlab.bianjie.ai/irita-paas/open-api/config"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 	"strings"
@@ -301,13 +302,15 @@ func (m Base) createAccount(count int64) uint64 {
 	return uint64(u)
 }
 
-func (m Base) Grant(address string) ([]byte, string, error) {
+func (m Base) Grant(address string) (string, error) {
 	//platform address
 	classOne, err := models.TAccounts(
 		models.TAccountWhere.ChainID.EQ(uint64(0)),
 	).OneG(context.Background())
 	if err != nil {
-		return nil, "", types.ErrInternal
+		//500
+		log.Error("create account", "query root error:", err.Error())
+		return "",types.ErrInternal
 	}
 	pAddress := classOne.Address
 
@@ -322,15 +325,22 @@ func (m Base) Grant(address string) ([]byte, string, error) {
 
 	grant = &basic
 
-	msgGrant, err := feegrant.NewMsgGrantAllowance(grant, sdktype.AccAddress(granter), sdktype.AccAddress(grantee))
+	msgGrant, err := feegrant.NewMsgGrantAllowance(grant, granter, grantee)
 	if err != nil {
-		return nil, "", types.ErrInternal
+		//500
+		log.Error("create account", "msg grant allowance error:", err.Error())
+		return "",types.ErrInternal
 	}
 
 	baseTx := m.CreateBaseTx(pAddress, defultKeyPassword)
+	res, err := m.BuildAndSend(sdktype.Msgs{msgGrant}, baseTx)
+	if err != nil {
+		//500
+		log.Error("create account", "fee grant error:", err.Error())
+		return "",types.ErrInternal
+	}
 
-	sigData, hash, err := m.BuildAndSign(sdktype.Msgs{msgGrant}, baseTx)
-	return sigData, hash, err
+	return res.Hash, nil
 }
 
 // EncodeData 加密序列
