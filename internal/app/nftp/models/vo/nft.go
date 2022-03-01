@@ -10,12 +10,14 @@ type CreateNftsRequest struct {
 	Data      string `json:"data"`
 	Amount    int    `json:"amount"`
 	Recipient string `json:"recipient"`
+	Tag       string `json:"tag"`
 }
 
 type EditNftByIndexRequest struct {
 	Name string `json:"name" validate:"required"`
 	Uri  string `json:"uri"`
 	Data string `json:"data"`
+	Tag  string `json:"tag"`
 }
 
 type EditNftByBatchRequest []*dto.EditNft

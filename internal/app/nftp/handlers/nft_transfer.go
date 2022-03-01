@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	types2 "github.com/irisnet/core-sdk-go/types"
 	"strconv"
 	"strings"
 
@@ -43,6 +44,11 @@ func (h nftTransfer) TransferNftClassByID(ctx context.Context, request interface
 	if len([]rune(recipient)) > 128 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientLen)
 	}
+	// 校验接收者地址是否满足当前链的地址规范
+	if err := types2.ValidateAccAddress(recipient); err != nil {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
+	}
+
 	params := dto.TransferNftClassByIDP{
 		ClassID:   h.ClassID(ctx),
 		Owner:     h.Owner(ctx),
@@ -61,19 +67,22 @@ func (h nftTransfer) TransferNftByIndex(ctx context.Context, request interface{}
 	if recipient == "" {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipient)
 	}
+	if len([]rune(recipient)) > 128 {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientLen)
+	}
+	// 校验接收者地址是否满足当前链的地址规范
+	if err := types2.ValidateAccAddress(recipient); err != nil {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
+	}
 
 	index, err := h.Index(ctx)
 	if err != nil {
 		return nil, err
 	}
-
 	if index == 0 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrIndexInt)
 	}
 
-	if len([]rune(recipient)) > 128 {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientLen)
-	}
 	params := dto.TransferNftByIndexP{
 		ClassID:   h.ClassID(ctx),
 		Owner:     h.Owner(ctx),

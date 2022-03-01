@@ -41,14 +41,15 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) (*dto.TxRes, error) {
 	var taskId string
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		classOne, err := models.TClasses(
-			models.TClassWhere.AppID.EQ(params.AppID),
+			models.TClassWhere.ChainID.EQ(params.ChainId),
 			models.TClassWhere.ClassID.EQ(params.ClassId),
 		).One(context.Background(), exec)
-		if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
-			(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
-			//404
-			return types.ErrNotFound
-		} else if err != nil {
+
+		if err != nil {
+			if errors.Cause(err) == sql.ErrNoRows || strings.Contains(err.Error(), SqlNoFound()) {
+				//404
+				return types.ErrNotFound
+			}
 			//500
 			log.Error("create nfts", "query class error:", err.Error())
 			return types.ErrInternal
@@ -65,10 +66,11 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) (*dto.TxRes, error) {
 			index := int(offSet) + i
 			nftId := nftp + strings.ToLower(hex.EncodeToString(tmhash.Sum([]byte(params.ClassId)))) + strconv.Itoa(index)
 			if params.Recipient == "" {
+				//默认为 NFT 类别的权属者地址
 				params.Recipient = classOne.Owner
 			} else {
 				_, err := models.TAccounts(
-					models.TAccountWhere.AppID.EQ(params.AppID),
+					models.TAccountWhere.ID.EQ(params.ChainId),
 					models.TAccountWhere.Address.EQ(params.Recipient)).OneG(context.Background())
 				if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
 					(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
@@ -120,7 +122,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) (*dto.TxRes, error) {
 		code := fmt.Sprintf("%s%s%s", params.Recipient, models.TTXSOperationTypeMintNFT, time.Now().String())
 		taskId = svc.base.EncodeData(code)
 		ttx := models.TTX{
-			AppID:         params.AppID,
+			ID:            params.ChainId,
 			Hash:          tHash,
 			Timestamp:     null.Time{Time: time.Now()},
 			Message:       null.JSONFrom(msgsByte),
@@ -160,16 +162,17 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) (*dto.TxRes, error) {
 }
 
 func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (*dto.TxRes, error) {
-	tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID),
+	tNft, err := models.TNFTS(models.TNFTWhere.ChainID.EQ(params.ChainId),
 		models.TNFTWhere.ClassID.EQ(params.ClassId),
 		models.TNFTWhere.Index.EQ(params.Index),
 		models.TNFTWhere.Owner.EQ(params.Sender)).
 		One(context.Background(), boil.GetContextDB())
-	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
-		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
-		//404
-		return nil, types.ErrNotFound
-	} else if err != nil {
+
+	if err != nil {
+		if errors.Cause(err) == sql.ErrNoRows || strings.Contains(err.Error(), SqlNoFound()) {
+			//404
+			return nil, types.ErrNotFound
+		}
 		//500
 		log.Error("edit nft by index", "query nft error:", err.Error())
 		return nil, types.ErrInternal
@@ -213,7 +216,6 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (*dto.TxRes, error) {
 	// get gas
 	nftLen := svc.base.lenOfNft(tNft)
 	baseTx.Gas = svc.base.editNftGas(nftLen, uint64(len(signedData)))
-
 	signedData, txHash, err = svc.base.BuildAndSign(sdktype.Msgs{&msgEditNFT}, baseTx)
 
 	if err != nil {
@@ -240,7 +242,7 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (*dto.TxRes, error) {
 		messageByte, _ := json.Marshal(msgEditNFT)
 		code := fmt.Sprintf("%s%s%s", params.Sender, models.TTXSOperationTypeEditNFT, time.Now().String())
 		taskId = svc.base.EncodeData(code)
-		txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData,
+		txId, err := svc.base.TxIntoDataBase(params.ChainId, txHash, signedData,
 			models.TTXSOperationTypeEditNFT, models.TTXSStatusUndo, messageByte, params.Sender, taskId, int64(baseTx.Gas), exec)
 		if err != nil {
 			log.Debug("edit nft by index", "Tx into database error:", err.Error())
@@ -264,7 +266,7 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByIndexP) (*dto.TxRes, error) {
 	}
 
 	result := &dto.TxRes{}
-	result.TxHash = txHash
+	result.TxHash = taskId
 	return result, nil
 }
 
@@ -273,16 +275,17 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (*dto.TxRes, error) {
 	var msgEditNFTs sdktype.Msgs
 	var nftsLen uint64
 	for i, EditNft := range params.EditNfts {
-		tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID),
+		tNft, err := models.TNFTS(models.TNFTWhere.ChainID.EQ(params.ChainId),
 			models.TNFTWhere.ClassID.EQ(params.ClassId),
 			models.TNFTWhere.Owner.EQ(params.Sender),
 			models.TNFTWhere.Index.EQ(EditNft.Index)).
 			One(context.Background(), boil.GetContextDB())
-		if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
-			(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
-			//400
-			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrNftFound)
-		} else if err != nil {
+
+		if err != nil {
+			if errors.Cause(err) == sql.ErrNoRows || strings.Contains(err.Error(), SqlNoFound()) {
+				//404
+				return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrNftFound)
+			}
 			//500
 			log.Error("edit nft by batch", "query nft error:", err.Error())
 			return nil, types.ErrInternal
@@ -355,7 +358,7 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (*dto.TxRes, error) {
 		messageByte, _ := json.Marshal(msgEditNFTs)
 		code := fmt.Sprintf("%s%s%s", params.Sender, models.TTXSOperationTypeEditNFTBatch, time.Now().String())
 		taskId = svc.base.EncodeData(code)
-		txId, err := svc.base.TxIntoDataBase(params.AppID, txHash, signedData,
+		txId, err := svc.base.TxIntoDataBase(params.ChainId, txHash, signedData,
 			models.TTXSOperationTypeEditNFTBatch, models.TTXSStatusUndo, messageByte, params.Sender, taskId, int64(baseTx.Gas), exec)
 		if err != nil {
 			log.Debug("edit nft by batch", "Tx into database error:", err.Error())
@@ -364,7 +367,7 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (*dto.TxRes, error) {
 
 		// lock the NFTs
 		for _, EditNft := range params.EditNfts { // create every rawMsg
-			tNft, err := models.TNFTS(models.TNFTWhere.AppID.EQ(params.AppID),
+			tNft, err := models.TNFTS(models.TNFTWhere.ChainID.EQ(params.ChainId),
 				models.TNFTWhere.ClassID.EQ(params.ClassId),
 				models.TNFTWhere.Index.EQ(EditNft.Index)).
 				One(context.Background(), exec)

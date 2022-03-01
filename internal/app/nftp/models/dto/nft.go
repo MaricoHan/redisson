@@ -6,14 +6,14 @@ type EditNftByIndexP struct {
 	Uri   string `json:"uri"`
 	Data  string `json:"data"`
 
-	AppID   uint64 `json:"app_id"`
+	ChainId uint64 `json:"chain_id"`
 	ClassId string `json:"class_id"`
 	Sender  string `json:"owner"`
 }
 
 type EditNftByBatchP struct {
 	EditNfts []*EditNft `json:"nfts"`
-	AppID    uint64     `json:"app_id"`
+	ChainId  uint64     `json:"chain_id"`
 	ClassId  string     `json:"class_id"`
 	Sender   string     `json:"owner"`
 }
@@ -96,7 +96,7 @@ type NftClassByIds struct {
 }
 
 type CreateNftsRequest struct {
-	AppID     uint64 `json:"app_id"`
+	ChainId   uint64 `json:"chain_id"`
 	ClassId   string `json:"class_id"`
 	Name      string `json:"name"`
 	Uri       string `json:"uri"`
@@ -104,6 +104,7 @@ type CreateNftsRequest struct {
 	Data      string `json:"data"`
 	Amount    int    `json:"amount"`
 	Recipient string `json:"recipient"`
+	Tag       string `json:"tag"`
 }
 
 type NftOperationHistoryByIndexP struct {

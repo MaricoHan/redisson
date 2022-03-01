@@ -24,6 +24,16 @@ func (h base) AppID(ctx context.Context) uint64 {
 	return uint64(appID)
 }
 
+func (h base) ChainID(ctx context.Context) uint64 {
+	rec := ctx.Value("chain_id")
+	chainId, ok := rec.(string)
+	if !ok {
+		return 0
+	}
+	res, _ := strconv.ParseInt(chainId, 10, 64)
+	return uint64(res)
+}
+
 func (h base) UriCheck(uri string) error {
 	if len([]rune(uri)) == 0 {
 		return nil

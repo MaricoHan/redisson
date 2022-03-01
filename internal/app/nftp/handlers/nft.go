@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
+	types2 "github.com/irisnet/core-sdk-go/types"
 	"strconv"
 	"strings"
 	"time"
@@ -52,6 +53,7 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 	uriHash := strings.TrimSpace(req.UriHash)
 	data := strings.TrimSpace(req.Data)
 	recipient := strings.TrimSpace(req.Recipient)
+	tag := strings.TrimSpace(req.Tag)
 
 	if name == "" {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrName)
@@ -76,9 +78,16 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 	if len([]rune(recipient)) > 128 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientLen)
 	}
+	// 若接收者地址不为空，则校验其格式；否则在service中将其默认设为NFT类别的权属者地址
+	if recipient != "" {
+		// 校验接收者地址是否满足当前链的地址规范
+		if err := types2.ValidateAccAddress(recipient); err != nil {
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
+		}
+	}
 
 	params := dto.CreateNftsRequest{
-		AppID:     h.AppID(ctx),
+		ChainId:   h.ChainID(ctx),
 		ClassId:   h.ClassId(ctx),
 		Name:      name,
 		Uri:       uri,
@@ -86,6 +95,7 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 		Data:      data,
 		Amount:    req.Amount,
 		Recipient: recipient,
+		Tag:       tag,
 	}
 
 	if params.Amount == 0 {
@@ -105,35 +115,32 @@ func (h nft) EditNftByIndex(ctx context.Context, request interface{}) (interface
 	name := strings.TrimSpace(req.Name)
 	uri := strings.TrimSpace(req.Uri)
 	data := strings.TrimSpace(req.Data)
+
+	//check start
 	if name == "" {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrName)
 	}
-
 	if len([]rune(name)) < 3 || len([]rune(name)) > 64 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrNameLen)
 	}
-
 	if err := h.base.UriCheck(uri); err != nil {
 		return nil, err
 	}
-
 	if len([]rune(data)) > 4096 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrDataLen)
 	}
 
-	//check start
 	index, err := h.Index(ctx)
 	if err != nil {
 		return nil, err
 	}
-
 	if index == 0 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrIndexInt)
 	}
 	//check end
 
 	params := dto.EditNftByIndexP{
-		AppID:   h.AppID(ctx),
+		ChainId: h.ChainID(ctx),
 		ClassId: h.ClassId(ctx),
 		Sender:  h.Owner(ctx),
 		Index:   index,
@@ -194,7 +201,7 @@ func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface
 
 	params := dto.EditNftByBatchP{
 		EditNfts: nfts,
-		AppID:    h.AppID(ctx),
+		ChainId:  h.ChainID(ctx),
 		ClassId:  h.ClassId(ctx),
 		Sender:   h.Owner(ctx),
 	}
@@ -203,7 +210,6 @@ func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface
 	if len(params.EditNfts) > 50 {
 		return nil, types.ErrLimit
 	}
-
 	// 2.judge whether the NFT is repeated
 	hash := make(map[uint64]bool)
 	for i, Nft := range params.EditNfts {
