@@ -4,25 +4,25 @@ type TransferNftClassByIDP struct {
 	ClassID   string `json:"class_id"`
 	Owner     string `json:"owner"`
 	Recipient string `json:"recipient"`
-	AppID     uint64 `json:"app_id"`
+	ChainId   uint64 `json:"chain_id"`
 }
 
-type TransferNftByIndexP struct {
+type TransferNftByNftIdP struct {
 	ClassID   string `json:"class_id"`
 	Owner     string `json:"owner"`
-	Index     uint64 `json:"index"`
+	NftId     string `json:"nft_id"`
 	Recipient string `json:"recipient"`
-	AppID     uint64 `json:"app_id"`
+	ChainId   uint64 `json:"chain_id"`
 }
 
 type TransferNftByBatchP struct {
 	ClassID    string       `json:"class_id"`
 	Owner      string       `json:"owner"`
 	Recipients []*Recipient `json:"recipients"`
-	AppID      uint64       `json:"app_id"`
+	ChainId    uint64       `json:"chain_id"`
 }
 
 type Recipient struct {
-	Index     uint64 `json:"index"`
+	NftId     string `json:"nft_id"`
 	Recipient string `json:"recipient"`
 }

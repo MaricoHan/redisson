@@ -83,7 +83,7 @@ func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 	}
 
 	params := dto.CreateNftClassP{
-		AppID:       h.AppID(ctx),
+		ChainId:     h.ChainID(ctx),
 		Name:        name,
 		Symbol:      symbol,
 		Description: description,
@@ -99,11 +99,11 @@ func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 func (h nftClass) Classes(ctx context.Context, _ interface{}) (interface{}, error) {
 	// 校验参数 start
 	params := dto.NftClassesP{
-		AppID:  h.AppID(ctx),
-		Id:     h.Id(ctx),
-		Name:   h.Name(ctx),
-		Owner:  h.Owner(ctx),
-		TxHash: h.TxHash(ctx),
+		ChainId: h.ChainID(ctx),
+		Id:      h.Id(ctx),
+		Name:    h.Name(ctx),
+		Owner:   h.Owner(ctx),
+		TxHash:  h.TxHash(ctx),
 	}
 	offset, err := h.Offset(ctx)
 	if err != nil {
@@ -162,8 +162,8 @@ func (h nftClass) Classes(ctx context.Context, _ interface{}) (interface{}, erro
 func (h nftClass) ClassByID(ctx context.Context, _ interface{}) (interface{}, error) {
 	// 校验参数 start
 	params := dto.NftClassesP{
-		AppID: h.AppID(ctx),
-		Id:    h.Id(ctx),
+		ChainId: h.ChainID(ctx),
+		Id:      h.Id(ctx),
 	}
 
 	// 校验参数 end
