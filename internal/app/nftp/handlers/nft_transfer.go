@@ -47,7 +47,7 @@ func (h nftTransfer) TransferNftClassByID(ctx context.Context, request interface
 		ClassID:   h.ClassID(ctx),
 		Owner:     h.Owner(ctx),
 		Recipient: recipient,
-		AppID:     h.AppID(ctx),
+		ChainId:   h.ChainID(ctx),
 	}
 	//校验参数 end
 	return h.svc.TransferNftClassByID(params)
@@ -79,7 +79,7 @@ func (h nftTransfer) TransferNftByIndex(ctx context.Context, request interface{}
 		Owner:     h.Owner(ctx),
 		Index:     index,
 		Recipient: recipient,
-		AppID:     h.AppID(ctx),
+		ChainId:   h.ChainID(ctx),
 	}
 	// 校验参数 end
 	return h.svc.TransferNftByIndex(params)
@@ -96,7 +96,7 @@ func (h nftTransfer) TransferNftByBatch(ctx context.Context, request interface{}
 		ClassID:    h.ClassID(ctx),
 		Owner:      h.Owner(ctx),
 		Recipients: req.Recipients,
-		AppID:      h.AppID(ctx),
+		ChainId:    h.ChainID(ctx),
 	}
 	if len(params.Recipients) > 50 {
 		return "", types.ErrLimit

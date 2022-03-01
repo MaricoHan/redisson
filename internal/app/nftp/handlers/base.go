@@ -14,14 +14,14 @@ const timeLayoutWithoutHMS = "2006-01-02"
 type base struct {
 }
 
-func (h base) AppID(ctx context.Context) uint64 {
+func (h base) ChainID(ctx context.Context) uint64 {
 	keysList := ctx.Value("X-App-Id")
 	keysListString, ok := keysList.([]string)
 	if !ok {
 		return 0
 	}
-	appID, _ := strconv.ParseInt(keysListString[0], 10, 64)
-	return uint64(appID)
+	ChainID, _ := strconv.ParseInt(keysListString[0], 10, 64)
+	return uint64(ChainID)
 }
 
 func (h base) UriCheck(uri string) error {

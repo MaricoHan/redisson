@@ -28,8 +28,8 @@ func newTx(svc *service.Tx) *tx {
 func (h tx) TxResultByTxHash(ctx context.Context, _ interface{}) (interface{}, error) {
 	// 校验参数 start
 	params := dto.TxResultByTxHashP{
-		Hash:  h.Hash(ctx),
-		AppID: h.AppID(ctx),
+		Hash:    h.Hash(ctx),
+		ChainId: h.ChainID(ctx),
 	}
 	// 校验参数 end
 	// 业务数据入库的地方
