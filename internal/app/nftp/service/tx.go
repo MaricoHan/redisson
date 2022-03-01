@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"database/sql"
+	"github.com/volatiletech/null/v8"
 	"strings"
 
 	"github.com/friendsofgo/errors"
@@ -23,7 +24,7 @@ func NewTx() *Tx {
 func (svc *Tx) TxResultByTxHash(params dto.TxResultByTxHashP) (*dto.TxResultByTxHashRes, error) {
 	//query
 	txinfo, err := models.TTXS(
-		models.TTXWhere.Hash.EQ(params.Hash),
+		models.TTXWhere.TaskID.EQ(null.StringFrom(params.Hash)),
 		models.TTXWhere.AppID.EQ(params.AppID),
 	).OneG(context.Background())
 	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||

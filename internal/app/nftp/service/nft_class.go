@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -104,11 +105,19 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, err
 	}
 
 	//transferInfo
+	message := []interface{}{createDenomMsg, transferDenomMsg}
+	messageByte, _ := json.Marshal(message)
+	code := fmt.Sprintf("%s%s%s", params.Owner, models.TTXSOperationTypeIssueClass, time.Now().String())
+	taskId := svc.base.EncodeData(code)
 	ttx := models.TTX{
 		AppID:         params.AppID,
 		Hash:          txHash,
+		Sender:        null.StringFrom(params.Owner),
 		Timestamp:     null.Time{Time: time.Now()},
 		OriginData:    null.BytesFromPtr(&originData),
+		Message:       null.JSONFrom(messageByte),
+		TaskID:        null.StringFrom(taskId),
+		GasUsed:       null.Int64From(int64(baseTx.Gas)),
 		OperationType: models.TTXSOperationTypeIssueClass,
 		Status:        models.TTXSStatusUndo,
 	}
@@ -116,9 +125,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, err
 	if err != nil {
 		return nil, err
 	}
-	result := &dto.TxRes{}
-	result.TxHash = txHash
-	return result, nil
+	return &dto.TxRes{TxHash: taskId}, nil
 }
 
 func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, error) {

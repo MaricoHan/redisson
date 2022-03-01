@@ -65,7 +65,6 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, e
 	var msgs bank.MsgMultiSend
 	var resultTx sdktype.ResultTx
 	env := config.Get().Server.Env
-	accountAlgo := algo
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		tAppOneObj, err := models.TApps(models.TAppWhere.ID.EQ(params.AppID)).One(context.Background(), exec)
 		if err != nil {
@@ -77,15 +76,12 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, e
 		tAccounts := modext.TAccounts{}
 		var i int64
 		accOffsetStart := tAppOneObj.AccOffset
-		if env == "stage" {
-			accountAlgo = "sm2"
-		}
 		for i = 0; i < params.Count; i++ {
 			index := accOffsetStart + i
 			hdPath := fmt.Sprintf("%s%d", hdPathPrefix, index)
 			res, err := sdkcrypto.NewMnemonicKeyManagerWithHDPath(
 				tAppOneObj.Mnemonic,
-				accountAlgo,
+				config.Get().Chain.ChainEncryption,
 				hdPath,
 			)
 			if err != nil {
@@ -101,7 +97,10 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, e
 			//}
 
 			tmpAddress := sdktype.AccAddress(priv.PubKey().Address().Bytes()).String()
-
+			_, _, err = svc.base.Grant(tmpAddress)
+			if err != nil {
+				return err
+			}
 			tmp := &models.TAccount{
 				AppID:    params.AppID,
 				Address:  tmpAddress,

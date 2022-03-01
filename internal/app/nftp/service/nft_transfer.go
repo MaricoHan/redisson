@@ -3,8 +3,10 @@ package service
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/friendsofgo/errors"
 	sdktype "github.com/irisnet/core-sdk-go/types"
@@ -84,6 +86,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 		return nil, types.ErrBuildAndSign
 	}
 
+	var taskId string
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		//validate tx
 		txone, err := svc.base.ValidateTx(hash)
@@ -100,11 +103,15 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 		}
 
 		//txs status = undo
+		messageByte, _ := json.Marshal(msgs)
+		code := fmt.Sprintf("%s%s%s", params.Owner, models.TTXSOperationTypeTransferClass, time.Now().String())
+		taskId = svc.base.EncodeData(code)
+		//txs status = undo
 		txId, err := svc.base.TxIntoDataBase(params.AppID,
 			hash,
 			data,
 			models.TTXSOperationTypeTransferClass,
-			models.TTXSStatusUndo, exec)
+			models.TTXSStatusUndo, messageByte, params.Owner, taskId, int64(baseTx.Gas), exec)
 		if err != nil {
 			log.Debug("transfer nft class", "Tx Into DataBase error:", err.Error())
 			return err
@@ -130,9 +137,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	if err != nil {
 		return nil, err
 	}
-	result := &dto.TxRes{}
-	result.TxHash = hash
-	return result, nil
+	return &dto.TxRes{TxHash: taskId}, nil
 }
 
 func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (*dto.TxRes, error) {
@@ -203,6 +208,7 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (*dto
 		return nil, types.ErrBuildAndSign
 	}
 
+	var taskId string
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		//validate tx
 		txone, err := svc.base.ValidateTx(hash)
@@ -219,11 +225,16 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (*dto
 		}
 
 		//写入txs status = undo
+		messageByte, _ := json.Marshal(msgs)
+		code := fmt.Sprintf("%s%s%s", params.Owner, models.TTXSOperationTypeTransferNFT, time.Now().String())
+		taskId = svc.base.EncodeData(code)
+		//写入txs status = undo
 		txId, err := svc.base.TxIntoDataBase(params.AppID,
 			hash,
 			data,
 			models.TTXSOperationTypeTransferNFT,
-			models.TTXSStatusUndo, exec)
+			models.TTXSStatusUndo, messageByte, params.Owner, taskId, int64(baseTx.Gas), exec)
+
 		if err != nil {
 			log.Debug("transfer nft by index", "Tx Into DataBase error:", err.Error())
 			return types.ErrInternal
@@ -244,9 +255,7 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (*dto
 		return nil, err
 	}
 
-	result := &dto.TxRes{}
-	result.TxHash = hash
-	return result, nil
+	return &dto.TxRes{TxHash: taskId}, nil
 }
 
 func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (*dto.TxRes, error) {
@@ -350,6 +359,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (*dto
 		return nil, types.ErrBuildAndSign
 	}
 
+	var taskId string
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		//validate tx
 		txone, err := svc.base.ValidateTx(hash)
@@ -366,11 +376,15 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (*dto
 		}
 
 		//写入txs status = undo
+		messageByte, _ := json.Marshal(msgs)
+		code := fmt.Sprintf("%s%s%s", params.Owner, models.TTXSOperationTypeTransferNFTBatch, time.Now().String())
+		taskId = svc.base.EncodeData(code)
+		//写入txs status = undo
 		txId, err := svc.base.TxIntoDataBase(params.AppID,
 			hash,
 			data,
 			models.TTXSOperationTypeTransferNFTBatch,
-			models.TTXSStatusUndo, exec)
+			models.TTXSStatusUndo, messageByte, params.Owner, taskId, int64(baseTx.Gas), exec)
 		if err != nil {
 			log.Debug("transfer nft by batch", "Tx Into DataBase error:", err.Error())
 			return err
@@ -430,8 +444,5 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (*dto
 		//自定义err
 		return nil, err
 	}
-
-	result := &dto.TxRes{}
-	result.TxHash = hash
-	return result, nil
+	return &dto.TxRes{TxHash: taskId}, nil
 }
