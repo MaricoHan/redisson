@@ -61,8 +61,8 @@ func (h account) CreateAccount(ctx context.Context, request interface{}) (interf
 	req := request.(*vo.CreateAccountRequest)
 
 	params := dto.CreateAccountP{
-		AppID: h.AppID(ctx),
-		Count: req.Count,
+		ChainId: h.ChainID(ctx),
+		Count:   req.Count,
 	}
 	if params.Count == 0 {
 		params.Count = 1
@@ -82,7 +82,7 @@ func (h account) CreateAccount(ctx context.Context, request interface{}) (interf
 func (h account) Accounts(ctx context.Context, _ interface{}) (interface{}, error) {
 	// 校验参数 start
 	params := dto.AccountsP{
-		AppID:   h.AppID(ctx),
+		ChainId: h.ChainID(ctx),
 		Account: h.Account(ctx),
 	}
 
@@ -151,7 +151,7 @@ func (h account) Account(ctx context.Context) string {
 func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{}, error) {
 	// 校验参数 start
 	params := dto.AccountsP{
-		AppID:   h.AppID(ctx),
+		ChainId: h.ChainID(ctx),
 		Account: h.Account(ctx),
 	}
 

@@ -54,7 +54,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, e
 	// sdk 创建账户
 	var addresses []string
 	classOne, err := models.TAccounts(
-		models.TAccountWhere.AppID.EQ(uint64(0)),
+		models.TAccountWhere.ChainID.EQ(uint64(0)),
 	).OneG(context.Background())
 	if err != nil {
 		//500
@@ -66,7 +66,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, e
 	var resultTx sdktype.ResultTx
 	env := config.Get().Server.Env
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
-		tAppOneObj, err := models.TApps(models.TAppWhere.ID.EQ(params.AppID)).One(context.Background(), exec)
+		tAppOneObj, err := models.TApps(models.TAppWhere.ID.EQ(1)).One(context.Background(), exec)
 		if err != nil {
 			//500
 			log.Error("create account", "query app error:", err.Error())
@@ -99,7 +99,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, e
 			tmpAddress := sdktype.AccAddress(priv.PubKey().Address().Bytes()).String()
 
 			tmp := &models.TAccount{
-				AppID:    params.AppID,
+				ChainID:  params.ChainId,
 				Address:  tmpAddress,
 				AccIndex: uint64(index),
 				PriKey:   base64.StdEncoding.EncodeToString(codec.MarshalPrivKey(priv)),
@@ -173,7 +173,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, e
 			}
 			messageByte, _ := json.Marshal(message)
 			tmsgs = append(tmsgs, &models.TMSG{
-				AppID:     params.AppID,
+				ChainID:   params.ChainId,
 				TXHash:    resultTx.Hash,
 				Timestamp: null.TimeFrom(time.Now()),
 				Module:    "account",
@@ -202,7 +202,7 @@ func (svc *Account) Accounts(params dto.AccountsP) (*dto.AccountsRes, error) {
 	queryMod := []qm.QueryMod{
 		qm.From(models.TableNames.TAccounts),
 		qm.Select(models.TAccountColumns.Address, models.TAccountColumns.Gas),
-		models.TAccountWhere.AppID.EQ(params.AppID),
+		models.TAccountWhere.ChainID.EQ(params.ChainId),
 	}
 	if params.Account != "" {
 		queryMod = append(queryMod, models.TAccountWhere.Address.EQ(params.Account))
@@ -267,7 +267,7 @@ func (svc *Account) AccountsHistory(params dto.AccountsP) (*dto.AccountOperation
 	}
 	queryMod := []qm.QueryMod{
 		qm.From(models.TableNames.TMSGS),
-		models.TMSGWhere.AppID.EQ(params.AppID),
+		models.TMSGWhere.ChainID.EQ(params.ChainId),
 		models.TMSGWhere.Operation.NEQ(models.TMSGSOperationSysIssueClass),
 	}
 

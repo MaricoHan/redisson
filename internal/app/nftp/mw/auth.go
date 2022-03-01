@@ -46,28 +46,25 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			"uri",
 			r.RequestURI,
 		}...).Observe(float64(interval))
-
-		//请求完成监控根账户余额
-		root, err := models.TAccounts(
-			models.TAccountWhere.AppID.EQ(uint64(0)),
-		).OneG(context.Background())
-		if err != nil {
-			//500
-			log.Error("query root balance", "query root error:", err.Error())
-			writeInternalResp(w)
-			return
-		}
-		metric.NewPrometheus().ApiRootBalanceAmount.With([]string{"address", root.Address, "denom", "gas"}...).Set(float64(root.Gas.Uint64)) //系统root账户余额
 	}(createTime)
 
 	appKey := r.Header.Get("X-Api-Key")
-	appKeyResult, err := models.TAppKeys(
-		qm.Select(models.TAppKeyColumns.APISecret),
-		qm.Select(models.TAppKeyColumns.AppID),
-		models.TAppKeyWhere.APIKey.EQ(appKey),
+	projectKeyResult, err := models.TProjectKeys(
+		qm.Select(models.TProjectKeyColumns.ProjectSecret),
+		qm.Select(models.TProjectKeyColumns.ProjectID),
+		models.TProjectKeyWhere.ProjectKey.EQ(appKey),
 	).OneG(context.Background())
 	if err != nil {
-		log.Error("server http", "params error:", err)
+		log.Error("server http", "project keys error:", err)
+		writeForbiddenResp(w)
+		return
+	}
+
+	project, err := models.TProjects(
+		qm.Select(models.TProjectColumns.ChainID),
+		models.TProjectWhere.ID.EQ(projectKeyResult.ProjectID)).OneG(context.Background())
+	if err != nil {
+		log.Error("server http", "project error:", err)
 		writeForbiddenResp(w)
 		return
 	}
@@ -93,12 +90,12 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// 2. 验证签名
 	// todo
 	// 生产的时候打开
-	if config.Get().Server.SignatureAuth && !h.Signature(r, appKeyResult.APISecret, reqTimestampStr, reqSignature) {
+	if config.Get().Server.SignatureAuth && !h.Signature(r, projectKeyResult.ProjectSecret, reqTimestampStr, reqSignature) {
 		writeForbiddenResp(w)
 		return
 	}
-	log.Info("signature:", h.Signature(r, appKeyResult.APISecret, reqTimestampStr, reqSignature))
-	r.Header.Set("X-App-Id", fmt.Sprintf("%d", appKeyResult.AppID))
+	log.Info("signature:", h.Signature(r, projectKeyResult.ProjectSecret, reqTimestampStr, reqSignature))
+	r.Header.Set("X-App-Id", fmt.Sprintf("%d", project.ChainID))
 	h.next.ServeHTTP(w, r)
 }
 

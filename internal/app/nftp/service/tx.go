@@ -25,7 +25,7 @@ func (svc *Tx) TxResultByTxHash(params dto.TxResultByTxHashP) (*dto.TxResultByTx
 	//query
 	txinfo, err := models.TTXS(
 		models.TTXWhere.TaskID.EQ(null.StringFrom(params.Hash)),
-		models.TTXWhere.AppID.EQ(params.AppID),
+		models.TTXWhere.ChainID.EQ(params.ChainId),
 	).OneG(context.Background())
 	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
 		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {

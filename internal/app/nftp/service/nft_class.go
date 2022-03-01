@@ -36,7 +36,7 @@ func NewNftClass(base *Base) *NftClass {
 func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, error) {
 	//owner不能为平台外账户或此应用外账户或非法账户
 	_, err := models.TAccounts(
-		models.TAccountWhere.AppID.EQ(params.AppID),
+		models.TAccountWhere.ChainID.EQ(params.ChainId),
 		models.TAccountWhere.Address.EQ(params.Owner)).OneG(context.Background())
 	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
 		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
@@ -50,7 +50,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, err
 
 	//platform address
 	classOne, err := models.TAccounts(
-		models.TAccountWhere.AppID.EQ(uint64(0)),
+		models.TAccountWhere.ChainID.EQ(uint64(0)),
 	).OneG(context.Background())
 	if err != nil {
 		return nil, types.ErrInternal
@@ -110,7 +110,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, err
 	code := fmt.Sprintf("%s%s%s", params.Owner, models.TTXSOperationTypeIssueClass, time.Now().String())
 	taskId := svc.base.EncodeData(code)
 	ttx := models.TTX{
-		AppID:         params.AppID,
+		ChainID:       params.ChainId,
 		Hash:          txHash,
 		Sender:        null.StringFrom(params.Owner),
 		Timestamp:     null.Time{Time: time.Now()},
@@ -142,7 +142,7 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
 		queryMod := []qm.QueryMod{
 			qm.From(models.TableNames.TClasses),
-			models.TClassWhere.AppID.EQ(params.AppID),
+			models.TClassWhere.ChainID.EQ(params.ChainId),
 			models.TClassWhere.Status.EQ(models.TNFTSStatusActive),
 		}
 		if params.Id != "" {
@@ -252,7 +252,7 @@ func (svc *NftClass) NftClassById(params dto.NftClassesP) (*dto.NftClassRes, err
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		classOne, err = models.TClasses(
 			models.TClassWhere.ClassID.EQ(params.Id),
-			models.TClassWhere.AppID.EQ(params.AppID),
+			models.TClassWhere.ChainID.EQ(params.ChainId),
 		).One(context.Background(), exec)
 		if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
 			(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
@@ -266,7 +266,7 @@ func (svc *NftClass) NftClassById(params dto.NftClassesP) (*dto.NftClassRes, err
 
 		count, err = models.TNFTS(
 			models.TNFTWhere.ClassID.EQ(params.Id),
-			models.TNFTWhere.AppID.EQ(params.AppID),
+			models.TNFTWhere.ChainID.EQ(params.ChainId),
 			models.TNFTWhere.Status.EQ(models.TNFTSStatusActive),
 		).Count(context.Background(), exec)
 		if err != nil {

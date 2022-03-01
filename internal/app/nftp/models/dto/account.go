@@ -5,14 +5,14 @@ import (
 )
 
 type CreateAccountP struct {
-	Count int64  `json:"count"`
-	AppID uint64 `json:"app_id"`
+	Count   int64  `json:"count"`
+	ChainId uint64 `json:"chain_id"`
 }
 
 type AccountsP struct {
 	PageP
 	Account   string `json:"account"`
-	AppID     uint64 `json:"app_id"`
+	ChainId   uint64 `json:"chain_id"`
 	Module    string `json:"module"`
 	Operation string `json:"operation"`
 }

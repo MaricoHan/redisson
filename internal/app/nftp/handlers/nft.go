@@ -237,7 +237,7 @@ func (h nft) DeleteNftByIndex(ctx context.Context, _ interface{}) (interface{}, 
 
 	//check end
 	params := dto.DeleteNftByIndexP{
-		AppID:   h.AppID(ctx),
+		ChainId: h.ChainID(ctx),
 		ClassId: h.ClassId(ctx),
 		Sender:  h.Owner(ctx),
 		Index:   index,
@@ -275,7 +275,7 @@ func (h nft) DeleteNftByBatch(ctx context.Context, _ interface{}) (interface{}, 
 	//check end
 
 	params := dto.DeleteNftByBatchP{
-		AppID:   h.AppID(ctx),
+		ChainId: h.ChainID(ctx),
 		ClassId: h.ClassId(ctx),
 		Sender:  h.Owner(ctx),
 		Indices: indices,
@@ -292,7 +292,7 @@ func (h nft) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 	}
 	// 校验参数 start
 	params := dto.NftsP{
-		AppID:   h.AppID(ctx),
+		ChainId: h.ChainID(ctx),
 		Id:      h.Id(ctx),
 		ClassId: h.ClassId(ctx),
 		Owner:   h.Owner(ctx),
@@ -370,7 +370,7 @@ func (h nft) NftByIndex(ctx context.Context, _ interface{}) (interface{}, error)
 
 	//check end
 	params := dto.NftByIndexP{
-		AppID:   h.AppID(ctx),
+		ChainId: h.ChainID(ctx),
 		ClassId: h.ClassId(ctx),
 		Index:   index,
 	}
@@ -395,7 +395,7 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, _ interface{}) (int
 	params := dto.NftOperationHistoryByIndexP{
 		ClassID: h.ClassId(ctx),
 		Index:   index,
-		AppID:   h.AppID(ctx),
+		ChainId: h.ChainID(ctx),
 	}
 
 	offset, err := h.Offset(ctx)

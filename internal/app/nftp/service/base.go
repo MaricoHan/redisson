@@ -67,9 +67,11 @@ func (m Base) BuildAndSend(msgs sdktype.Msgs, baseTx sdktype.BaseTx) (sdktype.Re
 
 // TxIntoDataBase operationType : issue_class,mint_nft,edit_nft,edit_nft_batch,burn_nft,burn_nft_batch
 func (m Base) TxIntoDataBase(ChainId uint64, txHash string, signedData []byte, operationType, status string, message []byte, sender, taskId string, gas int64, exec boil.ContextExecutor) (uint64, error) {
+func (m Base) TxIntoDataBase(ChainID uint64, txHash string, signedData []byte, operationType string, status string, message []byte, sender, taskId string, gas int64, exec boil.ContextExecutor) (uint64, error) {
 	// Tx into database
 	ttx := models.TTX{
 		ChainID:       ChainId,
+		ChainID:       ChainID,
 		Hash:          txHash,
 		OriginData:    null.BytesFrom(signedData),
 		OperationType: operationType,
@@ -171,7 +173,7 @@ Estimated gas required to transfer denom
 It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048356
 */
 func (m Base) transferDenomGas(class *models.TClass) uint64 {
-	l := len([]byte(class.ClassID)) + len([]byte(class.Status)) + len([]byte(class.Owner)) + len([]byte(class.TXHash)) + len([]byte(string(class.AppID))) + len([]byte(string(class.ID))) + len([]byte(string(class.Offset)))
+	l := len([]byte(class.ClassID)) + len([]byte(class.Status)) + len([]byte(class.Owner)) + len([]byte(class.TXHash)) + len([]byte(string(class.ChainID))) + len([]byte(string(class.ID))) + len([]byte(string(class.Offset)))
 	if class.LockedBy.Valid {
 		l += len([]byte(string(class.LockedBy.Uint64)))
 	}

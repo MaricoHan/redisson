@@ -26,21 +26,21 @@ type EditNft struct {
 }
 
 type DeleteNftByIndexP struct {
-	AppID   uint64 `json:"app_id"`
+	ChainId uint64 `json:"chain_id"`
 	ClassId string `json:"class_id"`
 	Sender  string `json:"owner"`
 	Index   uint64 `json:"index"`
 }
 
 type DeleteNftByBatchP struct {
-	AppID   uint64   `json:"app_id"`
+	ChainId uint64   `json:"chain_id"`
 	ClassId string   `json:"class_id"`
 	Sender  string   `json:"owner"`
 	Indices []uint64 `json:"indices"`
 }
 
 type NftByIndexP struct {
-	AppID   uint64 `json:"app_id"`
+	ChainId uint64 `json:"chain_id"`
 	Index   uint64 `json:"index"`
 	ClassId string `json:"class_id"`
 }
@@ -67,7 +67,7 @@ type NftsP struct {
 	Owner   string `json:"owner"`
 	TxHash  string `json:"tx_hash"`
 	Status  string `json:"status"`
-	AppID   uint64 `json:"app_id"`
+	ChainId uint64 `json:"chain_id"`
 }
 
 type NftsRes struct {
@@ -114,7 +114,7 @@ type NftOperationHistoryByIndexP struct {
 	Signer    string `json:"signer"`
 	Txhash    string `json:"tx_hash"`
 	Operation string `json:"operation"`
-	AppID     uint64 `json:"app_id"`
+	ChainId   uint64 `json:"chain_id"`
 }
 
 type BNftOperationHistoryByIndexRes struct {
