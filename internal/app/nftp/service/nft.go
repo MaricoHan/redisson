@@ -262,10 +262,7 @@ func (svc *Nft) EditNftByIndex(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	result := &dto.TxRes{}
-	result.TxHash = txHash
-	return result, nil
+	return &dto.TxRes{TxHash: taskId}, nil
 }
 
 func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (*dto.TxRes, error) {
@@ -593,9 +590,7 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (*dto.TxRes, erro
 		return nil, err
 	}
 
-	result := &dto.TxRes{}
-	result.TxHash = txHash
-	return result, nil
+	return &dto.TxRes{TxHash: txHash}, nil
 }
 
 func (svc *Nft) NftByNftId(params dto.NftByNftIdP) (*dto.NftR, error) {
