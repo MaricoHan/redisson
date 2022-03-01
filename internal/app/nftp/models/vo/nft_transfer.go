@@ -7,7 +7,7 @@ type TransferNftClassByIDRequest struct {
 	Recipient string `json:"recipient" validate:"required"`
 }
 
-type TransferNftByIndexRequest struct {
+type TransferNftByNftIdRequest struct {
 	Base
 	Recipient string `json:"recipient" validate:"required"`
 }

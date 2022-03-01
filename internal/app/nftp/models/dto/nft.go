@@ -1,7 +1,7 @@
 package dto
 
-type EditNftByIndexP struct {
-	Index uint64 `json:"index"`
+type EditNftByNftIdP struct {
+	NftId string `json:"nft_id"`
 	Name  string `json:"name"`
 	Uri   string `json:"uri"`
 	Data  string `json:"data"`
@@ -19,7 +19,7 @@ type EditNftByBatchP struct {
 }
 
 type EditNft struct {
-	Index uint64 `json:"index" validate:"required"`
+	NftId string `json:"nft_id" validate:"required"`
 	Name  string `json:"name" validate:"required"`
 	Uri   string `json:"uri"`
 	Data  string `json:"data"`
@@ -29,24 +29,23 @@ type DeleteNftByIndexP struct {
 	ChainId uint64 `json:"chain_id"`
 	ClassId string `json:"class_id"`
 	Sender  string `json:"owner"`
-	Index   uint64 `json:"index"`
+	NftId   string `json:"nft_id"`
 }
 
 type DeleteNftByBatchP struct {
 	ChainId uint64   `json:"chain_id"`
 	ClassId string   `json:"class_id"`
 	Sender  string   `json:"owner"`
-	Indices []uint64 `json:"indices"`
+	NftIds  []string `json:"nft_ids"`
 }
 
-type NftByIndexP struct {
+type NftByNftIdP struct {
 	ChainId uint64 `json:"chain_id"`
-	Index   uint64 `json:"index"`
+	NftId   string `json:"nft_id"`
 	ClassId string `json:"class_id"`
 }
 type NftR struct {
 	Id          string `json:"id"`
-	Index       uint64 `json:"index"`
 	Name        string `json:"name"`
 	ClassId     string `json:"class_id"`
 	ClassName   string `json:"class_name"`
@@ -77,7 +76,6 @@ type NftsRes struct {
 
 type Nft struct {
 	Id          string `json:"id"`
-	Index       uint64 `json:"index"`
 	Name        string `json:"name"`
 	ClassId     string `json:"class_id"`
 	ClassName   string `json:"class_name"`
@@ -106,10 +104,10 @@ type CreateNftsRequest struct {
 	Recipient string `json:"recipient"`
 }
 
-type NftOperationHistoryByIndexP struct {
+type NftOperationHistoryByNftIdP struct {
 	PageP
 	ClassID   string `json:"class_id"`
-	Index     uint64 `json:"index"`
+	NftId     string `json:"nft_id"`
 	Signer    string `json:"signer"`
 	Txhash    string `json:"tx_hash"`
 	Operation string `json:"operation"`
