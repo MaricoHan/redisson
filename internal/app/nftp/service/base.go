@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
-	cm "github.com/cosmos/cosmos-sdk/types"
 	sdk "github.com/irisnet/core-sdk-go"
 	"github.com/irisnet/core-sdk-go/bank"
 	"github.com/irisnet/core-sdk-go/feegrant"
@@ -298,7 +297,7 @@ func (m Base) createAccount(count int64) uint64 {
 	return uint64(u)
 }
 
-func (m Base) UseGrantedFees(address string,msg []sdktype.Msg) ([]byte, string, error) {
+func (m Base) Grant(address string) ([]byte, string, error) {
 	//platform address
 	classOne, err := models.TAccounts(
 		models.TAccountWhere.AppID.EQ(uint64(0)),
@@ -308,13 +307,21 @@ func (m Base) UseGrantedFees(address string,msg []sdktype.Msg) ([]byte, string, 
 	}
 	pAddress := classOne.Address
 
-	granter, _ := cm.AccAddressFromBech32(pAddress)
-	grantee, _ := cm.AccAddressFromBech32(address)
-	atom := sdktype.NewCoins(sdktype.NewInt64Coin("ugas", 400000000))
+	granter, _ := sdktype.AccAddressFromBech32(pAddress)
+	grantee, _ := sdktype.AccAddressFromBech32(address)
+
 	var grant feegrant.FeeAllowanceI
 
-	grant.Accept(atom,msg)
-	msgGrant, _ := feegrant.NewMsgGrantAllowance(grant, sdktype.AccAddress(granter), sdktype.AccAddress(grantee))
+	basic := feegrant.BasicAllowance{
+		SpendLimit: sdktype.NewCoins(sdktype.NewCoin("ugas", sdktype.NewInt(400000000))),
+	}
+
+	grant = &basic
+
+	msgGrant, err := feegrant.NewMsgGrantAllowance(grant, sdktype.AccAddress(granter), sdktype.AccAddress(grantee))
+	if err != nil {
+		return nil,"",types.ErrInternal
+	}
 
 	baseTx := m.CreateBaseTx(pAddress, defultKeyPassword)
 

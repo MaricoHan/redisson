@@ -1,4 +1,4 @@
-#!/usr/bin/make -f
+    #!/usr/bin/make -f
 
 build: go.sum
 ifeq ($(OS),Windows_NT)
