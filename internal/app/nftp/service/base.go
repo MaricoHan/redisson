@@ -29,26 +29,25 @@ func SqlNoFound() string {
 	return "records not exist"
 }
 
-func QueryRootAccount() (string, *types.AppError) {
-	//platform address
-	classOne, err := models.TAccounts(
-		models.TAccountWhere.ChainID.EQ(uint64(0)),
-	).OneG(context.Background())
-	if err != nil {
-		//500
-		log.Error("create account", "query root error:", err.Error())
-		return "", types.ErrInternal
-	}
-	pAddress := classOne.Address
-	return pAddress, nil
-}
-
 func NewBase(sdkClient sdk.Client, gas uint64, denom string, amount int64) *Base {
 	return &Base{
 		sdkClient: sdkClient,
 		gas:       gas,
 		coins:     sdktype.NewDecCoins(sdktype.NewDecCoin(denom, sdktype.NewInt(amount))),
 	}
+}
+
+func (m Base) QueryRootAccount() (*models.TAccount, *types.AppError) {
+	//platform address
+	account, err := models.TAccounts(
+		models.TAccountWhere.ChainID.EQ(uint64(0)),
+	).OneG(context.Background())
+	if err != nil {
+		//500
+		log.Error("create account", "query root error:", err.Error())
+		return nil, types.ErrInternal
+	}
+	return account, nil
 }
 
 func (m Base) CreateBaseTx(keyName, keyPassword string) sdktype.BaseTx {
@@ -63,11 +62,11 @@ func (m Base) CreateBaseTx(keyName, keyPassword string) sdktype.BaseTx {
 }
 
 func (m Base) BuildAndSign(msgs sdktype.Msgs, baseTx sdktype.BaseTx) ([]byte, string, error) {
-	pAddress, error := QueryRootAccount()
+	root, error := m.QueryRootAccount()
 	if error != nil {
 		return nil, "", error
 	}
-	baseTx.FeePayer = sdktype.AccAddress(pAddress)
+	baseTx.FeePayer = sdktype.AccAddress(root.Address)
 	sigData, err := m.sdkClient.BuildAndSign(msgs, baseTx)
 	if err != nil {
 		return nil, "", err
@@ -323,17 +322,17 @@ func (m Base) createAccount(count int64) uint64 {
 }
 
 func (m Base) Grant(address string) (string, error) {
-	pAddress, error := QueryRootAccount()
+	root, error := m.QueryRootAccount()
 	if error != nil {
 		return "", error
 	}
-	granter, _ := sdktype.AccAddressFromBech32(pAddress)
+	granter, _ := sdktype.AccAddressFromBech32(root.Address)
 	grantee, _ := sdktype.AccAddressFromBech32(address)
 
 	var grant feegrant.FeeAllowanceI
 
 	basic := feegrant.BasicAllowance{
-		SpendLimit: sdktype.NewCoins(sdktype.NewCoin("ugas", sdktype.NewInt(400000000))),
+		SpendLimit: nil,
 	}
 
 	grant = &basic
@@ -341,15 +340,15 @@ func (m Base) Grant(address string) (string, error) {
 	msgGrant, err := feegrant.NewMsgGrantAllowance(grant, granter, grantee)
 	if err != nil {
 		//500
-		log.Error("create account", "msg grant allowance error:", err.Error())
+		log.Error("base account", "msg grant allowance error:", err.Error())
 		return "", types.ErrInternal
 	}
 
-	baseTx := m.CreateBaseTx(pAddress, defultKeyPassword)
+	baseTx := m.CreateBaseTx(root.Address, defultKeyPassword)
 	res, err := m.BuildAndSend(sdktype.Msgs{msgGrant}, baseTx)
 	if err != nil {
 		//500
-		log.Error("create account", "fee grant error:", err.Error())
+		log.Error("base account", "fee grant error:", err.Error())
 		return "", types.ErrInternal
 	}
 
