@@ -439,6 +439,8 @@ github.com/inconshreveable/mousetrap v1.0.0 h1:Z8tu5sraLXCXIcARxBp/8cbvlwVa7Z1NH
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
 github.com/influxdata/influxdb1-client v0.0.0-20191209144304-8bf82d3c094d/go.mod h1:qj24IKcXYK6Iy9ceXlo3Tc+vtHo9lIhSX5JddghvEPo=
 github.com/irisnet/core-sdk-go v0.0.0-20210719031639-9c6ece68d908/go.mod h1:ODgRsJ1Vo+OQ9CENiYoMPJvXx5eTTAsbD4SG59hhnmM=
+github.com/irisnet/core-sdk-go v0.0.0-20220302014019-aedb63451688 h1:5jyKl/Y8+YnzlfeggIteSKlSa/kWtUPGdMErNM1Oo+Y=
+github.com/irisnet/core-sdk-go v0.0.0-20220302014019-aedb63451688/go.mod h1:hnw9i3UK2OkXakXml5AAq3voH36LomiLyyUHimOLcRg=
 github.com/irisnet/irismod-sdk-go/nft v0.0.0-20220121065225-0b70859f7bed h1:mWOOHPdXXDzavX1LjhJ3q19Qa2GSO6iPlX9onXBotKo=
 github.com/irisnet/irismod-sdk-go/nft v0.0.0-20220121065225-0b70859f7bed/go.mod h1:m3/Te6sMvO9PansYSvcKE0m+/ZPyC/cTjwWbJN6fTfo=
 github.com/jessevdk/go-flags v0.0.0-20141203071132-1679536dcc89/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
@@ -946,7 +948,6 @@ golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a/go.mod h1:RxMgew5VJxzue5/jJ
 golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
 golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
 golang.org/x/sync v0.0.0-20201207232520-09787c993a3a/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
-golang.org/x/sync v0.0.0-20210220032951-036812b2e83c h1:5KslGYwFpkhGh+Q16bwMP3cOontH8FOep7tGV86Y7SQ=
 golang.org/x/sync v0.0.0-20210220032951-036812b2e83c/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
 golang.org/x/sys v0.0.0-20180823144017-11551d06cbcc/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20180830151530-49385e6e1522/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
