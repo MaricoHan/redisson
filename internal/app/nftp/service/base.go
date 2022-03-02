@@ -326,9 +326,18 @@ func (m Base) Grant(address string) (string, error) {
 	if error != nil {
 		return "", error
 	}
-	granter, _ := sdktype.AccAddressFromBech32(root.Address)
-	grantee, _ := sdktype.AccAddressFromBech32(address)
-
+	granter, errs := sdktype.AccAddressFromBech32(root.Address)
+	if errs != nil {
+		//500
+		log.Error("base account", "granter format error:", errs.Error())
+		return "", types.ErrInternal
+	}
+	grantee, errs := sdktype.AccAddressFromBech32(address)
+	if errs != nil {
+		//500
+		log.Error("base account", "grantee format error:", errs.Error())
+		return "", types.ErrInternal
+	}
 	var grant feegrant.FeeAllowanceI
 
 	basic := feegrant.BasicAllowance{
