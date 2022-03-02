@@ -28,9 +28,9 @@ func (c NftController) GetEndpoints() []kit.Endpoint {
 			Handler: c.makeHandler(c.handler.CreateNft, &vo.CreateNftsRequest{}),
 		},
 		kit.Endpoint{
-			URI:     "/nft/nfts/{class_id}/{owner}/{index}",
+			URI:     "/nft/nfts/{class_id}/{owner}/{nft_id}",
 			Method:  http.MethodPatch,
-			Handler: c.makeHandler(c.handler.EditNftByIndex, &vo.EditNftByIndexRequest{}),
+			Handler: c.makeHandler(c.handler.EditNftByNftId, &vo.EditNftByIndexRequest{}),
 		},
 		//批量接口暂不开放
 		//kit.Endpoint{
@@ -39,7 +39,7 @@ func (c NftController) GetEndpoints() []kit.Endpoint {
 		//	Handler: c.makeHandler(c.handler.EditNftByBatch, &vo.EditNftByBatchRequest{}),
 		//},
 		kit.Endpoint{
-			URI:     "/nft/nfts/{class_id}/{owner}/{index}",
+			URI:     "/nft/nfts/{class_id}/{owner}/{nft_id}",
 			Method:  http.MethodDelete,
 			Handler: c.makeHandler(c.handler.DeleteNftByIndex, nil),
 		},
@@ -55,12 +55,12 @@ func (c NftController) GetEndpoints() []kit.Endpoint {
 			Handler: c.makeHandler(c.handler.Nfts, nil),
 		},
 		kit.Endpoint{
-			URI:     "/nft/nfts/{class_id}/{index}",
+			URI:     "/nft/nfts/{class_id}/{nft_id}",
 			Method:  http.MethodGet,
 			Handler: c.makeHandler(c.handler.NftByIndex, nil),
 		},
 		kit.Endpoint{
-			URI:     "/nft/nfts/{class_id}/{index}/history",
+			URI:     "/nft/nfts/{class_id}/{nft_id}/history",
 			Method:  http.MethodGet,
 			Handler: c.makeHandler(c.handler.NftOperationHistoryByIndex, nil),
 		},

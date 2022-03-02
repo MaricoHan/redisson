@@ -140,7 +140,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	return &dto.TxRes{TxHash: taskId}, nil
 }
 
-func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (*dto.TxRes, error) {
+func (svc *NftTransfer) TransferNftByNftId(params dto.TransferNftByNftIdP) (*dto.TxRes, error) {
 	//不能自己转让给自己
 	//400
 	if params.Recipient == params.Owner {
@@ -162,7 +162,8 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (*dto
 	}
 
 	//msg
-	res, err := models.TNFTS(models.TNFTWhere.Index.EQ(params.Index),
+	res, err := models.TNFTS(
+		models.TNFTWhere.NFTID.EQ(params.NftId),
 		models.TNFTWhere.ClassID.EQ(string(params.ClassID)),
 		models.TNFTWhere.ChainID.EQ(params.ChainId),
 		models.TNFTWhere.Owner.EQ(params.Owner),
@@ -259,19 +260,19 @@ func (svc *NftTransfer) TransferNftByIndex(params dto.TransferNftByIndexP) (*dto
 }
 
 func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (*dto.TxRes, error) {
-	indexMap := map[uint64]int{}
+	nftIdMap := map[string]int{}
 	var msgs sdktype.Msgs
 	var amount uint64
 	for i, modelResult := range params.Recipients {
 		recipient := &dto.Recipient{
-			Index:     modelResult.Index,
+			NftId:     modelResult.NftId,
 			Recipient: modelResult.Recipient,
 		}
 		recipient.Recipient = strings.TrimSpace(recipient.Recipient)
 
 		//index校验 400
-		if recipient.Index == 0 {
-			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrIndexLen+" or "+types.ErrIndexInt)
+		if recipient.NftId == "" {
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrNftIdLen+" or "+types.ErrNftIdString)
 		}
 
 		//recipient不能为空 400
@@ -303,12 +304,12 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (*dto
 			return nil, types.ErrInternal
 		}
 
-		//判断index是否重复
-		if _, ok := indexMap[recipient.Index]; ok {
+		//判断nft_id是否重复
+		if _, ok := nftIdMap[recipient.NftId]; ok {
 			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrRepeat)
 		}
 
-		res, err := models.TNFTS(models.TNFTWhere.Index.EQ(recipient.Index),
+		res, err := models.TNFTS(models.TNFTWhere.NFTID.EQ(recipient.NftId),
 			models.TNFTWhere.ClassID.EQ(params.ClassID),
 			models.TNFTWhere.ChainID.EQ(params.ChainId),
 			models.TNFTWhere.Owner.EQ(params.Owner),
@@ -345,7 +346,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (*dto
 			UriHash:   res.URIHash.String,
 		}
 		msgs = append(msgs, &msg)
-		indexMap[recipient.Index] = 0
+		nftIdMap[recipient.NftId] = 0
 		amount += 1
 	}
 
@@ -392,20 +393,20 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (*dto
 
 		for j, modelResultR := range params.Recipients {
 			recipient := &dto.Recipient{
-				Index:     modelResultR.Index,
+				NftId:     modelResultR.NftId,
 				Recipient: modelResultR.Recipient,
 			}
 			recipient.Recipient = strings.TrimSpace(recipient.Recipient)
 			//index校验 400
-			if recipient.Index == 0 {
-				return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", j+1)+"th "+types.ErrIndexInt)
+			if recipient.NftId == "" {
+				return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", j+1)+"th "+types.ErrNftIdString)
 			}
 
 			//recipient不能为空 400
 			if recipient.Recipient == "" {
 				return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", j+1)+types.ErrRecipient)
 			}
-			res, err := models.TNFTS(models.TNFTWhere.Index.EQ(recipient.Index),
+			res, err := models.TNFTS(models.TNFTWhere.NFTID.EQ(recipient.NftId),
 				models.TNFTWhere.ClassID.EQ(params.ClassID),
 				models.TNFTWhere.ChainID.EQ(params.ChainId),
 				models.TNFTWhere.Owner.EQ(params.Owner),

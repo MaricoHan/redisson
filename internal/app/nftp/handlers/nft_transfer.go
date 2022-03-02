@@ -16,7 +16,7 @@ import (
 
 type INftTransfer interface {
 	TransferNftClassByID(ctx context.Context, _ interface{}) (interface{}, error)
-	TransferNftByIndex(ctx context.Context, _ interface{}) (interface{}, error)
+	TransferNftByNftId(ctx context.Context, _ interface{}) (interface{}, error)
 	TransferNftByBatch(ctx context.Context, _ interface{}) (interface{}, error)
 }
 
@@ -59,10 +59,10 @@ func (h nftTransfer) TransferNftClassByID(ctx context.Context, request interface
 	return h.svc.TransferNftClassByID(params)
 }
 
-// TransferNftByIndex transfer an nft class by index
-func (h nftTransfer) TransferNftByIndex(ctx context.Context, request interface{}) (interface{}, error) {
+// TransferNftByNftId transfer an nft class by index
+func (h nftTransfer) TransferNftByNftId(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
-	req := request.(*vo.TransferNftByIndexRequest)
+	req := request.(*vo.TransferNftByNftIdRequest)
 	recipient := strings.TrimSpace(req.Recipient)
 	if recipient == "" {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipient)
@@ -75,23 +75,18 @@ func (h nftTransfer) TransferNftByIndex(ctx context.Context, request interface{}
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
 	}
 
-	index, err := h.Index(ctx)
-	if err != nil {
-		return nil, err
+	if len([]rune(recipient)) > 128 {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientLen)
 	}
-	if index == 0 {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrIndexInt)
-	}
-
-	params := dto.TransferNftByIndexP{
+	params := dto.TransferNftByNftIdP{
 		ClassID:   h.ClassID(ctx),
 		Owner:     h.Owner(ctx),
-		Index:     index,
+		NftId:     h.NftId(ctx),
 		Recipient: recipient,
 		ChainId:   h.ChainID(ctx),
 	}
 	// 校验参数 end
-	return h.svc.TransferNftByIndex(params)
+	return h.svc.TransferNftByNftId(params)
 }
 
 // TransferNftByBatch return class list
@@ -130,16 +125,10 @@ func (h nftTransfer) Owner(ctx context.Context) string {
 	return owner.(string)
 }
 
-func (h nftTransfer) Index(ctx context.Context) (uint64, error) {
-	rec := ctx.Value("index")
-	if rec == nil {
-		return 0, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrIndexLen)
+func (h nftTransfer) NftId(ctx context.Context) string {
+	nftId := ctx.Value("nft_id")
+	if nftId == nil {
+		return ""
 	}
-	index, err := strconv.ParseUint(rec.(string), 10, 64)
-	if err != nil {
-		return 0, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrIndex)
-	}
-
-	// return index
-	return index, nil
+	return nftId.(string)
 }
