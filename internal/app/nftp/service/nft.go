@@ -117,7 +117,6 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsRequest) (*dto.TxRes, error) {
 			}
 		}
 
-		//transferInfo
 		msgsByte, _ := json.Marshal(msgs)
 		code := fmt.Sprintf("%s%s%s", params.Recipient, models.TTXSOperationTypeMintNFT, time.Now().String())
 		taskId = svc.base.EncodeData(code)

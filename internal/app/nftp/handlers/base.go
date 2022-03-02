@@ -15,16 +15,6 @@ type base struct {
 }
 
 func (h base) ChainID(ctx context.Context) uint64 {
-	keysList := ctx.Value("X-App-Id")
-	keysListString, ok := keysList.([]string)
-	if !ok {
-		return 0
-	}
-	ChainID, _ := strconv.ParseInt(keysListString[0], 10, 64)
-	return uint64(ChainID)
-}
-
-func (h base) ChainID(ctx context.Context) uint64 {
 	rec := ctx.Value("chain_id")
 	chainId, ok := rec.(string)
 	if !ok {
