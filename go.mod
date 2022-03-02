@@ -12,7 +12,7 @@ require (
 	github.com/go-playground/validator/v10 v10.10.0
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/gorilla/mux v1.8.0
-	github.com/irisnet/core-sdk-go v0.0.0-20220302014019-aedb63451688
+	github.com/irisnet/core-sdk-go v0.0.0-20220302175731-8770d7dce833
 	github.com/irisnet/irismod-sdk-go/nft v0.0.0-20220121065225-0b70859f7bed
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.10.0
