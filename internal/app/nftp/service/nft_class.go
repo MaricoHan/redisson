@@ -38,11 +38,12 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, err
 	_, err := models.TAccounts(
 		models.TAccountWhere.ChainID.EQ(params.ChainId),
 		models.TAccountWhere.Address.EQ(params.Owner)).OneG(context.Background())
-	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
-		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
-		//400
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOwnerFound)
-	} else if err != nil {
+
+	if err != nil {
+		if errors.Cause(err) == sql.ErrNoRows || strings.Contains(err.Error(), SqlNoFound()) {
+			//400
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOwnerFound)
+		}
 		//500
 		log.Error("create nft class", "query owner error:", err.Error())
 		return nil, types.ErrInternal
@@ -104,9 +105,9 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, err
 		}
 	}
 
-	//transferInfo
 	message := []interface{}{createDenomMsg, transferDenomMsg}
-	messageByte, _ := json.Marshal(message)
+	messageBytes, _ := json.Marshal(message)
+	tagBytes, _ := json.Marshal(params.Tag)
 	code := fmt.Sprintf("%s%s%s", params.Owner, models.TTXSOperationTypeIssueClass, time.Now().String())
 	taskId := svc.base.EncodeData(code)
 	ttx := models.TTX{
@@ -115,11 +116,12 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, err
 		Sender:        null.StringFrom(params.Owner),
 		Timestamp:     null.Time{Time: time.Now()},
 		OriginData:    null.BytesFromPtr(&originData),
-		Message:       null.JSONFrom(messageByte),
+		Message:       null.JSONFrom(messageBytes),
 		TaskID:        null.StringFrom(taskId),
 		GasUsed:       null.Int64From(int64(baseTx.Gas)),
 		OperationType: models.TTXSOperationTypeIssueClass,
 		Status:        models.TTXSStatusUndo,
+		Tag:           null.JSONFrom(tagBytes),
 	}
 	err = ttx.InsertG(context.Background(), boil.Infer())
 	if err != nil {
