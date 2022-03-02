@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	types2 "github.com/irisnet/core-sdk-go/types"
-	"strconv"
 	"strings"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
