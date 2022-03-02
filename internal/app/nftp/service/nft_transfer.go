@@ -106,12 +106,10 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 		messageByte, _ := json.Marshal(msgs)
 		code := fmt.Sprintf("%s%s%s", params.Owner, models.TTXSOperationTypeTransferClass, time.Now().String())
 		taskId = svc.base.EncodeData(code)
-		//txs status = undo
-		txId, err := svc.base.TxIntoDataBase(params.ChainId,
-			hash,
-			data,
-			models.TTXSOperationTypeTransferClass,
-			models.TTXSStatusUndo, messageByte, params.Owner, taskId, int64(baseTx.Gas), exec)
+		// Tx into database
+		txId, err := svc.base.UndoTxIntoDataBase(params.Owner, models.TTXSOperationTypeTransferClass, taskId, hash,
+			params.ChainId, data, messageByte, nil, int64(baseTx.Gas), exec)
+
 		if err != nil {
 			log.Debug("transfer nft class", "Tx Into DataBase error:", err.Error())
 			return err
@@ -229,12 +227,10 @@ func (svc *NftTransfer) TransferNftByNftId(params dto.TransferNftByNftIdP) (*dto
 		messageByte, _ := json.Marshal(msgs)
 		code := fmt.Sprintf("%s%s%s", params.Owner, models.TTXSOperationTypeTransferNFT, time.Now().String())
 		taskId = svc.base.EncodeData(code)
-		//写入txs status = undo
-		txId, err := svc.base.TxIntoDataBase(params.ChainId,
-			hash,
-			data,
-			models.TTXSOperationTypeTransferNFT,
-			models.TTXSStatusUndo, messageByte, params.Owner, taskId, int64(baseTx.Gas), exec)
+
+		// Tx into database
+		txId, err := svc.base.UndoTxIntoDataBase(params.Owner, models.TTXSOperationTypeTransferNFT, taskId, hash,
+			params.ChainId, data, messageByte, nil, int64(baseTx.Gas), exec)
 
 		if err != nil {
 			log.Debug("transfer nft by index", "Tx Into DataBase error:", err.Error())
@@ -380,12 +376,11 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (*dto
 		messageByte, _ := json.Marshal(msgs)
 		code := fmt.Sprintf("%s%s%s", params.Owner, models.TTXSOperationTypeTransferNFTBatch, time.Now().String())
 		taskId = svc.base.EncodeData(code)
-		//写入txs status = undo
-		txId, err := svc.base.TxIntoDataBase(params.ChainId,
-			hash,
-			data,
-			models.TTXSOperationTypeTransferNFTBatch,
-			models.TTXSStatusUndo, messageByte, params.Owner, taskId, int64(baseTx.Gas), exec)
+
+		// Tx into database
+		txId, err := svc.base.UndoTxIntoDataBase(params.Owner, models.TTXSOperationTypeTransferNFTBatch, taskId, hash,
+			params.ChainId, data, messageByte, nil, int64(baseTx.Gas), exec)
+
 		if err != nil {
 			log.Debug("transfer nft by batch", "Tx Into DataBase error:", err.Error())
 			return err

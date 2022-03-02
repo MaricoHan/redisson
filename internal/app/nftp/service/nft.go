@@ -247,7 +247,7 @@ func (svc *Nft) EditNftByNftId(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 		taskId = svc.base.EncodeData(code)
 
 		// Tx into database
-		txId, err := svc.base.TxIntoDataBase(params.Sender, models.TTXSOperationTypeEditNFT, taskId, txHash,
+		txId, err := svc.base.UndoTxIntoDataBase(params.Sender, models.TTXSOperationTypeEditNFT, taskId, txHash,
 			params.ChainId, signedData, messageByte, tagBytes, int64(baseTx.Gas), exec)
 		if err != nil {
 			log.Debug("edit nft by nftId", "Tx into database error:", err.Error())
@@ -360,7 +360,7 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (*dto.TxRes, error) {
 		messageByte, _ := json.Marshal(msgEditNFTs)
 		code := fmt.Sprintf("%s%s%s", params.Sender, models.TTXSOperationTypeEditNFTBatch, time.Now().String())
 		taskId = svc.base.EncodeData(code)
-		txId, err := svc.base.TxIntoDataBase(params.Sender, models.TTXSOperationTypeEditNFTBatch, taskId, txHash,
+		txId, err := svc.base.UndoTxIntoDataBase(params.Sender, models.TTXSOperationTypeEditNFTBatch, taskId, txHash,
 			params.ChainId, signedData, messageByte, nil, int64(baseTx.Gas), exec)
 		if err != nil {
 			log.Debug("edit nft by batch", "Tx into database error:", err.Error())
@@ -461,7 +461,7 @@ func (svc *Nft) DeleteNftByNftId(params dto.DeleteNftByNftIdP) (*dto.TxRes, erro
 		code := fmt.Sprintf("%s%s%s", params.Sender, models.TTXSOperationTypeBurnNFT, time.Now().String())
 		taskId = svc.base.EncodeData(code)
 		// Tx into database
-		txId, err := svc.base.TxIntoDataBase(params.Sender, models.TTXSOperationTypeBurnNFT, taskId, txHash,
+		txId, err := svc.base.UndoTxIntoDataBase(params.Sender, models.TTXSOperationTypeBurnNFT, taskId, txHash,
 			params.ChainId, signedData, messageByte, nil, int64(baseTx.Gas), exec)
 
 		if err != nil {
@@ -562,7 +562,7 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (*dto.TxRes, erro
 		code := fmt.Sprintf("%s%s%s", params.Sender, models.TTXSOperationTypeBurnNFTBatch, time.Now().String())
 		taskId = svc.base.EncodeData(code)
 		// Tx into database
-		txId, err := svc.base.TxIntoDataBase(params.Sender, models.TTXSOperationTypeBurnNFTBatch, taskId, txHash,
+		txId, err := svc.base.UndoTxIntoDataBase(params.Sender, models.TTXSOperationTypeBurnNFTBatch, taskId, txHash,
 			params.ChainId, signedData, messageByte, nil, int64(baseTx.Gas), exec)
 		if err != nil {
 			log.Debug("delete nft by batch", "Tx into database error:", err.Error())
