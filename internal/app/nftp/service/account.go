@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+
+	"strings"
+
 	sdkcrypto "github.com/irisnet/core-sdk-go/common/crypto"
 	"github.com/irisnet/core-sdk-go/common/crypto/codec"
 	"github.com/irisnet/core-sdk-go/common/crypto/hd"
@@ -17,7 +20,6 @@ import (
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"
-	"strings"
 )
 
 const algo = "secp256k1"

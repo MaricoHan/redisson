@@ -123,7 +123,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, err
 	}
 	err = ttx.InsertG(context.Background(), boil.Infer())
 	if err != nil {
-		return nil, err
+		return nil, types.ErrInternal
 	}
 	return &dto.TxRes{TxHash: taskId}, nil
 }

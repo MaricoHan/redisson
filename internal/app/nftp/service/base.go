@@ -5,6 +5,8 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
+	"strings"
+
 	sdk "github.com/irisnet/core-sdk-go"
 	"github.com/irisnet/core-sdk-go/bank"
 	"github.com/irisnet/core-sdk-go/feegrant"
@@ -15,7 +17,6 @@ import (
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
-	"strings"
 )
 
 type Base struct {
@@ -63,7 +64,7 @@ func (m Base) CreateBaseTx(keyName, keyPassword string) sdktype.BaseTx {
 
 func (m Base) BuildAndSign(msgs sdktype.Msgs, baseTx sdktype.BaseTx) ([]byte, string, error) {
 	pAddress, error := QueryRootAccount()
-	if error != nil{
+	if error != nil {
 		return nil, "", error
 	}
 	baseTx.FeePayer = sdktype.AccAddress(pAddress)
@@ -323,8 +324,8 @@ func (m Base) createAccount(count int64) uint64 {
 
 func (m Base) Grant(address string) (string, error) {
 	pAddress, error := QueryRootAccount()
-	if error != nil{
-		return "",error
+	if error != nil {
+		return "", error
 	}
 	granter, _ := sdktype.AccAddressFromBech32(pAddress)
 	grantee, _ := sdktype.AccAddressFromBech32(address)
