@@ -61,8 +61,6 @@ type (
 		LogLevel       string `mapstructure:"log_level"`
 		LogFormat      string `mapstructure:"log_format"`
 		Env            string `mapstructure:"app_env"`
-		BSNUrl         string `mapstructure:"bsn_url"`
-		BSNProjectId   string `mapstructure:"bsn_project_id"`
 		RouterPrefix   string `mapstructure:"router_prefix"`
 		SignatureAuth  bool   `mapstructure:"signature_auth"`
 	}
