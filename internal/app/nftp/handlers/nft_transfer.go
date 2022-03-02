@@ -2,13 +2,11 @@ package handlers
 
 import (
 	"context"
-	types2 "github.com/irisnet/core-sdk-go/types"
 	"strings"
 
+	types2 "github.com/irisnet/core-sdk-go/types"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
-
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
-
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 )
@@ -74,9 +72,6 @@ func (h nftTransfer) TransferNftByNftId(ctx context.Context, request interface{}
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
 	}
 
-	if len([]rune(recipient)) > 128 {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientLen)
-	}
 	params := dto.TransferNftByNftIdP{
 		ClassID:   h.ClassID(ctx),
 		Owner:     h.Owner(ctx),

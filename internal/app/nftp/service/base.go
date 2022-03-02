@@ -66,7 +66,7 @@ func (m Base) BuildAndSend(msgs sdktype.Msgs, baseTx sdktype.BaseTx) (sdktype.Re
 }
 
 // TxIntoDataBase operationType : issue_class,mint_nft,edit_nft,edit_nft_batch,burn_nft,burn_nft_batch
-func (m Base) TxIntoDataBase(sender, operationType, taskId, txHash string, ChainID uint64, signedData, message, tag []byte, gas int64, exec boil.ContextExecutor) (uint64, error) {
+func (m Base) TxIntoDataBase(sender, operationType, taskId, txHash string, ChainID uint64, signedData, message, tag []byte, gasUsed int64, exec boil.ContextExecutor) (uint64, error) {
 	// Tx into database
 	ttx := models.TTX{
 		ChainID:       ChainID,
@@ -77,7 +77,7 @@ func (m Base) TxIntoDataBase(sender, operationType, taskId, txHash string, Chain
 		Sender:        null.StringFrom(sender),
 		Message:       null.JSONFrom(message),
 		TaskID:        null.StringFrom(taskId),
-		GasUsed:       null.Int64From(gas),
+		GasUsed:       null.Int64From(gasUsed),
 		Tag:           null.JSONFrom(tag),
 	}
 	err := ttx.Insert(context.Background(), exec, boil.Infer())

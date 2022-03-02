@@ -118,7 +118,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsP) (*dto.TxRes, error) {
 			}
 		}
 
-		msgsByte, _ := json.Marshal(msgs)
+		msgsBytes, _ := json.Marshal(msgs)
 		tagBytes, _ := json.Marshal(params.Tag)
 		code := fmt.Sprintf("%s%s%s", params.Recipient, models.TTXSOperationTypeMintNFT, time.Now().String())
 		taskId = svc.base.EncodeData(code)
@@ -126,7 +126,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsP) (*dto.TxRes, error) {
 			ChainID:       params.ChainId,
 			Hash:          tHash,
 			Timestamp:     null.Time{Time: time.Now()},
-			Message:       null.JSONFrom(msgsByte),
+			Message:       null.JSONFrom(msgsBytes),
 			Sender:        null.StringFrom(params.Recipient),
 			TaskID:        null.StringFrom(taskId),
 			GasUsed:       null.Int64From(int64(baseTx.Gas)),
@@ -399,11 +399,11 @@ func (svc *Nft) DeleteNftByNftId(params dto.DeleteNftByNftIdP) (*dto.TxRes, erro
 		models.TNFTWhere.NFTID.EQ(params.NftId),
 		models.TNFTWhere.Owner.EQ(params.Sender)).
 		One(context.Background(), boil.GetContextDB())
-	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
-		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
-		//404
-		return nil, types.ErrNotFound
-	} else if err != nil {
+	if err != nil {
+		if errors.Cause(err) == sql.ErrNoRows || strings.Contains(err.Error(), SqlNoFound()) {
+			//404
+			return nil, types.ErrNotFound
+		}
 		//500
 		log.Error("delete nft by nftId", "query nft error:", err.Error())
 		return nil, types.ErrInternal
