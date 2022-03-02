@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/asaskevich/govalidator"
-
 	types2 "github.com/irisnet/core-sdk-go/types"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
