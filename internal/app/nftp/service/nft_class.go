@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"strconv"
 	"strings"
 	"time"
@@ -63,6 +64,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, err
 	var data = []byte(params.Owner)
 	data = append(data, []byte(params.Name)...)
 	data = append(data, []byte(strconv.FormatInt(time.Now().Unix(), 10))...)
+	data = append(data, []byte(fmt.Sprintf("%d", rand.Int()))...)
 	classId := nftp + strings.ToLower(hex.EncodeToString(tmhash.Sum(data)))
 
 	//txMsg, Platform side created
