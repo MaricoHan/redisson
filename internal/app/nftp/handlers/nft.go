@@ -52,9 +52,16 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 	uriHash := strings.TrimSpace(req.UriHash)
 	data := strings.TrimSpace(req.Data)
 	recipient := strings.TrimSpace(req.Recipient)
-	tagBytes, _ := json.Marshal(req.Tag)
-
-	tag := string(tagBytes)
+	var tagBytes []byte
+	if req.Tag != nil{
+		tagBytes, _ := json.Marshal(req.Tag)
+		tag := string(tagBytes)
+		if tag != "" {
+			if _, err := h.IsValTag(tag); err != nil {
+				return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
+			}
+		}
+	}
 
 	if name == "" {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrName)
@@ -78,11 +85,6 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 
 	if len([]rune(recipient)) > 128 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientLen)
-	}
-	if tag != "" {
-		if _, err := h.IsValTag(tag); err != nil {
-			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
-		}
 	}
 
 	// 若接收者地址不为空，则校验其格式；否则在service中将其默认设为NFT类别的权属者地址
@@ -121,10 +123,16 @@ func (h nft) EditNftByNftId(ctx context.Context, request interface{}) (interface
 	name := strings.TrimSpace(req.Name)
 	uri := strings.TrimSpace(req.Uri)
 	data := strings.TrimSpace(req.Data)
-	tagBytes, _ := json.Marshal(req.Tag)
-
-	tag := string(tagBytes)
-
+	var tagBytes []byte
+	if req.Tag != nil{
+		tagBytes, _ := json.Marshal(req.Tag)
+		tag := string(tagBytes)
+		if tag != "" {
+			if _, err := h.IsValTag(tag); err != nil {
+				return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
+			}
+		}
+	}
 	//check start
 	if name == "" {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrName)
@@ -140,11 +148,6 @@ func (h nft) EditNftByNftId(ctx context.Context, request interface{}) (interface
 	}
 	if _, err := h.IsValTag(tag); err != nil {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
-	}
-	if tag != "" {
-		if _, err := h.IsValTag(tag); err != nil {
-			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
-		}
 	}
 	//check end
 	params := dto.EditNftByNftIdP{

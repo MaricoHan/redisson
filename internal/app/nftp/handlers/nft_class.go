@@ -46,9 +46,18 @@ func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 	uriHash := strings.TrimSpace(req.UriHash)
 	data := strings.TrimSpace(req.Data)
 	owner := strings.TrimSpace(req.Owner)
-	tagBytes, _ := json.Marshal(req.Tag)
+	var tagBytes []byte
+	if req.Tag != nil{
+		tagBytes, _ := json.Marshal(req.Tag)
+		tag := string(tagBytes)
+		if tag != "" {
+			if _, err := h.IsValTag(tag); err != nil {
+				return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
+			}
+		}
+	}
 
-	tag := string(tagBytes)
+
 	if name == "" {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrName)
 	}
@@ -83,11 +92,6 @@ func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 
 	if len([]rune(owner)) > 128 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOwnerLen)
-	}
-	if tag != "" {
-		if _, err := h.IsValTag(tag); err != nil {
-			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
-		}
 	}
 
 	params := dto.CreateNftClassP{
