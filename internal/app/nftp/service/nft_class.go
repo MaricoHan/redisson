@@ -225,6 +225,9 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 	for _, modelResult := range modelResults {
 		var tag map[string]interface{}
 		err = modelResult.Tag.Unmarshal(&tag)
+		if err != nil {
+			return nil, err
+		}
 		nftClass := &dto.NftClass{
 			Id:        modelResult.ClassID,
 			Name:      modelResult.Name.String,
