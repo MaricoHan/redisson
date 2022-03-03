@@ -68,20 +68,6 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsP) (*dto.TxRes, error) {
 			if params.Recipient == "" {
 				//默认为 NFT 类别的权属者地址
 				params.Recipient = classOne.Owner
-			} else {
-				_, err := models.TAccounts(
-					models.TAccountWhere.ChainID.EQ(params.ChainId),
-					models.TAccountWhere.Address.EQ(params.Recipient)).OneG(context.Background())
-
-				if err != nil {
-					if errors.Cause(err) == sql.ErrNoRows || strings.Contains(err.Error(), SqlNoFound()) {
-						//404
-						return types.ErrNotFound
-					}
-					//500
-					log.Error("create nfts", "validate recipient error:", err.Error())
-					return types.ErrInternal
-				}
 			}
 			createNft := nft.MsgMintNFT{
 				Id:        nftId,
