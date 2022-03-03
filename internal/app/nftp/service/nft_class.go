@@ -54,7 +54,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, err
 		models.TAccountWhere.ChainID.EQ(uint64(0)),
 	).OneG(context.Background())
 	if err != nil {
-		log.Debug("create nft class", "query platform error:", err.Error())
+		log.Error("create nft class", "query platform error:", err.Error())
 		return nil, types.ErrInternal
 	}
 	pAddress := classOne.Address
@@ -125,7 +125,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, err
 	}
 	err = ttx.InsertG(context.Background(), boil.Infer())
 	if err != nil {
-		log.Debug("create nft class", "tx insert error:", err.Error())
+		log.Error("create nft class", "tx insert error:", err.Error())
 		return nil, types.ErrInternal
 	}
 	return &dto.TxRes{TaskId: taskId}, nil
