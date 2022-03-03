@@ -1,7 +1,7 @@
 package dto
 
 type TxResultByTxHashP struct {
-	Hash    string `json:"hash"`
+	TaskId    string `json:"task_id"`
 	ChainId uint64 `json:"chain_id"`
 }
 
