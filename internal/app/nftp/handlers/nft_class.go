@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	types2 "github.com/irisnet/core-sdk-go/types"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
@@ -89,7 +90,10 @@ func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 	if owner == "" {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOwner)
 	}
-
+	// 校验接收者地址是否满足当前链的地址规范
+	if err := types2.ValidateAccAddress(owner); err != nil {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
+	}
 	if len([]rune(owner)) > 128 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOwnerLen)
 	}
