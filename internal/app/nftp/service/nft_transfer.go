@@ -36,20 +36,6 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrSelfTransfer)
 	}
 
-	//recipient不能为平台外账户或此应用外账户或非法账户
-	_, err := models.TAccounts(
-		models.TAccountWhere.ChainID.EQ(params.ChainId),
-		models.TAccountWhere.Address.EQ(params.Recipient)).OneG(context.Background())
-	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
-		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
-		//400
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientFound)
-	} else if err != nil {
-		//500
-		log.Error("transfer nft class", "query recipient error:", err.Error())
-		return nil, types.ErrInternal
-	}
-
 	//判断class
 	class, err := models.TClasses(
 		models.TClassWhere.ClassID.EQ(params.ClassID),
@@ -143,20 +129,6 @@ func (svc *NftTransfer) TransferNftByNftId(params dto.TransferNftByNftIdP) (*dto
 	//400
 	if params.Recipient == params.Owner {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrSelfTransfer)
-	}
-
-	//recipient不能为平台外账户或此应用外账户或非法账户
-	_, err := models.TAccounts(
-		models.TAccountWhere.ChainID.EQ(params.ChainId),
-		models.TAccountWhere.Address.EQ(params.Recipient)).OneG(context.Background())
-	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
-		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
-		//400
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientFound)
-	} else if err != nil {
-		//500
-		log.Error("transfer nft", "query recipient error:", err.Error())
-		return nil, types.ErrInternal
 	}
 
 	//msg
@@ -284,20 +256,6 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (*dto
 		//400
 		if recipient.Recipient == params.Owner {
 			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrSelfTransfer)
-		}
-
-		//recipient不能为平台外账户或此应用外账户或非法账户
-		_, err := models.TAccounts(
-			models.TAccountWhere.ChainID.EQ(params.ChainId),
-			models.TAccountWhere.Address.EQ(recipient.Recipient)).OneG(context.Background())
-		if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
-			(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
-			//400
-			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrRecipientFound)
-		} else if err != nil {
-			//500
-			log.Error("transfer nft by batch", "query recipient error:", err.Error())
-			return nil, types.ErrInternal
 		}
 
 		//判断nft_id是否重复

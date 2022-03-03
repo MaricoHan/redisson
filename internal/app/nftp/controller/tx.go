@@ -22,7 +22,7 @@ func (c TxController) GetEndpoints() []kit.Endpoint {
 	var ends []kit.Endpoint
 	ends = append(ends,
 		kit.Endpoint{
-			URI:     "/tx/{hash}",
+			URI:     "/tx/{task_id}",
 			Method:  http.MethodGet,
 			Handler: c.makeHandler(c.handler.TxResultByTxHash, nil),
 		},
