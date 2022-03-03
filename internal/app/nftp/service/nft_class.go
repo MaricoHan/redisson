@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"strconv"
 	"strings"
 	"time"
@@ -59,81 +60,75 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, err
 	}
 	pAddress := classOne.Address
 
-	var taskId string
-	err = modext.Transaction(func(exec boil.ContextExecutor) error {
-		//new classId
-		var data = []byte(params.Owner)
-		data = append(data, []byte(params.Name)...)
-		data = append(data, []byte(strconv.FormatInt(time.Now().Unix(), 10))...)
-		classId := nftp + strings.ToLower(hex.EncodeToString(tmhash.Sum(data)))
+	//new classId
+	var data = []byte(params.Owner)
+	data = append(data, []byte(params.Name)...)
+	data = append(data, []byte(strconv.FormatInt(time.Now().Unix(), 10))...)
+	data = append(data, []byte(fmt.Sprintf("%d", rand.Int()))...)
+	classId := nftp + strings.ToLower(hex.EncodeToString(tmhash.Sum(data)))
 
-		//txMsg, Platform side created
-		baseTx := svc.base.CreateBaseTx(pAddress, defultKeyPassword)
-		createDenomMsg := nft.MsgIssueDenom{
-			Id:               classId,
-			Name:             params.Name,
-			Sender:           pAddress,
-			Symbol:           params.Symbol,
-			MintRestricted:   true,
-			UpdateRestricted: false,
-			Description:      params.Description,
-			Uri:              params.Uri,
-			UriHash:          params.UriHash,
-			Data:             params.Data,
-		}
-		transferDenomMsg := nft.MsgTransferDenom{
-			Id:        classId,
-			Sender:    pAddress,
-			Recipient: params.Owner,
-		}
-		originData, txHash, _ := svc.base.BuildAndSign(sdktype.Msgs{&createDenomMsg, &transferDenomMsg}, baseTx)
-		baseTx.Gas = svc.base.createDenomGas(originData)
+	//txMsg, Platform side created
+	baseTx := svc.base.CreateBaseTx(pAddress, defultKeyPassword)
+	createDenomMsg := nft.MsgIssueDenom{
+		Id:               classId,
+		Name:             params.Name,
+		Sender:           pAddress,
+		Symbol:           params.Symbol,
+		MintRestricted:   true,
+		UpdateRestricted: false,
+		Description:      params.Description,
+		Uri:              params.Uri,
+		UriHash:          params.UriHash,
+		Data:             params.Data,
+	}
+	transferDenomMsg := nft.MsgTransferDenom{
+		Id:        classId,
+		Sender:    pAddress,
+		Recipient: params.Owner,
+	}
+	originData, txHash, _ := svc.base.BuildAndSign(sdktype.Msgs{&createDenomMsg, &transferDenomMsg}, baseTx)
+	baseTx.Gas = svc.base.createDenomGas(originData)
+	originData, txHash, err = svc.base.BuildAndSign(sdktype.Msgs{&createDenomMsg, &transferDenomMsg}, baseTx)
+	if err != nil {
+		log.Debug("create nft class", "BuildAndSign error:", err.Error())
+		return nil, types.ErrBuildAndSign
+	}
+
+	//validate tx
+	txone, err := svc.base.ValidateTx(txHash)
+	if err != nil {
+		return nil, err
+	}
+	if txone != nil && txone.Status == models.TTXSStatusFailed {
+		baseTx.Memo = fmt.Sprintf("%d", txone.ID)
 		originData, txHash, err = svc.base.BuildAndSign(sdktype.Msgs{&createDenomMsg, &transferDenomMsg}, baseTx)
 		if err != nil {
 			log.Debug("create nft class", "BuildAndSign error:", err.Error())
-			return types.ErrBuildAndSign
+			return nil, types.ErrBuildAndSign
 		}
+	}
 
-		//validate tx
-		txone, err := svc.base.ValidateTx(txHash)
-		if err != nil {
-			return err
-		}
-		if txone != nil && txone.Status == models.TTXSStatusFailed {
-			baseTx.Memo = fmt.Sprintf("%d", txone.ID)
-			originData, txHash, err = svc.base.BuildAndSign(sdktype.Msgs{&createDenomMsg, &transferDenomMsg}, baseTx)
-			if err != nil {
-				log.Debug("create nft class", "BuildAndSign error:", err.Error())
-				return types.ErrBuildAndSign
-			}
-		}
-
-		message := []interface{}{createDenomMsg, transferDenomMsg}
-		messageBytes, _ := json.Marshal(message)
-		code := fmt.Sprintf("%s%s%s", params.Owner, models.TTXSOperationTypeIssueClass, time.Now().String())
-		taskId := svc.base.EncodeData(code)
-		ttx := models.TTX{
-			ChainID:       params.ChainId,
-			Hash:          txHash,
-			Sender:        null.StringFrom(params.Owner),
-			Timestamp:     null.Time{Time: time.Now()},
-			OriginData:    null.BytesFromPtr(&originData),
-			Message:       null.JSONFrom(messageBytes),
-			TaskID:        null.StringFrom(taskId),
-			GasUsed:       null.Int64From(int64(baseTx.Gas)),
-			OperationType: models.TTXSOperationTypeIssueClass,
-			Status:        models.TTXSStatusUndo,
-			Tag:           null.JSONFrom(params.Tag),
-		}
-		err = ttx.Insert(context.Background(),exec, boil.Infer())
-		if err != nil {
-			log.Error("create nft class", "tx insert error:", err.Error())
-			return types.ErrInternal
-		}
-		return err
-	})
+	message := []interface{}{createDenomMsg, transferDenomMsg}
+	messageBytes, _ := json.Marshal(message)
+	code := fmt.Sprintf("%s%s%s", params.Owner, models.TTXSOperationTypeIssueClass, time.Now().String())
+	taskId := svc.base.EncodeData(code)
+	ttx := models.TTX{
+		ChainID:       params.ChainId,
+		Hash:          txHash,
+		Sender:        null.StringFrom(params.Owner),
+		Timestamp:     null.Time{Time: time.Now()},
+		OriginData:    null.BytesFromPtr(&originData),
+		Message:       null.JSONFrom(messageBytes),
+		TaskID:        null.StringFrom(taskId),
+		GasUsed:       null.Int64From(int64(baseTx.Gas)),
+		OperationType: models.TTXSOperationTypeIssueClass,
+		Status:        models.TTXSStatusUndo,
+		Tag:           null.JSONFrom(params.Tag),
+	}
+	err = ttx.InsertG(context.Background(), boil.Infer())
 	if err != nil {
-		return nil, err
+		log.Error("create nft class", "tx insert error:", err.Error())
+		return nil, types.ErrInternal
 	}
 	return &dto.TxRes{TaskId: taskId}, nil
 }

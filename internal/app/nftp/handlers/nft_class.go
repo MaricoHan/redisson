@@ -48,7 +48,7 @@ func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 	data := strings.TrimSpace(req.Data)
 	owner := strings.TrimSpace(req.Owner)
 	var tagBytes []byte
-	if req.Tag != nil{
+	if req.Tag != nil {
 		tagBytes, _ := json.Marshal(req.Tag)
 		tag := string(tagBytes)
 		if tag != "" {
@@ -57,8 +57,6 @@ func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 			}
 		}
 	}
-
-
 	if name == "" {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrName)
 	}
