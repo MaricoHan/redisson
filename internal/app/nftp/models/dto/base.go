@@ -17,5 +17,5 @@ type PageRes struct {
 }
 
 type TxRes struct {
-	TxHash string `json:"tx_hash"`
+	TaskId string `json:"task_id"`
 }
