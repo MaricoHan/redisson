@@ -103,7 +103,7 @@ type CreateNftsP struct {
 	Data      string `json:"data"`
 	Amount    int    `json:"amount"`
 	Recipient string `json:"recipient"`
-	Tag       string `json:"tag"`
+	Tag       []byte `json:"tag"`
 }
 
 type NftOperationHistoryByNftIdP struct {

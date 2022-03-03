@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -51,7 +52,9 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 	uriHash := strings.TrimSpace(req.UriHash)
 	data := strings.TrimSpace(req.Data)
 	recipient := strings.TrimSpace(req.Recipient)
-	tag := strings.TrimSpace(req.Tag)
+	tagBytes, _ := json.Marshal(req.Tag)
+
+	tag := string(tagBytes)
 
 	if name == "" {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrName)
@@ -93,7 +96,7 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 		Data:      data,
 		Amount:    req.Amount,
 		Recipient: recipient,
-		Tag:       tag,
+		Tag:       tagBytes,
 	}
 
 	if params.Amount == 0 {

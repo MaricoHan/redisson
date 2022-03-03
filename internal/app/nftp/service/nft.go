@@ -119,7 +119,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsP) (*dto.TxRes, error) {
 		}
 
 		msgsBytes, _ := json.Marshal(msgs)
-		tagBytes, _ := json.Marshal(params.Tag)
+		//tagBytes, _ := json.Marshal(params.Tag)
 		code := fmt.Sprintf("%s%s%s", params.Recipient, models.TTXSOperationTypeMintNFT, time.Now().String())
 		taskId = svc.base.EncodeData(code)
 		ttx := models.TTX{
@@ -133,7 +133,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsP) (*dto.TxRes, error) {
 			OriginData:    null.BytesFromPtr(&originData),
 			OperationType: models.TTXSOperationTypeMintNFT,
 			Status:        models.TTXSStatusUndo,
-			Tag:           null.JSONFrom(tagBytes),
+			Tag:           null.JSONFrom(params.Tag),
 		}
 
 		err = ttx.Insert(context.Background(), exec, boil.Infer())
