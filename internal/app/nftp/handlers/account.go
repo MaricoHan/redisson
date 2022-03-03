@@ -10,11 +10,10 @@ import (
 
 	"gitlab.bianjie.ai/irita-paas/open-api/config"
 
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
-
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 )
 
 type IAccount interface {

@@ -82,7 +82,9 @@ func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 	if len([]rune(owner)) > 128 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOwnerLen)
 	}
-
+	if _, err := h.IsValTag(tag);err!=nil{
+		return nil,types.NewAppError(types.RootCodeSpace,types.ClientParamsError,err.Error())
+	}
 	params := dto.CreateNftClassP{
 		ChainId:     h.ChainID(ctx),
 		Name:        name,
