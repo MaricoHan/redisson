@@ -91,7 +91,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsP) (*dto.TxRes, error) {
 		}
 
 		//validate tx
-		txOne, err := svc.base.ValidateTx(tHash)
+		txOne, err := svc.base.ValidateTx(exec,tHash)
 		if err != nil {
 			return err
 		}
@@ -212,7 +212,7 @@ func (svc *Nft) EditNftByNftId(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 	var taskId string
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		//validate tx
-		txOne, err := svc.base.ValidateTx(txHash)
+		txOne, err := svc.base.ValidateTx(exec,txHash)
 		if err != nil {
 			return err
 		}
@@ -327,7 +327,7 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (*dto.TxRes, error) {
 	var taskId string
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		//validate tx
-		txone, err := svc.base.ValidateTx(txHash)
+		txone, err := svc.base.ValidateTx(exec,txHash)
 		if err != nil {
 			return err
 		}
@@ -427,7 +427,7 @@ func (svc *Nft) DeleteNftByNftId(params dto.DeleteNftByNftIdP) (*dto.TxRes, erro
 	var taskId string
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		//validate tx
-		txone, err := svc.base.ValidateTx(txHash)
+		txone, err := svc.base.ValidateTx(exec,txHash)
 		if err != nil {
 			return err
 		}
@@ -528,7 +528,7 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (*dto.TxRes, erro
 	var taskId string
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		//validate tx
-		txone, err := svc.base.ValidateTx(txHash)
+		txone, err := svc.base.ValidateTx(exec,txHash)
 		if err != nil {
 			return err
 		}
