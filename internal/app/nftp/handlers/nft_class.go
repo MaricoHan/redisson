@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -45,8 +46,9 @@ func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 	uriHash := strings.TrimSpace(req.UriHash)
 	data := strings.TrimSpace(req.Data)
 	owner := strings.TrimSpace(req.Owner)
-	tag := strings.TrimSpace(req.Tag)
+	tagBytes, _ := json.Marshal(req.Tag)
 
+	tag := string(tagBytes)
 	if name == "" {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrName)
 	}
@@ -82,9 +84,12 @@ func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 	if len([]rune(owner)) > 128 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOwnerLen)
 	}
-	if _, err := h.IsValTag(tag);err!=nil{
-		return nil,types.NewAppError(types.RootCodeSpace,types.ClientParamsError,err.Error())
+	if tag != "" {
+		if _, err := h.IsValTag(tag); err != nil {
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
+		}
 	}
+
 	params := dto.CreateNftClassP{
 		ChainId:     h.ChainID(ctx),
 		Name:        name,
@@ -94,7 +99,7 @@ func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 		UriHash:     uriHash,
 		Data:        data,
 		Owner:       owner,
-		Tag:         tag,
+		Tag:         tagBytes,
 	}
 	return h.svc.CreateNftClass(params)
 }

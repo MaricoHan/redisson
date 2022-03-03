@@ -9,7 +9,7 @@ type EditNftByNftIdP struct {
 	ChainId uint64 `json:"chain_id"`
 	ClassId string `json:"class_id"`
 	Sender  string `json:"owner"`
-	Tag     string `json:"tag"`
+	Tag     []byte `json:"tag"`
 }
 
 type EditNftByBatchP struct {
@@ -57,6 +57,7 @@ type NftR struct {
 	Owner       string `json:"owner"`
 	Status      string `json:"status"`
 	TxHash      string `json:"tx_hash"`
+	Tag         string `json:"tag"`
 	Timestamp   string `json:"timestamp"`
 }
 

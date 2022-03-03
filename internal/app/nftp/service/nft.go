@@ -119,7 +119,6 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsP) (*dto.TxRes, error) {
 		}
 
 		msgsBytes, _ := json.Marshal(msgs)
-		//tagBytes, _ := json.Marshal(params.Tag)
 		code := fmt.Sprintf("%s%s%s", params.Recipient, models.TTXSOperationTypeMintNFT, time.Now().String())
 		taskId = svc.base.EncodeData(code)
 		ttx := models.TTX{
@@ -242,13 +241,12 @@ func (svc *Nft) EditNftByNftId(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 
 		// Tx into database
 		messageByte, _ := json.Marshal(msgEditNFT)
-		tagBytes, _ := json.Marshal(params.Tag)
 		code := fmt.Sprintf("%s%s%s", params.Sender, models.TTXSOperationTypeEditNFT, time.Now().String())
 		taskId = svc.base.EncodeData(code)
 
 		// Tx into database
 		txId, err := svc.base.UndoTxIntoDataBase(params.Sender, models.TTXSOperationTypeEditNFT, taskId, txHash,
-			params.ChainId, signedData, messageByte, tagBytes, int64(baseTx.Gas), exec)
+			params.ChainId, signedData, messageByte, params.Tag, int64(baseTx.Gas), exec)
 		if err != nil {
 			log.Debug("edit nft by nftId", "Tx into database error:", err.Error())
 			return err
@@ -640,6 +638,7 @@ func (svc *Nft) NftByNftId(params dto.NftByNftIdP) (*dto.NftR, error) {
 		Owner:       tNft.Owner,
 		Status:      tNft.Status,
 		TxHash:      tNft.TXHash,
+		Tag:         string(tNft.Tag.JSON),
 		Timestamp:   tNft.Timestamp.Time.String(),
 	}
 

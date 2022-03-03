@@ -9,7 +9,7 @@ type CreateNftClassP struct {
 	Data        string `json:"data"`
 	Owner       string `json:"owner"`
 	ChainId     uint64 `json:"chain_id"`
-	Tag         string `json:"tag"`
+	Tag         []byte `json:"tag"`
 }
 
 type NftClassesP struct {
@@ -47,6 +47,7 @@ type NftClassRes struct {
 	Uri         string `json:"uri"`
 	Timestamp   string `json:"timestamp"`
 	UriHash     string `json:"uri_hash"`
+	Tag         string `json:"tag"`
 	Data        string `json:"data"`
 	Description string `json:"description"`
 }

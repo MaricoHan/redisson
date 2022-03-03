@@ -107,7 +107,6 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, err
 
 	message := []interface{}{createDenomMsg, transferDenomMsg}
 	messageBytes, _ := json.Marshal(message)
-	tagBytes, _ := json.Marshal(params.Tag)
 	code := fmt.Sprintf("%s%s%s", params.Owner, models.TTXSOperationTypeIssueClass, time.Now().String())
 	taskId := svc.base.EncodeData(code)
 	ttx := models.TTX{
@@ -121,7 +120,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, err
 		GasUsed:       null.Int64From(int64(baseTx.Gas)),
 		OperationType: models.TTXSOperationTypeIssueClass,
 		Status:        models.TTXSStatusUndo,
-		Tag:           null.JSONFrom(tagBytes),
+		Tag:           null.JSONFrom(params.Tag),
 	}
 	err = ttx.InsertG(context.Background(), boil.Infer())
 	if err != nil {
@@ -292,6 +291,7 @@ func (svc *NftClass) NftClassById(params dto.NftClassesP) (*dto.NftClassRes, err
 	result.UriHash = classOne.URIHash.String
 	result.NftCount = uint64(count)
 	result.TxHash = classOne.TXHash
+	result.Tag = string(classOne.Tag.JSON)
 
 	return result, nil
 
