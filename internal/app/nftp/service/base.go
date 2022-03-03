@@ -9,11 +9,12 @@ import (
 
 	sdk "github.com/irisnet/core-sdk-go"
 	"github.com/irisnet/core-sdk-go/bank"
+	"github.com/irisnet/core-sdk-go/feegrant"
 	sdktype "github.com/irisnet/core-sdk-go/types"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
-
 	"gitlab.bianjie.ai/irita-paas/open-api/config"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 )
@@ -36,6 +37,19 @@ func NewBase(sdkClient sdk.Client, gas uint64, denom string, amount int64) *Base
 	}
 }
 
+func (m Base) QueryRootAccount() (*models.TAccount, *types.AppError) {
+	//platform address
+	account, err := models.TAccounts(
+		models.TAccountWhere.ChainID.EQ(uint64(0)),
+	).OneG(context.Background())
+	if err != nil {
+		//500
+		log.Error("create account", "query root error:", err.Error())
+		return nil, types.ErrInternal
+	}
+	return account, nil
+}
+
 func (m Base) CreateBaseTx(keyName, keyPassword string) sdktype.BaseTx {
 	//from := "t_" + keyName
 	return sdktype.BaseTx{
@@ -48,6 +62,11 @@ func (m Base) CreateBaseTx(keyName, keyPassword string) sdktype.BaseTx {
 }
 
 func (m Base) BuildAndSign(msgs sdktype.Msgs, baseTx sdktype.BaseTx) ([]byte, string, error) {
+	root, error := m.QueryRootAccount()
+	if error != nil {
+		return nil, "", error
+	}
+	baseTx.FeePayer = sdktype.AccAddress(root.Address)
 	sigData, err := m.sdkClient.BuildAndSign(msgs, baseTx)
 	if err != nil {
 		return nil, "", err
@@ -301,6 +320,49 @@ func (m Base) createAccount(count int64) uint64 {
 	res := types.CreateAccountGas + types.CreateAccountIncreaseGas*(count)
 	u := float64(res) * config.Get().Chain.GasCoefficient
 	return uint64(u)
+}
+
+func (m Base) Grant(address string) (string, error) {
+	root, error := m.QueryRootAccount()
+	if error != nil {
+		return "", error
+	}
+	granter, errs := sdktype.AccAddressFromBech32(root.Address)
+	if errs != nil {
+		//500
+		log.Error("base account", "granter format error:", errs.Error())
+		return "", types.ErrInternal
+	}
+	grantee, errs := sdktype.AccAddressFromBech32(address)
+	if errs != nil {
+		//500
+		log.Error("base account", "grantee format error:", errs.Error())
+		return "", types.ErrInternal
+	}
+	var grant feegrant.FeeAllowanceI
+
+	basic := feegrant.BasicAllowance{
+		SpendLimit: nil,
+	}
+
+	grant = &basic
+
+	msgGrant, err := feegrant.NewMsgGrantAllowance(grant, granter, grantee)
+	if err != nil {
+		//500
+		log.Error("base account", "msg grant allowance error:", err.Error())
+		return "", types.ErrInternal
+	}
+
+	baseTx := m.CreateBaseTx(root.Address, defultKeyPassword)
+	res, err := m.BuildAndSend(sdktype.Msgs{msgGrant}, baseTx)
+	if err != nil {
+		//500
+		log.Error("base account", "fee grant error:", err.Error())
+		return "", types.ErrInternal
+	}
+
+	return res.Hash, nil
 }
 
 // EncodeData 加密序列
