@@ -63,7 +63,7 @@ func (h base) IsValTag(tag string) (bool, error) {
 		if !ok {
 			return false, errors.New("value must be string")
 		}
-		if len(key) > 12 || len(key) < 6 {
+		if len([]rune(key)) > 12 || len([]rune(key)) < 6 {
 			return false, errors.New("key’s length must between 6 and 12")
 		}
 		for _, s := range key {

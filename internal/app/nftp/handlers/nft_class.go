@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	types2 "github.com/irisnet/core-sdk-go/types"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
@@ -46,9 +47,18 @@ func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 	uriHash := strings.TrimSpace(req.UriHash)
 	data := strings.TrimSpace(req.Data)
 	owner := strings.TrimSpace(req.Owner)
-	tagBytes, _ := json.Marshal(req.Tag)
+	var tagBytes []byte
+	if req.Tag != nil{
+		tagBytes, _ := json.Marshal(req.Tag)
+		tag := string(tagBytes)
+		if tag != "" {
+			if _, err := h.IsValTag(tag); err != nil {
+				return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
+			}
+		}
+	}
 
-	tag := string(tagBytes)
+
 	if name == "" {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrName)
 	}
@@ -80,14 +90,12 @@ func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 	if owner == "" {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOwner)
 	}
-
+	// 校验接收者地址是否满足当前链的地址规范
+	if err := types2.ValidateAccAddress(owner); err != nil {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
+	}
 	if len([]rune(owner)) > 128 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOwnerLen)
-	}
-	if tag != "" {
-		if _, err := h.IsValTag(tag); err != nil {
-			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
-		}
 	}
 
 	params := dto.CreateNftClassP{

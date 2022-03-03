@@ -24,7 +24,7 @@ func NewTx() *Tx {
 func (svc *Tx) TxResultByTxHash(params dto.TxResultByTxHashP) (*dto.TxResultByTxHashRes, error) {
 	//query
 	txinfo, err := models.TTXS(
-		models.TTXWhere.TaskID.EQ(null.StringFrom(params.Hash)),
+		models.TTXWhere.TaskID.EQ(null.StringFrom(params.TaskId)),
 		models.TTXWhere.ChainID.EQ(params.ChainId),
 	).OneG(context.Background())
 	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
@@ -40,7 +40,7 @@ func (svc *Tx) TxResultByTxHash(params dto.TxResultByTxHashP) (*dto.TxResultByTx
 	//result
 	result := &dto.TxResultByTxHashRes{}
 	result.Type = txinfo.OperationType
-
+	result.TxHash = txinfo.Hash
 	if txinfo.Status == models.TTXSStatusPending {
 		result.Status = 0
 	} else if txinfo.Status == models.TTXSStatusSuccess {
