@@ -3,7 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"github.com/friendsofgo/errors"
+	"errors"
 	"strconv"
 	"strings"
 	"unicode"
@@ -43,7 +43,7 @@ func (h base) UriCheck(uri string) error {
 
 	return nil
 }
-func (h base)IsValTag(tag string) (bool, error) {
+func (h base) IsValTag(tag string) (bool, error) {
 	//校验tag是否是json格式
 	if tag[0] != '{' || !json.Valid([]byte(tag)) {
 		return false, errors.New("invalid json format")
