@@ -628,6 +628,7 @@ func (svc *Nft) NftByNftId(params dto.NftByNftIdP) (*dto.NftR, error) {
 	var tag map[string]interface{}
 	err = tNft.Tag.Unmarshal(&tag)
 	if err != nil {
+		log.Error("NftByNftId : Unmarshal json error:", err.Error())
 		return nil, err
 	}
 	result := &dto.NftR{
@@ -835,6 +836,7 @@ func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
 		var tag map[string]interface{}
 		err = modelResult.Tag.Unmarshal(&tag)
 		if err != nil {
+			log.Error("Nfts : Unmarshal json error:", err.Error())
 			return nil, err
 		}
 

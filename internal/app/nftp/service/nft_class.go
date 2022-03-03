@@ -226,6 +226,7 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 		var tag map[string]interface{}
 		err = modelResult.Tag.Unmarshal(&tag)
 		if err != nil {
+			log.Error("NftClasses : Unmarshal json error:", err.Error())
 			return nil, err
 		}
 		nftClass := &dto.NftClass{
@@ -289,6 +290,7 @@ func (svc *NftClass) NftClassById(params dto.NftClassesP) (*dto.NftClassRes, err
 	var tag map[string]interface{}
 	err = classOne.Tag.Unmarshal(&tag)
 	if err != nil {
+		log.Error("NftClassById : Unmarshal json error:", err.Error())
 		return nil, err
 	}
 	result := &dto.NftClassRes{}
