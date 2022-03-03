@@ -832,6 +832,12 @@ func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
 	result.TotalCount = total
 	var nfts []*dto.Nft
 	for _, modelResult := range modelResults {
+		var tag map[string]interface{}
+		err = modelResult.Tag.Unmarshal(&tag)
+		if err != nil {
+			return nil, err
+		}
+
 		nft := &dto.Nft{
 			Id:        modelResult.NFTID,
 			Name:      modelResult.Name.String,
@@ -840,6 +846,7 @@ func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
 			Owner:     modelResult.Owner,
 			Status:    modelResult.Status,
 			TxHash:    modelResult.TXHash,
+			Tag:       tag,
 			Timestamp: modelResult.Timestamp.Time.String(),
 		}
 		for _, class := range classByIds {

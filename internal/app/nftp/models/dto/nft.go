@@ -77,16 +77,17 @@ type NftsRes struct {
 }
 
 type Nft struct {
-	Id          string `json:"id"`
-	Name        string `json:"name"`
-	ClassId     string `json:"class_id"`
-	ClassName   string `json:"class_name"`
-	ClassSymbol string `json:"class_symbol"`
-	Uri         string `json:"uri"`
-	Owner       string `json:"owner"`
-	Status      string `json:"status"`
-	TxHash      string `json:"tx_hash"`
-	Timestamp   string `json:"timestamp"`
+	Id          string                 `json:"id"`
+	Name        string                 `json:"name"`
+	ClassId     string                 `json:"class_id"`
+	ClassName   string                 `json:"class_name"`
+	ClassSymbol string                 `json:"class_symbol"`
+	Uri         string                 `json:"uri"`
+	Owner       string                 `json:"owner"`
+	Status      string                 `json:"status"`
+	TxHash      string                 `json:"tx_hash"`
+	Tag         map[string]interface{} `json:"tag"`
+	Timestamp   string                 `json:"timestamp"`
 }
 
 type NftClassByIds struct {
