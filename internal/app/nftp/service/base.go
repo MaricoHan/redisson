@@ -107,8 +107,8 @@ func (m Base) UndoTxIntoDataBase(sender, operationType, taskId, txHash string, C
 }
 
 // ValidateTx validate tx status
-func (m Base) ValidateTx(exec boil.ContextExecutor,hash string) (*models.TTX, error) {
-	tx, err := models.TTXS(models.TTXWhere.Hash.EQ(hash)).One(context.Background(),exec)
+func (m Base) ValidateTx(hash string) (*models.TTX, error) {
+	tx, err := models.TTXS(models.TTXWhere.Hash.EQ(hash)).OneG(context.Background())
 	if err == sql.ErrNoRows || strings.Contains(err.Error(), SqlNoFound()) {
 		return tx, nil
 	} else if err != nil {

@@ -95,7 +95,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, err
 		}
 
 		//validate tx
-		txone, err := svc.base.ValidateTx(exec, txHash)
+		txone, err := svc.base.ValidateTx(txHash)
 		if err != nil {
 			return err
 		}
@@ -125,7 +125,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, err
 			Status:        models.TTXSStatusUndo,
 			Tag:           null.JSONFrom(params.Tag),
 		}
-		err = ttx.InsertG(context.Background(), boil.Infer())
+		err = ttx.Insert(context.Background(),exec, boil.Infer())
 		if err != nil {
 			log.Error("create nft class", "tx insert error:", err.Error())
 			return types.ErrInternal

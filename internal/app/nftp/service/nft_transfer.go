@@ -75,7 +75,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	var taskId string
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		//validate tx
-		txone, err := svc.base.ValidateTx(exec,hash)
+		txone, err := svc.base.ValidateTx(hash)
 		if err != nil {
 			return err
 		}
@@ -182,7 +182,7 @@ func (svc *NftTransfer) TransferNftByNftId(params dto.TransferNftByNftIdP) (*dto
 	var taskId string
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		//validate tx
-		txone, err := svc.base.ValidateTx(exec,hash)
+		txone, err := svc.base.ValidateTx(hash)
 		if err != nil {
 			return err
 		}
@@ -317,7 +317,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (*dto
 	var taskId string
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		//validate tx
-		txone, err := svc.base.ValidateTx(exec,hash)
+		txone, err := svc.base.ValidateTx(hash)
 		if err != nil {
 			return err
 		}
