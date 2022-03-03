@@ -58,12 +58,12 @@ func (h base) IsValTag(tag string) (bool, error) {
 	//校验tagMap的各个key-value
 	for key, value := range tagMap {
 		sValue, ok := value.(string)
-		sValue = strings.TrimSpace(sValue)
-		key = strings.TrimSpace(key)
 		if !ok {
 			return false, errors.New("value must be string")
 		}
-		if len([]rune(key)) > 12 || len([]rune(key)) < 6 {
+		sValue = strings.TrimSpace(sValue)
+		key = strings.TrimSpace(key)
+		if len([]rune(key)) < 6 || len([]rune(key)) > 12 {
 			return false, errors.New("key’s length must between 6 and 12")
 		}
 		for _, s := range key {
@@ -71,8 +71,8 @@ func (h base) IsValTag(tag string) (bool, error) {
 				return false, errors.New("key must contain only letters , numbers and Chinese characters")
 			}
 		}
-		if len(sValue) > 64 {
-			return false, errors.New("The maximum length of value is 64")
+		if len(sValue) == 0 || len(sValue) > 64 {
+			return false, errors.New("value’s length must between 1 and 64")
 		}
 		for _, s := range sValue {
 			if (s < '0' || s > '9') && (s < 'A' || s > 'Z') && (s < 'a' || s > 'z') {
