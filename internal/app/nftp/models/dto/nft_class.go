@@ -9,7 +9,7 @@ type CreateNftClassP struct {
 	Data        string `json:"data"`
 	Owner       string `json:"owner"`
 	ChainId     uint64 `json:"chain_id"`
-	Tag         string `json:"tag"`
+	Tag         []byte `json:"tag"`
 }
 
 type NftClassesP struct {
@@ -27,28 +27,30 @@ type NftClassesRes struct {
 }
 
 type NftClass struct {
-	Id        string `json:"id"`
-	Name      string `json:"name"`
-	Owner     string `json:"owner"`
-	TxHash    string `json:"tx_hash"`
-	Symbol    string `json:"symbol"`
-	NftCount  uint64 `json:"nft_count"`
-	Uri       string `json:"uri"`
-	Timestamp string `json:"timestamp"`
+	Id        string                 `json:"id"`
+	Name      string                 `json:"name"`
+	Owner     string                 `json:"owner"`
+	TxHash    string                 `json:"tx_hash"`
+	Symbol    string                 `json:"symbol"`
+	NftCount  uint64                 `json:"nft_count"`
+	Uri       string                 `json:"uri"`
+	Tag       map[string]interface{} `json:"tag"`
+	Timestamp string                 `json:"timestamp"`
 }
 
 type NftClassRes struct {
-	Id          string `json:"id"`
-	Name        string `json:"name"`
-	Owner       string `json:"owner"`
-	TxHash      string `json:"tx_hash"`
-	Symbol      string `json:"symbol"`
-	NftCount    uint64 `json:"nft_count"`
-	Uri         string `json:"uri"`
-	Timestamp   string `json:"timestamp"`
-	UriHash     string `json:"uri_hash"`
-	Data        string `json:"data"`
-	Description string `json:"description"`
+	Id          string                 `json:"id"`
+	Name        string                 `json:"name"`
+	Owner       string                 `json:"owner"`
+	TxHash      string                 `json:"tx_hash"`
+	Symbol      string                 `json:"symbol"`
+	NftCount    uint64                 `json:"nft_count"`
+	Uri         string                 `json:"uri"`
+	Timestamp   string                 `json:"timestamp"`
+	UriHash     string                 `json:"uri_hash"`
+	Tag         map[string]interface{} `json:"tag"`
+	Data        string                 `json:"data"`
+	Description string                 `json:"description"`
 }
 
 type NftCount struct {

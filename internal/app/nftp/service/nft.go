@@ -119,7 +119,6 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsP) (*dto.TxRes, error) {
 		}
 
 		msgsBytes, _ := json.Marshal(msgs)
-		tagBytes, _ := json.Marshal(params.Tag)
 		code := fmt.Sprintf("%s%s%s", params.Recipient, models.TTXSOperationTypeMintNFT, time.Now().String())
 		taskId = svc.base.EncodeData(code)
 		ttx := models.TTX{
@@ -133,7 +132,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsP) (*dto.TxRes, error) {
 			OriginData:    null.BytesFromPtr(&originData),
 			OperationType: models.TTXSOperationTypeMintNFT,
 			Status:        models.TTXSStatusUndo,
-			Tag:           null.JSONFrom(tagBytes),
+			Tag:           null.JSONFrom(params.Tag),
 		}
 
 		err = ttx.Insert(context.Background(), exec, boil.Infer())
@@ -160,7 +159,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsP) (*dto.TxRes, error) {
 		return nil, err
 	}
 
-	return &dto.TxRes{TxHash: taskId}, nil
+	return &dto.TxRes{TaskId: taskId}, nil
 }
 
 func (svc *Nft) EditNftByNftId(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
@@ -242,13 +241,12 @@ func (svc *Nft) EditNftByNftId(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 
 		// Tx into database
 		messageByte, _ := json.Marshal(msgEditNFT)
-		tagBytes, _ := json.Marshal(params.Tag)
 		code := fmt.Sprintf("%s%s%s", params.Sender, models.TTXSOperationTypeEditNFT, time.Now().String())
 		taskId = svc.base.EncodeData(code)
 
 		// Tx into database
 		txId, err := svc.base.UndoTxIntoDataBase(params.Sender, models.TTXSOperationTypeEditNFT, taskId, txHash,
-			params.ChainId, signedData, messageByte, tagBytes, int64(baseTx.Gas), exec)
+			params.ChainId, signedData, messageByte, params.Tag, int64(baseTx.Gas), exec)
 		if err != nil {
 			log.Debug("edit nft by nftId", "Tx into database error:", err.Error())
 			return err
@@ -269,7 +267,7 @@ func (svc *Nft) EditNftByNftId(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &dto.TxRes{TxHash: taskId}, nil
+	return &dto.TxRes{TaskId: taskId}, nil
 }
 
 func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (*dto.TxRes, error) {
@@ -390,7 +388,7 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (*dto.TxRes, error) {
 		return nil, err
 	}
 
-	return &dto.TxRes{TxHash: taskId}, nil
+	return &dto.TxRes{TaskId: taskId}, nil
 }
 
 func (svc *Nft) DeleteNftByNftId(params dto.DeleteNftByNftIdP) (*dto.TxRes, error) {
@@ -485,7 +483,7 @@ func (svc *Nft) DeleteNftByNftId(params dto.DeleteNftByNftIdP) (*dto.TxRes, erro
 	if err != nil {
 		return nil, err
 	}
-	return &dto.TxRes{TxHash: taskId}, nil
+	return &dto.TxRes{TaskId: taskId}, nil
 }
 
 func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (*dto.TxRes, error) {
@@ -592,7 +590,7 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (*dto.TxRes, erro
 		return nil, err
 	}
 
-	return &dto.TxRes{TxHash: txHash}, nil
+	return &dto.TxRes{TaskId: txHash}, nil
 }
 
 func (svc *Nft) NftByNftId(params dto.NftByNftIdP) (*dto.NftR, error) {
@@ -627,7 +625,12 @@ func (svc *Nft) NftByNftId(params dto.NftByNftIdP) (*dto.NftR, error) {
 		log.Error("nft by nftId", "query nft class error:", err.Error())
 		return nil, types.ErrInternal
 	}
-
+	var tag map[string]interface{}
+	err = tNft.Tag.Unmarshal(&tag)
+	if err != nil {
+		log.Error("NftByNftId : Unmarshal json error:", err.Error())
+		return nil, err
+	}
 	result := &dto.NftR{
 		Id:          tNft.NFTID,
 		Name:        tNft.Name.String,
@@ -640,6 +643,7 @@ func (svc *Nft) NftByNftId(params dto.NftByNftIdP) (*dto.NftR, error) {
 		Owner:       tNft.Owner,
 		Status:      tNft.Status,
 		TxHash:      tNft.TXHash,
+		Tag:         tag,
 		Timestamp:   tNft.Timestamp.Time.String(),
 	}
 
@@ -829,6 +833,13 @@ func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
 	result.TotalCount = total
 	var nfts []*dto.Nft
 	for _, modelResult := range modelResults {
+		var tag map[string]interface{}
+		err = modelResult.Tag.Unmarshal(&tag)
+		if err != nil {
+			log.Error("Nfts : Unmarshal json error:", err.Error())
+			return nil, err
+		}
+
 		nft := &dto.Nft{
 			Id:        modelResult.NFTID,
 			Name:      modelResult.Name.String,
@@ -837,6 +848,7 @@ func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
 			Owner:     modelResult.Owner,
 			Status:    modelResult.Status,
 			TxHash:    modelResult.TXHash,
+			Tag:       tag,
 			Timestamp: modelResult.Timestamp.Time.String(),
 		}
 		for _, class := range classByIds {

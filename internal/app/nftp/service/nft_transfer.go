@@ -135,7 +135,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	if err != nil {
 		return nil, err
 	}
-	return &dto.TxRes{TxHash: taskId}, nil
+	return &dto.TxRes{TaskId: taskId}, nil
 }
 
 func (svc *NftTransfer) TransferNftByNftId(params dto.TransferNftByNftIdP) (*dto.TxRes, error) {
@@ -252,7 +252,7 @@ func (svc *NftTransfer) TransferNftByNftId(params dto.TransferNftByNftIdP) (*dto
 		return nil, err
 	}
 
-	return &dto.TxRes{TxHash: taskId}, nil
+	return &dto.TxRes{TaskId: taskId}, nil
 }
 
 func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (*dto.TxRes, error) {
@@ -440,5 +440,5 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (*dto
 		//自定义err
 		return nil, err
 	}
-	return &dto.TxRes{TxHash: taskId}, nil
+	return &dto.TxRes{TaskId: taskId}, nil
 }

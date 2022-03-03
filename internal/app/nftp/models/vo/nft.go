@@ -10,15 +10,15 @@ type CreateNftsRequest struct {
 	Data    string `json:"data"`
 	//关闭批量发行
 	//Amount    int    `json:"amount"`
-	Recipient string `json:"recipient"`
-	Tag       string `json:"tag"`
+	Recipient string                 `json:"recipient"`
+	Tag       map[string]interface{} `json:"tag"`
 }
 
 type EditNftByIndexRequest struct {
-	Name string `json:"name" validate:"required"`
-	Uri  string `json:"uri"`
-	Data string `json:"data"`
-	Tag  string `json:"tag"`
+	Name string                 `json:"name" validate:"required"`
+	Uri  string                 `json:"uri"`
+	Data string                 `json:"data"`
+	Tag  map[string]interface{} `json:"tag"`
 }
 
 type EditNftByBatchRequest []*dto.EditNft
