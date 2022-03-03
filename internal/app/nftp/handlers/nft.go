@@ -53,7 +53,7 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 	data := strings.TrimSpace(req.Data)
 	recipient := strings.TrimSpace(req.Recipient)
 	var tagBytes []byte
-	if req.Tag != nil{
+	if req.Tag != nil {
 		tagBytes, _ := json.Marshal(req.Tag)
 		tag := string(tagBytes)
 		if tag != "" {
@@ -124,8 +124,8 @@ func (h nft) EditNftByNftId(ctx context.Context, request interface{}) (interface
 	uri := strings.TrimSpace(req.Uri)
 	data := strings.TrimSpace(req.Data)
 	var tagBytes []byte
-	if req.Tag != nil{
-		tagBytes, _ := json.Marshal(req.Tag)
+	if req.Tag != nil {
+		tagBytes, _ = json.Marshal(req.Tag)
 		tag := string(tagBytes)
 		if tag != "" {
 			if _, err := h.IsValTag(tag); err != nil {
@@ -145,9 +145,6 @@ func (h nft) EditNftByNftId(ctx context.Context, request interface{}) (interface
 	}
 	if len([]rune(data)) > 4096 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrDataLen)
-	}
-	if _, err := h.IsValTag(tag); err != nil {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
 	}
 	//check end
 	params := dto.EditNftByNftIdP{
