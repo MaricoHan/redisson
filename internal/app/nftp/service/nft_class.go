@@ -223,6 +223,8 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 
 	var nftClasses []*dto.NftClass
 	for _, modelResult := range modelResults {
+		var tag map[string]interface{}
+		err = modelResult.Tag.Unmarshal(&tag)
 		nftClass := &dto.NftClass{
 			Id:        modelResult.ClassID,
 			Name:      modelResult.Name.String,
@@ -231,6 +233,7 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 			Uri:       modelResult.URI.String,
 			Owner:     modelResult.Owner,
 			TxHash:    modelResult.TXHash,
+			Tag:       tag,
 			Timestamp: modelResult.Timestamp.Time.String(),
 		}
 		for _, r := range countRes {
@@ -275,10 +278,16 @@ func (svc *NftClass) NftClassById(params dto.NftClassesP) (*dto.NftClassRes, err
 		}
 		return err
 	})
+
 	if err != nil {
 		return nil, err
 	}
 
+	var tag map[string]interface{}
+	err = classOne.Tag.Unmarshal(&tag)
+	if err != nil {
+		return nil, err
+	}
 	result := &dto.NftClassRes{}
 	result.Id = classOne.ClassID
 	result.Timestamp = classOne.Timestamp.Time.String()
@@ -291,7 +300,7 @@ func (svc *NftClass) NftClassById(params dto.NftClassesP) (*dto.NftClassRes, err
 	result.UriHash = classOne.URIHash.String
 	result.NftCount = uint64(count)
 	result.TxHash = classOne.TXHash
-	result.Tag = string(classOne.Tag.JSON)
+	result.Tag = tag
 
 	return result, nil
 

@@ -625,7 +625,11 @@ func (svc *Nft) NftByNftId(params dto.NftByNftIdP) (*dto.NftR, error) {
 		log.Error("nft by nftId", "query nft class error:", err.Error())
 		return nil, types.ErrInternal
 	}
-
+	var tag map[string]interface{}
+	err = tNft.Tag.Unmarshal(&tag)
+	if err != nil {
+		return nil, err
+	}
 	result := &dto.NftR{
 		Id:          tNft.NFTID,
 		Name:        tNft.Name.String,
@@ -638,7 +642,7 @@ func (svc *Nft) NftByNftId(params dto.NftByNftIdP) (*dto.NftR, error) {
 		Owner:       tNft.Owner,
 		Status:      tNft.Status,
 		TxHash:      tNft.TXHash,
-		Tag:         string(tNft.Tag.JSON),
+		Tag:         tag,
 		Timestamp:   tNft.Timestamp.Time.String(),
 	}
 
