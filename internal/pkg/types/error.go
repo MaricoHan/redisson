@@ -50,7 +50,6 @@ const (
 	ErrOwner          = "owner is a required field"
 	ErrOwnerLen       = "owner length error"
 	ErrSortBy         = "sortBy is invalid"
-	ErrIndices        = "indices format error"
 	ErrIndicesLen     = "indices is a required field"
 	ErrOperation      = "operation is invalid"
 	ErrModule         = "module is invalid"

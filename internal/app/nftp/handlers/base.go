@@ -2,7 +2,11 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
+	"github.com/friendsofgo/errors"
 	"strconv"
+	"strings"
+	"unicode"
 
 	"github.com/asaskevich/govalidator"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
@@ -38,6 +42,45 @@ func (h base) UriCheck(uri string) error {
 	}
 
 	return nil
+}
+func (h base)IsValTag(tag string) (bool, error) {
+	//校验tag是否是json格式
+	if tag[0] != '{' || !json.Valid([]byte(tag)) {
+		return false, errors.New("invalid json format")
+	}
+	//解析tag为map
+	var f interface{}
+	json.Unmarshal([]byte(tag), &f)
+	tagMap := f.(map[string]interface{})
+	if len(tagMap) > 3 {
+		return false, errors.New("at most 3 key-value in a tag at a time")
+	}
+	//校验tagMap的各个key-value
+	for key, value := range tagMap {
+		sValue, ok := value.(string)
+		sValue = strings.TrimSpace(sValue)
+		key = strings.TrimSpace(key)
+		if !ok {
+			return false, errors.New("value must be string")
+		}
+		if len(key) > 12 || len(key) < 6 {
+			return false, errors.New("key’s length must between 6 and 12")
+		}
+		for _, s := range key {
+			if (s < '0' || s > '9') && (s < 'A' || s > 'Z') && (s < 'a' || s > 'z') && !unicode.Is(unicode.Han, s) {
+				return false, errors.New("key must contain only letters , numbers and Chinese characters")
+			}
+		}
+		if len(sValue) > 64 {
+			return false, errors.New("The maximum length of value is 64")
+		}
+		for _, s := range sValue {
+			if (s < '0' || s > '9') && (s < 'A' || s > 'Z') && (s < 'a' || s > 'z') {
+				return false, errors.New("value must contain only letters and numbers")
+			}
+		}
+	}
+	return true, nil
 }
 
 type pageBasic struct {
