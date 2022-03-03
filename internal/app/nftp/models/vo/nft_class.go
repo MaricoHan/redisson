@@ -9,4 +9,5 @@ type CreateNftClassRequest struct {
 	UriHash     string `json:"uri_hash"`
 	Data        string `json:"data"`
 	Owner       string `json:"owner" validate:"required"`
+	Tag         string `json:"tag"`
 }

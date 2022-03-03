@@ -4,10 +4,9 @@ import (
 	"context"
 	"strings"
 
+	types2 "github.com/irisnet/core-sdk-go/types"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
-
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
-
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 )
@@ -42,6 +41,11 @@ func (h nftTransfer) TransferNftClassByID(ctx context.Context, request interface
 	if len([]rune(recipient)) > 128 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientLen)
 	}
+	// 校验接收者地址是否满足当前链的地址规范
+	if err := types2.ValidateAccAddress(recipient); err != nil {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
+	}
+
 	params := dto.TransferNftClassByIDP{
 		ClassID:   h.ClassID(ctx),
 		Owner:     h.Owner(ctx),
@@ -60,10 +64,14 @@ func (h nftTransfer) TransferNftByNftId(ctx context.Context, request interface{}
 	if recipient == "" {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipient)
 	}
-
 	if len([]rune(recipient)) > 128 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientLen)
 	}
+	// 校验接收者地址是否满足当前链的地址规范
+	if err := types2.ValidateAccAddress(recipient); err != nil {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
+	}
+
 	params := dto.TransferNftByNftIdP{
 		ClassID:   h.ClassID(ctx),
 		Owner:     h.Owner(ctx),

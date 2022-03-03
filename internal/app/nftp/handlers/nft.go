@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/asaskevich/govalidator"
-
+	types2 "github.com/irisnet/core-sdk-go/types"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
@@ -19,11 +19,11 @@ type INft interface {
 	CreateNft(ctx context.Context, _ interface{}) (interface{}, error)
 	EditNftByNftId(ctx context.Context, _ interface{}) (interface{}, error)
 	EditNftByBatch(ctx context.Context, _ interface{}) (interface{}, error)
-	DeleteNftByIndex(ctx context.Context, _ interface{}) (interface{}, error)
+	DeleteNftByNftId(ctx context.Context, _ interface{}) (interface{}, error)
 	DeleteNftByBatch(ctx context.Context, _ interface{}) (interface{}, error)
 	Nfts(ctx context.Context, _ interface{}) (interface{}, error)
-	NftByIndex(ctx context.Context, _ interface{}) (interface{}, error)
-	NftOperationHistoryByIndex(ctx context.Context, _ interface{}) (interface{}, error)
+	NftByNftId(ctx context.Context, _ interface{}) (interface{}, error)
+	NftOperationHistoryByNftId(ctx context.Context, _ interface{}) (interface{}, error)
 }
 
 func NewNft(svc *service.Nft) INft {
@@ -51,6 +51,7 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 	uriHash := strings.TrimSpace(req.UriHash)
 	data := strings.TrimSpace(req.Data)
 	recipient := strings.TrimSpace(req.Recipient)
+	tag := strings.TrimSpace(req.Tag)
 
 	if name == "" {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrName)
@@ -75,8 +76,15 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 	if len([]rune(recipient)) > 128 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientLen)
 	}
+	// 若接收者地址不为空，则校验其格式；否则在service中将其默认设为NFT类别的权属者地址
+	if recipient != "" {
+		// 校验接收者地址是否满足当前链的地址规范
+		if err := types2.ValidateAccAddress(recipient); err != nil {
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
+		}
+	}
 
-	params := dto.CreateNftsRequest{
+	params := dto.CreateNftsP{
 		ChainId:   h.ChainID(ctx),
 		ClassId:   h.ClassId(ctx),
 		Name:      name,
@@ -85,6 +93,7 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 		Data:      data,
 		Amount:    req.Amount,
 		Recipient: recipient,
+		Tag:       tag,
 	}
 
 	if params.Amount == 0 {
@@ -96,7 +105,7 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 	return h.svc.CreateNfts(params)
 }
 
-// EditNftByIndex Edit an nft and return the edited result
+// EditNftByNftId Edit a nft and return the edited result
 func (h nft) EditNftByNftId(ctx context.Context, request interface{}) (interface{}, error) {
 
 	req := request.(*vo.EditNftByIndexRequest)
@@ -104,23 +113,21 @@ func (h nft) EditNftByNftId(ctx context.Context, request interface{}) (interface
 	name := strings.TrimSpace(req.Name)
 	uri := strings.TrimSpace(req.Uri)
 	data := strings.TrimSpace(req.Data)
+	tag := strings.TrimSpace(req.Tag)
+
+	//check start
 	if name == "" {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrName)
 	}
-
 	if len([]rune(name)) < 3 || len([]rune(name)) > 64 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrNameLen)
 	}
-
 	if err := h.base.UriCheck(uri); err != nil {
 		return nil, err
 	}
-
 	if len([]rune(data)) > 4096 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrDataLen)
 	}
-
-	//check start
 
 	//check end
 	params := dto.EditNftByNftIdP{
@@ -132,9 +139,10 @@ func (h nft) EditNftByNftId(ctx context.Context, request interface{}) (interface
 		Name: name,
 		Uri:  uri,
 		Data: data,
+		Tag:  tag,
 	}
 
-	return h.svc.EditNftByIndex(params)
+	return h.svc.EditNftByNftId(params)
 }
 
 // EditNftByBatch Edit multiple nfts and
@@ -194,7 +202,6 @@ func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface
 	if len(params.EditNfts) > 50 {
 		return nil, types.ErrLimit
 	}
-
 	// 2.judge whether the NFT is repeated
 	hash := make(map[string]bool)
 	for i, Nft := range params.EditNfts {
@@ -209,23 +216,22 @@ func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface
 	return h.svc.EditNftByBatch(params)
 }
 
-// DeleteNftByIndex Delete an nft and return the edited result
-func (h nft) DeleteNftByIndex(ctx context.Context, _ interface{}) (interface{}, error) {
+// DeleteNftByNftId Delete a nft and return the edited result
+func (h nft) DeleteNftByNftId(ctx context.Context, _ interface{}) (interface{}, error) {
 	//check start
 
 	//check end
-	params := dto.DeleteNftByIndexP{
+	params := dto.DeleteNftByNftIdP{
 		ChainId: h.ChainID(ctx),
 		ClassId: h.ClassId(ctx),
 		Sender:  h.Owner(ctx),
 		NftId:   h.NftId(ctx),
 	}
 
-	return h.svc.DeleteNftByIndex(params)
+	return h.svc.DeleteNftByNftId(params)
 }
 
-// DeleteNftByBatch Delete multiple nfts and
-// return the deleted results
+// DeleteNftByBatch Delete multiple nfts and return the deleted results
 func (h nft) DeleteNftByBatch(ctx context.Context, _ interface{}) (interface{}, error) {
 
 	// check start
@@ -334,8 +340,8 @@ func (h nft) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 	return h.svc.Nfts(params)
 }
 
-// NftByIndex return class details
-func (h nft) NftByIndex(ctx context.Context, _ interface{}) (interface{}, error) {
+// NftByNftId return class details
+func (h nft) NftByNftId(ctx context.Context, _ interface{}) (interface{}, error) {
 
 	//check start
 
@@ -350,8 +356,8 @@ func (h nft) NftByIndex(ctx context.Context, _ interface{}) (interface{}, error)
 
 }
 
-// NftOperationHistoryByIndex return class details
-func (h nft) NftOperationHistoryByIndex(ctx context.Context, _ interface{}) (interface{}, error) {
+// NftOperationHistoryByNftId return class details
+func (h nft) NftOperationHistoryByNftId(ctx context.Context, _ interface{}) (interface{}, error) {
 
 	// 校验参数 start
 	//check start
@@ -419,7 +425,7 @@ func (h nft) NftOperationHistoryByIndex(ctx context.Context, _ interface{}) (int
 		}
 	}
 	// 校验参数 end
-	return h.svc.NftOperationHistoryByIndex(params)
+	return h.svc.NftOperationHistoryByNftId(params)
 }
 
 func (h nft) Signer(ctx context.Context) string {

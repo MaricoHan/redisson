@@ -45,6 +45,7 @@ func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 	uriHash := strings.TrimSpace(req.UriHash)
 	data := strings.TrimSpace(req.Data)
 	owner := strings.TrimSpace(req.Owner)
+	tag := strings.TrimSpace(req.Tag)
 
 	if name == "" {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrName)
@@ -91,6 +92,7 @@ func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 		UriHash:     uriHash,
 		Data:        data,
 		Owner:       owner,
+		Tag:         tag,
 	}
 	return h.svc.CreateNftClass(params)
 }

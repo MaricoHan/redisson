@@ -33,6 +33,7 @@ const (
 	ErrEndDate        = "endDate format error"
 	ErrDate           = "endDate before startDate"
 	ErrRecipient      = "recipient is a required field"
+	ErrRecipientAddr  = "the recipient address does not meet the specification of the current chain"
 	ErrRecipientLen   = "recipient length error"
 	ErrNftId          = "nft_id format error"
 	ErrNftIdLen       = "nft_id is a required field"

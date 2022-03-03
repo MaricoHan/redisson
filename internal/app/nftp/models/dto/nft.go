@@ -9,6 +9,7 @@ type EditNftByNftIdP struct {
 	ChainId uint64 `json:"chain_id"`
 	ClassId string `json:"class_id"`
 	Sender  string `json:"owner"`
+	Tag     string `json:"tag"`
 }
 
 type EditNftByBatchP struct {
@@ -25,7 +26,7 @@ type EditNft struct {
 	Data  string `json:"data"`
 }
 
-type DeleteNftByIndexP struct {
+type DeleteNftByNftIdP struct {
 	ChainId uint64 `json:"chain_id"`
 	ClassId string `json:"class_id"`
 	Sender  string `json:"owner"`
@@ -93,7 +94,7 @@ type NftClassByIds struct {
 	Symbol  string `json:"symbol"`
 }
 
-type CreateNftsRequest struct {
+type CreateNftsP struct {
 	ChainId   uint64 `json:"chain_id"`
 	ClassId   string `json:"class_id"`
 	Name      string `json:"name"`
@@ -102,6 +103,7 @@ type CreateNftsRequest struct {
 	Data      string `json:"data"`
 	Amount    int    `json:"amount"`
 	Recipient string `json:"recipient"`
+	Tag       string `json:"tag"`
 }
 
 type NftOperationHistoryByNftIdP struct {
@@ -114,7 +116,7 @@ type NftOperationHistoryByNftIdP struct {
 	ChainId   uint64 `json:"chain_id"`
 }
 
-type BNftOperationHistoryByIndexRes struct {
+type BNftOperationHistoryByNftIdRes struct {
 	PageRes
 	OperationRecords []*OperationRecord `json:"operation_records"`
 }
