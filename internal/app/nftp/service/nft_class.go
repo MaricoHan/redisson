@@ -126,7 +126,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, err
 	if err != nil {
 		return nil, types.ErrInternal
 	}
-	return &dto.TxRes{TxHash: taskId}, nil
+	return &dto.TxRes{TaskId: taskId}, nil
 }
 
 func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, error) {

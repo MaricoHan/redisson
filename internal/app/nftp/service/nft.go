@@ -159,7 +159,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsP) (*dto.TxRes, error) {
 		return nil, err
 	}
 
-	return &dto.TxRes{TxHash: taskId}, nil
+	return &dto.TxRes{TaskId: taskId}, nil
 }
 
 func (svc *Nft) EditNftByNftId(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
@@ -267,7 +267,7 @@ func (svc *Nft) EditNftByNftId(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &dto.TxRes{TxHash: taskId}, nil
+	return &dto.TxRes{TaskId: taskId}, nil
 }
 
 func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (*dto.TxRes, error) {
@@ -388,7 +388,7 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (*dto.TxRes, error) {
 		return nil, err
 	}
 
-	return &dto.TxRes{TxHash: taskId}, nil
+	return &dto.TxRes{TaskId: taskId}, nil
 }
 
 func (svc *Nft) DeleteNftByNftId(params dto.DeleteNftByNftIdP) (*dto.TxRes, error) {
@@ -483,7 +483,7 @@ func (svc *Nft) DeleteNftByNftId(params dto.DeleteNftByNftIdP) (*dto.TxRes, erro
 	if err != nil {
 		return nil, err
 	}
-	return &dto.TxRes{TxHash: taskId}, nil
+	return &dto.TxRes{TaskId: taskId}, nil
 }
 
 func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (*dto.TxRes, error) {
@@ -590,7 +590,7 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (*dto.TxRes, erro
 		return nil, err
 	}
 
-	return &dto.TxRes{TxHash: txHash}, nil
+	return &dto.TxRes{TaskId: txHash}, nil
 }
 
 func (svc *Nft) NftByNftId(params dto.NftByNftIdP) (*dto.NftR, error) {
