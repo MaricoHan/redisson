@@ -79,6 +79,10 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 	if len([]rune(recipient)) > 128 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientLen)
 	}
+	if _, err := h.IsValTag(tag); err != nil {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
+	}
+
 	// 若接收者地址不为空，则校验其格式；否则在service中将其默认设为NFT类别的权属者地址
 	if recipient != "" {
 		// 校验接收者地址是否满足当前链的地址规范
@@ -88,17 +92,16 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 	}
 
 	params := dto.CreateNftsP{
-		ChainId:   h.ChainID(ctx),
-		ClassId:   h.ClassId(ctx),
-		Name:      name,
-		Uri:       uri,
-		UriHash:   uriHash,
-		Data:      data,
-		Amount:    req.Amount,
+		ChainId: h.ChainID(ctx),
+		ClassId: h.ClassId(ctx),
+		Name:    name,
+		Uri:     uri,
+		UriHash: uriHash,
+		Data:    data,
+		//Amount:    req.Amount,
 		Recipient: recipient,
 		Tag:       tagBytes,
 	}
-
 	if params.Amount == 0 {
 		params.Amount = 1
 	}
@@ -131,7 +134,9 @@ func (h nft) EditNftByNftId(ctx context.Context, request interface{}) (interface
 	if len([]rune(data)) > 4096 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrDataLen)
 	}
-
+	if _, err := h.IsValTag(tag); err != nil {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
+	}
 	//check end
 	params := dto.EditNftByNftIdP{
 		ChainId: h.ChainID(ctx),
