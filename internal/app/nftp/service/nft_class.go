@@ -35,11 +35,21 @@ func NewNftClass(base *Base) *NftClass {
 }
 
 func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, error) {
-	// ValidateSigner
-	if err := svc.base.ValidateSigner(params.Owner, params.ProjectID); err != nil {
-		return nil, err
-	}
+	//owner不能为project外的账户
 	_, err := models.TAccounts(
+		models.TAccountWhere.ProjectID.EQ(params.ProjectID),
+		models.TAccountWhere.Address.EQ(params.Owner)).OneG(context.Background())
+	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
+		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
+		//400
+		return nil,types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOwnerFound)
+	} else if err != nil {
+		//500
+		log.Error("create nft class", "validate owner error:", err.Error())
+		return nil,types.ErrInternal
+	}
+
+	_, err = models.TAccounts(
 		models.TAccountWhere.ProjectID.EQ(params.ProjectID),
 		models.TAccountWhere.Address.EQ(params.Owner)).OneG(context.Background())
 
@@ -93,7 +103,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, err
 	baseTx.Gas = svc.base.createDenomGas(originData)
 	err = svc.base.GasThan(params.Owner, params.ChainID, baseTx.Gas, params.PlatFormID)
 	if err != nil {
-		return nil, types.ErrInternal
+		return nil, types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
 	}
 	originData, txHash, err = svc.base.BuildAndSign(sdktype.Msgs{&createDenomMsg, &transferDenomMsg}, baseTx)
 	if err != nil {

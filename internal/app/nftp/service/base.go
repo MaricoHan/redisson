@@ -371,14 +371,14 @@ func (m Base) Grant(address string) (string, error) {
 
 // ValidateSigner validate signer
 func (m Base) ValidateSigner(sender string, projectid uint64) error {
-	//recipient不能为平台外账户或此应用外账户或非法账户
+	//signer不能为project外账户
 	_, err := models.TAccounts(
 		models.TAccountWhere.ProjectID.EQ(projectid),
 		models.TAccountWhere.Address.EQ(sender)).OneG(context.Background())
 	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
 		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
-		//403
-		return types.ErrAuthenticate
+		//404
+		return types.ErrNotFound
 	} else if err != nil {
 		//500
 		log.Error("validate signer", "query signer error:", err.Error())
@@ -415,10 +415,20 @@ func (m Base) EncodeData(data string) string {
 
 func (m Base) GasThan(address string, chainId, gas, platformId uint64) error {
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
+		tProjects, err := models.TProjects(
+			models.TProjectWhere.PlatformID.EQ(null.Int64From(int64(platformId))),
+		).All(context.Background(), exec)
+		if err != nil {
+			return errors.New("query PlatformID from TProjects failed")
+		}
+		var projects []uint64
+		for _, v := range tProjects {
+			projects = append(projects, v.ID)
+		}
 		// unPaidGas 待支付的gas
 		tx, err := models.TTXS(
 			qm.Select("SUM(gas_used) as gas_used"),
-			models.TTXWhere.Sender.EQ(null.StringFrom(address)),
+			models.TTXWhere.ProjectID.IN(projects),
 			models.TTXWhere.Status.IN([]string{models.TTXSStatusPending, models.TTXSStatusUndo})).One(context.Background(), exec)
 		if err != nil {
 			return types.ErrNotFound
@@ -446,15 +456,10 @@ func (m Base) GasThan(address string, chainId, gas, platformId uint64) error {
 		if !ok {
 			return errors.New("cannot get float64 of amount")
 		}
+		unPaidMoney = unPaidMoney + float64(gas)*gasPrice
 		//如果amount小于未支付金额,返回错误
 		if amount < unPaidMoney {
-			return errors.New("amount not enough")
-		}
-		//balance = 减去待支付金额的余额
-		balance := amount - unPaidMoney
-		gasMoney := float64(gas) * gasPrice
-		if balance < gasMoney {
-			return errors.New("balance not enough")
+			return errors.New("balances not enough")
 		}
 		return err
 	})
