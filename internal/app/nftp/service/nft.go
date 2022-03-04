@@ -611,12 +611,7 @@ func (svc *Nft) NftByNftId(params dto.NftByNftIdP) (*dto.NftR, error) {
 		log.Error("nft by nftId", "query nft class error:", err.Error())
 		return nil, types.ErrInternal
 	}
-	var tag map[string]interface{}
-	err = tNft.Tag.Unmarshal(&tag)
-	if err != nil {
-		log.Error("NftByNftId : Unmarshal json error:", err.Error())
-		return nil, err
-	}
+
 	result := &dto.NftR{
 		Id:          tNft.NFTID,
 		Name:        tNft.Name.String,
@@ -629,7 +624,6 @@ func (svc *Nft) NftByNftId(params dto.NftByNftIdP) (*dto.NftR, error) {
 		Owner:       tNft.Owner,
 		Status:      tNft.Status,
 		TxHash:      tNft.TXHash,
-		Tag:         tag,
 		Timestamp:   tNft.Timestamp.Time.String(),
 	}
 
@@ -819,13 +813,6 @@ func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
 	result.TotalCount = total
 	var nfts []*dto.Nft
 	for _, modelResult := range modelResults {
-		var tag map[string]interface{}
-		err = modelResult.Tag.Unmarshal(&tag)
-		if err != nil {
-			log.Error("Nfts : Unmarshal json error:", err.Error())
-			return nil, err
-		}
-
 		nft := &dto.Nft{
 			Id:        modelResult.NFTID,
 			Name:      modelResult.Name.String,
@@ -834,7 +821,6 @@ func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
 			Owner:     modelResult.Owner,
 			Status:    modelResult.Status,
 			TxHash:    modelResult.TXHash,
-			Tag:       tag,
 			Timestamp: modelResult.Timestamp.Time.String(),
 		}
 		for _, class := range classByIds {

@@ -34,7 +34,6 @@ type NftClass struct {
 	Symbol    string                 `json:"symbol"`
 	NftCount  uint64                 `json:"nft_count"`
 	Uri       string                 `json:"uri"`
-	Tag       map[string]interface{} `json:"tag"`
 	Timestamp string                 `json:"timestamp"`
 }
 
@@ -48,7 +47,6 @@ type NftClassRes struct {
 	Uri         string                 `json:"uri"`
 	Timestamp   string                 `json:"timestamp"`
 	UriHash     string                 `json:"uri_hash"`
-	Tag         map[string]interface{} `json:"tag"`
 	Data        string                 `json:"data"`
 	Description string                 `json:"description"`
 }

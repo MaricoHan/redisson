@@ -57,7 +57,6 @@ type NftR struct {
 	Owner       string                 `json:"owner"`
 	Status      string                 `json:"status"`
 	TxHash      string                 `json:"tx_hash"`
-	Tag         map[string]interface{} `json:"tag"`
 	Timestamp   string                 `json:"timestamp"`
 }
 
@@ -86,7 +85,6 @@ type Nft struct {
 	Owner       string                 `json:"owner"`
 	Status      string                 `json:"status"`
 	TxHash      string                 `json:"tx_hash"`
-	Tag         map[string]interface{} `json:"tag"`
 	Timestamp   string                 `json:"timestamp"`
 }
 
