@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"encoding/json"
 	"strings"
 
 	types2 "github.com/irisnet/core-sdk-go/types"
@@ -47,13 +46,9 @@ func (h nftTransfer) TransferNftClassByID(ctx context.Context, request interface
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
 	}
 
-	var tagBytes []byte
-	if len(req.Tag) > 0 {
-		tagBytes, _ := json.Marshal(req.Tag)
-		tag := string(tagBytes)
-		if _, err := h.IsValTag(tag); err != nil {
-			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
-		}
+	tagBytes,err :=h.ValidateTag(req.Tag)
+	if err!=nil{
+		return nil,err
 	}
 
 	//校验参数 end
@@ -85,13 +80,9 @@ func (h nftTransfer) TransferNftByNftId(ctx context.Context, request interface{}
 	if err := types2.ValidateAccAddress(recipient); err != nil {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
 	}
-	var tagBytes []byte
-	if len(req.Tag) > 0 {
-		tagBytes, _ := json.Marshal(req.Tag)
-		tag := string(tagBytes)
-		if _, err := h.IsValTag(tag); err != nil {
-			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
-		}
+	tagBytes,err :=h.ValidateTag(req.Tag)
+	if err!=nil{
+		return nil,err
 	}
 
 	// 校验参数 end

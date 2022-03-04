@@ -65,11 +65,6 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsP) (*dto.TxRes, error) {
 			return err
 		}
 
-		// ValidateRecipient
-		if err := svc.base.ValidateRecipient(params.Recipient, params.ProjectID); err != nil {
-			return err
-		}
-
 		offSet := classOne.Offset
 		var msgs sdktype.Msgs
 		for i := 1; i <= params.Amount; i++ {
@@ -78,6 +73,10 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsP) (*dto.TxRes, error) {
 			if params.Recipient == "" {
 				//默认为 NFT 类别的权属者地址
 				params.Recipient = classOne.Owner
+			}
+			// ValidateRecipient
+			if err := svc.base.ValidateRecipient(params.Recipient, params.ProjectID); err != nil {
+				return err
 			}
 			createNft := nft.MsgMintNFT{
 				Id:        nftId,
