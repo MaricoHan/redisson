@@ -42,7 +42,7 @@ func (h base) ChainID(ctx context.Context) uint64 {
 }
 
 func (h base) PlatFormID(ctx context.Context) uint64 {
-	keysList := ctx.Value("X-PlatForm-Id")
+	keysList := ctx.Value("X-Platform-Id")
 	keysListString, ok := keysList.([]string)
 	if !ok {
 		return 0

@@ -75,6 +75,10 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 	//sign
 	baseTx := svc.base.CreateBaseTx(params.Owner, "")
 	baseTx.Gas = svc.base.transferDenomGas(class)
+	err = svc.base.GasThan(params.Owner, params.ChainID, baseTx.Gas, params.PlatFormID)
+	if err != nil {
+		return nil, types.ErrInternal
+	}
 	data, hash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
 	if err != nil {
 		log.Debug("transfer nft class", "BuildAndSign error:", err.Error())
@@ -191,6 +195,10 @@ func (svc *NftTransfer) TransferNftByNftId(params dto.TransferNftByNftIdP) (*dto
 	baseTx := svc.base.CreateBaseTx(params.Owner, "")
 	data, hash, _ := svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
 	baseTx.Gas = svc.base.transferOneNftGas(data)
+	err = svc.base.GasThan(params.Owner, params.ChainID, baseTx.Gas, params.PlatFormID)
+	if err != nil {
+		return nil, types.ErrInternal
+	}
 	data, hash, err = svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
 	if err != nil {
 		log.Debug("transfer nft by index", "BuildAndSign error:", err.Error())

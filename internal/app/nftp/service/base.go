@@ -5,7 +5,10 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
+	"fmt"
 	"github.com/friendsofgo/errors"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"
 	"strings"
 
 	sdk "github.com/irisnet/core-sdk-go"
@@ -408,4 +411,52 @@ func (m Base) EncodeData(data string) string {
 	hashBz := sha256.Sum256([]byte(data))
 	hash := strings.ToUpper(hex.EncodeToString(hashBz[:]))
 	return hash
+}
+
+func (m Base) GasThan(address string, chainId, gas, platformId uint64) error {
+	err := modext.Transaction(func(exec boil.ContextExecutor) error {
+		// unPaidGas 待支付的gas
+		tx, err := models.TTXS(
+			qm.Select("SUM(gas_used) as gas_used"),
+			models.TTXWhere.Sender.EQ(null.StringFrom(address)),
+			models.TTXWhere.Status.IN([]string{models.TTXSStatusPending, models.TTXSStatusUndo})).One(context.Background(), exec)
+		if err != nil {
+			return types.ErrNotFound
+		}
+		unPaidGas := tx.GasUsed.Int64
+		chain, err := models.TChains(models.TChainWhere.ID.EQ(chainId),
+			models.TChainWhere.Status.EQ(0)).OneG(context.Background())
+		if err != nil {
+			return types.ErrNotFound
+		}
+		//gasPrice 每条链的gasPrice
+		gasPrice, ok := chain.GasPrice.Big.Float64()
+		if !ok {
+			return errors.New("cannot get float64 of gasPrice")
+		}
+		// unPaidMoney   = 这些未支付的交易需要扣除的money  =  gasPrice * unPaidGas
+		unPaidMoney := float64(unPaidGas) * gasPrice
+		pAccount, err := models.TPlatformAccounts(models.TPlatformAccountWhere.ID.EQ(platformId)).One(context.Background(), exec)
+
+		if err != nil {
+			return errors.New(fmt.Sprintf("cannot query PlatFormAccount and platformId is : %v", platformId))
+		}
+		//amount 平台方的余额
+		amount, ok := pAccount.Amount.Big.Float64()
+		if !ok {
+			return errors.New("cannot get float64 of amount")
+		}
+		//如果amount小于未支付金额,返回错误
+		if amount < unPaidMoney {
+			return errors.New("amount not enough")
+		}
+		//balance = 减去待支付金额的余额
+		balance := amount - unPaidMoney
+		gasMoney := float64(gas) * gasPrice
+		if balance < gasMoney {
+			return errors.New("balance not enough")
+		}
+		return err
+	})
+	return err
 }

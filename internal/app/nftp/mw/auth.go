@@ -96,7 +96,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Info("signature:", h.Signature(r, projectKeyResult.ProjectSecret, reqTimestampStr, reqSignature))
 	r.Header.Set("X-App-Id", fmt.Sprintf("%d", project.ID))
 	r.Header.Set("X-Chain-Id", fmt.Sprintf("%d", project.ChainID))
-	r.Header.Set("X-PlatForm-Id", fmt.Sprintf("%d", project.PlatformID))
+	r.Header.Set("X-Platform-Id", fmt.Sprintf("%d", uint64(project.PlatformID.Int64)))
 	h.next.ServeHTTP(w, r)
 }
 
