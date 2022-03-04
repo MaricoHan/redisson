@@ -227,10 +227,15 @@ func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface
 
 // DeleteNftByNftId Delete a nft and return the edited result
 func (h nft) DeleteNftByNftId(ctx context.Context, request interface{}) (interface{}, error) {
-	req := request.(*vo.DeleteNftByNftIdRequest)
-	tagBytes,err :=h.ValidateTag(req.Tag)
-	if err!=nil{
-		return nil,err
+
+	var tagBytes []byte
+	var err error
+	if request!=nil{
+		req := request.(*vo.DeleteNftByNftIdRequest)
+		tagBytes,err =h.ValidateTag(req.Tag)
+		if err!=nil{
+			return nil,err
+		}
 	}
 
 	params := dto.DeleteNftByNftIdP{
