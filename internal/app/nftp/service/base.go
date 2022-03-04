@@ -371,14 +371,14 @@ func (m Base) Grant(address string) (string, error) {
 
 // ValidateSigner validate signer
 func (m Base) ValidateSigner(sender string, projectid uint64) error {
-	//recipient不能为平台外账户或此应用外账户或非法账户
+	//signer不能为project外账户
 	_, err := models.TAccounts(
 		models.TAccountWhere.ProjectID.EQ(projectid),
 		models.TAccountWhere.Address.EQ(sender)).OneG(context.Background())
 	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
 		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
-		//403
-		return types.ErrAuthenticate
+		//404
+		return types.ErrNotFound
 	} else if err != nil {
 		//500
 		log.Error("validate signer", "query signer error:", err.Error())
