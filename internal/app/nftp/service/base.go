@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
+	"github.com/friendsofgo/errors"
 	"strings"
 
 	sdk "github.com/irisnet/core-sdk-go"
@@ -40,7 +41,7 @@ func NewBase(sdkClient sdk.Client, gas uint64, denom string, amount int64) *Base
 func (m Base) QueryRootAccount() (*models.TAccount, *types.AppError) {
 	//platform address
 	account, err := models.TAccounts(
-		models.TAccountWhere.ChainID.EQ(uint64(0)),
+		models.TAccountWhere.ProjectID.EQ(uint64(0)),
 	).OneG(context.Background())
 	if err != nil {
 		//500
@@ -85,10 +86,10 @@ func (m Base) BuildAndSend(msgs sdktype.Msgs, baseTx sdktype.BaseTx) (sdktype.Re
 }
 
 // UndoTxIntoDataBase operationType : issue_class,mint_nft,edit_nft,edit_nft_batch,burn_nft,burn_nft_batch
-func (m Base) UndoTxIntoDataBase(sender, operationType, taskId, txHash string, ChainID uint64, signedData, message, tag []byte, gasUsed int64, exec boil.ContextExecutor) (uint64, error) {
+func (m Base) UndoTxIntoDataBase(sender, operationType, taskId, txHash string, ProjectID uint64, signedData, message, tag []byte, gasUsed int64, exec boil.ContextExecutor) (uint64, error) {
 	// Tx into database
 	ttx := models.TTX{
-		ChainID:       ChainID,
+		ProjectID:     ProjectID,
 		Hash:          txHash,
 		OriginData:    null.BytesFrom(signedData),
 		OperationType: operationType,
@@ -191,7 +192,7 @@ Estimated gas required to transfer denom
 It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048356
 */
 func (m Base) transferDenomGas(class *models.TClass) uint64 {
-	l := len([]byte(class.ClassID)) + len([]byte(class.Status)) + len([]byte(class.Owner)) + len([]byte(class.TXHash)) + len([]byte(string(class.ChainID))) + len([]byte(string(class.ID))) + len([]byte(string(class.Offset)))
+	l := len([]byte(class.ClassID)) + len([]byte(class.Status)) + len([]byte(class.Owner)) + len([]byte(class.TXHash)) + len([]byte(string(class.ProjectID))) + len([]byte(string(class.ID))) + len([]byte(string(class.Offset)))
 	if class.LockedBy.Valid {
 		l += len([]byte(string(class.LockedBy.Uint64)))
 	}
@@ -363,6 +364,43 @@ func (m Base) Grant(address string) (string, error) {
 	}
 
 	return res.Hash, nil
+}
+
+// ValidateSigner validate signer
+func (m Base) ValidateSigner(sender string, projectid uint64) error {
+	//recipient不能为平台外账户或此应用外账户或非法账户
+	_, err := models.TAccounts(
+		models.TAccountWhere.ProjectID.EQ(projectid),
+		models.TAccountWhere.Address.EQ(sender)).OneG(context.Background())
+	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
+		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
+		//403
+		return types.ErrAuthenticate
+	} else if err != nil {
+		//500
+		log.Error("validate signer", "query signer error:", err.Error())
+		return types.ErrInternal
+	}
+
+	return nil
+}
+
+// ValidateRecipient validate recipient
+func (m Base) ValidateRecipient(recipient string, projectid uint64) error {
+	//recipient不能为project外的账户
+	_, err := models.TAccounts(
+		models.TAccountWhere.ProjectID.EQ(projectid),
+		models.TAccountWhere.Address.EQ(recipient)).OneG(context.Background())
+	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
+		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
+		//400
+		return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientFound)
+	} else if err != nil {
+		//500
+		log.Error("validate recipient", "query recipient error:", err.Error())
+		return types.ErrInternal
+	}
+	return nil
 }
 
 // EncodeData 加密序列

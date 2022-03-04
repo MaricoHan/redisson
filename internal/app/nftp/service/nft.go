@@ -41,7 +41,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsP) (*dto.TxRes, error) {
 	var taskId string
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		classOne, err := models.TClasses(
-			models.TClassWhere.ChainID.EQ(params.ChainId),
+			models.TClassWhere.ProjectID.EQ(params.ProjectID),
 			models.TClassWhere.ClassID.EQ(params.ClassId),
 		).One(context.Background(), exec)
 
@@ -58,6 +58,16 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsP) (*dto.TxRes, error) {
 		//400
 		if classOne.Status != models.TNFTSStatusActive {
 			return types.ErrNftClassStatus
+		}
+
+		// ValidateSigner
+		if err := svc.base.ValidateSigner(classOne.Owner, params.ProjectID); err != nil {
+			return err
+		}
+
+		// ValidateRecipient
+		if err := svc.base.ValidateRecipient(params.Recipient, params.ProjectID); err != nil {
+			return err
 		}
 
 		offSet := classOne.Offset
@@ -108,7 +118,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsP) (*dto.TxRes, error) {
 		code := fmt.Sprintf("%s%s%s", classOne.Owner, models.TTXSOperationTypeMintNFT, time.Now().String())
 		taskId = svc.base.EncodeData(code)
 		ttx := models.TTX{
-			ChainID:       params.ChainId,
+			ProjectID:     params.ProjectID,
 			Hash:          tHash,
 			Timestamp:     null.Time{Time: time.Now()},
 			Message:       null.JSONFrom(msgsBytes),
@@ -149,7 +159,11 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsP) (*dto.TxRes, error) {
 }
 
 func (svc *Nft) EditNftByNftId(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
-	tNft, err := models.TNFTS(models.TNFTWhere.ChainID.EQ(params.ChainId),
+	// ValidateSigner
+	if err := svc.base.ValidateSigner(params.Sender, params.ProjectID); err != nil {
+		return nil, err
+	}
+	tNft, err := models.TNFTS(models.TNFTWhere.ProjectID.EQ(params.ProjectID),
 		models.TNFTWhere.ClassID.EQ(params.ClassId),
 		models.TNFTWhere.NFTID.EQ(params.NftId),
 		models.TNFTWhere.Owner.EQ(params.Sender)).
@@ -232,7 +246,7 @@ func (svc *Nft) EditNftByNftId(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 
 		// Tx into database
 		txId, err := svc.base.UndoTxIntoDataBase(params.Sender, models.TTXSOperationTypeEditNFT, taskId, txHash,
-			params.ChainId, signedData, messageByte, params.Tag, int64(baseTx.Gas), exec)
+			params.ProjectID, signedData, messageByte, params.Tag, int64(baseTx.Gas), exec)
 		if err != nil {
 			log.Debug("edit nft by nftId", "Tx into database error:", err.Error())
 			return err
@@ -261,7 +275,7 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (*dto.TxRes, error) {
 	var msgEditNFTs sdktype.Msgs
 	var nftsLen uint64
 	for i, EditNft := range params.EditNfts {
-		tNft, err := models.TNFTS(models.TNFTWhere.ChainID.EQ(params.ChainId),
+		tNft, err := models.TNFTS(models.TNFTWhere.ProjectID.EQ(params.ProjectID),
 			models.TNFTWhere.ClassID.EQ(params.ClassId),
 			models.TNFTWhere.Owner.EQ(params.Sender),
 			models.TNFTWhere.NFTID.EQ(EditNft.NftId)).
@@ -345,7 +359,7 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (*dto.TxRes, error) {
 		code := fmt.Sprintf("%s%s%s", params.Sender, models.TTXSOperationTypeEditNFTBatch, time.Now().String())
 		taskId = svc.base.EncodeData(code)
 		txId, err := svc.base.UndoTxIntoDataBase(params.Sender, models.TTXSOperationTypeEditNFTBatch, taskId, txHash,
-			params.ChainId, signedData, messageByte, nil, int64(baseTx.Gas), exec)
+			params.ProjectID, signedData, messageByte, nil, int64(baseTx.Gas), exec)
 		if err != nil {
 			log.Debug("edit nft by batch", "Tx into database error:", err.Error())
 			return err
@@ -353,7 +367,7 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (*dto.TxRes, error) {
 
 		// lock the NFTs
 		for _, EditNft := range params.EditNfts { // create every rawMsg
-			tNft, err := models.TNFTS(models.TNFTWhere.ChainID.EQ(params.ChainId),
+			tNft, err := models.TNFTS(models.TNFTWhere.ProjectID.EQ(params.ProjectID),
 				models.TNFTWhere.ClassID.EQ(params.ClassId),
 				models.TNFTWhere.NFTID.EQ(EditNft.NftId)).
 				One(context.Background(), exec)
@@ -378,7 +392,12 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (*dto.TxRes, error) {
 }
 
 func (svc *Nft) DeleteNftByNftId(params dto.DeleteNftByNftIdP) (*dto.TxRes, error) {
-	tNft, err := models.TNFTS(models.TNFTWhere.ChainID.EQ(params.ChainId),
+	// ValidateSigner
+	if err := svc.base.ValidateSigner(params.Sender, params.ProjectID); err != nil {
+		return nil, err
+	}
+
+	tNft, err := models.TNFTS(models.TNFTWhere.ProjectID.EQ(params.ProjectID),
 		models.TNFTWhere.ClassID.EQ(params.ClassId),
 		models.TNFTWhere.NFTID.EQ(params.NftId),
 		models.TNFTWhere.Owner.EQ(params.Sender)).
@@ -446,7 +465,7 @@ func (svc *Nft) DeleteNftByNftId(params dto.DeleteNftByNftIdP) (*dto.TxRes, erro
 		taskId = svc.base.EncodeData(code)
 		// Tx into database
 		txId, err := svc.base.UndoTxIntoDataBase(params.Sender, models.TTXSOperationTypeBurnNFT, taskId, txHash,
-			params.ChainId, signedData, messageByte, nil, int64(baseTx.Gas), exec)
+			params.ProjectID, signedData, messageByte, params.Tag, int64(baseTx.Gas), exec)
 
 		if err != nil {
 			log.Debug("delete nft by nftId", "Tx into database error:", err.Error())
@@ -473,11 +492,15 @@ func (svc *Nft) DeleteNftByNftId(params dto.DeleteNftByNftIdP) (*dto.TxRes, erro
 }
 
 func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (*dto.TxRes, error) {
+	// ValidateSigner
+	if err := svc.base.ValidateSigner(params.Sender, params.ProjectID); err != nil {
+		return nil, err
+	}
 	// create rawMsgs
 	var msgBurnNFTs sdktype.Msgs
 	var nftsLen uint64
 	for i, nftId := range params.NftIds {
-		tNft, err := models.TNFTS(models.TNFTWhere.ChainID.EQ(params.ChainId),
+		tNft, err := models.TNFTS(models.TNFTWhere.ProjectID.EQ(params.ProjectID),
 			models.TNFTWhere.ClassID.EQ(params.ClassId),
 			models.TNFTWhere.NFTID.EQ(nftId),
 			models.TNFTWhere.Owner.EQ(params.Sender)).
@@ -547,7 +570,7 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (*dto.TxRes, erro
 		taskId = svc.base.EncodeData(code)
 		// Tx into database
 		txId, err := svc.base.UndoTxIntoDataBase(params.Sender, models.TTXSOperationTypeBurnNFTBatch, taskId, txHash,
-			params.ChainId, signedData, messageByte, nil, int64(baseTx.Gas), exec)
+			params.ProjectID, signedData, messageByte, nil, int64(baseTx.Gas), exec)
 		if err != nil {
 			log.Debug("delete nft by batch", "Tx into database error:", err.Error())
 			return err
@@ -556,7 +579,7 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (*dto.TxRes, erro
 		// lock the NFTs
 		for _, nftId := range params.NftIds { // lock every nft
 			tNft, err := models.TNFTS(
-				models.TNFTWhere.ChainID.EQ(params.ChainId),
+				models.TNFTWhere.ProjectID.EQ(params.ProjectID),
 				models.TNFTWhere.ClassID.EQ(params.ClassId),
 				models.TNFTWhere.NFTID.EQ(nftId)).
 				One(context.Background(), exec)
@@ -581,7 +604,7 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (*dto.TxRes, erro
 
 func (svc *Nft) NftByNftId(params dto.NftByNftIdP) (*dto.NftR, error) {
 	// get NFT by app_id,class_id and nftId
-	tNft, err := models.TNFTS(models.TNFTWhere.ChainID.EQ(params.ChainId),
+	tNft, err := models.TNFTS(models.TNFTWhere.ProjectID.EQ(params.ProjectID),
 		models.TNFTWhere.ClassID.EQ(params.ClassId),
 		models.TNFTWhere.NFTID.EQ(params.NftId)).
 		One(context.Background(), boil.GetContextDB())
@@ -640,7 +663,7 @@ func (svc *Nft) NftOperationHistoryByNftId(params dto.NftOperationHistoryByNftId
 		OperationRecords: []*dto.OperationRecord{},
 	}
 	res, err := models.TNFTS(
-		models.TNFTWhere.ChainID.EQ(params.ChainId),
+		models.TNFTWhere.ProjectID.EQ(params.ProjectID),
 		models.TNFTWhere.ClassID.EQ(params.ClassID),
 		models.TNFTWhere.NFTID.EQ(params.NftId),
 	).OneG(context.Background())
@@ -661,7 +684,7 @@ func (svc *Nft) NftOperationHistoryByNftId(params dto.NftOperationHistoryByNftId
 			models.TMSGColumns.Signer,
 			models.TMSGColumns.Recipient,
 			models.TMSGColumns.Timestamp),
-		models.TMSGWhere.ChainID.EQ(params.ChainId),
+		models.TMSGWhere.ProjectID.EQ(params.ProjectID),
 		models.TMSGWhere.NFTID.EQ(null.StringFrom(res.NFTID)),
 	}
 	if params.Txhash != "" {
@@ -730,7 +753,7 @@ func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
 	result.Nfts = []*dto.Nft{}
 	queryMod := []qm.QueryMod{
 		qm.From(models.TableNames.TNFTS),
-		models.TNFTWhere.ChainID.EQ(params.ChainId),
+		models.TNFTWhere.ProjectID.EQ(params.ProjectID),
 	}
 	if params.Id != "" {
 		queryMod = append(queryMod, models.TNFTWhere.NFTID.EQ(params.Id))

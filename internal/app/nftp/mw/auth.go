@@ -61,7 +61,6 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	project, err := models.TProjects(
-		qm.Select(models.TProjectColumns.ChainID),
 		models.TProjectWhere.ID.EQ(projectKeyResult.ProjectID)).OneG(context.Background())
 	if err != nil {
 		log.Error("server http", "project error:", err)
@@ -95,7 +94,9 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Info("signature:", h.Signature(r, projectKeyResult.ProjectSecret, reqTimestampStr, reqSignature))
-	r.Header.Set("X-App-Id", fmt.Sprintf("%d", project.ChainID))
+	r.Header.Set("X-App-Id", fmt.Sprintf("%d", project.ID))
+	r.Header.Set("X-Chain-Id", fmt.Sprintf("%d", project.ChainID))
+	r.Header.Set("X-PlatForm-Id", fmt.Sprintf("%d", project.PlatformID))
 	h.next.ServeHTTP(w, r)
 }
 

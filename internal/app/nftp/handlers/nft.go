@@ -53,13 +53,11 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 	data := strings.TrimSpace(req.Data)
 	recipient := strings.TrimSpace(req.Recipient)
 	var tagBytes []byte
-	if req.Tag != nil {
+	if len(req.Tag) > 0 {
 		tagBytes, _ := json.Marshal(req.Tag)
 		tag := string(tagBytes)
-		if tag != "" {
-			if _, err := h.IsValTag(tag); err != nil {
-				return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
-			}
+		if _, err := h.IsValTag(tag); err != nil {
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
 		}
 	}
 
@@ -94,14 +92,15 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
 		}
 	}
-
 	params := dto.CreateNftsP{
-		ChainId: h.ChainID(ctx),
-		ClassId: h.ClassId(ctx),
-		Name:    name,
-		Uri:     uri,
-		UriHash: uriHash,
-		Data:    data,
+		ChainID:    h.ChainID(ctx),
+		ProjectID:  h.ProjectID(ctx),
+		PlatFormID: h.PlatFormID(ctx),
+		ClassId:    h.ClassId(ctx),
+		Name:       name,
+		Uri:        uri,
+		UriHash:    uriHash,
+		Data:       data,
 		//Amount:    req.Amount,
 		Recipient: recipient,
 		Tag:       tagBytes,
@@ -124,13 +123,11 @@ func (h nft) EditNftByNftId(ctx context.Context, request interface{}) (interface
 	uri := strings.TrimSpace(req.Uri)
 	data := strings.TrimSpace(req.Data)
 	var tagBytes []byte
-	if req.Tag != nil {
-		tagBytes, _ = json.Marshal(req.Tag)
+	if len(req.Tag) > 0 {
+		tagBytes, _ := json.Marshal(req.Tag)
 		tag := string(tagBytes)
-		if tag != "" {
-			if _, err := h.IsValTag(tag); err != nil {
-				return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
-			}
+		if _, err := h.IsValTag(tag); err != nil {
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
 		}
 	}
 	//check start
@@ -148,10 +145,12 @@ func (h nft) EditNftByNftId(ctx context.Context, request interface{}) (interface
 	}
 	//check end
 	params := dto.EditNftByNftIdP{
-		ChainId: h.ChainID(ctx),
-		ClassId: h.ClassId(ctx),
-		Sender:  h.Owner(ctx),
-		NftId:   h.NftId(ctx),
+		ChainID:    h.ChainID(ctx),
+		ProjectID:  h.ProjectID(ctx),
+		PlatFormID: h.PlatFormID(ctx),
+		ClassId:    h.ClassId(ctx),
+		Sender:     h.Owner(ctx),
+		NftId:      h.NftId(ctx),
 
 		Name: name,
 		Uri:  uri,
@@ -209,10 +208,12 @@ func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface
 	}
 
 	params := dto.EditNftByBatchP{
-		EditNfts: nfts,
-		ChainId:  h.ChainID(ctx),
-		ClassId:  h.ClassId(ctx),
-		Sender:   h.Owner(ctx),
+		EditNfts:   nfts,
+		ChainID:    h.ChainID(ctx),
+		ProjectID:  h.ProjectID(ctx),
+		PlatFormID: h.PlatFormID(ctx),
+		ClassId:    h.ClassId(ctx),
+		Sender:     h.Owner(ctx),
 	}
 	//check start
 	//1. count limit :50
@@ -234,15 +235,28 @@ func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface
 }
 
 // DeleteNftByNftId Delete a nft and return the edited result
-func (h nft) DeleteNftByNftId(ctx context.Context, _ interface{}) (interface{}, error) {
-	//check start
+func (h nft) DeleteNftByNftId(ctx context.Context, request interface{}) (interface{}, error) {
+	req := request.(*vo.DeleteNftByNftIdRequest)
 
+	var tagBytes []byte
+	//check start
+	if len(req.Tag) > 0 {
+		tagBytes, _ := json.Marshal(req.Tag)
+		tag := string(tagBytes)
+		if _, err := h.IsValTag(tag); err != nil {
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
+		}
+	}
 	//check end
+
 	params := dto.DeleteNftByNftIdP{
-		ChainId: h.ChainID(ctx),
-		ClassId: h.ClassId(ctx),
-		Sender:  h.Owner(ctx),
-		NftId:   h.NftId(ctx),
+		ChainID:    h.ChainID(ctx),
+		ProjectID:  h.ProjectID(ctx),
+		PlatFormID: h.PlatFormID(ctx),
+		ClassId:    h.ClassId(ctx),
+		Sender:     h.Owner(ctx),
+		NftId:      h.NftId(ctx),
+		Tag:        tagBytes,
 	}
 
 	return h.svc.DeleteNftByNftId(params)
@@ -276,10 +290,12 @@ func (h nft) DeleteNftByBatch(ctx context.Context, _ interface{}) (interface{}, 
 	//check end
 
 	params := dto.DeleteNftByBatchP{
-		ChainId: h.ChainID(ctx),
-		ClassId: h.ClassId(ctx),
-		Sender:  h.Owner(ctx),
-		NftIds:  nftIds,
+		ChainID:    h.ChainID(ctx),
+		ProjectID:  h.ProjectID(ctx),
+		PlatFormID: h.PlatFormID(ctx),
+		ClassId:    h.ClassId(ctx),
+		Sender:     h.Owner(ctx),
+		NftIds:     nftIds,
 	}
 
 	return h.svc.DeleteNftByBatch(params)
@@ -293,12 +309,14 @@ func (h nft) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 	}
 	// 校验参数 start
 	params := dto.NftsP{
-		ChainId: h.ChainID(ctx),
-		Id:      h.Id(ctx),
-		ClassId: h.ClassId(ctx),
-		Owner:   h.Owner(ctx),
-		TxHash:  h.TxHash(ctx),
-		Status:  status,
+		ChainID:    h.ChainID(ctx),
+		ProjectID:  h.ProjectID(ctx),
+		PlatFormID: h.PlatFormID(ctx),
+		Id:         h.Id(ctx),
+		ClassId:    h.ClassId(ctx),
+		Owner:      h.Owner(ctx),
+		TxHash:     h.TxHash(ctx),
+		Status:     status,
 	}
 	offset, err := h.Offset(ctx)
 	if err != nil {
@@ -364,9 +382,11 @@ func (h nft) NftByNftId(ctx context.Context, _ interface{}) (interface{}, error)
 
 	//check end
 	params := dto.NftByNftIdP{
-		ChainId: h.ChainID(ctx),
-		ClassId: h.ClassId(ctx),
-		NftId:   h.NftId(ctx),
+		ChainID:    h.ChainID(ctx),
+		ProjectID:  h.ProjectID(ctx),
+		PlatFormID: h.PlatFormID(ctx),
+		ClassId:    h.ClassId(ctx),
+		NftId:      h.NftId(ctx),
 	}
 
 	return h.svc.NftByNftId(params)
@@ -380,9 +400,11 @@ func (h nft) NftOperationHistoryByNftId(ctx context.Context, _ interface{}) (int
 	//check start
 
 	params := dto.NftOperationHistoryByNftIdP{
-		ClassID: h.ClassId(ctx),
-		NftId:   h.NftId(ctx),
-		ChainId: h.ChainID(ctx),
+		ClassID:    h.ClassId(ctx),
+		NftId:      h.NftId(ctx),
+		ChainID:    h.ChainID(ctx),
+		ProjectID:  h.ProjectID(ctx),
+		PlatFormID: h.PlatFormID(ctx),
 	}
 
 	offset, err := h.Offset(ctx)

@@ -238,7 +238,7 @@ func (c Controller) serverOptions(
 				types.NftClassStatusAbnormal, types.MaximumLimitExceeded:
 				metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "400"}...).Add(1)
 				w.WriteHeader(http.StatusBadRequest) //400
-			case types.AuthenticationFailed,types.StructureSignTransactionFailed:
+			case types.AuthenticationFailed, types.StructureSignTransactionFailed:
 				metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "403"}...).Add(1)
 				w.WriteHeader(http.StatusForbidden) //403
 			case types.NotFound:

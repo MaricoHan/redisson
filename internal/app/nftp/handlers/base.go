@@ -12,20 +12,43 @@ import (
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 )
 
-const timeLayout = "2006-01-02 15:04:05"
-const timeLayoutWithoutHMS = "2006-01-02"
+const (
+	timeLayout           = "2006-01-02 15:04:05"
+	timeLayoutWithoutHMS = "2006-01-02"
+	SqlNoFound           = "records not exist"
+)
 
 type base struct {
 }
 
-func (h base) ChainID(ctx context.Context) uint64 {
+func (h base) ProjectID(ctx context.Context) uint64 {
 	keysList := ctx.Value("X-App-Id")
+	keysListString, ok := keysList.([]string)
+	if !ok {
+		return 0
+	}
+	projectID, _ := strconv.ParseInt(keysListString[0], 10, 64)
+	return uint64(projectID)
+}
+
+func (h base) ChainID(ctx context.Context) uint64 {
+	keysList := ctx.Value("X-Chain-Id")
 	keysListString, ok := keysList.([]string)
 	if !ok {
 		return 0
 	}
 	ChainID, _ := strconv.ParseInt(keysListString[0], 10, 64)
 	return uint64(ChainID)
+}
+
+func (h base) PlatFormID(ctx context.Context) uint64 {
+	keysList := ctx.Value("X-PlatForm-Id")
+	keysListString, ok := keysList.([]string)
+	if !ok {
+		return 0
+	}
+	PlatFormID, _ := strconv.ParseInt(keysListString[0], 10, 64)
+	return uint64(PlatFormID)
 }
 
 func (h base) UriCheck(uri string) error {

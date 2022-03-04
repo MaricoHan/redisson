@@ -82,11 +82,11 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, e
 			}
 
 			tmp := &models.TAccount{
-				ChainID:  params.ChainId,
-				Address:  tmpAddress,
-				AccIndex: uint64(index),
-				PriKey:   base64.StdEncoding.EncodeToString(codec.MarshalPrivKey(priv)),
-				PubKey:   base64.StdEncoding.EncodeToString(codec.MarshalPubkey(res.ExportPubKey())),
+				ProjectID: params.ProjectID,
+				Address:   tmpAddress,
+				AccIndex:  uint64(index),
+				PriKey:    base64.StdEncoding.EncodeToString(codec.MarshalPrivKey(priv)),
+				PubKey:    base64.StdEncoding.EncodeToString(codec.MarshalPubkey(res.ExportPubKey())),
 			}
 
 			tAccounts = append(tAccounts, tmp)
@@ -122,7 +122,8 @@ func (svc *Account) Accounts(params dto.AccountsP) (*dto.AccountsRes, error) {
 	queryMod := []qm.QueryMod{
 		qm.From(models.TableNames.TAccounts),
 		qm.Select(models.TAccountColumns.Address, models.TAccountColumns.Gas),
-		models.TAccountWhere.ChainID.EQ(params.ChainId),
+		models.TAccountWhere.ID.NEQ(0),
+		models.TAccountWhere.ProjectID.EQ(params.ProjectID),
 	}
 	if params.Account != "" {
 		queryMod = append(queryMod, models.TAccountWhere.Address.EQ(params.Account))
@@ -187,7 +188,7 @@ func (svc *Account) AccountsHistory(params dto.AccountsP) (*dto.AccountOperation
 	}
 	queryMod := []qm.QueryMod{
 		qm.From(models.TableNames.TMSGS),
-		models.TMSGWhere.ChainID.EQ(params.ChainId),
+		models.TMSGWhere.ProjectID.EQ(params.ProjectID),
 		models.TMSGWhere.Operation.NEQ(models.TMSGSOperationSysIssueClass),
 	}
 

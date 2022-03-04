@@ -36,10 +36,19 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrSelfTransfer)
 	}
 
+	// ValidateSigner
+	if err := svc.base.ValidateSigner(params.Owner, params.ProjectID); err != nil {
+		return nil, err
+	}
+
+	// ValidateRecipient
+	if err := svc.base.ValidateRecipient(params.Recipient, params.ProjectID); err != nil {
+		return nil, err
+	}
 	//判断class
 	class, err := models.TClasses(
 		models.TClassWhere.ClassID.EQ(params.ClassID),
-		models.TClassWhere.ChainID.EQ(params.ChainId),
+		models.TClassWhere.ProjectID.EQ(params.ProjectID),
 		models.TClassWhere.Owner.EQ(params.Owner)).OneG(context.Background())
 	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
 		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
@@ -94,7 +103,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 		taskId = svc.base.EncodeData(code)
 		// Tx into database
 		txId, err := svc.base.UndoTxIntoDataBase(params.Owner, models.TTXSOperationTypeTransferClass, taskId, hash,
-			params.ChainId, data, messageByte, nil, int64(baseTx.Gas), exec)
+			params.ProjectID, data, messageByte, params.Tag, int64(baseTx.Gas), exec)
 
 		if err != nil {
 			log.Debug("transfer nft class", "Tx Into DataBase error:", err.Error())
@@ -130,12 +139,21 @@ func (svc *NftTransfer) TransferNftByNftId(params dto.TransferNftByNftIdP) (*dto
 	if params.Recipient == params.Owner {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrSelfTransfer)
 	}
+	// ValidateSigner
+	if err := svc.base.ValidateSigner(params.Owner, params.ProjectID); err != nil {
+		return nil, err
+	}
+
+	// ValidateRecipient
+	if err := svc.base.ValidateRecipient(params.Recipient, params.ProjectID); err != nil {
+		return nil, err
+	}
 
 	//msg
 	res, err := models.TNFTS(
 		models.TNFTWhere.NFTID.EQ(params.NftId),
-		models.TNFTWhere.ClassID.EQ(string(params.ClassID)),
-		models.TNFTWhere.ChainID.EQ(params.ChainId),
+		models.TNFTWhere.ClassID.EQ(params.ClassID),
+		models.TNFTWhere.ProjectID.EQ(params.ProjectID),
 		models.TNFTWhere.Owner.EQ(params.Owner),
 	).OneG(context.Background())
 	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
@@ -202,7 +220,7 @@ func (svc *NftTransfer) TransferNftByNftId(params dto.TransferNftByNftIdP) (*dto
 
 		// Tx into database
 		txId, err := svc.base.UndoTxIntoDataBase(params.Owner, models.TTXSOperationTypeTransferNFT, taskId, hash,
-			params.ChainId, data, messageByte, nil, int64(baseTx.Gas), exec)
+			params.ProjectID, data, messageByte, params.Tag, int64(baseTx.Gas), exec)
 
 		if err != nil {
 			log.Debug("transfer nft by index", "Tx Into DataBase error:", err.Error())
@@ -265,7 +283,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (*dto
 
 		res, err := models.TNFTS(models.TNFTWhere.NFTID.EQ(recipient.NftId),
 			models.TNFTWhere.ClassID.EQ(params.ClassID),
-			models.TNFTWhere.ChainID.EQ(params.ChainId),
+			models.TNFTWhere.ProjectID.EQ(params.ProjectID),
 			models.TNFTWhere.Owner.EQ(params.Owner),
 		).OneG(context.Background())
 		if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
@@ -337,7 +355,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (*dto
 
 		// Tx into database
 		txId, err := svc.base.UndoTxIntoDataBase(params.Owner, models.TTXSOperationTypeTransferNFTBatch, taskId, hash,
-			params.ChainId, data, messageByte, nil, int64(baseTx.Gas), exec)
+			params.ProjectID, data, messageByte, nil, int64(baseTx.Gas), exec)
 
 		if err != nil {
 			log.Debug("transfer nft by batch", "Tx Into DataBase error:", err.Error())
@@ -361,7 +379,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (*dto
 			}
 			res, err := models.TNFTS(models.TNFTWhere.NFTID.EQ(recipient.NftId),
 				models.TNFTWhere.ClassID.EQ(params.ClassID),
-				models.TNFTWhere.ChainID.EQ(params.ChainId),
+				models.TNFTWhere.ProjectID.EQ(params.ProjectID),
 				models.TNFTWhere.Owner.EQ(params.Owner),
 			).One(context.Background(), exec)
 			if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
