@@ -595,7 +595,7 @@ func (svc *Nft) NftByNftId(params dto.NftByNftIdP) (*dto.NftR, error) {
 		return nil, types.ErrInternal
 	}
 
-	if !strings.Contains("active/burned", tNft.Status) {
+	if strings.Contains(models.TNFTSStatusPending, tNft.Status) {
 		return nil, types.ErrNftStatus
 	}
 

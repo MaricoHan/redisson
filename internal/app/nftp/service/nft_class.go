@@ -276,6 +276,10 @@ func (svc *NftClass) NftClassById(params dto.NftClassesP) (*dto.NftClassRes, err
 			return types.ErrInternal
 		}
 
+		if !strings.Contains(models.TClassesStatusActive, classOne.Status) {
+			return types.ErrNftClassStatus
+		}
+
 		count, err = models.TNFTS(
 			models.TNFTWhere.ClassID.EQ(params.Id),
 			models.TNFTWhere.ChainID.EQ(params.ChainId),
