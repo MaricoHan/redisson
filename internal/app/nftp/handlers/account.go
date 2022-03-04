@@ -60,8 +60,10 @@ func (h account) CreateAccount(ctx context.Context, request interface{}) (interf
 	req := request.(*vo.CreateAccountRequest)
 
 	params := dto.CreateAccountP{
-		ChainId: h.ChainID(ctx),
-		Count:   req.Count,
+		ChainID:    h.ChainID(ctx),
+		ProjectID:  h.ProjectID(ctx),
+		PlatFormID: h.PlatFormID(ctx),
+		Count:      req.Count,
 	}
 	if params.Count == 0 {
 		params.Count = 1
@@ -81,10 +83,11 @@ func (h account) CreateAccount(ctx context.Context, request interface{}) (interf
 func (h account) Accounts(ctx context.Context, _ interface{}) (interface{}, error) {
 	// 校验参数 start
 	params := dto.AccountsP{
-		ChainId: h.ChainID(ctx),
-		Account: h.Account(ctx),
+		ChainID:    h.ChainID(ctx),
+		ProjectID:  h.ProjectID(ctx),
+		PlatFormID: h.PlatFormID(ctx),
+		Account:    h.Account(ctx),
 	}
-
 	offset, err := h.Offset(ctx)
 	if err != nil {
 		return nil, err
@@ -150,8 +153,10 @@ func (h account) Account(ctx context.Context) string {
 func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{}, error) {
 	// 校验参数 start
 	params := dto.AccountsP{
-		ChainId: h.ChainID(ctx),
-		Account: h.Account(ctx),
+		ChainID:    h.ChainID(ctx),
+		ProjectID:  h.ProjectID(ctx),
+		PlatFormID: h.PlatFormID(ctx),
+		Account:    h.Account(ctx),
 	}
 
 	offset, err := h.Offset(ctx)

@@ -8,17 +8,21 @@ type CreateNftClassP struct {
 	UriHash     string `json:"uri_hash"`
 	Data        string `json:"data"`
 	Owner       string `json:"owner"`
-	ChainId     uint64 `json:"chain_id"`
+	ProjectID   uint64 `json:"project_id"`
+	ChainID     uint64 `json:"chain_id"`
+	PlatFormID  uint64 `json:"plat_form_id"`
 	Tag         []byte `json:"tag"`
 }
 
 type NftClassesP struct {
 	PageP
-	Id      string `json:"id"`
-	Name    string `json:"name"`
-	Owner   string `json:"owner"`
-	TxHash  string `json:"tx_hash"`
-	ChainId uint64 `json:"chain_id"`
+	Id         string `json:"id"`
+	Name       string `json:"name"`
+	Owner      string `json:"owner"`
+	TxHash     string `json:"tx_hash"`
+	ProjectID  uint64 `json:"project_id"`
+	ChainID    uint64 `json:"chain_id"`
+	PlatFormID uint64 `json:"plat_form_id"`
 }
 
 type NftClassesRes struct {
@@ -27,30 +31,28 @@ type NftClassesRes struct {
 }
 
 type NftClass struct {
-	Id        string                 `json:"id"`
-	Name      string                 `json:"name"`
-	Owner     string                 `json:"owner"`
-	TxHash    string                 `json:"tx_hash"`
-	Symbol    string                 `json:"symbol"`
-	NftCount  uint64                 `json:"nft_count"`
-	Uri       string                 `json:"uri"`
-	Tag       map[string]interface{} `json:"tag"`
-	Timestamp string                 `json:"timestamp"`
+	Id        string `json:"id"`
+	Name      string `json:"name"`
+	Owner     string `json:"owner"`
+	TxHash    string `json:"tx_hash"`
+	Symbol    string `json:"symbol"`
+	NftCount  uint64 `json:"nft_count"`
+	Uri       string `json:"uri"`
+	Timestamp string `json:"timestamp"`
 }
 
 type NftClassRes struct {
-	Id          string                 `json:"id"`
-	Name        string                 `json:"name"`
-	Owner       string                 `json:"owner"`
-	TxHash      string                 `json:"tx_hash"`
-	Symbol      string                 `json:"symbol"`
-	NftCount    uint64                 `json:"nft_count"`
-	Uri         string                 `json:"uri"`
-	Timestamp   string                 `json:"timestamp"`
-	UriHash     string                 `json:"uri_hash"`
-	Tag         map[string]interface{} `json:"tag"`
-	Data        string                 `json:"data"`
-	Description string                 `json:"description"`
+	Id          string `json:"id"`
+	Name        string `json:"name"`
+	Owner       string `json:"owner"`
+	TxHash      string `json:"tx_hash"`
+	Symbol      string `json:"symbol"`
+	NftCount    uint64 `json:"nft_count"`
+	Uri         string `json:"uri"`
+	Timestamp   string `json:"timestamp"`
+	UriHash     string `json:"uri_hash"`
+	Data        string `json:"data"`
+	Description string `json:"description"`
 }
 
 type NftCount struct {

@@ -25,7 +25,7 @@ func (svc *Tx) TxResultByTxHash(params dto.TxResultByTxHashP) (*dto.TxResultByTx
 	//query
 	txinfo, err := models.TTXS(
 		models.TTXWhere.TaskID.EQ(null.StringFrom(params.TaskId)),
-		models.TTXWhere.ChainID.EQ(params.ChainId),
+		models.TTXWhere.ProjectID.EQ(params.ProjectID),
 	).OneG(context.Background())
 	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
 		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
@@ -48,7 +48,15 @@ func (svc *Tx) TxResultByTxHash(params dto.TxResultByTxHashP) (*dto.TxResultByTx
 	} else {
 		result.Status = 2 // tx.Status == "failed"
 	}
-	result.Message = txinfo.ErrMSG.String
 
+	var tags map[string]interface{}
+	err = txinfo.Tag.Unmarshal(&tags)
+	if err != nil {
+		//500
+		log.Error("tx", "unmarshal error:", err.Error())
+		return nil, types.ErrInternal
+	}
+	result.Message = txinfo.ErrMSG.String
+	result.Tag = tags
 	return result, nil
 }

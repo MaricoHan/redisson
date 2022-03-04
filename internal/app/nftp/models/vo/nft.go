@@ -22,3 +22,7 @@ type EditNftByIndexRequest struct {
 }
 
 type EditNftByBatchRequest []*dto.EditNft
+
+type DeleteNftByNftIdRequest struct {
+	Tag map[string]interface{} `json:"tag"`
+}
