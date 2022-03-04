@@ -65,11 +65,6 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsP) (*dto.TxRes, error) {
 			return err
 		}
 
-		// ValidateRecipient
-		if err := svc.base.ValidateRecipient(params.Recipient, params.ProjectID); err != nil {
-			return err
-		}
-
 		offSet := classOne.Offset
 		var msgs sdktype.Msgs
 		for i := 1; i <= params.Amount; i++ {
@@ -78,6 +73,10 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsP) (*dto.TxRes, error) {
 			if params.Recipient == "" {
 				//默认为 NFT 类别的权属者地址
 				params.Recipient = classOne.Owner
+			}
+			// ValidateRecipient
+			if err := svc.base.ValidateRecipient(params.Recipient, params.ProjectID); err != nil {
+				return err
 			}
 			createNft := nft.MsgMintNFT{
 				Id:        nftId,
@@ -94,6 +93,10 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsP) (*dto.TxRes, error) {
 		baseTx := svc.base.CreateBaseTx(classOne.Owner, "")
 		originData, tHash, _ := svc.base.BuildAndSign(msgs, baseTx)
 		baseTx.Gas = svc.base.mintNftsGas(originData, uint64(params.Amount))
+		err = svc.base.GasThan(classOne.Owner, params.ChainID, baseTx.Gas, params.PlatFormID)
+		if err != nil {
+			return types.ErrInternal
+		}
 		originData, tHash, err = svc.base.BuildAndSign(msgs, baseTx)
 		if err != nil {
 			log.Debug("create nfts", "buildandsign error:", err.Error())
@@ -215,7 +218,10 @@ func (svc *Nft) EditNftByNftId(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 	// get gas
 	nftLen := svc.base.lenOfNft(tNft)
 	baseTx.Gas = svc.base.editNftGas(nftLen, uint64(len(signedData)))
-
+	err = svc.base.GasThan(params.Sender, params.ChainID, baseTx.Gas, params.PlatFormID)
+	if err != nil {
+		return nil, types.ErrInternal
+	}
 	signedData, txHash, err = svc.base.BuildAndSign(sdktype.Msgs{&msgEditNFT}, baseTx)
 
 	if err != nil {
@@ -435,7 +441,10 @@ func (svc *Nft) DeleteNftByNftId(params dto.DeleteNftByNftIdP) (*dto.TxRes, erro
 	nftLen := svc.base.lenOfNft(tNft)
 	// set gas
 	baseTx.Gas = svc.base.deleteNftGas(nftLen)
-
+	err = svc.base.GasThan(params.Sender, params.ChainID, baseTx.Gas, params.PlatFormID)
+	if err != nil {
+		return nil, types.ErrInternal
+	}
 	signedData, txHash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgBurnNFT}, baseTx)
 
 	if err != nil {

@@ -66,6 +66,19 @@ func (h base) UriCheck(uri string) error {
 
 	return nil
 }
+
+func (h base) ValidateTag(tags map[string]interface{}) ([]byte, error) {
+	var tagBytes []byte
+	if len(tags) > 0 {
+		tagBytes, _ = json.Marshal(tags)
+		tag := string(tagBytes)
+		if _, err := h.IsValTag(tag); err != nil {
+			return tagBytes, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
+		}
+	}
+	return tagBytes, nil
+}
+
 func (h base) IsValTag(tag string) (bool, error) {
 	//校验tag是否是json格式
 	if tag[0] != '{' || !json.Valid([]byte(tag)) {
