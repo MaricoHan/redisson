@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -48,15 +47,9 @@ func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 	data := strings.TrimSpace(req.Data)
 	owner := strings.TrimSpace(req.Owner)
 
-	var tagBytes []byte
-	if req.Tag != nil {
-		tagBytes, _ := json.Marshal(req.Tag)
-		tag := string(tagBytes)
-		if tag != "" {
-			if _, err := h.IsValTag(tag); err != nil {
-				return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
-			}
-		}
+	tagBytes,err :=h.ValidateTag(req.Tag)
+	if err!=nil{
+		return nil,err
 	}
 	if name == "" {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrName)

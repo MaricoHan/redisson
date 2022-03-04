@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -52,13 +51,9 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 	uriHash := strings.TrimSpace(req.UriHash)
 	data := strings.TrimSpace(req.Data)
 	recipient := strings.TrimSpace(req.Recipient)
-	var tagBytes []byte
-	if len(req.Tag) > 0 {
-		tagBytes, _ := json.Marshal(req.Tag)
-		tag := string(tagBytes)
-		if _, err := h.IsValTag(tag); err != nil {
-			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
-		}
+	tagBytes,err :=h.ValidateTag(req.Tag)
+	if err!=nil{
+		return nil,err
 	}
 
 	if name == "" {
@@ -122,13 +117,9 @@ func (h nft) EditNftByNftId(ctx context.Context, request interface{}) (interface
 	name := strings.TrimSpace(req.Name)
 	uri := strings.TrimSpace(req.Uri)
 	data := strings.TrimSpace(req.Data)
-	var tagBytes []byte
-	if len(req.Tag) > 0 {
-		tagBytes, _ := json.Marshal(req.Tag)
-		tag := string(tagBytes)
-		if _, err := h.IsValTag(tag); err != nil {
-			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
-		}
+	tagBytes,err :=h.ValidateTag(req.Tag)
+	if err!=nil{
+		return nil,err
 	}
 	//check start
 	if name == "" {
@@ -237,17 +228,10 @@ func (h nft) EditNftByBatch(ctx context.Context, request interface{}) (interface
 // DeleteNftByNftId Delete a nft and return the edited result
 func (h nft) DeleteNftByNftId(ctx context.Context, request interface{}) (interface{}, error) {
 	req := request.(*vo.DeleteNftByNftIdRequest)
-
-	var tagBytes []byte
-	//check start
-	if len(req.Tag) > 0 {
-		tagBytes, _ := json.Marshal(req.Tag)
-		tag := string(tagBytes)
-		if _, err := h.IsValTag(tag); err != nil {
-			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, err.Error())
-		}
+	tagBytes,err :=h.ValidateTag(req.Tag)
+	if err!=nil{
+		return nil,err
 	}
-	//check end
 
 	params := dto.DeleteNftByNftIdP{
 		ChainID:    h.ChainID(ctx),
