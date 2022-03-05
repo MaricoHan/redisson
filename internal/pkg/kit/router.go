@@ -143,10 +143,13 @@ func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFu
 		}
 		p := reflect.ValueOf(req).Elem()
 		p.Set(reflect.Zero(p.Type()))
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			log.Error("Execute decode request failed", "error", err.Error())
-			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrClientParams)
+		if r.Method != "DELETE" {
+			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+				log.Error("Execute decode request failed", "error", err.Error())
+				return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrClientParams)
+			}
 		}
+
 		switch p.Type().Kind() {
 		case reflect.Struct:
 			//validate request
@@ -235,7 +238,7 @@ func (c Controller) serverOptions(
 		} else {
 			switch appErr.Code() {
 			case types.ClientParamsError, types.FrequentRequestsNotSupports, types.NftStatusAbnormal,
-				types.NftClassStatusAbnormal, types.MaximumLimitExceeded:
+				types.NftClassStatusAbnormal, types.MaximumLimitExceeded, types.ErrGasNotEnough:
 				metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "400"}...).Add(1)
 				w.WriteHeader(http.StatusBadRequest) //400
 			case types.AuthenticationFailed, types.StructureSignTransactionFailed:

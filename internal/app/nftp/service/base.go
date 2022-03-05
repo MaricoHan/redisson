@@ -65,6 +65,17 @@ func (m Base) CreateBaseTx(keyName, keyPassword string) sdktype.BaseTx {
 	}
 }
 
+func (m Base) CreateBaseTxSend(keyName, keyPassword string) sdktype.BaseTx {
+	//from := "t_" + keyName
+	return sdktype.BaseTx{
+		From:     keyName,
+		Gas:      m.gas,
+		Fee:      m.coins,
+		Mode:     sdktype.Sync,
+		Password: keyPassword,
+	}
+}
+
 func (m Base) BuildAndSign(msgs sdktype.Msgs, baseTx sdktype.BaseTx) ([]byte, string, error) {
 	root, error := m.QueryRootAccount()
 	if error != nil {
@@ -326,7 +337,7 @@ func (m Base) createAccount(count int64) uint64 {
 	return uint64(u)
 }
 
-func (m Base) Grant(address string) (string, error) {
+func (m Base) Grant(address []string) (string, error) {
 	root, error := m.QueryRootAccount()
 	if error != nil {
 		return "", error
@@ -337,48 +348,52 @@ func (m Base) Grant(address string) (string, error) {
 		log.Error("base account", "granter format error:", errs.Error())
 		return "", types.ErrInternal
 	}
-	grantee, errs := sdktype.AccAddressFromBech32(address)
-	if errs != nil {
-		//500
-		log.Error("base account", "grantee format error:", errs.Error())
-		return "", types.ErrInternal
+	var msgs sdktype.Msgs
+	for i := 0; i < len(address); i++ {
+		grantee, errs := sdktype.AccAddressFromBech32(address[i])
+		if errs != nil {
+			//500
+			log.Error("base account", "grantee format error:", errs.Error())
+			return "", types.ErrInternal
+		}
+		var grant feegrant.FeeAllowanceI
+
+		basic := feegrant.BasicAllowance{
+			SpendLimit: nil,
+		}
+
+		grant = &basic
+
+		msgGrant, err := feegrant.NewMsgGrantAllowance(grant, granter, grantee)
+		if err != nil {
+			//500
+			log.Error("base account", "msg grant allowance error:", err.Error())
+			return "", types.ErrInternal
+		}
+		msgs = append(msgs, msgGrant)
 	}
-	var grant feegrant.FeeAllowanceI
-
-	basic := feegrant.BasicAllowance{
-		SpendLimit: nil,
-	}
-
-	grant = &basic
-
-	msgGrant, err := feegrant.NewMsgGrantAllowance(grant, granter, grantee)
-	if err != nil {
-		//500
-		log.Error("base account", "msg grant allowance error:", err.Error())
-		return "", types.ErrInternal
-	}
-
-	baseTx := m.CreateBaseTx(root.Address, defultKeyPassword)
-	res, err := m.BuildAndSend(sdktype.Msgs{msgGrant}, baseTx)
+	baseTx := m.CreateBaseTxSend(root.Address, defultKeyPassword)
+	//动态计算gas
+	baseTx.Gas = m.createAccount(int64(len(address)))
+	res, err := m.BuildAndSend(msgs, baseTx)
 	if err != nil {
 		//500
 		log.Error("base account", "fee grant error:", err.Error())
 		return "", types.ErrInternal
 	}
-
 	return res.Hash, nil
 }
 
 // ValidateSigner validate signer
 func (m Base) ValidateSigner(sender string, projectid uint64) error {
-	//recipient不能为平台外账户或此应用外账户或非法账户
+	//signer不能为project外账户
 	_, err := models.TAccounts(
 		models.TAccountWhere.ProjectID.EQ(projectid),
 		models.TAccountWhere.Address.EQ(sender)).OneG(context.Background())
 	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
 		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
-		//403
-		return types.ErrAuthenticate
+		//404
+		return types.ErrNotFound
 	} else if err != nil {
 		//500
 		log.Error("validate signer", "query signer error:", err.Error())
@@ -415,10 +430,20 @@ func (m Base) EncodeData(data string) string {
 
 func (m Base) GasThan(address string, chainId, gas, platformId uint64) error {
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
+		tProjects, err := models.TProjects(
+			models.TProjectWhere.PlatformID.EQ(null.Int64From(int64(platformId))),
+		).All(context.Background(), exec)
+		if err != nil {
+			return errors.New("query PlatformID from TProjects failed")
+		}
+		var projects []uint64
+		for _, v := range tProjects {
+			projects = append(projects, v.ID)
+		}
 		// unPaidGas 待支付的gas
 		tx, err := models.TTXS(
 			qm.Select("SUM(gas_used) as gas_used"),
-			models.TTXWhere.Sender.EQ(null.StringFrom(address)),
+			models.TTXWhere.ProjectID.IN(projects),
 			models.TTXWhere.Status.IN([]string{models.TTXSStatusPending, models.TTXSStatusUndo})).One(context.Background(), exec)
 		if err != nil {
 			return types.ErrNotFound
@@ -446,15 +471,10 @@ func (m Base) GasThan(address string, chainId, gas, platformId uint64) error {
 		if !ok {
 			return errors.New("cannot get float64 of amount")
 		}
+		unPaidMoney = unPaidMoney + float64(gas)*gasPrice
 		//如果amount小于未支付金额,返回错误
 		if amount < unPaidMoney {
-			return errors.New("amount not enough")
-		}
-		//balance = 减去待支付金额的余额
-		balance := amount - unPaidMoney
-		gasMoney := float64(gas) * gasPrice
-		if balance < gasMoney {
-			return errors.New("balance not enough")
+			return errors.New("balances not enough")
 		}
 		return err
 	})

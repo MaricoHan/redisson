@@ -95,7 +95,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsP) (*dto.TxRes, error) {
 		baseTx.Gas = svc.base.mintNftsGas(originData, uint64(params.Amount))
 		err = svc.base.GasThan(classOne.Owner, params.ChainID, baseTx.Gas, params.PlatFormID)
 		if err != nil {
-			return types.ErrInternal
+			return types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
 		}
 		originData, tHash, err = svc.base.BuildAndSign(msgs, baseTx)
 		if err != nil {
@@ -220,7 +220,7 @@ func (svc *Nft) EditNftByNftId(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 	baseTx.Gas = svc.base.editNftGas(nftLen, uint64(len(signedData)))
 	err = svc.base.GasThan(params.Sender, params.ChainID, baseTx.Gas, params.PlatFormID)
 	if err != nil {
-		return nil, types.ErrInternal
+		return nil, types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
 	}
 	signedData, txHash, err = svc.base.BuildAndSign(sdktype.Msgs{&msgEditNFT}, baseTx)
 
@@ -443,7 +443,7 @@ func (svc *Nft) DeleteNftByNftId(params dto.DeleteNftByNftIdP) (*dto.TxRes, erro
 	baseTx.Gas = svc.base.deleteNftGas(nftLen)
 	err = svc.base.GasThan(params.Sender, params.ChainID, baseTx.Gas, params.PlatFormID)
 	if err != nil {
-		return nil, types.ErrInternal
+		return nil, types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
 	}
 	signedData, txHash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgBurnNFT}, baseTx)
 
