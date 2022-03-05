@@ -65,6 +65,17 @@ func (m Base) CreateBaseTx(keyName, keyPassword string) sdktype.BaseTx {
 	}
 }
 
+func (m Base) CreateBaseTxSend(keyName, keyPassword string) sdktype.BaseTx {
+	//from := "t_" + keyName
+	return sdktype.BaseTx{
+		From:     keyName,
+		Gas:      m.gas,
+		Fee:      m.coins,
+		Mode:     sdktype.Sync,
+		Password: keyPassword,
+	}
+}
+
 func (m Base) BuildAndSign(msgs sdktype.Msgs, baseTx sdktype.BaseTx) ([]byte, string, error) {
 	root, error := m.QueryRootAccount()
 	if error != nil {
@@ -326,7 +337,7 @@ func (m Base) createAccount(count int64) uint64 {
 	return uint64(u)
 }
 
-func (m Base) Grant(address string) (string, error) {
+func (m Base) Grant(address []string) (string, error) {
 	root, error := m.QueryRootAccount()
 	if error != nil {
 		return "", error
@@ -337,35 +348,39 @@ func (m Base) Grant(address string) (string, error) {
 		log.Error("base account", "granter format error:", errs.Error())
 		return "", types.ErrInternal
 	}
-	grantee, errs := sdktype.AccAddressFromBech32(address)
-	if errs != nil {
-		//500
-		log.Error("base account", "grantee format error:", errs.Error())
-		return "", types.ErrInternal
+	var msgs sdktype.Msgs
+	for i := 0; i < len(address); i++ {
+		grantee, errs := sdktype.AccAddressFromBech32(address[i])
+		if errs != nil {
+			//500
+			log.Error("base account", "grantee format error:", errs.Error())
+			return "", types.ErrInternal
+		}
+		var grant feegrant.FeeAllowanceI
+
+		basic := feegrant.BasicAllowance{
+			SpendLimit: nil,
+		}
+
+		grant = &basic
+
+		msgGrant, err := feegrant.NewMsgGrantAllowance(grant, granter, grantee)
+		if err != nil {
+			//500
+			log.Error("base account", "msg grant allowance error:", err.Error())
+			return "", types.ErrInternal
+		}
+		msgs = append(msgs, msgGrant)
 	}
-	var grant feegrant.FeeAllowanceI
-
-	basic := feegrant.BasicAllowance{
-		SpendLimit: nil,
-	}
-
-	grant = &basic
-
-	msgGrant, err := feegrant.NewMsgGrantAllowance(grant, granter, grantee)
-	if err != nil {
-		//500
-		log.Error("base account", "msg grant allowance error:", err.Error())
-		return "", types.ErrInternal
-	}
-
-	baseTx := m.CreateBaseTx(root.Address, defultKeyPassword)
-	res, err := m.BuildAndSend(sdktype.Msgs{msgGrant}, baseTx)
+	baseTx := m.CreateBaseTxSend(root.Address, defultKeyPassword)
+	//动态计算gas
+	baseTx.Gas = m.createAccount(int64(len(address)))
+	res, err := m.BuildAndSend(msgs, baseTx)
 	if err != nil {
 		//500
 		log.Error("base account", "fee grant error:", err.Error())
 		return "", types.ErrInternal
 	}
-
 	return res.Hash, nil
 }
 
