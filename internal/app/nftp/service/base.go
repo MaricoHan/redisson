@@ -65,6 +65,17 @@ func (m Base) CreateBaseTx(keyName, keyPassword string) sdktype.BaseTx {
 	}
 }
 
+func (m Base) CreateBaseTxSend(keyName, keyPassword string) sdktype.BaseTx {
+	//from := "t_" + keyName
+	return sdktype.BaseTx{
+		From:     keyName,
+		Gas:      m.gas,
+		Fee:      m.coins,
+		Mode:     sdktype.Sync,
+		Password: keyPassword,
+	}
+}
+
 func (m Base) BuildAndSign(msgs sdktype.Msgs, baseTx sdktype.BaseTx) ([]byte, string, error) {
 	root, error := m.QueryRootAccount()
 	if error != nil {
@@ -358,12 +369,12 @@ func (m Base) Grant(address string) (string, error) {
 		return "", types.ErrInternal
 	}
 
-	baseTx := m.CreateBaseTx(root.Address, defultKeyPassword)
+	baseTx := m.CreateBaseTxSend(root.Address, defultKeyPassword)
 	res, err := m.BuildAndSend(sdktype.Msgs{msgGrant}, baseTx)
 	if err != nil {
 		//500
 		log.Error("base account", "fee grant error:", err.Error())
-		return "", types.ErrInternal
+		return "", err
 	}
 
 	return res.Hash, nil
