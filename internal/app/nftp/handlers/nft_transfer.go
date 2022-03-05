@@ -2,19 +2,18 @@ package handlers
 
 import (
 	"context"
-	"strconv"
+	"strings"
 
+	types2 "github.com/irisnet/core-sdk-go/types"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
-
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
-
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 )
 
 type INftTransfer interface {
 	TransferNftClassByID(ctx context.Context, _ interface{}) (interface{}, error)
-	TransferNftByIndex(ctx context.Context, _ interface{}) (interface{}, error)
+	TransferNftByNftId(ctx context.Context, _ interface{}) (interface{}, error)
 	TransferNftByBatch(ctx context.Context, _ interface{}) (interface{}, error)
 }
 
@@ -35,35 +34,70 @@ func newNftTransfer(svc *service.NftTransfer) *nftTransfer {
 func (h nftTransfer) TransferNftClassByID(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
 	req := request.(*vo.TransferNftClassByIDRequest)
-	if req.Recipient == "" {
-		return nil, types.ErrParams
+	recipient := strings.TrimSpace(req.Recipient)
+	if recipient == "" {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipient)
 	}
-	params := dto.TransferNftClassByIDP{
-		ClassID:   h.ClassID(ctx),
-		Owner:     h.Owner(ctx),
-		Recipient: req.Recipient,
-		AppID:     h.AppID(ctx),
+	if len([]rune(recipient)) > 128 {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientLen)
 	}
+	// 校验接收者地址是否满足当前链的地址规范
+	if err := types2.ValidateAccAddress(recipient); err != nil {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
+	}
+
+	tagBytes,err :=h.ValidateTag(req.Tag)
+	if err!=nil{
+		return nil,err
+	}
+
 	//校验参数 end
+
+	params := dto.TransferNftClassByIDP{
+		ClassID:    h.ClassID(ctx),
+		Owner:      h.Owner(ctx),
+		Recipient:  recipient,
+		ChainID:    h.ChainID(ctx),
+		ProjectID:  h.ProjectID(ctx),
+		PlatFormID: h.PlatFormID(ctx),
+		Tag:        tagBytes,
+	}
 	return h.svc.TransferNftClassByID(params)
 }
 
-// TransferNftByIndex transfer an nft class by index
-func (h nftTransfer) TransferNftByIndex(ctx context.Context, request interface{}) (interface{}, error) {
+// TransferNftByNftId transfer an nft class by index
+func (h nftTransfer) TransferNftByNftId(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
-	req := request.(*vo.TransferNftByIndexRequest)
-	if req.Recipient == "" {
-		return nil, types.ErrParams
+	req := request.(*vo.TransferNftByNftIdRequest)
+	recipient := strings.TrimSpace(req.Recipient)
+	if recipient == "" {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipient)
 	}
-	params := dto.TransferNftByIndexP{
-		ClassID:   h.ClassID(ctx),
-		Owner:     h.Owner(ctx),
-		Index:     h.Index(ctx),
-		Recipient: req.Recipient,
-		AppID:     h.AppID(ctx),
+	if len([]rune(recipient)) > 128 {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientLen)
 	}
+	// 校验接收者地址是否满足当前链的地址规范
+	if err := types2.ValidateAccAddress(recipient); err != nil {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
+	}
+	tagBytes,err :=h.ValidateTag(req.Tag)
+	if err!=nil{
+		return nil,err
+	}
+
 	// 校验参数 end
-	return h.svc.TransferNftByIndex(params)
+
+	params := dto.TransferNftByNftIdP{
+		ClassID:    h.ClassID(ctx),
+		Owner:      h.Owner(ctx),
+		NftId:      h.NftId(ctx),
+		Recipient:  recipient,
+		ChainID:    h.ChainID(ctx),
+		ProjectID:  h.ProjectID(ctx),
+		PlatFormID: h.PlatFormID(ctx),
+		Tag:        tagBytes,
+	}
+	return h.svc.TransferNftByNftId(params)
 }
 
 // TransferNftByBatch return class list
@@ -71,13 +105,18 @@ func (h nftTransfer) TransferNftByBatch(ctx context.Context, request interface{}
 	// 校验参数 start
 	req := request.(*vo.TransferNftByBatchRequest)
 	if req.Recipients == nil {
-		return nil, types.ErrParams
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipients)
 	}
 	params := dto.TransferNftByBatchP{
 		ClassID:    h.ClassID(ctx),
 		Owner:      h.Owner(ctx),
 		Recipients: req.Recipients,
-		AppID:      h.AppID(ctx),
+		ChainID:    h.ChainID(ctx),
+		ProjectID:  h.ProjectID(ctx),
+		PlatFormID: h.PlatFormID(ctx),
+	}
+	if len(params.Recipients) > 50 {
+		return "", types.ErrLimit
 	}
 	// 校验参数 end
 	return h.svc.TransferNftByBatch(params)
@@ -99,14 +138,10 @@ func (h nftTransfer) Owner(ctx context.Context) string {
 	return owner.(string)
 }
 
-func (h nftTransfer) Index(ctx context.Context) uint64 {
-	index := ctx.Value("index")
-	if index == nil {
-		return 0
+func (h nftTransfer) NftId(ctx context.Context) string {
+	nftId := ctx.Value("nft_id")
+	if nftId == nil {
+		return ""
 	}
-	parseUint, err := strconv.ParseUint(index.(string), 10, 64)
-	if err != nil {
-		panic(err)
-	}
-	return parseUint
+	return nftId.(string)
 }

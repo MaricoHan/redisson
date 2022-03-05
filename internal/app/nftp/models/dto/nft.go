@@ -1,46 +1,63 @@
 package dto
 
-type EditNftByIndexP struct {
-	Index uint64 `json:"index"`
+type EditNftByNftIdP struct {
+	NftId string `json:"nft_id"`
 	Name  string `json:"name"`
 	Uri   string `json:"uri"`
 	Data  string `json:"data"`
 
-	AppID   uint64 `json:"app_id"`
-	ClassId string `json:"class_id"`
-	Sender  string `json:"owner"`
+	ProjectID  uint64 `json:"project_id"`
+	ChainID    uint64 `json:"chain_id"`
+	PlatFormID uint64 `json:"plat_form_id"`
+	ClassId    string `json:"class_id"`
+	Sender     string `json:"owner"`
+	Tag        []byte `json:"tag"`
 }
 
 type EditNftByBatchP struct {
-	EditNfts []*EditNft `json:"nfts"`
-	AppID    uint64     `json:"app_id"`
-	ClassId  string     `json:"class_id"`
-	Sender   string     `json:"owner"`
+	EditNfts   []*EditNft `json:"nfts"`
+	ProjectID  uint64     `json:"project_id"`
+	ChainID    uint64     `json:"chain_id"`
+	PlatFormID uint64     `json:"plat_form_id"`
+	ClassId    string     `json:"class_id"`
+	Sender     string     `json:"owner"`
 }
 
 type EditNft struct {
-	Index uint64 `json:"index" validate:"required"`
+	NftId string `json:"nft_id" validate:"required"`
 	Name  string `json:"name" validate:"required"`
 	Uri   string `json:"uri"`
 	Data  string `json:"data"`
 }
 
-type DeleteNftByIndexP struct {
-	AppID   uint64 `json:"app_id"`
-	ClassId string `json:"class_id"`
-	Sender  string `json:"owner"`
-	Index   uint64 `json:"index"`
+type DeleteNftByNftIdP struct {
+	ProjectID  uint64 `json:"project_id"`
+	ChainID    uint64 `json:"chain_id"`
+	PlatFormID uint64 `json:"plat_form_id"`
+	ClassId    string `json:"class_id"`
+	Sender     string `json:"owner"`
+	NftId      string `json:"nft_id"`
+	Tag        []byte `json:"tag"`
 }
 
 type DeleteNftByBatchP struct {
-	AppID   uint64   `json:"app_id"`
-	ClassId string   `json:"class_id"`
-	Sender  string   `json:"owner"`
-	Indices []uint64 `json:"indices"`
+	ProjectID  uint64   `json:"project_id"`
+	ChainID    uint64   `json:"chain_id"`
+	PlatFormID uint64   `json:"plat_form_id"`
+	ClassId    string   `json:"class_id"`
+	Sender     string   `json:"owner"`
+	NftIds     []string `json:"nft_ids"`
 }
-type NftByIndexP struct {
+
+type NftByNftIdP struct {
+	ProjectID  uint64 `json:"project_id"`
+	ChainID    uint64 `json:"chain_id"`
+	PlatFormID uint64 `json:"plat_form_id"`
+	NftId      string `json:"nft_id"`
+	ClassId    string `json:"class_id"`
+}
+type NftR struct {
 	Id          string `json:"id"`
-	Index       uint64 `json:"index"`
 	Name        string `json:"name"`
 	ClassId     string `json:"class_id"`
 	ClassName   string `json:"class_name"`
@@ -52,18 +69,18 @@ type NftByIndexP struct {
 	Status      string `json:"status"`
 	TxHash      string `json:"tx_hash"`
 	Timestamp   string `json:"timestamp"`
-
-	AppID uint64 `json:"app_id"`
 }
 
 type NftsP struct {
 	PageP
-	Id      string `json:"id"`
-	ClassId string `json:"class_id"`
-	Owner   string `json:"owner"`
-	TxHash  string `json:"tx_hash"`
-	Status  string `json:"status"`
-	AppID   uint64 `json:"app_id"`
+	Id         string `json:"id"`
+	ClassId    string `json:"class_id"`
+	Owner      string `json:"owner"`
+	TxHash     string `json:"tx_hash"`
+	Status     string `json:"status"`
+	ProjectID  uint64 `json:"project_id"`
+	ChainID    uint64 `json:"chain_id"`
+	PlatFormID uint64 `json:"plat_form_id"`
 }
 
 type NftsRes struct {
@@ -73,7 +90,6 @@ type NftsRes struct {
 
 type Nft struct {
 	Id          string `json:"id"`
-	Index       uint64 `json:"index"`
 	Name        string `json:"name"`
 	ClassId     string `json:"class_id"`
 	ClassName   string `json:"class_name"`
@@ -91,30 +107,35 @@ type NftClassByIds struct {
 	Symbol  string `json:"symbol"`
 }
 
-type CreateNftsRequest struct {
-	AppID     uint64 `json:"app_id"`
-	ClassId   string `json:"class_id"`
-	Name      string `json:"name"`
-	Uri       string `json:"uri"`
-	UriHash   string `json:"uri_hash"`
-	Data      string `json:"data"`
-	Amount    int    `json:"amount"`
-	Recipient string `json:"recipient"`
+type CreateNftsP struct {
+	ProjectID  uint64 `json:"project_id"`
+	ChainID    uint64 `json:"chain_id"`
+	PlatFormID uint64 `json:"plat_form_id"`
+	ClassId    string `json:"class_id"`
+	Name       string `json:"name"`
+	Uri        string `json:"uri"`
+	UriHash    string `json:"uri_hash"`
+	Data       string `json:"data"`
+	Amount     int    `json:"amount"`
+	Recipient  string `json:"recipient"`
+	Tag        []byte `json:"tag"`
 }
 
-type NftOperationHistoryByIndexP struct {
+type NftOperationHistoryByNftIdP struct {
 	PageP
-	ClassID   string `json:"class_id"`
-	Index     uint64 `json:"index"`
-	Signer    string `json:"signer"`
-	Txhash    string `json:"tx_hash"`
-	Operation string `json:"operation"`
-	AppID     uint64 `json:"app_id"`
+	ClassID    string `json:"class_id"`
+	NftId      string `json:"nft_id"`
+	Signer     string `json:"signer"`
+	Txhash     string `json:"tx_hash"`
+	Operation  string `json:"operation"`
+	ProjectID  uint64 `json:"project_id"`
+	ChainID    uint64 `json:"chain_id"`
+	PlatFormID uint64 `json:"plat_form_id"`
 }
 
-type BNftOperationHistoryByIndexRes struct {
+type BNftOperationHistoryByNftIdRes struct {
 	PageRes
-	OperationRecords []*OperationRecord
+	OperationRecords []*OperationRecord `json:"operation_records"`
 }
 
 type OperationRecord struct {

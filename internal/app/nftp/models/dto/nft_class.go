@@ -8,21 +8,26 @@ type CreateNftClassP struct {
 	UriHash     string `json:"uri_hash"`
 	Data        string `json:"data"`
 	Owner       string `json:"owner"`
-	AppID       uint64 `json:"app_id"`
+	ProjectID   uint64 `json:"project_id"`
+	ChainID     uint64 `json:"chain_id"`
+	PlatFormID  uint64 `json:"plat_form_id"`
+	Tag         []byte `json:"tag"`
 }
 
 type NftClassesP struct {
 	PageP
-	Id     string `json:"id"`
-	Name   string `json:"name"`
-	Owner  string `json:"owner"`
-	TxHash string `json:"tx_hash"`
-	AppID  uint64 `json:"app_id"`
+	Id         string `json:"id"`
+	Name       string `json:"name"`
+	Owner      string `json:"owner"`
+	TxHash     string `json:"tx_hash"`
+	ProjectID  uint64 `json:"project_id"`
+	ChainID    uint64 `json:"chain_id"`
+	PlatFormID uint64 `json:"plat_form_id"`
 }
 
 type NftClassesRes struct {
 	PageRes
-	NftClasses []*NftClass `json:"nft_class"`
+	NftClasses []*NftClass `json:"classes"`
 }
 
 type NftClass struct {

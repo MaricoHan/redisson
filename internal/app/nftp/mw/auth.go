@@ -10,10 +10,14 @@ import (
 	"io/ioutil"
 	"net/http"
 	"sort"
+	"time"
 
 	"github.com/gorilla/mux"
-
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+
+	"gitlab.bianjie.ai/irita-paas/open-api/config"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/metric"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 )
 
@@ -30,13 +34,36 @@ type authHandler struct {
 }
 
 func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	log.Debug("user request", "method:", r.Method, "url:", r.URL.Path)
+
+	createTime := time.Now()
+	defer func(createTime time.Time) {
+		//监控响应时间
+		interval := time.Now().Sub(createTime)
+		metric.NewPrometheus().ApiHttpRequestRtSeconds.With([]string{
+			"method",
+			r.Method,
+			"uri",
+			r.RequestURI,
+		}...).Observe(float64(interval))
+	}(createTime)
+
 	appKey := r.Header.Get("X-Api-Key")
-	appKeyResult, err := models.TAppKeys(
-		qm.Select(models.TAppKeyColumns.APIKey),
-		qm.Select(models.TAppKeyColumns.AppID),
-		models.TAppKeyWhere.APIKey.EQ(appKey),
+	projectKeyResult, err := models.TProjectKeys(
+		qm.Select(models.TProjectKeyColumns.ProjectSecret),
+		qm.Select(models.TProjectKeyColumns.ProjectID),
+		models.TProjectKeyWhere.ProjectKey.EQ(appKey),
 	).OneG(context.Background())
 	if err != nil {
+		log.Error("server http", "project keys error:", err)
+		writeForbiddenResp(w)
+		return
+	}
+
+	project, err := models.TProjects(
+		models.TProjectWhere.ID.EQ(projectKeyResult.ProjectID)).OneG(context.Background())
+	if err != nil {
+		log.Error("server http", "project error:", err)
 		writeForbiddenResp(w)
 		return
 	}
@@ -44,27 +71,36 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	reqTimestampStr := r.Header.Get("X-Timestamp")
 
 	//// 1.1 判断时间误差
+	// todo
+	// 生产的时候打开
 	//reqTimestampInt, err := strconv.ParseInt(reqTimestampStr, 10, 64)
 	//if err != nil {
-	//	w.WriteHeader(http.StatusBadRequest)
+	//	writeBadRequestResp(w, types.ErrParams)
 	//	return
 	//}
 	//
 	//curTimestamp := time.Now().Unix()
 	//if curTimestamp-reqTimestampInt > timeInterval || curTimestamp < reqTimestampInt {
-	//	w.WriteHeader(http.StatusBadRequest)
+	//	writeBadRequestResp(w, types.ErrParams)
 	//	return
 	//}
 
 	reqSignature := r.Header.Get("X-Signature")
 	// 2. 验证签名
 	// todo
-	fmt.Println(h.Signature(r, appKeyResult.APIKey, reqTimestampStr, reqSignature))
-	r.Header.Set("X-App-Id", fmt.Sprintf("%d", appKeyResult.AppID))
+	// 生产的时候打开
+	if config.Get().Server.SignatureAuth && !h.Signature(r, projectKeyResult.ProjectSecret, reqTimestampStr, reqSignature) {
+		writeForbiddenResp(w)
+		return
+	}
+	log.Info("signature:", h.Signature(r, projectKeyResult.ProjectSecret, reqTimestampStr, reqSignature))
+	r.Header.Set("X-App-Id", fmt.Sprintf("%d", project.ID))
+	r.Header.Set("X-Chain-Id", fmt.Sprintf("%d", project.ChainID))
+	r.Header.Set("X-Platform-Id", fmt.Sprintf("%d", uint64(project.PlatformID.Int64)))
 	h.next.ServeHTTP(w, r)
 }
 
-func (h authHandler) Signature(r *http.Request, appKey string, timestamp string, signature string) bool {
+func (h authHandler) Signature(r *http.Request, apiSecret string, timestamp string, signature string) bool {
 
 	// 获取 path params
 	params := map[string]interface{}{}
@@ -89,18 +125,16 @@ func (h authHandler) Signature(r *http.Request, appKey string, timestamp string,
 	}
 	paramsBody := map[string]interface{}{}
 	_ = json.Unmarshal(bodyBytes, &paramsBody)
-	hexHash := hash(timestamp + appKey)
+	hexHash := hash(timestamp + apiSecret)
 
 	for k, v := range paramsBody {
 		params[k] = v
 	}
-
 	// sort params
 	sortParams := sortMapParams(params)
-
 	if sortParams != nil {
 		sortParamsBytes, _ := json.Marshal(sortParams)
-		hexHash = hash(string(sortParamsBytes) + timestamp + appKey)
+		hexHash = hash(string(sortParamsBytes) + timestamp + apiSecret)
 	}
 	if hexHash != signature {
 		return false

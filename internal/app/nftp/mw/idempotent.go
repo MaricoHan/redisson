@@ -8,10 +8,11 @@ import (
 	"net/http"
 	"time"
 
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
-
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/redis"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
+
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 )
 
 func IdempotentMiddleware(h http.Handler) http.Handler {
@@ -38,7 +39,12 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 	req := &vo.Base{}
 	err := json.Unmarshal(bodyBytes, req)
 	if err != nil {
+		log.Error("server http", "params error:", err)
 		writeBadRequestResp(w, types.ErrParams)
+		return
+	}
+	if len(req.OperationID) >= 65 || len(req.OperationID) == 0 {
+		writeBadRequestResp(w, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "operation_id does not comply with the rules"))
 		return
 	}
 
@@ -56,7 +62,7 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 	}
 
 	if err := redis.Set(key, "1", time.Second*60); err != nil {
-		writeBadRequestResp(w, types.ErrRedisConn)
+		writeBadRequestResp(w, types.ErrInternal)
 		return
 	}
 	h.next.ServeHTTP(w, r)

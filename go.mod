@@ -3,15 +3,20 @@ module gitlab.bianjie.ai/irita-paas/open-api
 go 1.17
 
 require (
+	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 	github.com/bsm/redislock v0.7.2
 	github.com/friendsofgo/errors v0.9.2
 	github.com/go-kit/kit v0.10.0
+	github.com/go-playground/locales v0.14.0
+	github.com/go-playground/universal-translator v0.18.0
 	github.com/go-playground/validator/v10 v10.10.0
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/gorilla/mux v1.8.0
-	github.com/irisnet/core-sdk-go v0.0.0-20220125122946-76af4796219f
+	github.com/irisnet/core-sdk-go v0.0.0-20220302175731-8770d7dce833
 	github.com/irisnet/irismod-sdk-go/nft v0.0.0-20220121065225-0b70859f7bed
 	github.com/pkg/errors v0.9.1
+	github.com/prometheus/client_golang v1.10.0
+	github.com/robfig/cron/v3 v3.0.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.3.0
 	github.com/spf13/viper v1.10.0
@@ -28,6 +33,7 @@ require (
 	github.com/DataDog/zstd v1.4.1 // indirect
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
 	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
+	github.com/armon/go-metrics v0.3.10 // indirect
 	github.com/avast/retry-go v3.0.0+incompatible // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bluele/gcache v0.0.2 // indirect
@@ -47,8 +53,6 @@ require (
 	github.com/ericlagergren/decimal v0.0.0-20181231230500-73749d4874d5 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
-	github.com/go-playground/locales v0.14.0 // indirect
-	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/godbus/dbus v0.0.0-20190726142602-4481cbc300e2 // indirect
 	github.com/gofrs/uuid v3.2.0+incompatible // indirect
@@ -60,6 +64,8 @@ require (
 	github.com/gsterjov/go-libsecret v0.0.0-20161001094733-a6f4afe4910c // indirect
 	github.com/gtank/merlin v0.1.1 // indirect
 	github.com/gtank/ristretto255 v0.1.2 // indirect
+	github.com/hashicorp/go-immutable-radix v1.3.1 // indirect
+	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jmhodges/levigo v1.0.0 // indirect
@@ -75,7 +81,6 @@ require (
 	github.com/mtibben/percent v0.2.1 // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
 	github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5 // indirect
-	github.com/prometheus/client_golang v1.10.0 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.23.0 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
@@ -113,6 +118,6 @@ require (
 
 replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.4
 
-replace gitlab.bianjie.ai/irita-paas/orms/orm-nft => gitlab.bianjie.ai/irita-paas/orms/orm-nft.git v0.0.0-20220125063317-b7a73ff21e6b
+replace gitlab.bianjie.ai/irita-paas/orms/orm-nft => gitlab.bianjie.ai/irita-paas/orms/orm-nft.git v1.0.0-beta.0.20220304075202-29c6fa45dfaa
 
 replace github.com/tendermint/tendermint => github.com/bianjieai/tendermint v0.34.1-irita-210113

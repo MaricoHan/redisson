@@ -28,9 +28,9 @@ func writeForbiddenResp(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusForbidden)
 	response := kit.Response{
 		ErrorResp: &kit.ErrorResp{
-			CodeSpace: types.ErrParams.CodeSpace(),
-			Code:      types.ErrParams.Code(),
-			Message:   types.ErrParams.Error(),
+			CodeSpace: types.ErrAuthenticate.CodeSpace(),
+			Code:      types.ErrAuthenticate.Code(),
+			Message:   types.ErrAuthenticate.Error(),
 		},
 	}
 	bz, _ := json.Marshal(response)

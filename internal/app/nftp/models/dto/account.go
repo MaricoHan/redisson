@@ -5,16 +5,24 @@ import (
 )
 
 type CreateAccountP struct {
-	Count int64  `json:"count"`
-	AppID uint64 `json:"app_id"`
+	Count      int64  `json:"count"`
+	ProjectID  uint64 `json:"project_id"`
+	ChainID    uint64 `json:"chain_id"`
+	PlatFormID uint64 `json:"plat_form_id"`
 }
 
 type AccountsP struct {
 	PageP
-	Account   string `json:"account"`
-	AppID     uint64 `json:"app_id"`
-	Module    string `json:"module"`
-	Operation string `json:"operation"`
+	Account    string `json:"account"`
+	ProjectID  uint64 `json:"project_id"`
+	ChainID    uint64 `json:"chain_id"`
+	PlatFormID uint64 `json:"plat_form_id"`
+	Module     string `json:"module"`
+	Operation  string `json:"operation"`
+}
+
+type AccountRes struct {
+	Accounts []string `json:"accounts"`
 }
 
 type AccountsRes struct {
