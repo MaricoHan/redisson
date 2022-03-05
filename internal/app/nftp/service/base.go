@@ -374,7 +374,7 @@ func (m Base) Grant(address string) (string, error) {
 	if err != nil {
 		//500
 		log.Error("base account", "fee grant error:", err.Error())
-		return "", err
+		return "", types.ErrInternal
 	}
 
 	return res.Hash, nil
