@@ -75,12 +75,6 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, e
 
 			tmpAddress := sdktype.AccAddress(priv.PubKey().Address().Bytes()).String()
 
-			// fee grant
-			_, err = svc.base.Grant(tmpAddress)
-			if err != nil {
-				return err
-			}
-
 			tmp := &models.TAccount{
 				ProjectID: params.ProjectID,
 				Address:   tmpAddress,
@@ -105,6 +99,11 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, e
 		}
 		return nil
 	})
+	if err != nil {
+		return nil, err
+	}
+	// fee grant
+	_, err = svc.base.Grant(addresses)
 	if err != nil {
 		return nil, err
 	}
