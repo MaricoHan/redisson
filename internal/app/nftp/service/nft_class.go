@@ -42,11 +42,11 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, err
 	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
 		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
 		//400
-		return nil,types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOwnerFound)
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOwnerFound)
 	} else if err != nil {
 		//500
 		log.Error("create nft class", "validate owner error:", err.Error())
-		return nil,types.ErrInternal
+		return nil, types.ErrInternal
 	}
 
 	_, err = models.TAccounts(
@@ -141,6 +141,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, err
 		OperationType: models.TTXSOperationTypeIssueClass,
 		Status:        models.TTXSStatusUndo,
 		Tag:           null.JSONFrom(params.Tag),
+		Retry:         null.Int8From(0),
 	}
 	err = ttx.InsertG(context.Background(), boil.Infer())
 	if err != nil {
