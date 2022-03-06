@@ -373,7 +373,7 @@ func (m Base) Grant(address []string) (string, error) {
 		}
 		msgs = append(msgs, msgGrant)
 	}
-	baseTx := m.CreateBaseTx(root.Address, defultKeyPassword)
+	baseTx := m.CreateBaseTxSync(root.Address, defultKeyPassword)
 	//动态计算gas
 	baseTx.Gas = m.createAccount(int64(len(address)))
 	res, err := m.BuildAndSend(msgs, baseTx)
