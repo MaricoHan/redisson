@@ -65,7 +65,7 @@ func (m Base) CreateBaseTx(keyName, keyPassword string) sdktype.BaseTx {
 	}
 }
 
-func (m Base) CreateBaseTxSend(keyName, keyPassword string) sdktype.BaseTx {
+func (m Base) CreateBaseTxSync(keyName, keyPassword string) sdktype.BaseTx {
 	//from := "t_" + keyName
 	return sdktype.BaseTx{
 		From:     keyName,
@@ -113,6 +113,7 @@ func (m Base) UndoTxIntoDataBase(sender, operationType, taskId, txHash string, P
 		TaskID:        null.StringFrom(taskId),
 		GasUsed:       null.Int64From(gasUsed),
 		Tag:           null.JSONFrom(tag),
+		Retry:         null.Int8From(0),
 	}
 	err := ttx.Insert(context.Background(), exec, boil.Infer())
 	if err != nil {
@@ -372,7 +373,7 @@ func (m Base) Grant(address []string) (string, error) {
 		}
 		msgs = append(msgs, msgGrant)
 	}
-	baseTx := m.CreateBaseTxSend(root.Address, defultKeyPassword)
+	baseTx := m.CreateBaseTx(root.Address, defultKeyPassword)
 	//动态计算gas
 	baseTx.Gas = m.createAccount(int64(len(address)))
 	res, err := m.BuildAndSend(msgs, baseTx)

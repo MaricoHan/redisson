@@ -47,9 +47,9 @@ func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 	data := strings.TrimSpace(req.Data)
 	owner := strings.TrimSpace(req.Owner)
 
-	tagBytes,err :=h.ValidateTag(req.Tag)
-	if err!=nil{
-		return nil,err
+	tagBytes, err := h.ValidateTag(req.Tag)
+	if err != nil {
+		return nil, err
 	}
 	if name == "" {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrName)

@@ -51,9 +51,9 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 	uriHash := strings.TrimSpace(req.UriHash)
 	data := strings.TrimSpace(req.Data)
 	recipient := strings.TrimSpace(req.Recipient)
-	tagBytes,err :=h.ValidateTag(req.Tag)
-	if err!=nil{
-		return nil,err
+	tagBytes, err := h.ValidateTag(req.Tag)
+	if err != nil {
+		return nil, err
 	}
 
 	if name == "" {
@@ -117,9 +117,9 @@ func (h nft) EditNftByNftId(ctx context.Context, request interface{}) (interface
 	name := strings.TrimSpace(req.Name)
 	uri := strings.TrimSpace(req.Uri)
 	data := strings.TrimSpace(req.Data)
-	tagBytes,err :=h.ValidateTag(req.Tag)
-	if err!=nil{
-		return nil,err
+	tagBytes, err := h.ValidateTag(req.Tag)
+	if err != nil {
+		return nil, err
 	}
 	//check start
 	if name == "" {
@@ -230,11 +230,11 @@ func (h nft) DeleteNftByNftId(ctx context.Context, request interface{}) (interfa
 
 	var tagBytes []byte
 	var err error
-	if request!=nil{
+	if request != nil {
 		req := request.(*vo.DeleteNftByNftIdRequest)
-		tagBytes,err =h.ValidateTag(req.Tag)
-		if err!=nil{
-			return nil,err
+		tagBytes, err = h.ValidateTag(req.Tag)
+		if err != nil {
+			return nil, err
 		}
 	}
 
