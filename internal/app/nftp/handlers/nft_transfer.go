@@ -46,9 +46,9 @@ func (h nftTransfer) TransferNftClassByID(ctx context.Context, request interface
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
 	}
 
-	tagBytes,err :=h.ValidateTag(req.Tag)
-	if err!=nil{
-		return nil,err
+	tagBytes, err := h.ValidateTag(req.Tag)
+	if err != nil {
+		return nil, err
 	}
 
 	//校验参数 end
@@ -80,9 +80,9 @@ func (h nftTransfer) TransferNftByNftId(ctx context.Context, request interface{}
 	if err := types2.ValidateAccAddress(recipient); err != nil {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
 	}
-	tagBytes,err :=h.ValidateTag(req.Tag)
-	if err!=nil{
-		return nil,err
+	tagBytes, err := h.ValidateTag(req.Tag)
+	if err != nil {
+		return nil, err
 	}
 
 	// 校验参数 end
