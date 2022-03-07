@@ -40,7 +40,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, err
 		models.TAccountWhere.ProjectID.EQ(params.ProjectID),
 		models.TAccountWhere.Address.EQ(params.Owner)).OneG(context.Background())
 	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
-		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
+		(err != nil && strings.Contains(err.Error(), SqlNotFound)) {
 		//400
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOwnerFound)
 	} else if err != nil {
