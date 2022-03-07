@@ -160,7 +160,7 @@ func (svc *Account) Accounts(params dto.AccountsP) (*dto.AccountsRes, error) {
 	)
 	if err != nil {
 		// records not exist
-		if strings.Contains(err.Error(), SqlNoFound()) {
+		if strings.Contains(err.Error(), SqlNotFound) {
 			return result, nil
 		}
 		return nil, types.ErrInternal
@@ -232,7 +232,7 @@ func (svc *Account) AccountsHistory(params dto.AccountsP) (*dto.AccountOperation
 	)
 	if err != nil {
 		// records not exist
-		if strings.Contains(err.Error(), SqlNoFound()) {
+		if strings.Contains(err.Error(), SqlNotFound) {
 			return result, nil
 		}
 		log.Error("account history", "query error:", err)
