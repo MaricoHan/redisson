@@ -132,6 +132,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsP) (*dto.TxRes, error) {
 			OperationType: models.TTXSOperationTypeMintNFT,
 			Status:        models.TTXSStatusUndo,
 			Tag:           null.JSONFrom(params.Tag),
+			Retry:         null.Int8From(0),
 		}
 
 		err = ttx.Insert(context.Background(), exec, boil.Infer())

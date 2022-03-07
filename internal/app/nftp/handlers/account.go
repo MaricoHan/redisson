@@ -5,10 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
-
-	"gitlab.bianjie.ai/irita-paas/open-api/config"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
@@ -71,10 +68,10 @@ func (h account) CreateAccount(ctx context.Context, request interface{}) (interf
 	if params.Count < 1 || params.Count > 1000 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrCountLen)
 	}
-	if config.Get().Server.Env == "prod" && params.Count > 10 {
-		log.Error("create account", "params error:", "config.Get().Server.Env == \"prod\" && params.Count > 10")
-		return nil, types.ErrParams
-	}
+	//if config.Get().Server.Env == "prod" && params.Count > 10 {
+	//	log.Error("create account", "params error:", "config.Get().Server.Env == \"prod\" && params.Count > 10")
+	//	return nil, types.ErrParams
+	//}
 	// 校验参数 end
 	return h.svc.CreateAccount(params)
 }
