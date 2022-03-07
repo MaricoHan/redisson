@@ -3,6 +3,7 @@ package kit
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -24,7 +25,10 @@ import (
 )
 
 // TimeLayout time format
-const TimeLayout = "2006-01-02"
+const (
+	TimeLayout = "2006-01-02"
+	Delete ="DELETE"
+)
 
 type (
 	// Endpoint Router define a router for http Handler
@@ -143,7 +147,12 @@ func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFu
 		}
 		p := reflect.ValueOf(req).Elem()
 		p.Set(reflect.Zero(p.Type()))
-		if r.Method != "DELETE" {
+		if r.Method != Delete {
+			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+				log.Error("Execute decode request failed", "error", err.Error())
+				return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrClientParams)
+			}
+		}else if r.Method == Delete && fmt.Sprintf("%s",r.Body) != "{}" {
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 				log.Error("Execute decode request failed", "error", err.Error())
 				return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrClientParams)
