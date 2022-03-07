@@ -46,7 +46,7 @@ func (svc *Nft) CreateNfts(params dto.CreateNftsP) (*dto.TxRes, error) {
 		).One(context.Background(), exec)
 
 		if err != nil {
-			if errors.Cause(err) == sql.ErrNoRows || strings.Contains(err.Error(), SqlNoFound()) {
+			if errors.Cause(err) == sql.ErrNoRows || strings.Contains(err.Error(), SqlNotFound) {
 				//404
 				return types.ErrNotFound
 			}
@@ -173,7 +173,7 @@ func (svc *Nft) EditNftByNftId(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 		One(context.Background(), boil.GetContextDB())
 
 	if err != nil {
-		if errors.Cause(err) == sql.ErrNoRows || strings.Contains(err.Error(), SqlNoFound()) {
+		if errors.Cause(err) == sql.ErrNoRows || strings.Contains(err.Error(), SqlNotFound) {
 			//404
 			return nil, types.ErrNotFound
 		}
@@ -288,7 +288,7 @@ func (svc *Nft) EditNftByBatch(params dto.EditNftByBatchP) (*dto.TxRes, error) {
 			One(context.Background(), boil.GetContextDB())
 
 		if err != nil {
-			if errors.Cause(err) == sql.ErrNoRows || strings.Contains(err.Error(), SqlNoFound()) {
+			if errors.Cause(err) == sql.ErrNoRows || strings.Contains(err.Error(), SqlNotFound) {
 				//404
 				return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrNftFound)
 			}
@@ -409,7 +409,7 @@ func (svc *Nft) DeleteNftByNftId(params dto.DeleteNftByNftIdP) (*dto.TxRes, erro
 		models.TNFTWhere.Owner.EQ(params.Sender)).
 		One(context.Background(), boil.GetContextDB())
 	if err != nil {
-		if errors.Cause(err) == sql.ErrNoRows || strings.Contains(err.Error(), SqlNoFound()) {
+		if errors.Cause(err) == sql.ErrNoRows || strings.Contains(err.Error(), SqlNotFound) {
 			//404
 			return nil, types.ErrNotFound
 		}
@@ -515,7 +515,7 @@ func (svc *Nft) DeleteNftByBatch(params dto.DeleteNftByBatchP) (*dto.TxRes, erro
 			models.TNFTWhere.Owner.EQ(params.Sender)).
 			One(context.Background(), boil.GetContextDB())
 		if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
-			(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
+			(err != nil && strings.Contains(err.Error(), SqlNotFound)) {
 			//400
 			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrNftFound)
 		} else if err != nil {
@@ -618,7 +618,7 @@ func (svc *Nft) NftByNftId(params dto.NftByNftIdP) (*dto.NftR, error) {
 		models.TNFTWhere.NFTID.EQ(params.NftId)).
 		One(context.Background(), boil.GetContextDB())
 	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
-		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
+		(err != nil && strings.Contains(err.Error(), SqlNotFound)) {
 		//404
 		return nil, types.ErrNotFound
 	} else if err != nil {
@@ -635,7 +635,7 @@ func (svc *Nft) NftByNftId(params dto.NftByNftIdP) (*dto.NftR, error) {
 	class, err := models.TClasses(models.TClassWhere.ClassID.EQ(params.ClassId)).
 		One(context.Background(), boil.GetContextDB())
 	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
-		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
+		(err != nil && strings.Contains(err.Error(), SqlNotFound)) {
 		//404
 		return nil, types.ErrNotFound
 	} else if err != nil {
@@ -677,7 +677,7 @@ func (svc *Nft) NftOperationHistoryByNftId(params dto.NftOperationHistoryByNftId
 		models.TNFTWhere.NFTID.EQ(params.NftId),
 	).OneG(context.Background())
 	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
-		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
+		(err != nil && strings.Contains(err.Error(), SqlNotFound)) {
 		//404
 		return nil, types.ErrNotFound
 	} else if err != nil {
@@ -732,7 +732,7 @@ func (svc *Nft) NftOperationHistoryByNftId(params dto.NftOperationHistoryByNftId
 	)
 	if err != nil {
 		// records not exist
-		if strings.Contains(err.Error(), SqlNoFound()) {
+		if strings.Contains(err.Error(), SqlNotFound) {
 			return result, nil
 		}
 		return nil, types.ErrInternal
@@ -836,7 +836,7 @@ func (svc *Nft) Nfts(params dto.NftsP) (*dto.NftsRes, error) {
 
 	if err != nil {
 		// records not exist
-		if strings.Contains(err.Error(), SqlNoFound()) {
+		if strings.Contains(err.Error(), SqlNotFound) {
 			return result, nil
 		}
 		return nil, types.ErrInternal
