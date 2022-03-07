@@ -391,7 +391,7 @@ func (m Base) ValidateSigner(sender string, projectid uint64) error {
 		models.TAccountWhere.ProjectID.EQ(projectid),
 		models.TAccountWhere.Address.EQ(sender)).OneG(context.Background())
 	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
-		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
+		(err != nil && strings.Contains(err.Error(), SqlNotFound)) {
 		//404
 		return types.ErrNotFound
 	} else if err != nil {
