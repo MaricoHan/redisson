@@ -48,7 +48,9 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, e
 	var addresses []string
 
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
-		tAppOneObj, err := models.TApps(models.TAppWhere.ID.EQ(1)).One(context.Background(), exec)
+		tAppOneObj, err := models.TApps(
+			qm.SQL("SELECT * FROM `t_apps` WHERE (`t_apps`.`id` = ?) LIMIT 1 FOR UPDATE;", 1),
+		).One(context.Background(), exec)
 		if err != nil {
 			//500
 			log.Error("create account", "query app error:", err.Error())
@@ -86,24 +88,26 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, e
 			tAccounts = append(tAccounts, tmp)
 			addresses = append(addresses, tmpAddress)
 		}
+
 		err = tAccounts.InsertAll(context.Background(), exec)
 		if err != nil {
-			log.Debug("create account", "accounts insert error:", err.Error())
+			log.Error("create account", "accounts insert error:", err.Error())
 			return types.ErrInternal
 		}
 		tAppOneObj.AccOffset += params.Count
 		updateRes, err := tAppOneObj.Update(context.Background(), exec, boil.Infer())
 		if err != nil || updateRes == 0 {
-			log.Debug("create account", "apps insert error:", err.Error())
+			log.Error("create account", "apps insert error:", err.Error())
 			return types.ErrInternal
 		}
+		// fee grant
+		_, err = svc.base.Grant(addresses)
+		if err != nil {
+			return err
+		}
+
 		return nil
 	})
-	if err != nil {
-		return nil, err
-	}
-	// fee grant
-	_, err = svc.base.Grant(addresses)
 	if err != nil {
 		return nil, err
 	}
