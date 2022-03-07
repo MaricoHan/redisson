@@ -27,7 +27,7 @@ import (
 // TimeLayout time format
 const (
 	TimeLayout = "2006-01-02"
-	Delete ="DELETE"
+	Delete     = "DELETE"
 )
 
 type (
@@ -152,7 +152,7 @@ func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFu
 				log.Error("Execute decode request failed", "error", err.Error())
 				return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrClientParams)
 			}
-		}else if r.Method == Delete && fmt.Sprintf("%s",r.Body) != "{}" {
+		} else if r.Method == Delete && fmt.Sprintf("%s", r.Body) != "{}" {
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 				log.Error("Execute decode request failed", "error", err.Error())
 				return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrClientParams)
