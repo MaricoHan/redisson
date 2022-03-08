@@ -25,8 +25,6 @@ import (
 const algo = "secp256k1"
 const hdPathPrefix = hd.BIP44Prefix + "0'/0/"
 
-const defultKeyPassword = "12345678"
-
 type BsnAccount struct {
 	Code    int         `json:"code"`
 	Message string      `json:"message"`

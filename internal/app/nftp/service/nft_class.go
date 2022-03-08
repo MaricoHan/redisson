@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"gitlab.bianjie.ai/irita-paas/open-api/config"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -81,7 +82,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, err
 	classId := nftp + strings.ToLower(hex.EncodeToString(tmhash.Sum(data)))
 
 	//txMsg, Platform side created
-	baseTx := svc.base.CreateBaseTx(pAddress, defultKeyPassword)
+	baseTx := svc.base.CreateBaseTx(pAddress, config.Get().Server.DefaultKeyPassword)
 	createDenomMsg := nft.MsgIssueDenom{
 		Id:               classId,
 		Name:             params.Name,
