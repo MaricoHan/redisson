@@ -6,6 +6,7 @@ log_format = "text"
 log_level = "debug"
 app_env = "stage"
 signature_auth = false
+defult_key_password = "12345678"
 
 [mysql]
 db_name = "nftp_open_api"
