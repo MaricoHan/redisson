@@ -40,7 +40,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, err
 		models.TAccountWhere.ProjectID.EQ(params.ProjectID),
 		models.TAccountWhere.Address.EQ(params.Owner)).OneG(context.Background())
 	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
-		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
+		(err != nil && strings.Contains(err.Error(), SqlNotFound)) {
 		//400
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOwnerFound)
 	} else if err != nil {
@@ -54,7 +54,7 @@ func (svc *NftClass) CreateNftClass(params dto.CreateNftClassP) (*dto.TxRes, err
 		models.TAccountWhere.Address.EQ(params.Owner)).OneG(context.Background())
 
 	if err != nil {
-		if errors.Cause(err) == sql.ErrNoRows || strings.Contains(err.Error(), SqlNoFound()) {
+		if errors.Cause(err) == sql.ErrNoRows || strings.Contains(err.Error(), SqlNotFound) {
 			//400
 			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOwnerFound)
 		}
@@ -209,7 +209,7 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 		)
 		if err != nil {
 			// records not exist
-			if strings.Contains(err.Error(), SqlNoFound()) {
+			if strings.Contains(err.Error(), SqlNotFound) {
 				return nil
 			}
 			log.Error("nft classes", "query nft class error:", err.Error())
@@ -237,7 +237,7 @@ func (svc *NftClass) NftClasses(params dto.NftClassesP) (*dto.NftClassesRes, err
 		return err
 	})
 	if err != nil {
-		if strings.Contains(err.Error(), SqlNoFound()) {
+		if strings.Contains(err.Error(), SqlNotFound) {
 			return result, nil
 		}
 		return result, err
@@ -278,7 +278,7 @@ func (svc *NftClass) NftClassById(params dto.NftClassesP) (*dto.NftClassRes, err
 			models.TClassWhere.ProjectID.EQ(params.ProjectID),
 		).One(context.Background(), exec)
 		if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
-			(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
+			(err != nil && strings.Contains(err.Error(), SqlNotFound)) {
 			//404
 			return types.ErrNotFound
 		} else if err != nil {
