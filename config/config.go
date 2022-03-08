@@ -56,13 +56,14 @@ type (
 
 	// Server define a struct for http server
 	Server struct {
-		Address        string `mapstructure:"address"`
-		PrometheusAddr string `mapstructure:"prometheus_addr"`
-		LogLevel       string `mapstructure:"log_level"`
-		LogFormat      string `mapstructure:"log_format"`
-		Env            string `mapstructure:"app_env"`
-		RouterPrefix   string `mapstructure:"router_prefix"`
-		SignatureAuth  bool   `mapstructure:"signature_auth"`
+		Address            string `mapstructure:"address"`
+		PrometheusAddr     string `mapstructure:"prometheus_addr"`
+		LogLevel           string `mapstructure:"log_level"`
+		LogFormat          string `mapstructure:"log_format"`
+		Env                string `mapstructure:"app_env"`
+		RouterPrefix       string `mapstructure:"router_prefix"`
+		SignatureAuth      bool   `mapstructure:"signature_auth"`
+		DefaultKeyPassword string `mapstructure:"default_key_password"`
 	}
 )
 
