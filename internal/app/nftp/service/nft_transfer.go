@@ -51,7 +51,7 @@ func (svc *NftTransfer) TransferNftClassByID(params dto.TransferNftClassByIDP) (
 		models.TClassWhere.ProjectID.EQ(params.ProjectID),
 		models.TClassWhere.Owner.EQ(params.Owner)).OneG(context.Background())
 	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
-		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
+		(err != nil && strings.Contains(err.Error(), SqlNotFound)) {
 		//404
 		return nil, types.ErrNotFound
 	} else if err != nil {
@@ -161,7 +161,7 @@ func (svc *NftTransfer) TransferNftByNftId(params dto.TransferNftByNftIdP) (*dto
 		models.TNFTWhere.Owner.EQ(params.Owner),
 	).OneG(context.Background())
 	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
-		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
+		(err != nil && strings.Contains(err.Error(), SqlNotFound)) {
 		//404
 		return nil, types.ErrNotFound
 	} else if err != nil {
@@ -295,7 +295,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (*dto
 			models.TNFTWhere.Owner.EQ(params.Owner),
 		).OneG(context.Background())
 		if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
-			(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
+			(err != nil && strings.Contains(err.Error(), SqlNotFound)) {
 			//400
 			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", i+1)+"th "+types.ErrNftFound)
 		} else if err != nil {
@@ -391,7 +391,7 @@ func (svc *NftTransfer) TransferNftByBatch(params dto.TransferNftByBatchP) (*dto
 				models.TNFTWhere.Owner.EQ(params.Owner),
 			).One(context.Background(), exec)
 			if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
-				(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
+				(err != nil && strings.Contains(err.Error(), SqlNotFound)) {
 				//400
 				return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, "the "+fmt.Sprintf("%d", j+1)+types.ErrNftFound)
 			} else if err != nil {

@@ -23,14 +23,12 @@ import (
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 )
 
+var SqlNotFound = "records not exist"
+
 type Base struct {
 	sdkClient sdk.Client
 	gas       uint64
 	coins     sdktype.DecCoins
-}
-
-func SqlNoFound() string {
-	return "records not exist"
 }
 
 func NewBase(sdkClient sdk.Client, gas uint64, denom string, amount int64) *Base {
@@ -125,9 +123,10 @@ func (m Base) UndoTxIntoDataBase(sender, operationType, taskId, txHash string, P
 // ValidateTx validate tx status
 func (m Base) ValidateTx(hash string) (*models.TTX, error) {
 	tx, err := models.TTXS(models.TTXWhere.Hash.EQ(hash)).OneG(context.Background())
-	if err == sql.ErrNoRows || strings.Contains(err.Error(), SqlNoFound()) {
-		return tx, nil
-	} else if err != nil {
+	if err != nil {
+		if err == sql.ErrNoRows || strings.Contains(err.Error(), SqlNotFound) {
+			return tx, nil
+		}
 		return tx, err
 	}
 
@@ -373,7 +372,7 @@ func (m Base) Grant(address []string) (string, error) {
 		}
 		msgs = append(msgs, msgGrant)
 	}
-	baseTx := m.CreateBaseTxSync(root.Address, defultKeyPassword)
+	baseTx := m.CreateBaseTxSync(root.Address, config.Get().Server.DefaultKeyPassword)
 	//动态计算gas
 	baseTx.Gas = m.createAccount(int64(len(address)))
 	res, err := m.BuildAndSend(msgs, baseTx)
@@ -392,7 +391,7 @@ func (m Base) ValidateSigner(sender string, projectid uint64) error {
 		models.TAccountWhere.ProjectID.EQ(projectid),
 		models.TAccountWhere.Address.EQ(sender)).OneG(context.Background())
 	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
-		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
+		(err != nil && strings.Contains(err.Error(), SqlNotFound)) {
 		//404
 		return types.ErrNotFound
 	} else if err != nil {
@@ -411,7 +410,7 @@ func (m Base) ValidateRecipient(recipient string, projectid uint64) error {
 		models.TAccountWhere.ProjectID.EQ(projectid),
 		models.TAccountWhere.Address.EQ(recipient)).OneG(context.Background())
 	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
-		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
+		(err != nil && strings.Contains(err.Error(), SqlNotFound)) {
 		//400
 		return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientFound)
 	} else if err != nil {

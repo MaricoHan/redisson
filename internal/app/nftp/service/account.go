@@ -25,8 +25,6 @@ import (
 const algo = "secp256k1"
 const hdPathPrefix = hd.BIP44Prefix + "0'/0/"
 
-const defultKeyPassword = "12345678"
-
 type BsnAccount struct {
 	Code    int         `json:"code"`
 	Message string      `json:"message"`
@@ -160,7 +158,7 @@ func (svc *Account) Accounts(params dto.AccountsP) (*dto.AccountsRes, error) {
 	)
 	if err != nil {
 		// records not exist
-		if strings.Contains(err.Error(), SqlNoFound()) {
+		if strings.Contains(err.Error(), SqlNotFound) {
 			return result, nil
 		}
 		return nil, types.ErrInternal
@@ -232,7 +230,7 @@ func (svc *Account) AccountsHistory(params dto.AccountsP) (*dto.AccountOperation
 	)
 	if err != nil {
 		// records not exist
-		if strings.Contains(err.Error(), SqlNoFound()) {
+		if strings.Contains(err.Error(), SqlNotFound) {
 			return result, nil
 		}
 		log.Error("account history", "query error:", err)
