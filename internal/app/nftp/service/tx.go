@@ -45,8 +45,10 @@ func (svc *Tx) TxResultByTxHash(params dto.TxResultByTxHashP) (*dto.TxResultByTx
 		result.Status = 0
 	} else if txinfo.Status == models.TTXSStatusSuccess {
 		result.Status = 1
+	} else if txinfo.Status == models.TTXSStatusFailed {
+		result.Status = 2
 	} else {
-		result.Status = 2 // tx.Status == "failed"
+		result.Status = 3 // tx.Status == "undo"
 	}
 
 	var tags map[string]interface{}
