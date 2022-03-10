@@ -177,7 +177,7 @@ func (m Base) CreateGasMsg(inputAddress string, outputAddress []string) bank.Msg
 Estimated gas required to issue nft
 It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048328
 */
-func (m Base) mintNftsGas(originData []byte, amount uint64) uint64 {
+func (m Base) MintNftsGas(originData []byte, amount uint64) uint64 {
 	l := uint64(len(originData))
 	if l <= types.MintMinNFTDataSize {
 		return uint64(float64(types.MintMinNFTGas) * config.Get().Chain.GasCoefficient)
@@ -192,7 +192,7 @@ func (m Base) mintNftsGas(originData []byte, amount uint64) uint64 {
 Estimated gas required to create denom
 It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048352
 */
-func (m Base) createDenomGas(data []byte) uint64 {
+func (m Base) CreateDenomGas(data []byte) uint64 {
 	l := uint64(len(data))
 	if l <= types.CreateMinDENOMDataSize {
 		return uint64(types.CreateMinDENOMGas * config.Get().Chain.GasCoefficient)
@@ -205,7 +205,7 @@ func (m Base) createDenomGas(data []byte) uint64 {
 Estimated gas required to transfer denom
 It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048356
 */
-func (m Base) transferDenomGas(class *models.TClass) uint64 {
+func (m Base) TransferDenomGas(class *models.TClass) uint64 {
 	l := len([]byte(class.ClassID)) + len([]byte(class.Status)) + len([]byte(class.Owner)) + len([]byte(class.TXHash)) + len([]byte(string(class.ProjectID))) + len([]byte(string(class.ID))) + len([]byte(string(class.Offset)))
 	if class.LockedBy.Valid {
 		l += len([]byte(string(class.LockedBy.Uint64)))
@@ -254,7 +254,7 @@ func (m Base) transferDenomGas(class *models.TClass) uint64 {
 Estimated gas required to transfer one nft
 It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048358
 */
-func (m Base) transferOneNftGas(data []byte) uint64 {
+func (m Base) TransferOneNftGas(data []byte) uint64 {
 	l := len(data)
 	if l <= types.TransferMinNFTDataSize {
 		return uint64(types.TransferMinNFTGas * config.Get().Chain.GasCoefficient)
@@ -267,7 +267,7 @@ func (m Base) transferOneNftGas(data []byte) uint64 {
 Estimated gas required to transfer more nft
 It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048358
 */
-func (m Base) transferNftsGas(data []byte, amount uint64) uint64 {
+func (m Base) TransferNftsGas(data []byte, amount uint64) uint64 {
 	l := uint64(len(data))
 	if l <= types.TransferMinNFTDataSize {
 		return uint64(float64(types.TransferMinNFTGas) * config.Get().Chain.GasCoefficient)
@@ -277,7 +277,7 @@ func (m Base) transferNftsGas(data []byte, amount uint64) uint64 {
 	return uint64(u)
 }
 
-func (m Base) lenOfNft(tNft *models.TNFT) uint64 {
+func (m Base) LenOfNft(tNft *models.TNFT) uint64 {
 	len1 := len(tNft.Status + tNft.NFTID + tNft.Owner + tNft.ClassID + tNft.TXHash + tNft.Name.String + tNft.Metadata.String + tNft.URIHash.String + tNft.URI.String)
 	len2 := 4 * 8 // 4 uint64
 	len3 := len(tNft.CreateAt.String() + tNft.UpdateAt.String() + tNft.Timestamp.Time.String())
@@ -288,7 +288,7 @@ func (m Base) lenOfNft(tNft *models.TNFT) uint64 {
 Estimated gas required to edit nft
 It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049122
 */
-func (m Base) editNftGas(nftLen, signLen uint64) uint64 {
+func (m Base) EditNftGas(nftLen, signLen uint64) uint64 {
 	gas := types.EditNFTBaseGas + types.EditNFTLenCoefficient*nftLen + types.EditNFTSignLenCoefficient*signLen
 	res := float64(gas) * config.Get().Chain.GasCoefficient
 	return uint64(res)
@@ -298,7 +298,7 @@ func (m Base) editNftGas(nftLen, signLen uint64) uint64 {
 Estimated gas required to edit nfts
 It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049126
 */
-func (m Base) editBatchNftGas(nftLen, signLen uint64) uint64 {
+func (m Base) EditBatchNftGas(nftLen, signLen uint64) uint64 {
 	gas := types.EditBatchNFTBaseGas + types.EditBatchNFTLenCoefficient*nftLen + types.EditBatchNFTSignLenCoefficient*signLen
 	res := float64(gas) * config.Get().Chain.GasCoefficient
 	return uint64(res)
@@ -308,7 +308,7 @@ func (m Base) editBatchNftGas(nftLen, signLen uint64) uint64 {
 Estimated gas required to delete nft
 It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049119
 */
-func (m Base) deleteNftGas(nftLen uint64) uint64 {
+func (m Base) DeleteNftGas(nftLen uint64) uint64 {
 	gas := types.DeleteNFTBaseGas + (nftLen-types.DeleteNFTBaseLen)*types.DeleteNFTCoefficient
 	res := float64(gas) * config.Get().Chain.GasCoefficient
 	return uint64(res)
@@ -318,7 +318,7 @@ func (m Base) deleteNftGas(nftLen uint64) uint64 {
 Estimated gas required to delete nfts
 It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049124
 */
-func (m Base) deleteBatchNftGas(nftLen, n uint64) uint64 {
+func (m Base) DeleteBatchNftGas(nftLen, n uint64) uint64 {
 	basLen := types.DeleteBatchNFTBaseLen + types.DeleteBatchNFTBaseLenCoefficient*(n-1)
 	baseGas := types.DeleteBatchNFTBaseGas + types.DeleteBatchNFTBaseGasCoefficient*(n-1)
 	gas := (nftLen-basLen)*types.DeleteBatchCoefficient + baseGas

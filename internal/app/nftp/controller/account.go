@@ -26,7 +26,7 @@ func (c AccountController) GetEndpoints() []kit.Endpoint {
 		kit.Endpoint{
 			URI:     "/accounts",
 			Method:  http.MethodPost,
-			Handler: c.makeHandler(c.handler.CreateAccount, &vo.CreateAccountRequest{}),
+			Handler: c.makeHandler(c.handler.Create, &vo.CreateAccountRequest{}),
 		},
 		kit.Endpoint{
 			URI:     "/accounts",

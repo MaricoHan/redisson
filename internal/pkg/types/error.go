@@ -22,6 +22,7 @@ const (
 	TxStatusPending                = "TX_STATUS_PENDING"
 	TxStatusUndo                   = "TX_STATUS_UNDO"
 	StructureSendTransactionFailed = "STRUCTURE_SEND_TRANSACTION_FAILED"
+	ModuleFailed                   = "MODULE_ERROR"
 
 	// ErrOffset		error msg handle
 	ErrOffset         = "offset format error"
@@ -84,6 +85,7 @@ var (
 	ErrTXStatusSuccess = Register(RootCodeSpace, TxStatusSuccess, "tx transaction success")
 	ErrTXStatusPending = Register(RootCodeSpace, TxStatusPending, "tx transaction is in progress, please wait")
 	ErrTXStatusUndo    = Register(RootCodeSpace, TxStatusUndo, "tx transaction not executed, please wait")
+	ErrModules         = Register(RootCodeSpace, ModuleFailed, ErrModule)
 )
 
 var usedErrorCodes = map[string]*AppError{}
