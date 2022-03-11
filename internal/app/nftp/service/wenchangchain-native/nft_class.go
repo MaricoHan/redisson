@@ -1,4 +1,4 @@
-package native
+package wenchangchain_native
 
 import (
 	"context"

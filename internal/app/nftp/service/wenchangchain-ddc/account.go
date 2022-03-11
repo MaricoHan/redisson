@@ -1,4 +1,4 @@
-package ddc
+package wenchangchain_ddc
 
 import (
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"

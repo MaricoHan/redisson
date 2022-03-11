@@ -1,10 +1,9 @@
-package native
+package wenchangchain_native
 
 import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"gitlab.bianjie.ai/irita-paas/orms/orm-nft"
 	"strings"
 
 	sdkcrypto "github.com/irisnet/core-sdk-go/common/crypto"
@@ -19,6 +18,7 @@ import (
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
+	"gitlab.bianjie.ai/irita-paas/orms/orm-nft"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"
 )

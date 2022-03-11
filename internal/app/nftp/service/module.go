@@ -3,8 +3,8 @@ package service
 import "gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 
 const (
-	NATIVE = "native"
-	DDC    = "ddc"
+	NATIVE = "wenchangchain-native"
+	DDC    = "wenchangchain-ddc"
 )
 
 // AccountService accounts
