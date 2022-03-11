@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 )
@@ -27,11 +26,12 @@ func newTx(svc *service.Tx) *tx {
 // TxResultByTxHash query txresult by txhash
 func (h tx) TxResultByTxHash(ctx context.Context, _ interface{}) (interface{}, error) {
 	// 校验参数 start
+	authData := h.AuthData(ctx)
 	params := dto.TxResultByTxHashP{
 		TaskId:     h.TaskId(ctx),
-		ChainID:    h.ChainID(ctx),
-		ProjectID:  h.ProjectID(ctx),
-		PlatFormID: h.PlatFormID(ctx),
+		ChainID:    authData.ChainId,
+		ProjectID:  authData.ProjectId,
+		PlatFormID: authData.PlatformId,
 	}
 	// 校验参数 end
 	// 业务数据入库的地方

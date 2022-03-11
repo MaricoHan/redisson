@@ -3,34 +3,39 @@ package handlers
 import (
 	"context"
 	"fmt"
-	"time"
-
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
+	"time"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 )
-
-type IAccount interface {
-	CreateAccount(ctx context.Context, _ interface{}) (interface{}, error)
-	Accounts(ctx context.Context, _ interface{}) (interface{}, error)
-	AccountsHistory(ctx context.Context, _ interface{}) (interface{}, error)
-}
-
-func NewAccount(svc *service.Account) IAccount {
-	return newAccount(svc)
-}
 
 type account struct {
 	base
 	pageBasic
-	svc *service.Account
+	svc map[string]service.AccountService
 }
 
-func newAccount(svc *service.Account) *account {
-	return &account{svc: svc}
+type IAccount interface {
+	Create(ctx context.Context, _ interface{}) (interface{}, error)
+	Accounts(ctx context.Context, _ interface{}) (interface{}, error)
+	AccountsHistory(ctx context.Context, _ interface{}) (interface{}, error)
+}
+
+func NewAccount(svc ...*service.AccountBase) IAccount {
+	return newAccountModule(svc)
+}
+
+func newAccountModule(svc []*service.AccountBase) *account {
+	modules := make(map[string]service.AccountService, len(svc))
+	for _, v := range svc {
+		modules[v.Module] = v.Service
+	}
+	return &account{
+		svc: modules,
+	}
 }
 
 var (
@@ -50,16 +55,15 @@ var (
 	}
 )
 
-// CreateAccount Create one or more accounts
-// return creation result
-func (h account) CreateAccount(ctx context.Context, request interface{}) (interface{}, error) {
+func (h account) Create(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
 	req := request.(*vo.CreateAccountRequest)
 
+	authData := h.AuthData(ctx)
 	params := dto.CreateAccountP{
-		ChainID:    h.ChainID(ctx),
-		ProjectID:  h.ProjectID(ctx),
-		PlatFormID: h.PlatFormID(ctx),
+		ChainID:    authData.ChainId,
+		ProjectID:  authData.ProjectId,
+		PlatFormID: authData.PlatformId,
 		Count:      req.Count,
 	}
 	if params.Count == 0 {
@@ -73,16 +77,20 @@ func (h account) CreateAccount(ctx context.Context, request interface{}) (interf
 	//	return nil, types.ErrParams
 	//}
 	// 校验参数 end
-	return h.svc.CreateAccount(params)
+	service, ok := h.svc[authData.Module]
+	if !ok {
+		return nil, types.ErrModules
+	}
+	return service.Create(params)
 }
 
-// Accounts return account list
 func (h account) Accounts(ctx context.Context, _ interface{}) (interface{}, error) {
 	// 校验参数 start
+	authData := h.AuthData(ctx)
 	params := dto.AccountsP{
-		ChainID:    h.ChainID(ctx),
-		ProjectID:  h.ProjectID(ctx),
-		PlatFormID: h.PlatFormID(ctx),
+		ChainID:    authData.ChainId,
+		ProjectID:  authData.ProjectId,
+		PlatFormID: authData.PlatformId,
 		Account:    h.Account(ctx),
 	}
 	offset, err := h.Offset(ctx)
@@ -136,23 +144,20 @@ func (h account) Accounts(ctx context.Context, _ interface{}) (interface{}, erro
 
 	// 校验参数 end
 	// 业务数据入库的地方
-	return h.svc.Accounts(params)
-}
-
-func (h account) Account(ctx context.Context) string {
-	accountR := ctx.Value("account")
-	if accountR == nil || accountR == "" {
-		return ""
+	service, ok := h.svc[authData.Module]
+	if !ok {
+		return nil, types.ErrModules
 	}
-	return accountR.(string)
+	return service.Show(params)
 }
 
 func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{}, error) {
 	// 校验参数 start
+	authData := h.AuthData(ctx)
 	params := dto.AccountsP{
-		ChainID:    h.ChainID(ctx),
-		ProjectID:  h.ProjectID(ctx),
-		PlatFormID: h.PlatFormID(ctx),
+		ChainID:    authData.ChainId,
+		ProjectID:  authData.ProjectId,
+		PlatFormID: authData.PlatformId,
 		Account:    h.Account(ctx),
 	}
 
@@ -225,8 +230,19 @@ func (h account) AccountsHistory(ctx context.Context, _ interface{}) (interface{
 			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOperation)
 		}
 	}
+	service, ok := h.svc[authData.Module]
+	if !ok {
+		return nil, types.ErrModules
+	}
+	return service.History(params)
+}
 
-	return h.svc.AccountsHistory(params)
+func (h account) Account(ctx context.Context) string {
+	accountR := ctx.Value("account")
+	if accountR == nil || accountR == "" {
+		return ""
+	}
+	return accountR.(string)
 }
 
 func (h account) module(ctx context.Context) string {
