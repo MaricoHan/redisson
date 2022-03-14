@@ -1,10 +1,9 @@
-package service
+package wenchangchain_native
 
 import (
 	"context"
 	"encoding/base64"
 	"fmt"
-
 	"strings"
 
 	sdkcrypto "github.com/irisnet/core-sdk-go/common/crypto"
@@ -13,8 +12,10 @@ import (
 	sdktype "github.com/irisnet/core-sdk-go/types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+
 	"gitlab.bianjie.ai/irita-paas/open-api/config"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft"
@@ -25,24 +26,18 @@ import (
 const algo = "secp256k1"
 const hdPathPrefix = hd.BIP44Prefix + "0'/0/"
 
-const defultKeyPassword = "12345678"
-
-type BsnAccount struct {
-	Code    int         `json:"code"`
-	Message string      `json:"message"`
-	Detail  string      `json:"detail"`
-	Data    interface{} `json:"data"`
+type nativeAccount struct {
+	base *service.Base
 }
 
-type Account struct {
-	base *Base
+func NewNFTAccount(base *service.Base) *service.AccountBase {
+	return &service.AccountBase{
+		Module:  service.NATIVE,
+		Service: &nativeAccount{base: base},
+	}
 }
 
-func NewAccount(base *Base) *Account {
-	return &Account{base: base}
-}
-
-func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, error) {
+func (svc *nativeAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) {
 	// 写入数据库
 	// sdk 创建账户
 	var addresses []string
@@ -117,7 +112,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, e
 	return result, nil
 }
 
-func (svc *Account) Accounts(params dto.AccountsP) (*dto.AccountsRes, error) {
+func (svc *nativeAccount) Show(params dto.AccountsP) (*dto.AccountsRes, error) {
 	result := &dto.AccountsRes{}
 	result.Offset = params.Offset
 	result.Limit = params.Limit
@@ -160,7 +155,7 @@ func (svc *Account) Accounts(params dto.AccountsP) (*dto.AccountsRes, error) {
 	)
 	if err != nil {
 		// records not exist
-		if strings.Contains(err.Error(), SqlNoFound()) {
+		if strings.Contains(err.Error(), service.SqlNotFound) {
 			return result, nil
 		}
 		return nil, types.ErrInternal
@@ -178,9 +173,10 @@ func (svc *Account) Accounts(params dto.AccountsP) (*dto.AccountsRes, error) {
 	result.Accounts = accounts
 
 	return result, nil
+
 }
 
-func (svc *Account) AccountsHistory(params dto.AccountsP) (*dto.AccountOperationRecordRes, error) {
+func (svc *nativeAccount) History(params dto.AccountsP) (*dto.AccountOperationRecordRes, error) {
 	result := &dto.AccountOperationRecordRes{
 		PageRes: dto.PageRes{
 			Offset:     params.Offset,
@@ -232,7 +228,7 @@ func (svc *Account) AccountsHistory(params dto.AccountsP) (*dto.AccountOperation
 	)
 	if err != nil {
 		// records not exist
-		if strings.Contains(err.Error(), SqlNoFound()) {
+		if strings.Contains(err.Error(), service.SqlNotFound) {
 			return result, nil
 		}
 		log.Error("account history", "query error:", err)

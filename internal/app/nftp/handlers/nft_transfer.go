@@ -2,32 +2,37 @@ package handlers
 
 import (
 	"context"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 	"strings"
 
 	types2 "github.com/irisnet/core-sdk-go/types"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 )
+
+type nftTransfer struct {
+	base
+	svc map[string]service.TransferService
+}
 
 type INftTransfer interface {
 	TransferNftClassByID(ctx context.Context, _ interface{}) (interface{}, error)
 	TransferNftByNftId(ctx context.Context, _ interface{}) (interface{}, error)
-	TransferNftByBatch(ctx context.Context, _ interface{}) (interface{}, error)
 }
 
-func NewNftTransfer(svc *service.NftTransfer) INftTransfer {
+func NewNftTransfer(svc ...*service.TransferBase) INftTransfer {
 	return newNftTransfer(svc)
 }
 
-type nftTransfer struct {
-	base
-	svc *service.NftTransfer
-}
-
-func newNftTransfer(svc *service.NftTransfer) *nftTransfer {
-	return &nftTransfer{svc: svc}
+func newNftTransfer(svc []*service.TransferBase) *nftTransfer {
+	modules := make(map[string]service.TransferService, len(svc))
+	for _, v := range svc {
+		modules[v.Module] = v.Service
+	}
+	return &nftTransfer{
+		svc: modules,
+	}
 }
 
 // TransferNftClassByID transfer an nft class by id
@@ -52,17 +57,21 @@ func (h nftTransfer) TransferNftClassByID(ctx context.Context, request interface
 	}
 
 	//校验参数 end
-
+	authData := h.AuthData(ctx)
 	params := dto.TransferNftClassByIDP{
 		ClassID:    h.ClassID(ctx),
 		Owner:      h.Owner(ctx),
 		Recipient:  recipient,
-		ChainID:    h.ChainID(ctx),
-		ProjectID:  h.ProjectID(ctx),
-		PlatFormID: h.PlatFormID(ctx),
+		ChainID:    authData.ChainId,
+		ProjectID:  authData.ProjectId,
+		PlatFormID: authData.PlatformId,
 		Tag:        tagBytes,
 	}
-	return h.svc.TransferNftClassByID(params)
+	service, ok := h.svc[authData.Module]
+	if !ok {
+		return nil, types.ErrModules
+	}
+	return service.TransferNFTClass(params)
 }
 
 // TransferNftByNftId transfer an nft class by index
@@ -86,40 +95,22 @@ func (h nftTransfer) TransferNftByNftId(ctx context.Context, request interface{}
 	}
 
 	// 校验参数 end
-
+	authData := h.AuthData(ctx)
 	params := dto.TransferNftByNftIdP{
 		ClassID:    h.ClassID(ctx),
 		Owner:      h.Owner(ctx),
 		NftId:      h.NftId(ctx),
 		Recipient:  recipient,
-		ChainID:    h.ChainID(ctx),
-		ProjectID:  h.ProjectID(ctx),
-		PlatFormID: h.PlatFormID(ctx),
+		ChainID:    authData.ChainId,
+		ProjectID:  authData.ProjectId,
+		PlatFormID: authData.PlatformId,
 		Tag:        tagBytes,
 	}
-	return h.svc.TransferNftByNftId(params)
-}
-
-// TransferNftByBatch return class list
-func (h nftTransfer) TransferNftByBatch(ctx context.Context, request interface{}) (interface{}, error) {
-	// 校验参数 start
-	req := request.(*vo.TransferNftByBatchRequest)
-	if req.Recipients == nil {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipients)
+	service, ok := h.svc[authData.Module]
+	if !ok {
+		return nil, types.ErrModules
 	}
-	params := dto.TransferNftByBatchP{
-		ClassID:    h.ClassID(ctx),
-		Owner:      h.Owner(ctx),
-		Recipients: req.Recipients,
-		ChainID:    h.ChainID(ctx),
-		ProjectID:  h.ProjectID(ctx),
-		PlatFormID: h.PlatFormID(ctx),
-	}
-	if len(params.Recipients) > 50 {
-		return "", types.ErrLimit
-	}
-	// 校验参数 end
-	return h.svc.TransferNftByBatch(params)
+	return service.TransferNFT(params)
 }
 
 func (h nftTransfer) ClassID(ctx context.Context) string {

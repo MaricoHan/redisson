@@ -3,13 +3,13 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 	"strings"
 	"time"
 
 	types2 "github.com/irisnet/core-sdk-go/types"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 )
 
@@ -19,18 +19,24 @@ type INftClass interface {
 	ClassByID(ctx context.Context, _ interface{}) (interface{}, error)
 }
 
-func NewNftClass(svc *service.NftClass) INftClass {
-	return newNftClass(svc)
-}
-
 type nftClass struct {
 	base
 	pageBasic
-	svc *service.NftClass
+	svc map[string]service.NFTClassService
 }
 
-func newNftClass(svc *service.NftClass) *nftClass {
-	return &nftClass{svc: svc}
+func NewNFTClass(svc ...*service.NFTClassBase) *nftClass {
+	return newNFTClassModule(svc)
+}
+
+func newNFTClassModule(svc []*service.NFTClassBase) *nftClass {
+	modules := make(map[string]service.NFTClassService, len(svc))
+	for _, v := range svc {
+		modules[v.Module] = v.Service
+	}
+	return &nftClass{
+		svc: modules,
+	}
 }
 
 // CreateNftClass Create one nft class
@@ -90,10 +96,11 @@ func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOwnerLen)
 	}
 
+	authData := h.AuthData(ctx)
 	params := dto.CreateNftClassP{
-		ChainID:     h.ChainID(ctx),
-		ProjectID:   h.ProjectID(ctx),
-		PlatFormID:  h.PlatFormID(ctx),
+		ChainID:     authData.ChainId,
+		ProjectID:   authData.ProjectId,
+		PlatFormID:  authData.PlatformId,
 		Name:        name,
 		Symbol:      symbol,
 		Description: description,
@@ -103,16 +110,21 @@ func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 		Owner:       owner,
 		Tag:         tagBytes,
 	}
-	return h.svc.CreateNftClass(params)
+	service, ok := h.svc[authData.Module]
+	if !ok {
+		return nil, types.ErrModules
+	}
+	return service.Create(params)
 }
 
 // Classes return class list
 func (h nftClass) Classes(ctx context.Context, _ interface{}) (interface{}, error) {
 	// 校验参数 start
+	authData := h.AuthData(ctx)
 	params := dto.NftClassesP{
-		ChainID:    h.ChainID(ctx),
-		ProjectID:  h.ProjectID(ctx),
-		PlatFormID: h.PlatFormID(ctx),
+		ChainID:    authData.ChainId,
+		ProjectID:  authData.ProjectId,
+		PlatFormID: authData.PlatformId,
 		Id:         h.Id(ctx),
 		Name:       h.Name(ctx),
 		Owner:      h.Owner(ctx),
@@ -168,22 +180,31 @@ func (h nftClass) Classes(ctx context.Context, _ interface{}) (interface{}, erro
 
 	// 校验参数 end
 	// 业务数据入库的地方
-	return h.svc.NftClasses(params)
+	service, ok := h.svc[authData.Module]
+	if !ok {
+		return nil, types.ErrModules
+	}
+	return service.List(params)
 }
 
 // ClassByID return class
 func (h nftClass) ClassByID(ctx context.Context, _ interface{}) (interface{}, error) {
 	// 校验参数 start
+	authData := h.AuthData(ctx)
 	params := dto.NftClassesP{
-		ChainID:    h.ChainID(ctx),
-		ProjectID:  h.ProjectID(ctx),
-		PlatFormID: h.PlatFormID(ctx),
+		ChainID:    authData.ChainId,
+		ProjectID:  authData.ProjectId,
+		PlatFormID: authData.PlatformId,
 		Id:         h.Id(ctx),
 	}
 
 	// 校验参数 end
 	// 业务数据入库的地方
-	return h.svc.NftClassById(params)
+	service, ok := h.svc[authData.Module]
+	if !ok {
+		return nil, types.ErrModules
+	}
+	return service.Show(params)
 }
 
 func (h nftClass) Id(ctx context.Context) string {

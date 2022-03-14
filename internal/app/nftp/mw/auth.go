@@ -60,6 +60,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 获取project
 	project, err := models.TProjects(
 		models.TProjectWhere.ID.EQ(projectKeyResult.ProjectID)).OneG(context.Background())
 	if err != nil {
@@ -67,6 +68,22 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		writeForbiddenResp(w)
 		return
 	}
+
+	// 获取链信息
+	chain, err := models.TChains(models.TChainWhere.ID.EQ(project.ChainID)).OneG(context.Background())
+	if err != nil {
+		log.Error("server http", "chain error:", err)
+		writeForbiddenResp(w)
+		return
+	}
+
+	authData := AuthData{
+		ProjectId:  project.ID,
+		ChainId:    chain.ID,
+		PlatformId: uint64(project.PlatformID.Int64),
+		Module:     chain.Module,
+	}
+	authDataBytes, _ := json.Marshal(authData)
 	// 1. 获取 header 中的时间戳
 	reqTimestampStr := r.Header.Get("X-Timestamp")
 
@@ -94,9 +111,10 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Info("signature:", h.Signature(r, projectKeyResult.ProjectSecret, reqTimestampStr, reqSignature))
-	r.Header.Set("X-App-Id", fmt.Sprintf("%d", project.ID))
-	r.Header.Set("X-Chain-Id", fmt.Sprintf("%d", project.ChainID))
-	r.Header.Set("X-Platform-Id", fmt.Sprintf("%d", uint64(project.PlatformID.Int64)))
+	r.Header.Set("X-Auth-Data", fmt.Sprintf("%s", string(authDataBytes)))
+	//r.Header.Set("X-App-Id", fmt.Sprintf("%d", project.ID))
+	//r.Header.Set("X-Chain-Id", fmt.Sprintf("%d", project.ChainID))
+	//r.Header.Set("X-Platform-Id", fmt.Sprintf("%d", uint64(project.PlatformID.Int64)))
 	h.next.ServeHTTP(w, r)
 }
 
@@ -131,7 +149,8 @@ func (h authHandler) Signature(r *http.Request, apiSecret string, timestamp stri
 		params[k] = v
 	}
 	// sort params
-	sortParams := sortMapParams(params)
+	//sortParams := sortMapParams(params)
+	sortParams := params
 	if sortParams != nil {
 		sortParamsBytes, _ := json.Marshal(sortParams)
 		hexHash = hash(string(sortParamsBytes) + timestamp + apiSecret)

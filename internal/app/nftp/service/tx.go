@@ -28,7 +28,7 @@ func (svc *Tx) TxResultByTxHash(params dto.TxResultByTxHashP) (*dto.TxResultByTx
 		models.TTXWhere.ProjectID.EQ(params.ProjectID),
 	).OneG(context.Background())
 	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
-		(err != nil && strings.Contains(err.Error(), SqlNoFound())) {
+		(err != nil && strings.Contains(err.Error(), SqlNotFound)) {
 		//404
 		return nil, types.ErrNotFound
 	} else if err != nil {
