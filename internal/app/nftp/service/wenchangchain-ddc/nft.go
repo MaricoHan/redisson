@@ -19,6 +19,7 @@ import (
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -29,12 +30,21 @@ type Nft struct {
 	base *service.Base
 }
 
+func NewDDCNFT(base *service.Base) *service.NFTBase {
+	return &service.NFTBase{
+		Module: service.DDC,
+		Service: &Nft{
+			base: base,
+		},
+	}
+}
+
 func (n Nft) List(params dto.NftsP) (*dto.NftsRes, error) {
 	panic("implement me")
 }
 
 func (n Nft) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
-	DDC721Service := service.DDCClient.GetDDC721Service(true, true)
+	DDC721Service := service.DDCClient.GetDDC721Service(true)
 	var taskId string
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
 		// query class
@@ -58,8 +68,12 @@ func (n Nft) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 		}
 
 		// ValidateSigner
-		if err := n.base.ValidateSigner(class.Owner, params.ProjectID); err != nil {
+		if err := n.base.ValidateDDCSigner(class.Owner, params.ProjectID); err != nil {
 			return err
+		}
+
+		if params.Uri == "" {
+			params.Uri = "-"
 		}
 
 		if params.Recipient == "" {
@@ -68,17 +82,13 @@ func (n Nft) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 		}
 
 		// ValidateRecipient
-		if err := n.base.ValidateRecipient(params.Recipient, params.ProjectID); err != nil {
+		if err := n.base.ValidateDDCRecipient(params.Recipient, params.ProjectID); err != nil {
 			return err
 		}
 
 		//taskId
-		code := fmt.Sprintf("%s%s%s", class.Owner, models.TTXSOperationTypeMintNFT, time.Now().String())
+		code := fmt.Sprintf("%s%s%s", class.Owner, models.TDDCTXSOperationTypeMintNFT, time.Now().String())
 		taskId = n.base.EncodeData(code)
-
-		//签名后的交易计算动态 gas
-		res, err := DDC721Service.SafeMint(bind.TransactOpts{}, class.Owner, params.Recipient, params.Uri, []byte(params.Data))
-		//originData, err := DDC721Service.SignTx(common.HexToAddress(class.Owner), res.RawTx)
 
 		//离线数据组装为 msg 入表传到 block sync
 		createNft := nft.MsgMintNFT{
@@ -91,15 +101,22 @@ func (n Nft) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 			Sender:    class.Owner,
 			Recipient: params.Recipient,
 		}
-		baseTx := n.base.CreateBaseTx(class.Owner, "")
-		signedData, _, err := n.base.BuildAndSign(sdktype.Msgs{&createNft}, baseTx)
+
+		//签名后的交易计算动态 gas
+		addr := DDC721Service.Bech32ToHex(params.Recipient)
+		res, err := DDC721Service.SafeMint(&bind.TransactOpts{}, addr, params.Uri, []byte(params.Data))
 		if err != nil {
-			log.Debug("create ddc", "buildandsign error:", err.Error())
-			return types.ErrBuildAndSign
+			log.Error("create ddc", "get hash and gasLimit error:", err.Error())
+			return types.ErrInternal
 		}
+		err = n.base.GasThan(params.ChainID, res.GasLimit, params.PlatFormID)
+		if err != nil {
+			return types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
+		}
+
 		msgsBytes, _ := json.Marshal(sdktype.Msgs{&createNft})
 
-		ttx := models.TTX{
+		ttx := models.TDDCTX{
 			ProjectID:     params.ProjectID,
 			Hash:          res.TxHash,
 			Timestamp:     null.Time{Time: time.Now()},
@@ -107,9 +124,9 @@ func (n Nft) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 			Sender:        null.StringFrom(class.Owner),
 			TaskID:        null.StringFrom(taskId),
 			GasUsed:       null.Int64From(0),
-			OriginData:    null.BytesFromPtr(&signedData),
-			OperationType: models.TTXSOperationTypeMintNFT,
-			Status:        models.TTXSStatusUndo,
+			OriginData:    null.BytesFromPtr(&msgsBytes),
+			OperationType: models.TDDCTXSOperationTypeMintNFT,
+			Status:        models.TDDCTXSStatusUndo,
 			Tag:           null.JSONFrom(params.Tag),
 			Retry:         null.Int8From(0),
 		}
@@ -144,94 +161,180 @@ func (n Nft) Show(params dto.NftByNftIdP) (*dto.NftR, error) {
 }
 
 func (n Nft) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
-	// ValidateSigner
-	if err := n.base.ValidateSigner(params.Sender, params.ProjectID); err != nil {
-		return nil, err
-	}
-	tDDC, err := models.TDDCNFTS(models.TDDCNFTWhere.ProjectID.EQ(params.ProjectID),
-		models.TDDCNFTWhere.ClassID.EQ(params.ClassId),
-		models.TDDCNFTWhere.NFTID.EQ(params.NftId),
-		models.TDDCNFTWhere.Owner.EQ(params.Sender)).
-		One(context.Background(), boil.GetContextDB())
-
-	if err != nil {
-		if errors.Cause(err) == sql.ErrNoRows || strings.Contains(err.Error(), service.SqlNotFound) {
-			//404
-			return nil, types.ErrNotFound
-		}
-		//500
-		log.Error("edit ddc by nftId", "query ddc error:", err.Error())
-		return nil, types.ErrInternal
-	}
-	//404
-	if tDDC.Status == models.TDDCNFTSStatusBurned {
-		return nil, types.ErrNotFound
-	}
-	//400
-	if tDDC.Status != models.TDDCNFTSStatusActive {
-		return nil, types.ErrNftStatus
-	}
-
-	//非必填保留数据
-	uri := params.Uri
-	if uri == "" {
-		uri = tDDC.URI.String
-	}
-	data := params.Data
-	if data == "" {
-		data = tDDC.Metadata.String
-	}
-
-	// create rawMsg
-	msgEditNFT := nft.MsgEditNFT{
-		Id:      tDDC.NFTID,
-		DenomId: tDDC.ClassID,
-		Name:    params.Name,
-		URI:     uri,
-		Data:    data,
-		Sender:  params.Sender,
-		UriHash: "[do-not-modify]",
-	}
-
-	// build and sign transaction
-	baseTx := n.base.CreateBaseTx(params.Sender, "")
-	signedData, txHash, err := n.base.BuildAndSign(sdktype.Msgs{&msgEditNFT}, baseTx)
-	if err != nil {
-		log.Debug("edit nft by nftId", "BuildAndSign error:", err.Error())
-		return nil, types.ErrBuildAndSign
-	}
-
+	DDC721Service := service.DDCClient.GetDDC721Service(true)
 	var taskId string
-	err = modext.Transaction(func(exec boil.ContextExecutor) error {
-		// Tx into database
-		messageByte, _ := json.Marshal(msgEditNFT)
-		code := fmt.Sprintf("%s%s%s", params.Sender, models.TTXSOperationTypeEditNFT, time.Now().String())
-		taskId = n.base.EncodeData(code)
-
-		// Tx into database
-		txId, err := n.base.UndoTxIntoDataBase(
-			params.Sender,
-			models.TTXSOperationTypeEditNFT,
-			taskId, txHash,
-			params.ProjectID,
-			signedData,
-			messageByte,
-			params.Tag,
-			int64(baseTx.Gas), exec)
-		if err != nil {
-			log.Debug("edit ddc by nftId", "Tx into database error:", err.Error())
+	err := modext.Transaction(func(exec boil.ContextExecutor) error {
+		// ValidateSigner
+		if err := n.base.ValidateDDCSigner(params.Sender, params.ProjectID); err != nil {
 			return err
 		}
 
-		// lock the NFT
-		tDDC.Status = models.TDDCNFTSStatusPending
-		tDDC.LockedBy = null.Uint64From(txId)
-		ok, err := tDDC.Update(context.Background(), exec, boil.Infer())
+		//query ddc
+		tDDC, err := models.TDDCNFTS(models.TDDCNFTWhere.ProjectID.EQ(params.ProjectID),
+			models.TDDCNFTWhere.ClassID.EQ(params.ClassId),
+			models.TDDCNFTWhere.NFTID.EQ(params.NftId),
+			models.TDDCNFTWhere.Owner.EQ(params.Sender)).
+			One(context.Background(), boil.GetContextDB())
 		if err != nil {
+			if errors.Cause(err) == sql.ErrNoRows || strings.Contains(err.Error(), service.SqlNotFound) {
+				//404
+				return types.ErrNotFound
+			}
+			//500
+			log.Error("edit ddc by nftId", "query ddc error:", err.Error())
 			return types.ErrInternal
 		}
-		if ok != 1 {
-			return types.ErrInternal
+
+		//404
+		if tDDC.Status == models.TDDCNFTSStatusBurned {
+			return types.ErrNotFound
+		}
+		//400
+		if tDDC.Status != models.TDDCNFTSStatusActive {
+			return types.ErrNftStatus
+		}
+
+		//非必填保留数据
+		//uri 为空不上链
+		uri := params.Uri
+		if uri == "" {
+			uri = tDDC.URI.String
+			data := params.Data
+			if data == "" {
+				data = tDDC.Metadata.String
+			}
+
+			// create rawMsg
+			msgEditNFT := nft.MsgEditNFT{
+				Id:      tDDC.NFTID,
+				DenomId: tDDC.ClassID,
+				Name:    params.Name,
+				URI:     uri,
+				Data:    data,
+				Sender:  params.Sender,
+				UriHash: "[do-not-modify]",
+			}
+
+			// Tx into database
+			messageByte, _ := json.Marshal(msgEditNFT)
+			code := fmt.Sprintf("%s%s%s", params.Sender, models.TDDCTXSOperationTypeEditNFT, time.Now().String())
+			taskId = n.base.EncodeData(code)
+
+			//tx 表
+			ttx := models.TDDCTX{
+				ProjectID:     params.ProjectID,
+				Hash:          taskId,
+				OriginData:    null.BytesFrom(messageByte),
+				OperationType: models.TDDCTXSOperationTypeEditNFT,
+				Status:        models.TDDCTXSStatusSuccess,
+				Sender:        null.StringFrom(params.Sender),
+				Message:       null.JSONFrom(messageByte),
+				TaskID:        null.StringFrom(taskId),
+				GasUsed:       null.Int64From(0),
+				Tag:           null.JSONFrom(params.Tag),
+				Retry:         null.Int8From(0),
+			}
+			err = ttx.Insert(context.Background(), exec, boil.Infer())
+			if err != nil {
+				log.Error("edit ddc by nftId", "tx into database error:", err.Error())
+				return err
+			}
+
+			//msg 表
+			tmsg := models.TMSG{
+				ProjectID: params.ProjectID,
+				TXHash:    taskId,
+				Module:    models.TDDCMSGSModuleNFT,
+				Operation: models.TDDCTXSOperationTypeEditNFT,
+				Signer:    params.Sender,
+				Timestamp: null.TimeFrom(time.Now()),
+				Message:   messageByte,
+			}
+			err = tmsg.Insert(context.Background(), exec, boil.Infer())
+			if err != nil {
+				log.Error("edit ddc by nftId", "tx into database error:", err.Error())
+				return err
+			}
+
+			//update ddc
+			tDDC.Name = null.StringFrom(params.Name)
+			tDDC.URI = null.StringFrom(uri)
+			tDDC.Metadata = null.StringFrom(data)
+			tDDC.URIHash = null.StringFrom("[do-not-modify]")
+			ok, err := tDDC.Update(context.Background(), exec, boil.Infer())
+			if err != nil {
+				log.Error("edit ddc", "ddc status update error: ", err)
+				return types.ErrInternal
+			}
+			if ok != 1 {
+				log.Error("edit ddc", "ddc status update error: ", err)
+				return types.ErrInternal
+			}
+		} else { //uri 不为空需要上链
+			data := params.Data
+			if data == "" {
+				data = tDDC.Metadata.String
+			}
+
+			// create rawMsg
+			msgEditNFT := nft.MsgEditNFT{
+				Id:      tDDC.NFTID,
+				DenomId: tDDC.ClassID,
+				Name:    params.Name,
+				URI:     uri,
+				Data:    data,
+				Sender:  params.Sender,
+				UriHash: "[do-not-modify]",
+			}
+
+			//签名后的交易计算动态 gas
+			ddcId, err := strconv.ParseInt(params.NftId, 10, 64)
+			if err != nil {
+				log.Error("edit ddc by nftId", "convert ddcId error:", err.Error())
+				return types.ErrInternal
+			}
+			res, err := DDC721Service.SetURI(&bind.TransactOpts{}, ddcId, params.Uri)
+			if err != nil {
+				log.Error("edit ddc by nftId", "get hash and gasLimit error:", err.Error())
+				return types.ErrInternal
+			}
+			err = n.base.GasThan(params.ChainID, res.GasLimit, params.PlatFormID)
+			if err != nil {
+				return types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
+			}
+
+			// Tx into database
+			messageByte, _ := json.Marshal(msgEditNFT)
+			code := fmt.Sprintf("%s%s%s", params.Sender, models.TTXSOperationTypeEditNFT, time.Now().String())
+			taskId = n.base.EncodeData(code)
+
+			// Tx into database
+			txId, err := n.base.UndoDDCTxIntoDataBase(
+				params.Sender,
+				models.TTXSOperationTypeEditNFT,
+				taskId, res.TxHash,
+				params.ProjectID,
+				messageByte,
+				messageByte,
+				params.Tag,
+				int64(res.GasLimit), exec)
+			if err != nil {
+				log.Error("edit ddc by nftId", "tx into database error:", err.Error())
+				return err
+			}
+
+			// locked by txId
+			tDDC.Status = models.TDDCNFTSStatusPending
+			tDDC.LockedBy = null.Uint64From(txId)
+			ok, err := tDDC.Update(context.Background(), exec, boil.Infer())
+			if err != nil {
+				log.Error("edit ddc", "ddc status update error: ", err)
+				return types.ErrInternal
+			}
+			if ok != 1 {
+				log.Error("edit ddc", "ddc status update error: ", err)
+				return types.ErrInternal
+			}
 		}
 		return err
 	})
@@ -270,41 +373,41 @@ func (n Nft) History(params dto.NftOperationHistoryByNftIdP) (*dto.BNftOperation
 	}
 
 	queryMod := []qm.QueryMod{
-		qm.From(models.TableNames.TMSGS),
-		qm.Select(models.TMSGColumns.TXHash,
-			models.TMSGColumns.Operation,
-			models.TMSGColumns.Signer,
-			models.TMSGColumns.Recipient,
-			models.TMSGColumns.Timestamp),
-		models.TMSGWhere.ProjectID.EQ(params.ProjectID),
-		models.TMSGWhere.NFTID.EQ(null.StringFrom(res.NFTID)),
+		qm.From(models.TableNames.TDDCMSGS),
+		qm.Select(models.TDDCMSGColumns.TXHash,
+			models.TDDCMSGColumns.Operation,
+			models.TDDCMSGColumns.Signer,
+			models.TDDCMSGColumns.Recipient,
+			models.TDDCMSGColumns.Timestamp),
+		models.TDDCMSGWhere.ProjectID.EQ(params.ProjectID),
+		models.TDDCMSGWhere.NFTID.EQ(null.StringFrom(res.NFTID)),
 	}
 	if params.Txhash != "" {
-		queryMod = append(queryMod, models.TMSGWhere.TXHash.EQ(params.Txhash))
+		queryMod = append(queryMod, models.TDDCMSGWhere.TXHash.EQ(params.Txhash))
 	}
 	if params.Signer != "" {
-		queryMod = append(queryMod, models.TMSGWhere.Signer.EQ(params.Signer))
+		queryMod = append(queryMod, models.TDDCMSGWhere.Signer.EQ(params.Signer))
 	}
 	if params.Operation != "" {
-		queryMod = append(queryMod, models.TMSGWhere.Operation.EQ(params.Operation))
+		queryMod = append(queryMod, models.TDDCMSGWhere.Operation.EQ(params.Operation))
 	}
 	if params.StartDate != nil {
-		queryMod = append(queryMod, models.TMSGWhere.CreateAt.GTE(*params.StartDate))
+		queryMod = append(queryMod, models.TDDCMSGWhere.CreateAt.GTE(*params.StartDate))
 	}
 	if params.EndDate != nil {
-		queryMod = append(queryMod, models.TMSGWhere.CreateAt.LTE(*params.EndDate))
+		queryMod = append(queryMod, models.TDDCMSGWhere.CreateAt.LTE(*params.EndDate))
 	}
 	if params.SortBy != "" {
 		orderBy := ""
 		switch params.SortBy {
 		case "DATE_DESC":
-			orderBy = fmt.Sprintf("%s DESC", models.TMSGColumns.CreateAt)
+			orderBy = fmt.Sprintf("%s DESC", models.TDDCMSGWhere.CreateAt)
 		case "DATE_ASC":
-			orderBy = fmt.Sprintf("%s ASC", models.TMSGColumns.CreateAt)
+			orderBy = fmt.Sprintf("%s ASC", models.TDDCMSGWhere.CreateAt)
 		}
 		queryMod = append(queryMod, qm.OrderBy(orderBy))
 	}
-	var modelResults []*models.TMSG
+	var modelResults []*models.TDDCMSG
 	total, err := modext.PageQueryByOffset(
 		context.Background(),
 		orm.GetDB(),

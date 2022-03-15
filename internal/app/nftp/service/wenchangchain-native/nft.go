@@ -62,7 +62,7 @@ func (svc *Nft) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 		}
 
 		//400
-		if classOne.Status != models.TNFTSStatusActive {
+		if classOne.Status != models.TClassesStatusActive {
 			return types.ErrNftClassStatus
 		}
 
@@ -99,7 +99,7 @@ func (svc *Nft) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 		baseTx := svc.base.CreateBaseTx(classOne.Owner, "")
 		originData, tHash, _ := svc.base.BuildAndSign(msgs, baseTx)
 		baseTx.Gas = svc.base.MintNftsGas(originData, uint64(params.Amount))
-		err = svc.base.GasThan(classOne.Owner, params.ChainID, baseTx.Gas, params.PlatFormID)
+		err = svc.base.GasThan(params.ChainID, baseTx.Gas, params.PlatFormID)
 		if err != nil {
 			return types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
 		}
@@ -225,7 +225,7 @@ func (svc *Nft) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 	// get gas
 	nftLen := svc.base.LenOfNft(tNft)
 	baseTx.Gas = svc.base.EditNftGas(nftLen, uint64(len(signedData)))
-	err = svc.base.GasThan(params.Sender, params.ChainID, baseTx.Gas, params.PlatFormID)
+	err = svc.base.GasThan(params.ChainID, baseTx.Gas, params.PlatFormID)
 	if err != nil {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
 	}
@@ -327,7 +327,7 @@ func (svc *Nft) Delete(params dto.DeleteNftByNftIdP) (*dto.TxRes, error) {
 	nftLen := svc.base.LenOfNft(tNft)
 	// set gas
 	baseTx.Gas = svc.base.DeleteNftGas(nftLen)
-	err = svc.base.GasThan(params.Sender, params.ChainID, baseTx.Gas, params.PlatFormID)
+	err = svc.base.GasThan(params.ChainID, baseTx.Gas, params.PlatFormID)
 	if err != nil {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
 	}
