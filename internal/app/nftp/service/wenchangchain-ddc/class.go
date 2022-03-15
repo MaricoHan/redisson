@@ -1,46 +1,48 @@
-package wenchangchain_native
+package wenchangchain_ddc
 
 import (
 	"context"
-	"database/sql"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-	"gitlab.bianjie.ai/irita-paas/open-api/config"
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 	"math/rand"
 	"strconv"
 	"strings"
 	"time"
 
+	"database/sql"
+	"encoding/hex"
+
 	"github.com/friendsofgo/errors"
-	sdktype "github.com/irisnet/core-sdk-go/types"
 	"github.com/irisnet/irismod-sdk-go/nft"
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"
+
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
-	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"
 )
 
-type NFTClass struct {
+const ddcNftp = "ddcNftp"
+
+type DDCClass struct {
 	base *service.Base
 }
 
-func NewNFTClass(base *service.Base) *service.NFTClassBase {
+func NewDDCClass(base *service.Base) *service.NFTClassBase {
 	return &service.NFTClassBase{
-		Module: service.NATIVE,
-		Service: &NFTClass{
+		Module: service.DDC,
+		Service: &DDCClass{
 			base: base,
 		},
 	}
 }
 
-func (svc *NFTClass) List(params dto.NftClassesP) (*dto.NftClassesRes, error) {
+func (d *DDCClass) List(params dto.NftClassesP) (*dto.NftClassesRes, error) {
 	result := &dto.NftClassesRes{
 		PageRes: dto.PageRes{
 			Offset:     params.Offset,
@@ -53,37 +55,37 @@ func (svc *NFTClass) List(params dto.NftClassesP) (*dto.NftClassesRes, error) {
 	var countRes []*dto.NftCount
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
 		queryMod := []qm.QueryMod{
-			qm.From(models.TableNames.TClasses),
-			models.TClassWhere.ProjectID.EQ(params.ProjectID),
-			models.TClassWhere.Status.EQ(models.TNFTSStatusActive),
+			qm.From(models.TableNames.TDDCClasses),
+			models.TDDCClassWhere.ProjectID.EQ(params.ProjectID),
+			models.TDDCClassWhere.Status.EQ(models.TNFTSStatusActive),
 		}
 		if params.Id != "" {
-			queryMod = append(queryMod, models.TClassWhere.ClassID.EQ(params.Id))
+			queryMod = append(queryMod, models.TDDCClassWhere.ClassID.EQ(params.Id))
 		}
 		if params.Name != "" {
 			//Fuzzy query support
 			queryMod = append(queryMod, qm.Where("name like ? ", "%"+params.Name+"%"))
 		}
 		if params.Owner != "" {
-			queryMod = append(queryMod, models.TClassWhere.Owner.EQ(params.Owner))
+			queryMod = append(queryMod, models.TDDCClassWhere.Owner.EQ(params.Owner))
 		}
 		if params.TxHash != "" {
-			queryMod = append(queryMod, models.TClassWhere.TXHash.EQ(params.TxHash))
+			queryMod = append(queryMod, models.TDDCClassWhere.TXHash.EQ(params.TxHash))
 		}
 
 		if params.StartDate != nil {
-			queryMod = append(queryMod, models.TClassWhere.Timestamp.GTE(null.TimeFromPtr(params.StartDate)))
+			queryMod = append(queryMod, models.TDDCClassWhere.Timestamp.GTE(null.TimeFromPtr(params.StartDate)))
 		}
 		if params.EndDate != nil {
-			queryMod = append(queryMod, models.TClassWhere.Timestamp.LTE(null.TimeFromPtr(params.EndDate)))
+			queryMod = append(queryMod, models.TDDCClassWhere.Timestamp.LTE(null.TimeFromPtr(params.EndDate)))
 		}
 		if params.SortBy != "" {
 			orderBy := ""
 			switch params.SortBy {
 			case "DATE_DESC":
-				orderBy = fmt.Sprintf("%s DESC", models.TClassColumns.CreateAt)
+				orderBy = fmt.Sprintf("%s DESC", models.TDDCClassColumns.CreateAt)
 			case "DATE_ASC":
-				orderBy = fmt.Sprintf("%s ASC", models.TClassColumns.CreateAt)
+				orderBy = fmt.Sprintf("%s ASC", models.TDDCClassColumns.CreateAt)
 			}
 			queryMod = append(queryMod, qm.OrderBy(orderBy))
 		}
@@ -101,7 +103,7 @@ func (svc *NFTClass) List(params dto.NftClassesP) (*dto.NftClassesRes, error) {
 			if strings.Contains(err.Error(), service.SqlNotFound) {
 				return nil
 			}
-			log.Error("nft classes", "query nft class error:", err.Error())
+			log.Error("nft ddc classes", "query ddc class error:", err.Error())
 			return types.ErrInternal
 		}
 		result.TotalCount = total
@@ -111,12 +113,12 @@ func (svc *NFTClass) List(params dto.NftClassesP) (*dto.NftClassesRes, error) {
 			classIds = append(classIds, modelResult.ClassID)
 		}
 		q1 := []qm.QueryMod{
-			qm.From(models.TableNames.TNFTS),
-			qm.Select(models.TNFTColumns.ClassID),
+			qm.From(models.TableNames.TDDCNFTS),
+			qm.Select(models.TDDCNFTColumns.ClassID),
 			qm.Select("count(class_id) as count, class_id"),
-			models.TNFTWhere.Status.EQ(models.TNFTSStatusActive),
-			qm.GroupBy(models.TNFTColumns.ClassID),
-			models.TNFTWhere.ClassID.IN(classIds),
+			models.TDDCNFTWhere.Status.EQ(models.TNFTSStatusActive),
+			qm.GroupBy(models.TDDCNFTColumns.ClassID),
+			models.TDDCNFTWhere.ClassID.IN(classIds),
 		}
 
 		err = models.NewQuery(q1...).Bind(context.Background(), exec, &countRes)
@@ -157,33 +159,34 @@ func (svc *NFTClass) List(params dto.NftClassesP) (*dto.NftClassesRes, error) {
 	return result, nil
 }
 
-func (svc *NFTClass) Show(params dto.NftClassesP) (*dto.NftClassRes, error) {
+func (d *DDCClass) Show(params dto.NftClassesP) (*dto.NftClassRes, error) {
 	var err error
-	var classOne *models.TClass
+	var classOne *models.TDDCClass
 	var count int64
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
-		classOne, err = models.TClasses(
-			models.TClassWhere.ClassID.EQ(params.Id),
-			models.TClassWhere.ProjectID.EQ(params.ProjectID),
+		classOne, err = models.TDDCClasses(
+			models.TDDCClassWhere.ClassID.EQ(params.Id),
+			models.TDDCClassWhere.ProjectID.EQ(params.ProjectID),
 		).One(context.Background(), exec)
+
 		if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
 			(err != nil && strings.Contains(err.Error(), service.SqlNotFound)) {
 			//404
 			return types.ErrNotFound
 		} else if err != nil {
 			//500
-			log.Error("nft class by id", "query class error:", err.Error())
+			log.Error("ddc class by id", "query class error:", err.Error())
 			return types.ErrInternal
 		}
 
-		if !strings.Contains(models.TClassesStatusActive, classOne.Status) {
+		if !strings.Contains(models.TDDCClassesStatusActive, classOne.Status) {
 			return types.ErrNftClassStatus
 		}
 
-		count, err = models.TNFTS(
-			models.TNFTWhere.ClassID.EQ(params.Id),
-			models.TNFTWhere.ProjectID.EQ(params.ProjectID),
-			models.TNFTWhere.Status.EQ(models.TNFTSStatusActive),
+		count, err = models.TDDCNFTS(
+			models.TDDCNFTWhere.ClassID.EQ(params.Id),
+			models.TDDCNFTWhere.ProjectID.EQ(params.ProjectID),
+			models.TDDCNFTWhere.Status.EQ(models.TNFTSStatusActive),
 		).Count(context.Background(), exec)
 		if err != nil {
 			return types.ErrInternal
@@ -211,44 +214,32 @@ func (svc *NFTClass) Show(params dto.NftClassesP) (*dto.NftClassRes, error) {
 	return result, nil
 }
 
-func (svc *NFTClass) Create(params dto.CreateNftClassP) (*dto.TxRes, error) {
+func (d *DDCClass) Create(params dto.CreateNftClassP) (*dto.TxRes, error) {
 	//owner不能为project外的账户
-	_, err := models.TAccounts(
-		models.TAccountWhere.ProjectID.EQ(params.ProjectID),
-		models.TAccountWhere.Address.EQ(params.Owner)).OneG(context.Background())
+	_, err := models.TDDCAccounts(
+		models.TDDCAccountWhere.ProjectID.EQ(params.ProjectID),
+		models.TDDCAccountWhere.Address.EQ(params.Owner)).OneG(context.Background())
 	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
 		(err != nil && strings.Contains(err.Error(), service.SqlNotFound)) {
 		//400
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOwnerFound)
 	} else if err != nil {
 		//500
-		log.Error("create nft class", "validate owner error:", err.Error())
+		log.Error("create ddc class", "validate owner error:", err.Error())
 		return nil, types.ErrInternal
 	}
-
-	//platform address
-	classOne, err := models.TAccounts(
-		models.TAccountWhere.ProjectID.EQ(uint64(0)),
-	).OneG(context.Background())
-	if err != nil {
-		log.Error("create nft class", "query platform error:", err.Error())
-		return nil, types.ErrInternal
-	}
-	pAddress := classOne.Address
 
 	//new classId
 	var data = []byte(params.Owner)
 	data = append(data, []byte(params.Name)...)
 	data = append(data, []byte(strconv.FormatInt(time.Now().Unix(), 10))...)
 	data = append(data, []byte(fmt.Sprintf("%d", rand.Int()))...)
-	classId := nftp + strings.ToLower(hex.EncodeToString(tmhash.Sum(data)))
+	classId := ddcNftp + strings.ToLower(hex.EncodeToString(tmhash.Sum(data)))
 
-	//txMsg, Platform side created
-	baseTx := svc.base.CreateBaseTx(pAddress, config.Get().Server.DefaultKeyPassword)
 	createDenomMsg := nft.MsgIssueDenom{
 		Id:               classId,
 		Name:             params.Name,
-		Sender:           pAddress,
+		Sender:           params.Owner,
 		Symbol:           params.Symbol,
 		MintRestricted:   true,
 		UpdateRestricted: false,
@@ -257,59 +248,74 @@ func (svc *NFTClass) Create(params dto.CreateNftClassP) (*dto.TxRes, error) {
 		UriHash:          params.UriHash,
 		Data:             params.Data,
 	}
-	transferDenomMsg := nft.MsgTransferDenom{
-		Id:        classId,
-		Sender:    pAddress,
-		Recipient: params.Owner,
-	}
-	originData, txHash, _ := svc.base.BuildAndSign(sdktype.Msgs{&createDenomMsg, &transferDenomMsg}, baseTx)
-	baseTx.Gas = svc.base.CreateDenomGas(originData)
-	err = svc.base.GasThan(params.Owner, params.ChainID, baseTx.Gas, params.PlatFormID)
+	createDenomMsgByte, err := createDenomMsg.Marshal()
 	if err != nil {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
+		log.Error("create ddc class", "createDenomMsgByte marshal error:", err.Error())
+		return nil, types.ErrInternal
 	}
-	originData, txHash, err = svc.base.BuildAndSign(sdktype.Msgs{&createDenomMsg, &transferDenomMsg}, baseTx)
-	if err != nil {
-		log.Debug("create nft class", "BuildAndSign error:", err.Error())
-		return nil, types.ErrBuildAndSign
-	}
-
-	//validate tx
-	txone, err := svc.base.ValidateTx(txHash)
-	if err != nil {
-		return nil, err
-	}
-	if txone != nil && txone.Status == models.TTXSStatusFailed {
-		baseTx.Memo = fmt.Sprintf("%d", txone.ID)
-		originData, txHash, err = svc.base.BuildAndSign(sdktype.Msgs{&createDenomMsg, &transferDenomMsg}, baseTx)
-		if err != nil {
-			log.Debug("create nft class", "BuildAndSign error:", err.Error())
-			return nil, types.ErrBuildAndSign
-		}
-	}
-
-	message := []interface{}{createDenomMsg, transferDenomMsg}
+	message := []interface{}{createDenomMsg}
 	messageBytes, _ := json.Marshal(message)
 	code := fmt.Sprintf("%s%s%s", params.Owner, models.TTXSOperationTypeIssueClass, time.Now().String())
-	taskId := svc.base.EncodeData(code)
-	ttx := models.TTX{
-		ProjectID:     params.ProjectID,
-		Hash:          txHash,
-		Sender:        null.StringFrom(params.Owner),
-		Timestamp:     null.Time{Time: time.Now()},
-		OriginData:    null.BytesFromPtr(&originData),
-		Message:       null.JSONFrom(messageBytes),
-		TaskID:        null.StringFrom(taskId),
-		GasUsed:       null.Int64From(int64(baseTx.Gas)),
-		OperationType: models.TTXSOperationTypeIssueClass,
-		Status:        models.TTXSStatusUndo,
-		Tag:           null.JSONFrom(params.Tag),
-		Retry:         null.Int8From(0),
-	}
-	err = ttx.InsertG(context.Background(), boil.Infer())
+	taskId := d.base.EncodeData(code)
+	hash := d.base.EncodeData(string(createDenomMsgByte))
+	err = modext.Transaction(func(exec boil.ContextExecutor) error {
+		ttx := models.TDDCTX{
+			ProjectID:     params.ProjectID,
+			Hash:          hash,
+			Sender:        null.StringFrom(params.Owner),
+			Timestamp:     null.TimeFrom(time.Now()),
+			OriginData:    null.BytesFromPtr(&createDenomMsgByte),
+			Message:       null.JSONFrom(messageBytes),
+			TaskID:        null.StringFrom(taskId),
+			GasUsed:       null.Int64From(0),
+			OperationType: models.TTXSOperationTypeIssueClass,
+			Status:        models.TTXSStatusSuccess,
+			Tag:           null.JSONFrom(params.Tag),
+			Retry:         null.Int8From(0),
+			BizFee:        null.Int64From(0),
+		}
+		err = ttx.Insert(context.Background(), exec, boil.Infer())
+		if err != nil {
+			log.Error("create ddc class", "tx insert error:", err.Error())
+			return types.ErrInternal
+		}
+		msgs := models.TDDCMSG{
+			ProjectID: ttx.ProjectID,
+			TXHash:    hash,
+			Module:    models.TDDCMSGSModuleNFT,
+			Operation: models.TDDCMSGSOperationIssueClass,
+			Signer:    params.Owner,
+			Timestamp: null.TimeFrom(time.Now()),
+			Message:   messageBytes,
+		}
+		err = msgs.Insert(context.Background(), exec, boil.Infer())
+		if err != nil {
+			log.Error("create ddc class", "msg insert error:", err.Error())
+			return types.ErrInternal
+		}
+		ddcClass := models.TDDCClass{
+			ProjectID:   params.ProjectID,
+			TXHash:      hash,
+			ClassID:     createDenomMsg.Id,
+			Name:        null.StringFrom(createDenomMsg.Name),
+			Symbol:      null.StringFrom(createDenomMsg.Symbol),
+			URI:         null.StringFrom(createDenomMsg.Uri),
+			URIHash:     null.StringFrom(createDenomMsg.UriHash),
+			Description: null.StringFrom(createDenomMsg.Description),
+			Owner:       createDenomMsg.Sender,
+			Status:      models.TClassesStatusActive,
+			Timestamp:   null.TimeFrom(time.Now()),
+			Metadata:    null.StringFrom(createDenomMsg.Data),
+		}
+		err = ddcClass.Insert(context.Background(), exec, boil.Infer())
+		if err != nil {
+			log.Error("create ddc class", "class insert error: ", err.Error())
+			return types.ErrInternal
+		}
+		return nil
+	})
 	if err != nil {
-		log.Error("create nft class", "tx insert error:", err.Error())
-		return nil, types.ErrInternal
+		return nil, err
 	}
 	return &dto.TxRes{TaskId: taskId}, nil
 }

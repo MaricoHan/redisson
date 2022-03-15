@@ -9,9 +9,9 @@ const (
 
 // AccountService accounts
 type AccountService interface {
-	Create(params dto.CreateAccountP) (*dto.AccountRes, error)
-	Show(params dto.AccountsP) (*dto.AccountsRes, error)
-	History(params dto.AccountsP) (*dto.AccountOperationRecordRes, error) // 操作记录
+	Create(dto.CreateAccountP) (*dto.AccountRes, error)
+	Show(dto.AccountsP) (*dto.AccountsRes, error)
+	History(dto.AccountsP) (*dto.AccountOperationRecordRes, error) // 操作记录
 }
 
 // AccountBase accounts
@@ -22,9 +22,9 @@ type AccountBase struct {
 
 // NFTClassService NFTClass
 type NFTClassService interface {
-	List(params dto.NftClassesP) (*dto.NftClassesRes, error) // 列表
-	Show(params dto.NftClassesP) (*dto.NftClassRes, error)   // 详情
-	Create(params dto.CreateNftClassP) (*dto.TxRes, error)   // 创建
+	List(dto.NftClassesP) (*dto.NftClassesRes, error) // 列表
+	Show(dto.NftClassesP) (*dto.NftClassRes, error)   // 详情
+	Create(dto.CreateNftClassP) (*dto.TxRes, error)   // 创建
 }
 
 // NFTClassBase NFTClass
@@ -35,12 +35,12 @@ type NFTClassBase struct {
 
 // NFTService NFT
 type NFTService interface {
-	List(params dto.NftsP) (*dto.NftsRes, error)
-	Create(params dto.CreateNftsP) (*dto.TxRes, error)
-	Show(params dto.NftByNftIdP) (*dto.NftR, error)
-	Update(params dto.EditNftByNftIdP) (*dto.TxRes, error)
-	Delete(params dto.DeleteNftByNftIdP) (*dto.TxRes, error)
-	History(params dto.NftOperationHistoryByNftIdP) (*dto.BNftOperationHistoryByNftIdRes, error)
+	List(dto.NftsP) (*dto.NftsRes, error)
+	Create(dto.CreateNftsP) (*dto.TxRes, error)
+	Show(dto.NftByNftIdP) (*dto.NftR, error)
+	Update(dto.EditNftByNftIdP) (*dto.TxRes, error)
+	Delete(dto.DeleteNftByNftIdP) (*dto.TxRes, error)
+	History(dto.NftOperationHistoryByNftIdP) (*dto.BNftOperationHistoryByNftIdRes, error)
 }
 
 // NFTBase NFT
@@ -51,12 +51,23 @@ type NFTBase struct {
 
 // TransferService Transfer
 type TransferService interface {
-	TransferNFTClass(params dto.TransferNftClassByIDP) (*dto.TxRes, error) // 转让NFTClass
-	TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRes, error)        // 转让NFT
+	TransferNFTClass(dto.TransferNftClassByIDP) (*dto.TxRes, error) // 转让NFTClass
+	TransferNFT(dto.TransferNftByNftIdP) (*dto.TxRes, error)        // 转让NFT
 }
 
 // TransferBase Transfer
 type TransferBase struct {
 	Module  string
 	Service TransferService
+}
+
+// TXService TX
+type TXService interface {
+	Show(dto.TxResultByTxHashP) (*dto.TxResultByTxHashRes, error)
+}
+
+// TXBase TX
+type TXBase struct {
+	Module  string
+	Service TXService
 }
