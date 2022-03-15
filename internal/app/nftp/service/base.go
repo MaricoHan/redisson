@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
+	ddc "github.com/bianjieai/ddc-sdk-go/app"
 	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"
@@ -23,7 +24,18 @@ import (
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 )
 
-var SqlNotFound = "records not exist"
+var (
+	SqlNotFound = "records not exist"
+	ClientBuilder = ddc.DDCSdkClientBuilder{}
+	DDCClient = ClientBuilder.
+		SetGasPrice(1e4).
+		SetGasLimit(1e6).
+		SetAuthorityAddress("0x607F278304Fd91df7e2E6630a66809959c73978c").
+		SetChargeAddress("0xDdAEfC5E48a9ec1c63293997cea034570d5117c8").
+		SetDDC721Address("0x87c263E5E1260eB02f9C5f7dE7504a91E324BBF0").
+		SetDDC1155Address("0xf9E474ceD3486Bb003BE36cD1c41F4537b541c18").
+		Build()
+)
 
 type Base struct {
 	sdkClient sdk.Client

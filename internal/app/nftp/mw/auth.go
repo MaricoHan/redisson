@@ -50,9 +50,9 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	appKey := r.Header.Get("X-Api-Key")
 	projectKeyResult, err := models.TProjectKeys(
-		qm.Select(models.TProjectKeyColumns.ProjectSecret),
+		qm.Select(models.TProjectKeyColumns.APISecret),
 		qm.Select(models.TProjectKeyColumns.ProjectID),
-		models.TProjectKeyWhere.ProjectKey.EQ(appKey),
+		models.TProjectKeyWhere.APIKey.EQ(appKey),
 	).OneG(context.Background())
 	if err != nil {
 		log.Error("server http", "project keys error:", err)
@@ -106,11 +106,11 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// 2. 验证签名
 	// todo
 	// 生产的时候打开
-	if config.Get().Server.SignatureAuth && !h.Signature(r, projectKeyResult.ProjectSecret, reqTimestampStr, reqSignature) {
+	if config.Get().Server.SignatureAuth && !h.Signature(r, projectKeyResult.APISecret, reqTimestampStr, reqSignature) {
 		writeForbiddenResp(w)
 		return
 	}
-	log.Info("signature:", h.Signature(r, projectKeyResult.ProjectSecret, reqTimestampStr, reqSignature))
+	log.Info("signature:", h.Signature(r, projectKeyResult.APISecret, reqTimestampStr, reqSignature))
 	r.Header.Set("X-Auth-Data", fmt.Sprintf("%s", string(authDataBytes)))
 	//r.Header.Set("X-App-Id", fmt.Sprintf("%d", project.ID))
 	//r.Header.Set("X-Chain-Id", fmt.Sprintf("%d", project.ChainID))

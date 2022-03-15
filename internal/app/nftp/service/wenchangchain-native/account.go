@@ -43,7 +43,7 @@ func (svc *nativeAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, er
 	var addresses []string
 
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
-		tAppOneObj, err := models.TApps(
+		tAppOneObj, err := models.TConfigs(
 			qm.SQL("SELECT * FROM `t_apps` WHERE (`t_apps`.`id` = ?) LIMIT 1 FOR UPDATE;", 1),
 		).One(context.Background(), exec)
 		if err != nil {
