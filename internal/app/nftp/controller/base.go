@@ -34,8 +34,8 @@ func GetAllControllers() []kit.IController {
 		NewDemoController(bc, handlers.NewDemo()),
 		NewAccountsController(bc, handlers.NewAccount(wenchangchain_native.NewNFTAccount(baseSvc), wenchangchain_ddc.NewDDCAccount(baseSvc))),
 		NewNftClassController(bc, handlers.NewNFTClass(wenchangchain_native.NewNFTClass(baseSvc))),
-		NewNftController(bc, handlers.NewNft(wenchangchain_native.NewNFT(baseSvc))),
-		NewNftTransferController(bc, handlers.NewNftTransfer(wenchangchain_native.NewNftTransfer(baseSvc))),
+		NewNftController(bc, handlers.NewNft(wenchangchain_native.NewNFT(baseSvc), wenchangchain_ddc.NEWDDC(baseSvc))),
+		NewNftTransferController(bc, handlers.NewNftTransfer(wenchangchain_native.NewNftTransfer(baseSvc), wenchangchain_ddc.NEWDDC721Transfer(baseSvc))),
 		NewTxController(bc, handlers.NewTx(service.NewTx())),
 	}
 

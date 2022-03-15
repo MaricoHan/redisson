@@ -106,10 +106,17 @@ func (h nftTransfer) TransferNftByNftId(ctx context.Context, request interface{}
 		PlatFormID: authData.PlatformId,
 		Tag:        tagBytes,
 	}
+	//不能自己转让给自己
+	//400
+	if params.Recipient == params.Owner {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrSelfTransfer)
+	}
+
 	service, ok := h.svc[authData.Module]
 	if !ok {
 		return nil, types.ErrModules
 	}
+
 	return service.TransferNFT(params)
 }
 

@@ -28,14 +28,14 @@ import (
 )
 
 type NFTClass struct {
-	base *service.Base
+	Base
 }
 
 func NewNFTClass(base *service.Base) *service.NFTClassBase {
 	return &service.NFTClassBase{
 		Module: service.NATIVE,
 		Service: &NFTClass{
-			base: base,
+			NewBase(base),
 		},
 	}
 }

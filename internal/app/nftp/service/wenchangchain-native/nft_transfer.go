@@ -23,13 +23,13 @@ import (
 )
 
 type NftTransfer struct {
-	base *service.Base
+	Base
 }
 
 func NewNftTransfer(base *service.Base) *service.TransferBase {
 	return &service.TransferBase{
 		Module:  service.NATIVE,
-		Service: &NftTransfer{base: base},
+		Service: &NftTransfer{NewBase(base)},
 	}
 }
 
@@ -110,7 +110,7 @@ func (svc *NftTransfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*dto
 		code := fmt.Sprintf("%s%s%s", params.Owner, models.TTXSOperationTypeTransferClass, time.Now().String())
 		taskId = svc.base.EncodeData(code)
 		// Tx into database
-		txId, err := svc.base.UndoTxIntoDataBase(params.Owner, models.TTXSOperationTypeTransferClass, taskId, hash,
+		txId, err := svc.UndoTxIntoDataBase(params.Owner, models.TTXSOperationTypeTransferClass, taskId, hash,
 			params.ProjectID, data, messageByte, params.Tag, int64(baseTx.Gas), exec)
 
 		if err != nil {
@@ -142,11 +142,7 @@ func (svc *NftTransfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*dto
 }
 
 func (svc *NftTransfer) TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRes, error) {
-	//不能自己转让给自己
-	//400
-	if params.Recipient == params.Owner {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrSelfTransfer)
-	}
+
 	// ValidateSigner
 	if err := svc.base.ValidateSigner(params.Owner, params.ProjectID); err != nil {
 		return nil, err
@@ -231,7 +227,7 @@ func (svc *NftTransfer) TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRes,
 		taskId = svc.base.EncodeData(code)
 
 		// Tx into database
-		txId, err := svc.base.UndoTxIntoDataBase(params.Owner, models.TTXSOperationTypeTransferNFT, taskId, hash,
+		txId, err := svc.UndoTxIntoDataBase(params.Owner, models.TTXSOperationTypeTransferNFT, taskId, hash,
 			params.ProjectID, data, messageByte, params.Tag, int64(baseTx.Gas), exec)
 
 		if err != nil {

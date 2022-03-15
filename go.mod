@@ -4,9 +4,8 @@ go 1.17
 
 require (
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
-	github.com/bianjieai/ddc-sdk-go v0.1.5
+	github.com/bianjieai/ddc-sdk-go v0.1.9
 	github.com/bsm/redislock v0.7.2
-	github.com/ethereum/go-ethereum v1.10.16
 	github.com/friendsofgo/errors v0.9.2
 	github.com/go-kit/kit v0.10.0
 	github.com/go-playground/locales v0.14.0
@@ -55,6 +54,7 @@ require (
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/dvsekhvalnov/jose2go v0.0.0-20201001154944-b09cfaf05951 // indirect
 	github.com/ericlagergren/decimal v0.0.0-20181231230500-73749d4874d5 // indirect
+	github.com/ethereum/go-ethereum v1.10.16 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
@@ -130,6 +130,6 @@ require (
 
 replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.4
 
-replace gitlab.bianjie.ai/irita-paas/orms/orm-nft => gitlab.bianjie.ai/irita-paas/orms/orm-nft.git v1.0.0-beta.0.20220314084527-b96881034140
+replace gitlab.bianjie.ai/irita-paas/orms/orm-nft => ../orm-nft
 
 replace github.com/tendermint/tendermint => github.com/bianjieai/tendermint v0.34.1-irita-210113

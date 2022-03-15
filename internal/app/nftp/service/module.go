@@ -4,7 +4,7 @@ import "gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 
 const (
 	NATIVE = "native"
-	DDC    = "ddc"
+	DDC    = "ddc721"
 )
 
 // AccountService accounts
