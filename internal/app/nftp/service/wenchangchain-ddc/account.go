@@ -106,7 +106,6 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 	result := &dto.AccountRes{}
 	result.Accounts = addresses
 	return result, nil
-	return nil, nil
 }
 
 func (svc *ddcAccount) Show(params dto.AccountsP) (*dto.AccountsRes, error) {
