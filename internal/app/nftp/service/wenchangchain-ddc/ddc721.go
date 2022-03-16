@@ -35,10 +35,6 @@ func NEWDDC(base *service.Base) *service.NFTBase {
 	}
 }
 
-func (svc DDC) List(params dto.NftsP) (*dto.NftsRes, error) {
-	panic("implement me")
-}
-
 func (svc DDC) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 
 	var taskId string
@@ -354,7 +350,116 @@ func (svc DDC) Delete(params dto.DeleteNftByNftIdP) (*dto.TxRes, error) {
 
 	return &dto.TxRes{TaskId: taskId}, nil
 }
+func (svc DDC) List(params dto.NftsP) (result *dto.NftsRes, err error) {
+	result.Offset = params.Offset
+	result.Limit = params.Limit
+	result.Nfts = []*dto.Nft{}
+	queryMod := []qm.QueryMod{
+		qm.From(models.TableNames.TDDCNFTS),
+		models.TDDCNFTWhere.ProjectID.EQ(params.ProjectID),
+	}
+	if params.Id != "" {
+		queryMod = append(queryMod, models.TDDCNFTWhere.NFTID.EQ(params.Id))
+	}
+	if params.ClassId != "" {
+		queryMod = append(queryMod, models.TDDCNFTWhere.ClassID.EQ(params.ClassId))
+	}
+	if params.Owner != "" {
+		queryMod = append(queryMod, models.TDDCNFTWhere.Owner.EQ(params.Owner))
+	}
+	if params.TxHash != "" {
+		queryMod = append(queryMod, models.TDDCNFTWhere.TXHash.EQ(params.TxHash))
+	}
+	if params.Status != "" {
+		queryMod = append(queryMod, models.TDDCNFTWhere.Status.EQ(params.Status))
+	}
+	if params.StartDate != nil {
+		queryMod = append(queryMod, models.TDDCNFTWhere.Timestamp.GTE(null.TimeFromPtr(params.StartDate)))
+	}
+	if params.EndDate != nil {
+		queryMod = append(queryMod, models.TDDCNFTWhere.Timestamp.LTE(null.TimeFromPtr(params.EndDate)))
+	}
+	if params.SortBy != "" {
+		orderBy := ""
+		switch params.SortBy {
+		case "ID_ASC":
+			orderBy = fmt.Sprintf("%s ASC", models.TDDCNFTColumns.NFTID)
+		case "ID_DESC":
+			orderBy = fmt.Sprintf("%s DESC", models.TDDCNFTColumns.NFTID)
+		case "DATE_DESC":
+			orderBy = fmt.Sprintf("%s DESC", models.TDDCNFTColumns.Timestamp)
+		case "DATE_ASC":
+			orderBy = fmt.Sprintf("%s ASC", models.TDDCNFTColumns.Timestamp)
+		}
+		queryMod = append(queryMod, qm.OrderBy(orderBy))
+	}
+	var modelResults []*models.TNFT
+	var total int64
+	var classByIds []*dto.NftClassByIds
+	var classIds []string
+	err = modext.Transaction(func(exec boil.ContextExecutor) error {
+		total, err = modext.PageQueryByOffset(
+			context.Background(),
+			exec,
+			queryMod,
+			&modelResults,
+			int(params.Offset),
+			int(params.Limit),
+		)
+		if err != nil {
+			return err
+		}
 
+		tempMap := map[string]byte{} // 存放不重复主键
+		for _, m := range modelResults {
+			l := len(tempMap)
+			tempMap[m.ClassID] = 0
+			if len(tempMap) != l {
+				classIds = append(classIds, m.ClassID)
+			}
+		}
+		qMod := []qm.QueryMod{
+			qm.From(models.TableNames.TDDCClasses),
+			qm.Select(models.TDDCClassColumns.ClassID, models.TDDCClassColumns.Name, models.TDDCClassColumns.Symbol),
+			models.TDDCClassWhere.ClassID.IN(classIds),
+		}
+		err = models.NewQuery(qMod...).Bind(context.Background(), exec, &classByIds)
+		return err
+	})
+
+	if err != nil {
+		// records not exist
+		if strings.Contains(err.Error(), service.SqlNotFound) {
+			return result, nil
+		}
+		return nil, types.ErrInternal
+	}
+
+	result.TotalCount = total
+	var nfts []*dto.Nft
+	for _, modelResult := range modelResults {
+		nft := &dto.Nft{
+			Id:        modelResult.NFTID,
+			Name:      modelResult.Name.String,
+			ClassId:   modelResult.ClassID,
+			Uri:       modelResult.URI.String,
+			Owner:     modelResult.Owner,
+			Status:    modelResult.Status,
+			TxHash:    modelResult.TXHash,
+			Timestamp: modelResult.Timestamp.Time.String(),
+		}
+		for _, class := range classByIds {
+			if class.ClassId == modelResult.ClassID {
+				nft.ClassName = class.Name
+				nft.ClassSymbol = class.Symbol
+			}
+		}
+		nfts = append(nfts, nft)
+	}
+	result.Nfts = nfts
+	return result, nil
+
+}
 func (svc DDC) History(params dto.NftOperationHistoryByNftIdP) (*dto.BNftOperationHistoryByNftIdRes, error) {
 	result := &dto.BNftOperationHistoryByNftIdRes{
 		PageRes: dto.PageRes{
