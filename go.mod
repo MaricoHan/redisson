@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
-	github.com/bianjieai/ddc-sdk-go v0.1.9
+	github.com/bianjieai/ddc-sdk-go v0.1.2
 	github.com/bsm/redislock v0.7.2
 	github.com/friendsofgo/errors v0.9.2
 	github.com/go-kit/kit v0.10.0

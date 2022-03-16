@@ -121,11 +121,11 @@ func (h nftTransfer) TransferNftByNftId(ctx context.Context, request interface{}
 }
 
 func (h nftTransfer) ClassID(ctx context.Context) string {
-	class_id := ctx.Value("class_id")
-	if class_id == nil {
+	classId := ctx.Value("class_id")
+	if classId == nil {
 		return ""
 	}
-	return class_id.(string)
+	return classId.(string)
 }
 
 func (h nftTransfer) Owner(ctx context.Context) string {
