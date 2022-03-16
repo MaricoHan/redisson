@@ -32,16 +32,15 @@ func (svc *Tx) Show(params dto.TxResultByTxHashP) (*dto.TxResultByTxHashRes, err
 		models.TDDCTXWhere.TaskID.EQ(null.StringFrom(params.TaskId)),
 		models.TDDCTXWhere.ProjectID.EQ(params.ProjectID),
 	).OneG(context.Background())
-	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
-		(err != nil && strings.Contains(err.Error(), service.SqlNotFound)) {
-		//404
-		return nil, types.ErrNotFound
-	} else if err != nil {
+	if err != nil {
+		if (errors.Cause(err) == sql.ErrNoRows) || (strings.Contains(err.Error(), service.SqlNotFound)) {
+			//404
+			return nil, types.ErrNotFound
+		}
 		//500
 		log.Error("ddc query tx by hash", "query tx error:", err.Error())
 		return nil, types.ErrInternal
 	}
-
 	//result
 	result := &dto.TxResultByTxHashRes{}
 	result.Type = txinfo.OperationType

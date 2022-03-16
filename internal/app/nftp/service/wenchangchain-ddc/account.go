@@ -155,6 +155,7 @@ func (svc *ddcAccount) Show(params dto.AccountsP) (*dto.AccountsRes, error) {
 		if strings.Contains(err.Error(), service.SqlNotFound) {
 			return result, nil
 		}
+		log.Error("account show", "query error:", err)
 		return nil, types.ErrInternal
 	}
 
