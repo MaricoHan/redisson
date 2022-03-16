@@ -5,6 +5,10 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/friendsofgo/errors"
 	sdktype "github.com/irisnet/core-sdk-go/types"
@@ -19,9 +23,6 @@ import (
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"
-	"strconv"
-	"strings"
-	"time"
 )
 
 const nftp = "nftp"
@@ -123,7 +124,7 @@ func (n Nft) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 			Message:       null.JSONFrom(msgsBytes),
 			Sender:        null.StringFrom(class.Owner),
 			TaskID:        null.StringFrom(taskId),
-			GasUsed:       null.Int64From(0),
+			GasUsed:       null.Int64From(int64(res.GasLimit)),
 			OriginData:    null.BytesFromPtr(&msgsBytes),
 			OperationType: models.TDDCTXSOperationTypeMintNFT,
 			Status:        models.TDDCTXSStatusUndo,

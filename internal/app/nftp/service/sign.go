@@ -16,7 +16,7 @@ type SignListener struct {
 // SignEvent 用户自定义的签名方法
 func (s *SignListener) SignEvent(sender common.Address, tx *types.Transaction) (*types.Transaction, error) {
 	// 提取私钥
-	privateKey, err := StringToPrivateKey("0x"+strings.ToUpper(sender.Hex()[2:]))
+	privateKey, err := StringToPrivateKey("0x" + strings.ToUpper(sender.Hex()[2:]))
 	if err != nil {
 		log.Fatalf("StringToPrivateKey failed:%v", err)
 	}
@@ -37,4 +37,3 @@ func StringToPrivateKey(privateKeyStr string) (*ecdsa.PrivateKey, error) {
 	}
 	return privateKey, nil
 }
-
