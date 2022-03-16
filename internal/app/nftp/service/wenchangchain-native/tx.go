@@ -1,9 +1,10 @@
-package service
+package wenchangchain_native
 
 import (
 	"context"
 	"database/sql"
 	"github.com/volatiletech/null/v8"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 	"strings"
 
 	"github.com/friendsofgo/errors"
@@ -17,23 +18,26 @@ import (
 type Tx struct {
 }
 
-func NewTx() *Tx {
-	return &Tx{}
+func NewTx() *service.TXBase {
+	return &service.TXBase{
+		Module:  service.NATIVE,
+		Service: &Tx{},
+	}
 }
 
-func (svc *Tx) TxResultByTxHash(params dto.TxResultByTxHashP) (*dto.TxResultByTxHashRes, error) {
+func (svc *Tx) Show(params dto.TxResultByTxHashP) (*dto.TxResultByTxHashRes, error) {
 	//query
 	txinfo, err := models.TTXS(
 		models.TTXWhere.TaskID.EQ(null.StringFrom(params.TaskId)),
 		models.TTXWhere.ProjectID.EQ(params.ProjectID),
 	).OneG(context.Background())
-	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
-		(err != nil && strings.Contains(err.Error(), SqlNotFound)) {
-		//404
-		return nil, types.ErrNotFound
-	} else if err != nil {
+	if err != nil {
+		if (errors.Cause(err) == sql.ErrNoRows) || (strings.Contains(err.Error(), service.SqlNotFound)) {
+			//404
+			return nil, types.ErrNotFound
+		}
 		//500
-		log.Error("query tx by hash", "query tx error:", err.Error())
+		log.Error("ddc query tx by hash", "query tx error:", err.Error())
 		return nil, types.ErrInternal
 	}
 

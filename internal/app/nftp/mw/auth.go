@@ -110,11 +110,8 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		writeForbiddenResp(w)
 		return
 	}
-	log.Info("signature:", h.Signature(r, projectKeyResult.APISecret, reqTimestampStr, reqSignature))
+	log.Info("signature: ", h.Signature(r, projectKeyResult.APISecret, reqTimestampStr, reqSignature))
 	r.Header.Set("X-Auth-Data", fmt.Sprintf("%s", string(authDataBytes)))
-	//r.Header.Set("X-App-Id", fmt.Sprintf("%d", project.ID))
-	//r.Header.Set("X-Chain-Id", fmt.Sprintf("%d", project.ChainID))
-	//r.Header.Set("X-Platform-Id", fmt.Sprintf("%d", uint64(project.PlatformID.Int64)))
 	h.next.ServeHTTP(w, r)
 }
 

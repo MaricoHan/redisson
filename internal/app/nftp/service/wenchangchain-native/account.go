@@ -23,7 +23,6 @@ import (
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"
 )
 
-const algo = "secp256k1"
 const hdPathPrefix = hd.BIP44Prefix + "0'/0/"
 
 type nativeAccount struct {
@@ -41,10 +40,9 @@ func (svc *nativeAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, er
 	// 写入数据库
 	// sdk 创建账户
 	var addresses []string
-
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
 		tAppOneObj, err := models.TConfigs(
-			qm.SQL("SELECT * FROM `t_apps` WHERE (`t_apps`.`id` = ?) LIMIT 1 FOR UPDATE;", 1),
+			qm.SQL("SELECT * FROM `t_configs` WHERE (`t_configs`.`id` = ?) LIMIT 1 FOR UPDATE;", 1),
 		).One(context.Background(), exec)
 		if err != nil {
 			//500
@@ -65,7 +63,7 @@ func (svc *nativeAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, er
 			)
 			if err != nil {
 				//500
-				log.Debug("create account", "NewMnemonicKeyManagerWithHDPath error:", err.Error())
+				log.Debug("create nft account", "NewMnemonicKeyManagerWithHDPath error:", err.Error())
 				return types.ErrInternal
 			}
 			_, priv := res.Generate()
@@ -89,6 +87,7 @@ func (svc *nativeAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, er
 			log.Error("create account", "accounts insert error:", err.Error())
 			return types.ErrInternal
 		}
+
 		tAppOneObj.AccOffset += params.Count
 		updateRes, err := tAppOneObj.Update(context.Background(), exec, boil.Infer())
 		if err != nil || updateRes == 0 {
@@ -106,7 +105,6 @@ func (svc *nativeAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, er
 	if err != nil {
 		return nil, err
 	}
-
 	result := &dto.AccountRes{}
 	result.Accounts = addresses
 	return result, nil
@@ -173,7 +171,6 @@ func (svc *nativeAccount) Show(params dto.AccountsP) (*dto.AccountsRes, error) {
 	result.Accounts = accounts
 
 	return result, nil
-
 }
 
 func (svc *nativeAccount) History(params dto.AccountsP) (*dto.AccountOperationRecordRes, error) {
