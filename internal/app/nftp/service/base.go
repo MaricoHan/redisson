@@ -31,26 +31,6 @@ const (
 )
 var (
 	SqlNotFound   = "records not exist"
-
-	ClientBuilder = ddc.DDCSdkClientBuilder{}
-	//DDCClient     = ClientBuilder.SetGatewayUrl(config.Get().Ddc.Ddc_gateway_url).
-	//		SetSignEventListener(new(SignListener)).
-	//		SetGasPrice(1e10).
-	//		SetAuthorityAddress(config.Get().Ddc.Ddc_authority_address).
-	//		SetChargeAddress(config.Get().Ddc.Ddc_charge_address).
-	//		SetDDC721Address(config.Get().Ddc.Ddc_721_address).
-	//		SetDDC1155Address(config.Get().Ddc.Ddc_1155_address).
-	//		Build()
-
-
-	DDCClient     = ClientBuilder.SetGatewayUrl("http://192.168.150.42:8545").
-			SetSignEventListener(new(SignListener)).
-			SetGasPrice(1e10).
-			SetAuthorityAddress("0x6a3B24042dA7Bb5F2CBF1BCB2ABE0C632590C580").
-			SetChargeAddress("0x95aDFbA9050C5D886419334Ae478b9844f413eF2").
-			SetDDC721Address("0x1C917baf05863417391acCfe85d305Eae41401Ec").
-			SetDDC1155Address("0x02A25C69843E197e3063Ed848f6FEA512633CB8E").
-			Build()
 )
 
 type Base struct {
@@ -65,6 +45,19 @@ func NewBase(sdkClient sdk.Client, gas uint64, denom string, amount int64) *Base
 		gas:       gas,
 		coins:     sdktype.NewDecCoins(sdktype.NewDecCoin(denom, sdktype.NewInt(amount))),
 	}
+}
+
+func NewDDCClient() *ddc.DDCSdkClient {
+	ClientBuilder := ddc.DDCSdkClientBuilder{}
+	DDCClient     := ClientBuilder.SetGatewayUrl(config.Get().Ddc.Ddc_gateway_url).
+			SetSignEventListener(new(SignListener)).
+			SetGasPrice(1e10).
+			SetAuthorityAddress(config.Get().Ddc.Ddc_authority_address).
+			SetChargeAddress(config.Get().Ddc.Ddc_charge_address).
+			SetDDC721Address(config.Get().Ddc.Ddc_721_address).
+			SetDDC1155Address(config.Get().Ddc.Ddc_1155_address).
+			Build()
+	return DDCClient
 }
 
 func (m Base) QueryRootAccount() (*models.TAccount, *types.AppError) {

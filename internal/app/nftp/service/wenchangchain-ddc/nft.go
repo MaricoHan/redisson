@@ -45,7 +45,8 @@ func (n Nft) List(params dto.NftsP) (*dto.NftsRes, error) {
 }
 
 func (n Nft) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
-	DDC721Service := service.DDCClient.GetDDC721Service(true)
+	client := service.NewDDCClient()
+	DDC721Service := client.GetDDC721Service(true)
 	var taskId string
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
 		// query class
@@ -168,7 +169,8 @@ func (n Nft) Show(params dto.NftByNftIdP) (*dto.NftR, error) {
 }
 
 func (n Nft) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
-	DDC721Service := service.DDCClient.GetDDC721Service(true)
+	client := service.NewDDCClient()
+	DDC721Service := client.GetDDC721Service(true)
 	var taskId string
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
 		// ValidateSigner

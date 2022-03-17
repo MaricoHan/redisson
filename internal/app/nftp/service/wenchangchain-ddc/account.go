@@ -3,14 +3,13 @@ package wenchangchain_ddc
 import (
 	"context"
 	"fmt"
-	"github.com/volatiletech/null/v8"
-
-	"gitlab.bianjie.ai/irita-paas/open-api/config"
 	"strings"
 
 	"encoding/base64"
 
 	ethereumcrypto "github.com/ethereum/go-ethereum/crypto"
+
+	"gitlab.bianjie.ai/irita-paas/open-api/config"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	ethsecp256k1 "github.com/irisnet/core-sdk-go/common/crypto/keys/eth_secp256k1"
@@ -21,6 +20,8 @@ import (
 	sdktype "github.com/irisnet/core-sdk-go/types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+
+	"github.com/volatiletech/null/v8"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
@@ -50,6 +51,7 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 	// 写入数据库
 	// sdk 创建账户
 	var addresses []string
+	client:=service.NewDDCClient()
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
 		tAppOneObj, err := models.TConfigs(
 			qm.SQL("SELECT * FROM `t_configs` WHERE (`t_configs`.`id` = ?) LIMIT 1 FOR UPDATE;", 1),
@@ -63,11 +65,33 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 		tAccounts := modext.TDDCAccounts{}
 		var i int64
 		accOffsetStart := tAppOneObj.AccOffset
+		mnemonic64, err := base64.StdEncoding.DecodeString(tAppOneObj.Mnemonic)
+		if err != nil {
+			log.Error("create account", "mnemonic base64 error:", err.Error())
+			return types.ErrInternal
+		}
+		mnemonic, err := types.Decrypt(mnemonic64, config.Get().Server.DefaultKeyPassword)
+		if err != nil {
+			log.Error("create account", "mnemonic Decrypt error:", err.Error())
+			return types.ErrInternal
+		}
+
+		//查询有授权权限账户
+		owner, err := models.TAccounts(
+			models.TAccountWhere.ProjectID.EQ(uint64(0)),
+		).OneG(context.Background())
+		if err != nil {
+			//500
+			log.Error("create account", "query owner error:", err.Error())
+			return types.ErrInternal
+		}
+
 		for i = 0; i < params.Count; i++ {
+
 			index := accOffsetStart + i
 			hdPath := fmt.Sprintf("%s%d", hdPathPrefix, index)
 			res, err := sdkcrypto.NewMnemonicKeyManagerWithHDPath(
-				tAppOneObj.Mnemonic,
+				mnemonic,
 				config.Get().Chain.DdcEncryption,
 				hdPath,
 			)
@@ -93,21 +117,29 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 			privB := ethereumcrypto.FromECDSA(keys)
 			keyS := strings.ToUpper(hexutil.Encode(privB)[2:])
 
+			//私钥加密
+			priKey, err := types.Encrypt(keyS, config.Get().Server.DefaultKeyPassword)
+			if err != nil {
+				log.Error("create account", "encrypt prikey error:", err.Error())
+				return types.ErrInternal
+			}
+
 			// add did
-			authority := service.DDCClient.GetAuthorityService()
-			ddc721 := service.DDCClient.GetDDC721Service(true)
+			authority := client.GetAuthorityService()
+			ddc721 := client.GetDDC721Service(true)
 			addr, err := ddc721.Bech32ToHex(tmpAddress)
 			if err != nil {
 				return err
 			}
-			_, err = authority.AddAccountByOperator("0x02CEB40D892061D457E7FA346988D0FF329935DF", addr, addr, "did:"+addr, "")
+
+			_, err = authority.AddAccountByOperator(owner.Address, addr, addr, "did:"+addr, "")
 			if err != nil {
 				return err
 			}
 
-			root, error := svc.base.QueryRootAccount()
-			if error != nil {
-				return error
+			root, err := svc.base.QueryRootAccount()
+			if err != nil {
+				return err
 			}
 			msgs := svc.base.CreateGasMsg(root.Address, addresses)
 			tx := svc.base.CreateBaseTx(root.Address, "")
@@ -118,13 +150,11 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 				return types.ErrBuildAndSend
 			}
 
-
-			//base64.StdEncoding.EncodeToString(codec.MarshalPrivKey(priv))
 			tmp := &models.TDDCAccount{
 				ProjectID: params.ProjectID,
 				Address:   addr,
 				AccIndex:  uint64(index),
-				PriKey:    keyS,
+				PriKey:    base64.StdEncoding.EncodeToString(priKey),
 				PubKey:    base64.StdEncoding.EncodeToString(codec.MarshalPubkey(res.ExportPubKey())),
 				Did: null.StringFrom("did:"+addr),
 			}
