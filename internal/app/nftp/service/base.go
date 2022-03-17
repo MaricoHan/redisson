@@ -24,8 +24,14 @@ import (
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 )
 
+const (
+	MintFee= 1 //BSN 发行 DDC 官方业务费
+	BurnFee=0.3 //BSN 销毁 DDC 官方业务费
+	TransFer=0.3 //BSN 转让 DDC 官方业务费
+)
 var (
 	SqlNotFound   = "records not exist"
+
 	ClientBuilder = ddc.DDCSdkClientBuilder{}
 	//DDCClient     = ClientBuilder.SetGatewayUrl(config.Get().Ddc.Ddc_gateway_url).
 	//		SetSignEventListener(new(SignListener)).
@@ -355,7 +361,7 @@ func (m Base) DeleteBatchNftGas(nftLen, n uint64) uint64 {
 
 //Estimated gas required to create account
 //It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049266
-func (m Base) createAccount(count int64) uint64 {
+func (m Base) CreateAccount(count int64) uint64 {
 	count -= 1
 	res := types.CreateAccountGas + types.CreateAccountIncreaseGas*(count)
 	u := float64(res) * config.Get().Chain.GasCoefficient
@@ -399,7 +405,7 @@ func (m Base) Grant(address []string) (string, error) {
 	}
 	baseTx := m.CreateBaseTxSync(root.Address, config.Get().Server.DefaultKeyPassword)
 	//动态计算gas
-	baseTx.Gas = m.createAccount(int64(len(address)))
+	baseTx.Gas = m.CreateAccount(int64(len(address)))
 	res, err := m.BuildAndSend(msgs, baseTx)
 	if err != nil {
 		//500

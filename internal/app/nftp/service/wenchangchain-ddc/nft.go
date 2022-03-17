@@ -45,7 +45,7 @@ func (n Nft) List(params dto.NftsP) (*dto.NftsRes, error) {
 }
 
 func (n Nft) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
-	//DDC721Service := service.DDCClient.GetDDC721Service(true)
+	DDC721Service := service.DDCClient.GetDDC721Service(true)
 	var taskId string
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
 		// query class
@@ -104,16 +104,20 @@ func (n Nft) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 		}
 
 		//签名后的交易计算动态 gas
-		//addr := DDC721Service.Bech32ToHex(params.Recipient)
-		//res, err := DDC721Service.SafeMint(&bind.TransactOpts{}, addr, params.Uri, []byte(params.Data))
-		//if err != nil {
-		//	log.Error("create ddc", "get hash and gasLimit error:", err.Error())
-		//	return types.ErrInternal
-		//}
-		//err = n.base.GasThan(params.ChainID, res.GasLimit, params.PlatFormID)
-		//if err != nil {
-		//	return types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
-		//}
+		addr, err := DDC721Service.Bech32ToHex(params.Recipient)
+		if err != nil {
+			//ddc sdk 自定义 err
+			return err
+		}
+		res, err := DDC721Service.SafeMint(&bind.TransactOpts{}, addr, params.Uri, []byte(params.Data))
+		if err != nil {
+			log.Error("create ddc", "get hash and gasLimit error:", err.Error())
+			return types.ErrInternal
+		}
+		err = n.base.GasThan(params.ChainID, res.GasLimit, params.PlatFormID)
+		if err != nil {
+			return types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
+		}
 
 		msgsBytes, _ := json.Marshal(sdktype.Msgs{&createNft})
 
@@ -125,12 +129,13 @@ func (n Nft) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 			Message:       null.JSONFrom(msgsBytes),
 			Sender:        null.StringFrom(class.Owner),
 			TaskID:        null.StringFrom(taskId),
-			GasUsed:       null.Int64From(1000000),
+			GasUsed:       null.Int64From(int64(res.GasLimit)),
 			OriginData:    null.BytesFromPtr(&msgsBytes),
 			OperationType: models.TDDCTXSOperationTypeMintNFT,
 			Status:        models.TDDCTXSStatusUndo,
 			Tag:           null.JSONFrom(params.Tag),
 			Retry:         null.Int8From(0),
+			BizFee:        null.Int64From(service.MintFee),
 		}
 		err = ttx.Insert(context.Background(), exec, boil.Infer())
 		if err != nil {

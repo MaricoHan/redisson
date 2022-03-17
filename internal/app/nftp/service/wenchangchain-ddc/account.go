@@ -3,16 +3,17 @@ package wenchangchain_ddc
 import (
 	"context"
 	"fmt"
-	ethereumcrypto "github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	ethsecp256k1 "github.com/irisnet/core-sdk-go/common/crypto/keys/eth_secp256k1"
 	"github.com/volatiletech/null/v8"
-	"time"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/config"
 	"strings"
 
 	"encoding/base64"
+
+	ethereumcrypto "github.com/ethereum/go-ethereum/crypto"
+
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	ethsecp256k1 "github.com/irisnet/core-sdk-go/common/crypto/keys/eth_secp256k1"
 
 	sdkcrypto "github.com/irisnet/core-sdk-go/common/crypto"
 	"github.com/irisnet/core-sdk-go/common/crypto/codec"
@@ -87,10 +88,10 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 			if err != nil {
 				return err
 			}
+
 			// Formats key for output
 			privB := ethereumcrypto.FromECDSA(keys)
 			keyS := strings.ToUpper(hexutil.Encode(privB)[2:])
-			fmt.Println("12345678iop09876543key",keyS)
 
 			// add did
 			authority := service.DDCClient.GetAuthorityService()
@@ -99,24 +100,37 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 			if err != nil {
 				return err
 			}
-			fmt.Println("23456789", addr)
-			_, err = authority.AddAccountByOperator("0x02CEB40D892061D457E7FA346988D0FF329935DF", addr, "test"+time.Now().String(), "did:test"+time.Now().String(), "")
+			_, err = authority.AddAccountByOperator("0x02CEB40D892061D457E7FA346988D0FF329935DF", addr, addr, "did:"+addr, "")
 			if err != nil {
 				return err
 			}
 
+			root, error := svc.base.QueryRootAccount()
+			if error != nil {
+				return error
+			}
+			msgs := svc.base.CreateGasMsg(root.Address, addresses)
+			tx := svc.base.CreateBaseTx(root.Address, "")
+			tx.Gas = svc.base.CreateAccount(params.Count)
+			_, err = svc.base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
+			if err != nil {
+				log.Error("create account", "build and send, error:", err)
+				return types.ErrBuildAndSend
+			}
+
+
 			//base64.StdEncoding.EncodeToString(codec.MarshalPrivKey(priv))
 			tmp := &models.TDDCAccount{
 				ProjectID: params.ProjectID,
-				Address:   tmpAddress,
+				Address:   addr,
 				AccIndex:  uint64(index),
 				PriKey:    keyS,
 				PubKey:    base64.StdEncoding.EncodeToString(codec.MarshalPubkey(res.ExportPubKey())),
-				Did: null.StringFrom("did:test"+time.Now().String()),
+				Did: null.StringFrom("did:"+addr),
 			}
 
 			tAccounts = append(tAccounts, tmp)
-			addresses = append(addresses, tmpAddress)
+			addresses = append(addresses, addr)
 		}
 
 		err = tAccounts.InsertAll(context.Background(), exec)

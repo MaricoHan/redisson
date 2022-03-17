@@ -637,6 +637,8 @@ github.com/influxdata/roaring v0.4.13-0.20180809181101-fc520f41fab6/go.mod h1:bS
 github.com/influxdata/tdigest v0.0.0-20181121200506-bf2b5ad3c0a9/go.mod h1:Js0mqiSBE6Ffsg94weZZ2c+v/ciT8QRHFOap7EKDrR0=
 github.com/influxdata/usage-client v0.0.0-20160829180054-6d3895376368/go.mod h1:Wbbw6tYNvwa5dlB6304Sd+82Z3f7PmVZHVKU637d4po=
 github.com/irisnet/core-sdk-go v0.0.0-20210719031639-9c6ece68d908/go.mod h1:ODgRsJ1Vo+OQ9CENiYoMPJvXx5eTTAsbD4SG59hhnmM=
+github.com/irisnet/core-sdk-go v0.0.0-20220317092329-ae0bba5371c8 h1:lUUqyplGDDQb1/4htJ3ew5g4kKzB+exwnIUqvXF3y1I=
+github.com/irisnet/core-sdk-go v0.0.0-20220317092329-ae0bba5371c8/go.mod h1:l2QBSZQbdG5WmpB9Fxsqa3/yz/Fok0iK3pb781YuEGA=
 github.com/irisnet/irismod-sdk-go/nft v0.0.0-20220121065225-0b70859f7bed h1:mWOOHPdXXDzavX1LjhJ3q19Qa2GSO6iPlX9onXBotKo=
 github.com/irisnet/irismod-sdk-go/nft v0.0.0-20220121065225-0b70859f7bed/go.mod h1:m3/Te6sMvO9PansYSvcKE0m+/ZPyC/cTjwWbJN6fTfo=
 github.com/jackpal/go-nat-pmp v1.0.2-0.20160603034137-1fa385a6f458/go.mod h1:QPH045xvCAeXUZOxsnwmrtiCoxIr9eob+4orBN1SBKc=

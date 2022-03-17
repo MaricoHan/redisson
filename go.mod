@@ -6,7 +6,6 @@ require (
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 	github.com/bianjieai/ddc-sdk-go v0.2.3
 	github.com/bsm/redislock v0.7.2
-	github.com/cosmos/cosmos-sdk v0.44.3
 	github.com/ethereum/go-ethereum v1.10.16
 	github.com/friendsofgo/errors v0.9.2
 	github.com/go-kit/kit v0.10.0
@@ -15,7 +14,7 @@ require (
 	github.com/go-playground/validator/v10 v10.10.0
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/gorilla/mux v1.8.0
-	github.com/irisnet/core-sdk-go v0.0.0-20220302175731-8770d7dce833
+	github.com/irisnet/core-sdk-go v0.0.0-20220317092329-ae0bba5371c8
 	github.com/irisnet/irismod-sdk-go/nft v0.0.0-20220121065225-0b70859f7bed
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.11.0
@@ -31,7 +30,6 @@ require (
 )
 
 require (
-	filippo.io/edwards25519 v1.0.0-beta.2 // indirect
 	github.com/99designs/keyring v1.1.6 // indirect
 	github.com/ChainSafe/go-schnorrkel v0.0.0-20200405005733-88cbf1b4c40d // indirect
 	github.com/DataDog/zstd v1.4.8 // indirect
@@ -46,6 +44,7 @@ require (
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce // indirect
 	github.com/cespare/xxhash v1.1.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
+	github.com/cosmos/cosmos-sdk v0.44.3 // indirect
 	github.com/cosmos/go-bip39 v1.0.0 // indirect
 	github.com/danieljoos/wincred v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -76,7 +75,6 @@ require (
 	github.com/hashicorp/go-immutable-radix v1.3.1 // indirect
 	github.com/hashicorp/golang-lru v0.5.5-0.20210104140557-80c98217689d // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/hdevalence/ed25519consensus v0.0.0-20210204194344-59a8610d2b87 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jmhodges/levigo v1.0.0 // indirect
 	github.com/keybase/go-keychain v0.0.0-20190712205309-48d3d31d256d // indirect
@@ -137,7 +135,5 @@ replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alp
 replace gitlab.bianjie.ai/irita-paas/orms/orm-nft => gitlab.bianjie.ai/irita-paas/orms/orm-nft.git v1.0.0-beta.0.20220315073819-c8c63131c626
 
 replace github.com/tendermint/tendermint => github.com/bianjieai/tendermint v0.34.1-irita-210113
-
-replace github.com/irisnet/core-sdk-go v0.0.0-20220302175731-8770d7dce833 => ../core-sdk-go
 
 replace github.com/prometheus/common v0.32.1 => github.com/prometheus/common v0.23.0
