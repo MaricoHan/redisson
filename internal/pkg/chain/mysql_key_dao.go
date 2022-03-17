@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"encoding/base64"
+	"gitlab.bianjie.ai/irita-paas/open-api/config"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
@@ -46,11 +48,19 @@ func (k MysqlKeyDao) Read(name, password string) (keystore.KeyInfo, error) {
 	if err != nil {
 		return keystore.KeyInfo{}, err
 	}
-	priKey, err := base64.StdEncoding.DecodeString(tAccountOneObj.PriKey)
+
+	priKeyDecodeString, err := base64.StdEncoding.DecodeString(tAccountOneObj.PriKey)
 	if err != nil {
 		return keystore.KeyInfo{}, err
 	}
-
+	priKeyStrings, err := types.Decrypt(priKeyDecodeString, config.Get().Server.DefaultKeyPassword)
+	if err != nil {
+		return keystore.KeyInfo{}, err
+	}
+	priKey, err := base64.StdEncoding.DecodeString(priKeyStrings)
+	if err != nil {
+		return keystore.KeyInfo{}, err
+	}
 	store := keystore.KeyInfo{
 		Name:         name,
 		Algo:         k.algo,
