@@ -3,6 +3,13 @@ package wenchangchain_ddc
 import (
 	"context"
 	"fmt"
+	ethereumcrypto "github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	ethsecp256k1 "github.com/irisnet/core-sdk-go/common/crypto/keys/eth_secp256k1"
+	"github.com/volatiletech/null/v8"
+	"time"
+
+	"gitlab.bianjie.ai/irita-paas/open-api/config"
 	"strings"
 
 	"encoding/base64"
@@ -60,7 +67,7 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 			hdPath := fmt.Sprintf("%s%d", hdPathPrefix, index)
 			res, err := sdkcrypto.NewMnemonicKeyManagerWithHDPath(
 				tAppOneObj.Mnemonic,
-				"eth_secp256k1",
+				config.Get().Chain.DdcEncryption,
 				hdPath,
 			)
 			if err != nil {
@@ -69,34 +76,43 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 				return types.ErrInternal
 			}
 			_, priv := res.Generate()
-
 			tmpAddress := sdktype.AccAddress(priv.PubKey().Address().Bytes()).String()
 
-			//// Converts key to Ethermint secp256k1 implementation
-			//privKey, _, err := crypto.UnarmorDecryptPrivKey(tmpAddress, "")
-			//if err != nil {
-			//	return err
-			//}
-			//
-			//ethPrivKey, ok := privKey.(*ethsecp256k1.PrivKey)
-			//if !ok {
-			//	return fmt.Errorf("invalid private key type %T, expected %T", privKey,&ethsecp256k1.PrivKey{})
-			//}
-			//key, err := ethPrivKey.ToECDSA()
-			//if err != nil {
-			//	return err
-			//}
-			//// Formats key for output
-			//privB := ethcrypto.FromECDSA(key)
-			//keyS := strings.ToUpper(hexutil.Encode(privB)[2:])
+			//Converts key to Ethermint secp256k1 implementation
+			ethPrivKey, ok := priv.(*ethsecp256k1.PrivKey)
+			if !ok {
+				return fmt.Errorf("invalid private key type %T, expected %T", priv,&ethsecp256k1.PrivKey{})
+			}
+			keys, err := ethPrivKey.ToECDSA()
+			if err != nil {
+				return err
+			}
+			// Formats key for output
+			privB := ethereumcrypto.FromECDSA(keys)
+			keyS := strings.ToUpper(hexutil.Encode(privB)[2:])
+			fmt.Println("12345678iop09876543key",keyS)
 
-			//
+			// add did
+			authority := service.DDCClient.GetAuthorityService()
+			ddc721 := service.DDCClient.GetDDC721Service(true)
+			addr, err := ddc721.Bech32ToHex(tmpAddress)
+			if err != nil {
+				return err
+			}
+			fmt.Println("23456789", addr)
+			_, err = authority.AddAccountByOperator("0x02CEB40D892061D457E7FA346988D0FF329935DF", addr, "test"+time.Now().String(), "did:test"+time.Now().String(), "")
+			if err != nil {
+				return err
+			}
+
+			//base64.StdEncoding.EncodeToString(codec.MarshalPrivKey(priv))
 			tmp := &models.TDDCAccount{
 				ProjectID: params.ProjectID,
 				Address:   tmpAddress,
 				AccIndex:  uint64(index),
-				PriKey:   base64.StdEncoding.EncodeToString(codec.MarshalPrivKey(priv)) ,
+				PriKey:    keyS,
 				PubKey:    base64.StdEncoding.EncodeToString(codec.MarshalPubkey(res.ExportPubKey())),
+				Did: null.StringFrom("did:test"+time.Now().String()),
 			}
 
 			tAccounts = append(tAccounts, tmp)
@@ -118,20 +134,6 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 		_, err = svc.base.Grant(addresses)
 		if err != nil {
 			return err
-		}
-
-		for j := 0; j < len(addresses); j++ {
-			authority := service.DDCClient.GetAuthorityService()
-			ddc721:=service.DDCClient.GetDDC721Service(true)
-			addr,err:=ddc721.Bech32ToHex(addresses[j])
-			if err != nil {
-				return err
-			}
-
-			fmt.Println("23456789",addr)
-			hash,err:=authority.AddAccountByOperator("0x02CEB40D892061D457E7FA346988D0FF329935DF", addr, "test", "did:test", "")
-			fmt.Println("438765476",hash)
-			fmt.Println("098765436",err)
 		}
 		return nil
 	})
