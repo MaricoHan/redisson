@@ -53,28 +53,43 @@ func (svc *nativeAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, er
 		tAccounts := modext.TAccounts{}
 		var i int64
 		accOffsetStart := tAppOneObj.AccOffset
+		mnemonic64, err := base64.StdEncoding.DecodeString(tAppOneObj.Mnemonic)
+		if err != nil {
+			log.Error("create account", "mnemonic base64 error:", err.Error())
+			return types.ErrInternal
+		}
+		mnemonic, err := types.Decrypt(mnemonic64, config.Get().Server.DefaultKeyPassword)
+		if err != nil {
+			log.Error("create account", "mnemonic Decrypt error:", err.Error())
+			return types.ErrInternal
+		}
 		for i = 0; i < params.Count; i++ {
 			index := accOffsetStart + i
 			hdPath := fmt.Sprintf("%s%d", hdPathPrefix, index)
 			res, err := sdkcrypto.NewMnemonicKeyManagerWithHDPath(
-				tAppOneObj.Mnemonic,
+				mnemonic,
 				config.Get().Chain.ChainEncryption,
 				hdPath,
 			)
 			if err != nil {
 				//500
-				log.Debug("create nft account", "NewMnemonicKeyManagerWithHDPath error:", err.Error())
+				log.Error("create account", "NewMnemonicKeyManagerWithHDPath error:", err.Error())
 				return types.ErrInternal
 			}
 			_, priv := res.Generate()
 
 			tmpAddress := sdktype.AccAddress(priv.PubKey().Address().Bytes()).String()
 
+			priKey, err := types.Encrypt(base64.StdEncoding.EncodeToString(codec.MarshalPrivKey(priv)), config.Get().Server.DefaultKeyPassword)
+			if err != nil {
+				log.Error("create account", "prikey error:", err.Error())
+				return types.ErrInternal
+			}
 			tmp := &models.TAccount{
 				ProjectID: params.ProjectID,
 				Address:   tmpAddress,
 				AccIndex:  uint64(index),
-				PriKey:    base64.StdEncoding.EncodeToString(codec.MarshalPrivKey(priv)),
+				PriKey:    base64.StdEncoding.EncodeToString(priKey),
 				PubKey:    base64.StdEncoding.EncodeToString(codec.MarshalPubkey(res.ExportPubKey())),
 			}
 
