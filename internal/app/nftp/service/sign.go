@@ -7,7 +7,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"log"
-	"strings"
 )
 
 type SignListener struct {
@@ -15,8 +14,15 @@ type SignListener struct {
 
 // SignEvent 用户自定义的签名方法
 func (s *SignListener) SignEvent(sender common.Address, tx *types.Transaction) (*types.Transaction, error) {
+	//account, err := models.TDDCAccounts(
+	//	models.TAccountWhere.Address.EQ(sender.String()),
+	//).OneG(context.Background())
+	//if err != nil {
+	//	return nil, types.ErrInvalidSig
+	//}
 	// 提取私钥
-	privateKey, err := StringToPrivateKey("0x" + strings.ToUpper(sender.Hex()[2:]))
+	//privateKey, err := StringToPrivateKey(account.PriKey)
+	privateKey, err := StringToPrivateKey("0xE253AB375A5806FA331E7DB32EDE524BD7D998475A60C957806066F14F479C25")
 	if err != nil {
 		log.Fatalf("StringToPrivateKey failed:%v", err)
 	}

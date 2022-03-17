@@ -27,14 +27,13 @@ import (
 var (
 	SqlNotFound   = "records not exist"
 	ClientBuilder = ddc.DDCSdkClientBuilder{}
-	DDCClient     = ClientBuilder.
+	DDCClient     = ClientBuilder.SetGatewayUrl("http://192.168.150.42:8545").
 			SetSignEventListener(new(SignListener)).
-			SetGasPrice(1e4).
-			SetGasLimit(1e6).
-			SetAuthorityAddress("0x607F278304Fd91df7e2E6630a66809959c73978c").
-			SetChargeAddress("0xDdAEfC5E48a9ec1c63293997cea034570d5117c8").
-			SetDDC721Address("0x87c263E5E1260eB02f9C5f7dE7504a91E324BBF0").
-			SetDDC1155Address("0xf9E474ceD3486Bb003BE36cD1c41F4537b541c18").
+			SetGasPrice(1e10).
+			SetAuthorityAddress("0x6a3B24042dA7Bb5F2CBF1BCB2ABE0C632590C580").
+			SetChargeAddress("0x95aDFbA9050C5D886419334Ae478b9844f413eF2").
+			SetDDC721Address("0x1C917baf05863417391acCfe85d305Eae41401Ec").
+			SetDDC1155Address("0x02A25C69843E197e3063Ed848f6FEA512633CB8E").
 			Build()
 )
 

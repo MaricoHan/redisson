@@ -14,7 +14,6 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
-	"gitlab.bianjie.ai/irita-paas/open-api/config"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
@@ -61,7 +60,7 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 			hdPath := fmt.Sprintf("%s%d", hdPathPrefix, index)
 			res, err := sdkcrypto.NewMnemonicKeyManagerWithHDPath(
 				tAppOneObj.Mnemonic,
-				config.Get().Chain.ChainEncryption,
+				"eth_secp256k1",
 				hdPath,
 			)
 			if err != nil {
@@ -73,11 +72,30 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 
 			tmpAddress := sdktype.AccAddress(priv.PubKey().Address().Bytes()).String()
 
+			//// Converts key to Ethermint secp256k1 implementation
+			//privKey, _, err := crypto.UnarmorDecryptPrivKey(tmpAddress, "")
+			//if err != nil {
+			//	return err
+			//}
+			//
+			//ethPrivKey, ok := privKey.(*ethsecp256k1.PrivKey)
+			//if !ok {
+			//	return fmt.Errorf("invalid private key type %T, expected %T", privKey,&ethsecp256k1.PrivKey{})
+			//}
+			//key, err := ethPrivKey.ToECDSA()
+			//if err != nil {
+			//	return err
+			//}
+			//// Formats key for output
+			//privB := ethcrypto.FromECDSA(key)
+			//keyS := strings.ToUpper(hexutil.Encode(privB)[2:])
+
+			//
 			tmp := &models.TDDCAccount{
 				ProjectID: params.ProjectID,
 				Address:   tmpAddress,
 				AccIndex:  uint64(index),
-				PriKey:    base64.StdEncoding.EncodeToString(codec.MarshalPrivKey(priv)),
+				PriKey:   base64.StdEncoding.EncodeToString(codec.MarshalPrivKey(priv)) ,
 				PubKey:    base64.StdEncoding.EncodeToString(codec.MarshalPubkey(res.ExportPubKey())),
 			}
 
@@ -97,6 +115,24 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 			return types.ErrInternal
 		}
 		// fee grant
+		_, err = svc.base.Grant(addresses)
+		if err != nil {
+			return err
+		}
+
+		for j := 0; j < len(addresses); j++ {
+			authority := service.DDCClient.GetAuthorityService()
+			ddc721:=service.DDCClient.GetDDC721Service(true)
+			addr,err:=ddc721.Bech32ToHex(addresses[j])
+			if err != nil {
+				return err
+			}
+
+			fmt.Println("23456789",addr)
+			hash,err:=authority.AddAccountByOperator("0x02CEB40D892061D457E7FA346988D0FF329935DF", addr, "test", "did:test", "")
+			fmt.Println("438765476",hash)
+			fmt.Println("098765436",err)
+		}
 		return nil
 	})
 	if err != nil {
@@ -106,7 +142,6 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 	result := &dto.AccountRes{}
 	result.Accounts = addresses
 	return result, nil
-	return nil, nil
 }
 
 func (svc *ddcAccount) Show(params dto.AccountsP) (*dto.AccountsRes, error) {
