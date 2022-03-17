@@ -37,8 +37,8 @@ var (
 	SqlNotFound   = "records not exist"
 	ClientBuilder = ddc.DDCSdkClientBuilder{}
 	DDCClient     = ClientBuilder.
-		SetSignEventListener(new(SignListener)).
-		SetGasPrice(GasPrice).
+			SetSignEventListener(new(SignListener)).
+			SetGasPrice(GasPrice).
 			SetGasLimit(GasLimit).
 			SetAuthorityAddress(AuthorityAddress).
 			SetChargeAddress(ChargeAddress).
@@ -464,7 +464,7 @@ func (b Base) EncodeData(data string) string {
 	return hash
 }
 
-func (b Base) GasThan(address string, chainId, gas, platformId uint64) error {
+func (b Base) GasThan(chainId, gas, platformId uint64) error {
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
 		//查找 platform 下的所有 project
 		tProjects, err := models.TProjects(

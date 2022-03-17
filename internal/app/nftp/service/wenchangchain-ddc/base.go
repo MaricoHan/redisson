@@ -17,18 +17,19 @@ func NewBase(base *service.Base) Base {
 }
 
 // UndoTxIntoDataBase operationType : issue_class,mint_nft,edit_nft,edit_nft_batch,burn_nft,burn_nft_batch
-func (b Base) UndoTxIntoDataBase(sender, operationType, taskId, txHash string, ProjectID uint64, message, tag []byte, exec boil.ContextExecutor) (uint64, error) {
+func (b Base) UndoTxIntoDataBase(sender, operationType, taskId, txHash string, ProjectID uint64, message, tag []byte, gasUsed int64, exec boil.ContextExecutor) (uint64, error) {
 
 	// Tx into database
 	ttx := models.TDDCTX{
 		ProjectID:     ProjectID,
 		Hash:          txHash,
 		OperationType: operationType,
-		Status:        models.TTXSStatusUndo,
+		Status:        models.TDDCTXSStatusUndo,
 		Sender:        null.StringFrom(sender),
 		Message:       null.JSONFrom(message),
 		TaskID:        null.StringFrom(taskId),
 		Tag:           null.JSONFrom(tag),
+		GasUsed:       null.Int64From(gasUsed),
 		Retry:         null.Int8From(0),
 	}
 	err := ttx.Insert(context.Background(), exec, boil.Infer())

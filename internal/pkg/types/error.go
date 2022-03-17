@@ -74,7 +74,7 @@ var (
 	ErrInternal        = Register(RootCodeSpace, InternalFailed, "internal")
 	ErrAuthenticate    = Register(RootCodeSpace, AuthenticationFailed, "authentication failed")
 	ErrParams          = Register(RootCodeSpace, ClientParamsError, ErrClientParams)
-	ErrChainConn       = Register(RootCodeSpace, ConnectionChainFailed, "connection chain failed")
+	ErrChainConn       = Register(RootCodeSpace, ConnectionChainFailed, "conconnectionnection chain failed")
 	ErrIdempotent      = Register(RootCodeSpace, FrequentRequestsNotSupports, "frequent requests not supports")
 	ErrNftClassStatus  = Register(RootCodeSpace, NftClassStatusAbnormal, ErrNftClassStatusMsg)
 	ErrNftStatus       = Register(RootCodeSpace, NftStatusAbnormal, ErrNftStatusMsg)
