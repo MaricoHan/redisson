@@ -58,21 +58,21 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, e
 		tAccounts := modext.TAccounts{}
 		var i int64
 		accOffsetStart := tAppOneObj.AccOffset
-		mnemonicCrypt, err := types.Decrypt([]byte(tAppOneObj.Mnemonic), config.Get().Server.DefaultKeyPassword)
-		if err != nil {
-			log.Error("create account", "mnemonic Decrypt error:", err.Error())
-			return types.ErrInternal
-		}
-		mnemonic, err := base64.StdEncoding.DecodeString(mnemonicCrypt)
+		mnemonic64, err := base64.StdEncoding.DecodeString(tAppOneObj.Mnemonic)
 		if err != nil {
 			log.Error("create account", "mnemonic base64 error:", err.Error())
+			return types.ErrInternal
+		}
+		mnemonic, err := types.Decrypt(mnemonic64, config.Get().Server.DefaultKeyPassword)
+		if err != nil {
+			log.Error("create account", "mnemonic Decrypt error:", err.Error())
 			return types.ErrInternal
 		}
 		for i = 0; i < params.Count; i++ {
 			index := accOffsetStart + i
 			hdPath := fmt.Sprintf("%s%d", hdPathPrefix, index)
 			res, err := sdkcrypto.NewMnemonicKeyManagerWithHDPath(
-				string(mnemonic),
+				mnemonic,
 				config.Get().Chain.ChainEncryption,
 				hdPath,
 			)
