@@ -37,7 +37,8 @@ var (
 	SqlNotFound   = "records not exist"
 	ClientBuilder = ddc.DDCSdkClientBuilder{}
 	DDCClient     = ClientBuilder.
-			SetGasPrice(GasPrice).
+		SetSignEventListener(new(SignListener)).
+		SetGasPrice(GasPrice).
 			SetGasLimit(GasLimit).
 			SetAuthorityAddress(AuthorityAddress).
 			SetChargeAddress(ChargeAddress).
@@ -419,6 +420,43 @@ func (b Base) ValidateRecipient(recipient string, projectid uint64) error {
 	return nil
 }
 
+// ValidateDDCSigner validate ddc signer
+func (m Base) ValidateDDCSigner(sender string, projectid uint64) error {
+	//signer不能为project外账户
+	_, err := models.TDDCAccounts(
+		models.TDDCAccountWhere.ProjectID.EQ(projectid),
+		models.TDDCAccountWhere.Address.EQ(sender)).OneG(context.Background())
+	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
+		(err != nil && strings.Contains(err.Error(), SqlNotFound)) {
+		//404
+		return types.ErrNotFound
+	} else if err != nil {
+		//500
+		log.Error("validate signer", "query signer error:", err.Error())
+		return types.ErrInternal
+	}
+
+	return nil
+}
+
+// ValidateDDCRecipient validate ddc recipient
+func (m Base) ValidateDDCRecipient(recipient string, projectid uint64) error {
+	//recipient不能为project外的账户
+	_, err := models.TDDCAccounts(
+		models.TDDCAccountWhere.ProjectID.EQ(projectid),
+		models.TDDCAccountWhere.Address.EQ(recipient)).OneG(context.Background())
+	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
+		(err != nil && strings.Contains(err.Error(), SqlNotFound)) {
+		//400
+		return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientFound)
+	} else if err != nil {
+		//500
+		log.Error("validate recipient", "query recipient error:", err.Error())
+		return types.ErrInternal
+	}
+	return nil
+}
+
 // EncodeData 加密序列
 func (b Base) EncodeData(data string) string {
 	hashBz := sha256.Sum256([]byte(data))
@@ -428,17 +466,20 @@ func (b Base) EncodeData(data string) string {
 
 func (b Base) GasThan(address string, chainId, gas, platformId uint64) error {
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
+		//查找 platform 下的所有 project
 		tProjects, err := models.TProjects(
 			models.TProjectWhere.PlatformID.EQ(null.Int64From(int64(platformId))),
 		).All(context.Background(), exec)
 		if err != nil {
-			return errors.New("query PlatformID from TProjects failed")
+			return errors.New("query all project by platformId failed")
 		}
+
 		var projects []uint64
 		for _, v := range tProjects {
 			projects = append(projects, v.ID)
 		}
-		// unPaidGas 待支付的gas
+
+		//nft 交易
 		tx, err := models.TTXS(
 			qm.Select("SUM(gas_used) as gas_used"),
 			models.TTXWhere.ProjectID.IN(projects),
@@ -446,30 +487,49 @@ func (b Base) GasThan(address string, chainId, gas, platformId uint64) error {
 		if err != nil {
 			return types.ErrNotFound
 		}
-		unPaidGas := tx.GasUsed.Int64
+
+		//ddc 交易
+		ddctx, err := models.TDDCTXS(
+			qm.Select("SUM(gas_used) as gas_used"),
+			qm.Select("SUM(biz_fee) as biz_fee"),
+			models.TDDCTXWhere.ProjectID.IN(projects),
+			models.TDDCTXWhere.Status.IN([]string{models.TDDCTXSStatusUndo, models.TDDCTXSStatusPending})).One(context.Background(), exec)
+		if err != nil {
+			return types.ErrNotFound
+		}
+
+		//待支付的总 gas
+		unPaidGas := tx.GasUsed.Int64 + ddctx.GasUsed.Int64
+
+		//查找不同链对应的 gasprice
 		chain, err := models.TChains(models.TChainWhere.ID.EQ(chainId),
 			models.TChainWhere.Status.EQ(0)).OneG(context.Background())
 		if err != nil {
 			return types.ErrNotFound
 		}
-		//gasPrice 每条链的gasPrice
 		gasPrice, ok := chain.GasPrice.Big.Float64()
 		if !ok {
 			return errors.New("cannot get float64 of gasPrice")
 		}
-		// unPaidMoney   = 这些未支付的交易需要扣除的money  =  gasPrice * unPaidGas
-		unPaidMoney := float64(unPaidGas) * gasPrice
-		pAccount, err := models.TPlatformAccounts(models.TPlatformAccountWhere.ID.EQ(platformId)).One(context.Background(), exec)
 
+		//所有未支付的交易需要扣除的money = gasPrice * unPaidGas + 所有未支付的 ddcTx 的业务费之和
+		unPaidMoney := float64(unPaidGas)*gasPrice + float64(ddctx.BizFee.Int64)
+
+		//platformId 的账户
+		pAccount, err := models.TPlatformAccounts(models.TPlatformAccountWhere.ID.EQ(platformId)).One(context.Background(), exec)
 		if err != nil {
-			return errors.New(fmt.Sprintf("cannot query PlatFormAccount and platformId is : %v", platformId))
+			return errors.New(fmt.Sprintf("cannot query platformAccount and platformId is : %v", platformId))
 		}
+
 		//amount 平台方的余额
 		amount, ok := pAccount.Amount.Big.Float64()
 		if !ok {
 			return errors.New("cannot get float64 of amount")
 		}
+
+		//加上本次交易预估的费用
 		unPaidMoney = unPaidMoney + float64(gas)*gasPrice
+
 		//如果amount小于未支付金额,返回错误
 		if amount < unPaidMoney {
 			return errors.New("balances not enough")
