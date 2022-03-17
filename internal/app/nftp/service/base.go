@@ -60,7 +60,7 @@ func NewDDCClient() *ddc.DDCSdkClient {
 	return DDCClient
 }
 
-func (m Base) QueryRootAccount() (*models.TAccount, *types.AppError) {
+func (m Base) QueryRootAccount() (*models.TAccount, error) {
 	//platform address
 	account, err := models.TAccounts(
 		models.TAccountWhere.ProjectID.EQ(uint64(0)),

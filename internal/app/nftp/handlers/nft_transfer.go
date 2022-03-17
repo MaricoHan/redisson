@@ -86,7 +86,7 @@ func (h nftTransfer) TransferNftByNftId(ctx context.Context, request interface{}
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientLen)
 	}
 	// 校验接收者地址是否满足当前链的地址规范
-	if common.IsHexAddress(recipient) {
+	if !common.IsHexAddress(recipient) {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
 	}
 	tagBytes, err := h.ValidateTag(req.Tag)

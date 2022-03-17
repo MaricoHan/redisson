@@ -51,6 +51,7 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 	// 写入数据库
 	// sdk 创建账户
 	var addresses []string
+	var bech32addresses []string
 	client:=service.NewDDCClient()
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
 		tAppOneObj, err := models.TConfigs(
@@ -77,8 +78,8 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 		}
 
 		//查询有授权权限账户
-		owner, err := models.TAccounts(
-			models.TAccountWhere.ProjectID.EQ(uint64(0)),
+		owner, err := models.TDDCAccounts(
+			models.TDDCAccountWhere.ProjectID.EQ(uint64(0)),
 		).OneG(context.Background())
 		if err != nil {
 			//500
@@ -88,7 +89,7 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 
 		for i = 0; i < params.Count; i++ {
 
-			index := accOffsetStart + i
+			index := accOffsetStart +i
 			hdPath := fmt.Sprintf("%s%d", hdPathPrefix, index)
 			res, err := sdkcrypto.NewMnemonicKeyManagerWithHDPath(
 				mnemonic,
@@ -124,30 +125,25 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 				return types.ErrInternal
 			}
 
-			// add did
-			authority := client.GetAuthorityService()
+			//hex address
 			ddc721 := client.GetDDC721Service(true)
 			addr, err := ddc721.Bech32ToHex(tmpAddress)
 			if err != nil {
 				return err
 			}
 
-			_, err = authority.AddAccountByOperator(owner.Address, addr, addr, "did:"+addr, "")
+			// add did
+			authority := client.GetAuthorityService()
+			_, err = authority.AddAccountByPlatform(owner.Address, addr, addr, "did:"+addr)
 			if err != nil {
 				return err
 			}
 
-			root, err := svc.base.QueryRootAccount()
+			//recharge
+			charge:=client.GetChargeService()
+			_, err =charge.Recharge(owner.Address,addr,20)
 			if err != nil {
 				return err
-			}
-			msgs := svc.base.CreateGasMsg(root.Address, addresses)
-			tx := svc.base.CreateBaseTx(root.Address, "")
-			tx.Gas = svc.base.CreateAccount(params.Count)
-			_, err = svc.base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
-			if err != nil {
-				log.Error("create account", "build and send, error:", err)
-				return types.ErrBuildAndSend
 			}
 
 			tmp := &models.TDDCAccount{
@@ -161,6 +157,21 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 
 			tAccounts = append(tAccounts, tmp)
 			addresses = append(addresses, addr)
+			bech32addresses = append(bech32addresses,tmpAddress)
+		}
+
+		//send balance
+		root, err := svc.base.QueryRootAccount()
+		if err != nil {
+			return err
+		}
+		msgs := svc.base.CreateGasMsg(root.Address, bech32addresses)
+		tx := svc.base.CreateBaseTxSync(root.Address, "")
+		tx.Gas = svc.base.CreateAccount(params.Count)
+		_, err = svc.base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
+		if err != nil {
+			log.Error("create account", "build and send, error:", err)
+			return types.ErrBuildAndSend
 		}
 
 		err = tAccounts.InsertAll(context.Background(), exec)
@@ -175,7 +186,7 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 			return types.ErrInternal
 		}
 		// fee grant
-		_, err = svc.base.Grant(addresses)
+		_, err = svc.base.Grant(bech32addresses)
 		if err != nil {
 			return err
 		}

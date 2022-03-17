@@ -89,7 +89,7 @@ func (h nftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrOwner)
 	}
 	// 校验接收者地址是否满足当前链的地址规范
-	if common.IsHexAddress(owner) {
+	if !common.IsHexAddress(owner) {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
 	}
 	if len([]rune(owner)) > 128 {
