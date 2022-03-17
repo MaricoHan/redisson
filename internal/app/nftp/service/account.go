@@ -73,7 +73,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, e
 			)
 			if err != nil {
 				//500
-				log.Debug("create account", "NewMnemonicKeyManagerWithHDPath error:", err.Error())
+				log.Error("create account", "NewMnemonicKeyManagerWithHDPath error:", err.Error())
 				return types.ErrInternal
 			}
 			_, priv := res.Generate()
@@ -82,7 +82,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, e
 
 			priKey, err := types.Encrypt(base64.StdEncoding.EncodeToString(codec.MarshalPrivKey(priv)), config.Get().Server.DefaultKeyPassword)
 			if err != nil {
-				log.Debug("create account", "prikey error:", err.Error())
+				log.Error("create account", "prikey error:", err.Error())
 				return types.ErrInternal
 			}
 			tmp := &models.TAccount{
