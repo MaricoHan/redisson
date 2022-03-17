@@ -58,16 +58,11 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, e
 		tAccounts := modext.TAccounts{}
 		var i int64
 		accOffsetStart := tAppOneObj.AccOffset
-		mnemonic, err := types.Decrypt([]byte(tAppOneObj.Mnemonic), config.Get().Server.DefaultKeyPassword)
-		if err != nil {
-			log.Error("create account", "mnemonic error:", err.Error())
-			return types.ErrInternal
-		}
 		for i = 0; i < params.Count; i++ {
 			index := accOffsetStart + i
 			hdPath := fmt.Sprintf("%s%d", hdPathPrefix, index)
 			res, err := sdkcrypto.NewMnemonicKeyManagerWithHDPath(
-				mnemonic,
+				tAppOneObj.Mnemonic,
 				config.Get().Chain.ChainEncryption,
 				hdPath,
 			)
@@ -80,16 +75,11 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, e
 
 			tmpAddress := sdktype.AccAddress(priv.PubKey().Address().Bytes()).String()
 
-			priKey, err := types.Encrypt(base64.StdEncoding.EncodeToString(codec.MarshalPrivKey(priv)), config.Get().Server.DefaultKeyPassword)
-			if err != nil {
-				log.Debug("create account", "prikey error:", err.Error())
-				return types.ErrInternal
-			}
 			tmp := &models.TAccount{
 				ProjectID: params.ProjectID,
 				Address:   tmpAddress,
 				AccIndex:  uint64(index),
-				PriKey:    base64.StdEncoding.EncodeToString(priKey),
+				PriKey:    base64.StdEncoding.EncodeToString(codec.MarshalPrivKey(priv)),
 				PubKey:    base64.StdEncoding.EncodeToString(codec.MarshalPubkey(res.ExportPubKey())),
 			}
 
