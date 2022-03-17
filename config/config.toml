@@ -6,7 +6,7 @@ log_format = "text"
 log_level = "debug"
 app_env = "stage"
 signature_auth = false
-default_key_password = "AvataApiV1"
+default_key_password = "NFT-Avata-Services-ApiV1"
 
 [mysql]
 db_name = "nftp_open_api"

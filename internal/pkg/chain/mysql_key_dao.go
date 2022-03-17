@@ -10,6 +10,9 @@ import (
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 
 	keystore "github.com/irisnet/core-sdk-go/types/store"
+
+	"gitlab.bianjie.ai/irita-paas/open-api/config"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 )
 
 const algo = "secp256k1"
@@ -46,7 +49,15 @@ func (k MysqlKeyDao) Read(name, password string) (keystore.KeyInfo, error) {
 	if err != nil {
 		return keystore.KeyInfo{}, err
 	}
-	priKey, err := base64.StdEncoding.DecodeString(tAccountOneObj.PriKey)
+	priKeyDecodeString, err := base64.StdEncoding.DecodeString(tAccountOneObj.PriKey)
+	if err != nil {
+		return keystore.KeyInfo{}, err
+	}
+	priKeyStrings, err := types.Decrypt(priKeyDecodeString, config.Get().Server.DefaultKeyPassword)
+	if err != nil {
+		return keystore.KeyInfo{}, err
+	}
+	priKey, err := base64.StdEncoding.DecodeString(priKeyStrings)
 	if err != nil {
 		return keystore.KeyInfo{}, err
 	}
