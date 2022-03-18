@@ -25,26 +25,12 @@ import (
 )
 
 const (
-	GasPrice         = 1e4
-	GasLimit         = 1e6
-	AuthorityAddress = "0x607F278304Fd91df7e2E6630a66809959c73978c"
-	ChargeAddress    = "0xDdAEfC5E48a9ec1c63293997cea034570d5117c8"
-	DDC721Address    = "0x87c263E5E1260eB02f9C5f7dE7504a91E324BBF0"
-	DDC1155Address   = "0xf9E474ceD3486Bb003BE36cD1c41F4537b541c18"
+	MintFee= 1 //BSN 发行 DDC 官方业务费
+	BurnFee=0.3 //BSN 销毁 DDC 官方业务费
+	TransFer=0.3 //BSN 转让 DDC 官方业务费
 )
-
 var (
 	SqlNotFound   = "records not exist"
-	ClientBuilder = ddc.DDCSdkClientBuilder{}
-	DDCClient     = ClientBuilder.
-			SetSignEventListener(new(SignListener)).
-			SetGasPrice(GasPrice).
-			SetGasLimit(GasLimit).
-			SetAuthorityAddress(AuthorityAddress).
-			SetChargeAddress(ChargeAddress).
-			SetDDC721Address(DDC721Address).
-			SetDDC1155Address(DDC1155Address).
-			Build()
 )
 
 type Base struct {
@@ -61,7 +47,20 @@ func NewBase(sdkClient sdk.Client, gas uint64, denom string, amount int64) *Base
 	}
 }
 
-func (b Base) QueryRootAccount() (*models.TAccount, *types.AppError) {
+func NewDDCClient() *ddc.DDCSdkClient {
+	ClientBuilder := ddc.DDCSdkClientBuilder{}
+	DDCClient     := ClientBuilder.SetGatewayUrl(config.Get().Ddc.Ddc_gateway_url).
+			SetSignEventListener(new(SignListener)).
+			SetGasPrice(1e10).
+			SetAuthorityAddress(config.Get().Ddc.Ddc_authority_address).
+			SetChargeAddress(config.Get().Ddc.Ddc_charge_address).
+			SetDDC721Address(config.Get().Ddc.Ddc_721_address).
+			SetDDC1155Address(config.Get().Ddc.Ddc_1155_address).
+			Build()
+	return DDCClient
+}
+
+func (m Base) QueryRootAccount() (*models.TAccount, error) {
 	//platform address
 	account, err := models.TAccounts(
 		models.TAccountWhere.ProjectID.EQ(uint64(0)),
@@ -74,35 +73,35 @@ func (b Base) QueryRootAccount() (*models.TAccount, *types.AppError) {
 	return account, nil
 }
 
-func (b Base) CreateBaseTx(keyName, keyPassword string) sdktype.BaseTx {
+func (m Base) CreateBaseTx(keyName, keyPassword string) sdktype.BaseTx {
 	//from := "t_" + keyName
 	return sdktype.BaseTx{
 		From:     keyName,
-		Gas:      b.gas,
-		Fee:      b.coins,
+		Gas:      m.gas,
+		Fee:      m.coins,
 		Mode:     sdktype.Commit,
 		Password: keyPassword,
 	}
 }
 
-func (b Base) CreateBaseTxSync(keyName, keyPassword string) sdktype.BaseTx {
+func (m Base) CreateBaseTxSync(keyName, keyPassword string) sdktype.BaseTx {
 	//from := "t_" + keyName
 	return sdktype.BaseTx{
 		From:     keyName,
-		Gas:      b.gas,
-		Fee:      b.coins,
+		Gas:      m.gas,
+		Fee:      m.coins,
 		Mode:     sdktype.Sync,
 		Password: keyPassword,
 	}
 }
 
-func (b Base) BuildAndSign(msgs sdktype.Msgs, baseTx sdktype.BaseTx) ([]byte, string, error) {
-	root, error := b.QueryRootAccount()
+func (m Base) BuildAndSign(msgs sdktype.Msgs, baseTx sdktype.BaseTx) ([]byte, string, error) {
+	root, error := m.QueryRootAccount()
 	if error != nil {
 		return nil, "", error
 	}
 	baseTx.FeePayer = sdktype.AccAddress(root.Address)
-	sigData, err := b.sdkClient.BuildAndSign(msgs, baseTx)
+	sigData, err := m.sdkClient.BuildAndSign(msgs, baseTx)
 	if err != nil {
 		return nil, "", err
 	}
@@ -111,8 +110,8 @@ func (b Base) BuildAndSign(msgs sdktype.Msgs, baseTx sdktype.BaseTx) ([]byte, st
 	return sigData, hash, nil
 }
 
-func (b Base) BuildAndSend(msgs sdktype.Msgs, baseTx sdktype.BaseTx) (sdktype.ResultTx, error) {
-	sigData, err := b.sdkClient.BuildAndSend(msgs, baseTx)
+func (m Base) BuildAndSend(msgs sdktype.Msgs, baseTx sdktype.BaseTx) (sdktype.ResultTx, error) {
+	sigData, err := m.sdkClient.BuildAndSend(msgs, baseTx)
 	if err != nil {
 		return sigData, err
 	}
@@ -120,7 +119,7 @@ func (b Base) BuildAndSend(msgs sdktype.Msgs, baseTx sdktype.BaseTx) (sdktype.Re
 }
 
 // ValidateTx validate tx status
-func (b Base) ValidateTx(hash string) (*models.TTX, error) {
+func (m Base) ValidateTx(hash string) (*models.TTX, error) {
 	tx, err := models.TTXS(models.TTXWhere.Hash.EQ(hash)).OneG(context.Background())
 	if err != nil {
 		if err == sql.ErrNoRows || strings.Contains(err.Error(), SqlNotFound) {
@@ -147,7 +146,7 @@ func (b Base) ValidateTx(hash string) (*models.TTX, error) {
 	return tx, nil
 }
 
-func (b Base) CreateGasMsg(inputAddress string, outputAddress []string) bank.MsgMultiSend {
+func (m Base) CreateGasMsg(inputAddress string, outputAddress []string) bank.MsgMultiSend {
 	accountGas := config.Get().Chain.AccoutGas
 	denom := config.Get().Chain.Denom
 	inputCoins := sdktype.NewCoins(sdktype.NewCoin(denom, sdktype.NewInt(accountGas*int64(len(outputAddress)))))
@@ -172,11 +171,9 @@ func (b Base) CreateGasMsg(inputAddress string, outputAddress []string) bank.Msg
 	return msg
 }
 
-/**
-Estimated gas required to issue nft
-It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048328
-*/
-func (b Base) MintNftsGas(originData []byte, amount uint64) uint64 {
+//MintNftsGas Estimated gas required to issue nft
+//It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048328
+func (m Base) MintNftsGas(originData []byte, amount uint64) uint64 {
 	l := uint64(len(originData))
 	if l <= types.MintMinNFTDataSize {
 		return uint64(float64(types.MintMinNFTGas) * config.Get().Chain.GasCoefficient)
@@ -187,11 +184,9 @@ func (b Base) MintNftsGas(originData []byte, amount uint64) uint64 {
 	return uint64(u)
 }
 
-/**
-Estimated gas required to create denom
-It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048352
-*/
-func (b Base) CreateDenomGas(data []byte) uint64 {
+// CreateDenomGas Estimated gas required to create denom
+//It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048328
+func (m Base) CreateDenomGas(data []byte) uint64 {
 	l := uint64(len(data))
 	if l <= types.CreateMinDENOMDataSize {
 		return uint64(types.CreateMinDENOMGas * config.Get().Chain.GasCoefficient)
@@ -200,11 +195,9 @@ func (b Base) CreateDenomGas(data []byte) uint64 {
 	return uint64(float64(u) * config.Get().Chain.GasCoefficient)
 }
 
-/**
-Estimated gas required to transfer denom
-It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048356
-*/
-func (b Base) TransferDenomGas(class *models.TClass) uint64 {
+// TransferDenomGas Estimated gas required to transfer denim
+//It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048328
+func (m Base) TransferDenomGas(class *models.TClass) uint64 {
 	l := len([]byte(class.ClassID)) + len([]byte(class.Status)) + len([]byte(class.Owner)) + len([]byte(class.TXHash)) + len([]byte(string(class.ProjectID))) + len([]byte(string(class.ID))) + len([]byte(string(class.Offset)))
 	if class.LockedBy.Valid {
 		l += len([]byte(string(class.LockedBy.Uint64)))
@@ -249,11 +242,9 @@ func (b Base) TransferDenomGas(class *models.TClass) uint64 {
 	return uint64(res)
 }
 
-/**
-Estimated gas required to transfer one nft
-It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048358
-*/
-func (b Base) TransferOneNftGas(data []byte) uint64 {
+// TransferOneNftGas Estimated gas required to transfer one nft
+//It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048358
+func (m Base) TransferOneNftGas(data []byte) uint64 {
 	l := len(data)
 	if l <= types.TransferMinNFTDataSize {
 		return uint64(types.TransferMinNFTGas * config.Get().Chain.GasCoefficient)
@@ -262,11 +253,9 @@ func (b Base) TransferOneNftGas(data []byte) uint64 {
 	return uint64(res)
 }
 
-/**
-Estimated gas required to transfer more nft
-It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048358
-*/
-func (b Base) TransferNftsGas(data []byte, amount uint64) uint64 {
+// TransferNftsGas Estimated gas required to transfer more nft
+//It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048358
+func (m Base) TransferNftsGas(data []byte, amount uint64) uint64 {
 	l := uint64(len(data))
 	if l <= types.TransferMinNFTDataSize {
 		return uint64(float64(types.TransferMinNFTGas) * config.Get().Chain.GasCoefficient)
@@ -276,48 +265,40 @@ func (b Base) TransferNftsGas(data []byte, amount uint64) uint64 {
 	return uint64(u)
 }
 
-func (b Base) LenOfNft(tNft *models.TNFT) uint64 {
+func (m Base) LenOfNft(tNft *models.TNFT) uint64 {
 	len1 := len(tNft.Status + tNft.NFTID + tNft.Owner + tNft.ClassID + tNft.TXHash + tNft.Name.String + tNft.Metadata.String + tNft.URIHash.String + tNft.URI.String)
 	len2 := 4 * 8 // 4 uint64
 	len3 := len(tNft.CreateAt.String() + tNft.UpdateAt.String() + tNft.Timestamp.Time.String())
 	return uint64(len1 + len2 + len3)
 }
 
-/**
-Estimated gas required to edit nft
-It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049122
-*/
-func (b Base) EditNftGas(nftLen, signLen uint64) uint64 {
+// EditNftGas Estimated gas required to edit nft
+//It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049122
+func (m Base) EditNftGas(nftLen, signLen uint64) uint64 {
 	gas := types.EditNFTBaseGas + types.EditNFTLenCoefficient*nftLen + types.EditNFTSignLenCoefficient*signLen
 	res := float64(gas) * config.Get().Chain.GasCoefficient
 	return uint64(res)
 }
 
-/**
-Estimated gas required to edit nfts
-It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049126
-*/
-func (b Base) EditBatchNftGas(nftLen, signLen uint64) uint64 {
+// EditBatchNftGas Estimated gas required to edit nfts
+//It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049126
+func (m Base) EditBatchNftGas(nftLen, signLen uint64) uint64 {
 	gas := types.EditBatchNFTBaseGas + types.EditBatchNFTLenCoefficient*nftLen + types.EditBatchNFTSignLenCoefficient*signLen
 	res := float64(gas) * config.Get().Chain.GasCoefficient
 	return uint64(res)
 }
 
-/**
-Estimated gas required to delete nft
-It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049119
-*/
-func (b Base) DeleteNftGas(nftLen uint64) uint64 {
+// DeleteNftGas Estimated gas required to delete nft
+//It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=5804911
+func (m Base) DeleteNftGas(nftLen uint64) uint64 {
 	gas := types.DeleteNFTBaseGas + (nftLen-types.DeleteNFTBaseLen)*types.DeleteNFTCoefficient
 	res := float64(gas) * config.Get().Chain.GasCoefficient
 	return uint64(res)
 }
 
-/**
-Estimated gas required to delete nfts
-It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049124
-*/
-func (b Base) DeleteBatchNftGas(nftLen, n uint64) uint64 {
+// DeleteBatchNftGas Estimated gas required to delete nfts
+//It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049124
+func (m Base) DeleteBatchNftGas(nftLen, n uint64) uint64 {
 	basLen := types.DeleteBatchNFTBaseLen + types.DeleteBatchNFTBaseLenCoefficient*(n-1)
 	baseGas := types.DeleteBatchNFTBaseGas + types.DeleteBatchNFTBaseGasCoefficient*(n-1)
 	gas := (nftLen-basLen)*types.DeleteBatchCoefficient + baseGas
@@ -325,19 +306,17 @@ func (b Base) DeleteBatchNftGas(nftLen, n uint64) uint64 {
 	return uint64(res)
 }
 
-/**
-Estimated gas required to create account
-It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049266
-*/
-func (b Base) createAccount(count int64) uint64 {
+// CreateAccount Estimated gas required to create account
+//It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049266
+func (m Base) CreateAccount(count int64) uint64 {
 	count -= 1
 	res := types.CreateAccountGas + types.CreateAccountIncreaseGas*(count)
 	u := float64(res) * config.Get().Chain.GasCoefficient
 	return uint64(u)
 }
 
-func (b Base) Grant(address []string) (string, error) {
-	root, error := b.QueryRootAccount()
+func (m Base) Grant(address []string) (string, error) {
+	root, error := m.QueryRootAccount()
 	if error != nil {
 		return "", error
 	}
@@ -371,10 +350,10 @@ func (b Base) Grant(address []string) (string, error) {
 		}
 		msgs = append(msgs, msgGrant)
 	}
-	baseTx := b.CreateBaseTxSync(root.Address, config.Get().Server.DefaultKeyPassword)
+	baseTx := m.CreateBaseTxSync(root.Address, config.Get().Server.DefaultKeyPassword)
 	//动态计算gas
-	baseTx.Gas = b.createAccount(int64(len(address)))
-	res, err := b.BuildAndSend(msgs, baseTx)
+	baseTx.Gas = m.CreateAccount(int64(len(address)))
+	res, err := m.BuildAndSend(msgs, baseTx)
 	if err != nil {
 		//500
 		log.Error("base account", "fee grant error:", err.Error())
@@ -383,8 +362,8 @@ func (b Base) Grant(address []string) (string, error) {
 	return res.Hash, nil
 }
 
-// ValidateSigner validate signer
-func (b Base) ValidateSigner(sender string, projectid uint64) error {
+// ValidateSigner validate nft signer
+func (m Base) ValidateSigner(sender string, projectid uint64) error {
 	//signer不能为project外账户
 	_, err := models.TAccounts(
 		models.TAccountWhere.ProjectID.EQ(projectid),
@@ -402,8 +381,8 @@ func (b Base) ValidateSigner(sender string, projectid uint64) error {
 	return nil
 }
 
-// ValidateRecipient validate recipient
-func (b Base) ValidateRecipient(recipient string, projectid uint64) error {
+// ValidateRecipient validate nft recipient
+func (m Base) ValidateRecipient(recipient string, projectid uint64) error {
 	//recipient不能为project外的账户
 	_, err := models.TAccounts(
 		models.TAccountWhere.ProjectID.EQ(projectid),
@@ -458,13 +437,13 @@ func (m Base) ValidateDDCRecipient(recipient string, projectid uint64) error {
 }
 
 // EncodeData 加密序列
-func (b Base) EncodeData(data string) string {
+func (m Base) EncodeData(data string) string {
 	hashBz := sha256.Sum256([]byte(data))
 	hash := strings.ToUpper(hex.EncodeToString(hashBz[:]))
 	return hash
 }
 
-func (b Base) GasThan(chainId, gas, platformId uint64) error {
+func (m Base) GasThan(chainId, gas, platformId uint64) error {
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
 		//查找 platform 下的所有 project
 		tProjects, err := models.TProjects(

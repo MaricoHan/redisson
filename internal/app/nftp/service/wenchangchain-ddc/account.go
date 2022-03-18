@@ -7,6 +7,13 @@ import (
 
 	"encoding/base64"
 
+	ethereumcrypto "github.com/ethereum/go-ethereum/crypto"
+
+	"gitlab.bianjie.ai/irita-paas/open-api/config"
+
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	ethsecp256k1 "github.com/irisnet/core-sdk-go/common/crypto/keys/eth_secp256k1"
+
 	sdkcrypto "github.com/irisnet/core-sdk-go/common/crypto"
 	"github.com/irisnet/core-sdk-go/common/crypto/codec"
 	"github.com/irisnet/core-sdk-go/common/crypto/hd"
@@ -14,7 +21,8 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
-	"gitlab.bianjie.ai/irita-paas/open-api/config"
+	"github.com/volatiletech/null/v8"
+
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
@@ -43,6 +51,8 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 	// 写入数据库
 	// sdk 创建账户
 	var addresses []string
+	var bech32addresses []string
+	client:=service.NewDDCClient()
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
 		tAppOneObj, err := models.TConfigs(
 			qm.SQL("SELECT * FROM `t_configs` WHERE (`t_configs`.`id` = ?) LIMIT 1 FOR UPDATE;", 1),
@@ -56,12 +66,34 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 		tAccounts := modext.TDDCAccounts{}
 		var i int64
 		accOffsetStart := tAppOneObj.AccOffset
+		mnemonic64, err := base64.StdEncoding.DecodeString(tAppOneObj.Mnemonic)
+		if err != nil {
+			log.Error("create account", "mnemonic base64 error:", err.Error())
+			return types.ErrInternal
+		}
+		mnemonic, err := types.Decrypt(mnemonic64, config.Get().Server.DefaultKeyPassword)
+		if err != nil {
+			log.Error("create account", "mnemonic Decrypt error:", err.Error())
+			return types.ErrInternal
+		}
+
+		//查询有授权权限账户
+		owner, err := models.TDDCAccounts(
+			models.TDDCAccountWhere.ProjectID.EQ(uint64(0)),
+		).OneG(context.Background())
+		if err != nil {
+			//500
+			log.Error("create account", "query owner error:", err.Error())
+			return types.ErrInternal
+		}
+
 		for i = 0; i < params.Count; i++ {
-			index := accOffsetStart + i
+
+			index := accOffsetStart +i
 			hdPath := fmt.Sprintf("%s%d", hdPathPrefix, index)
 			res, err := sdkcrypto.NewMnemonicKeyManagerWithHDPath(
-				tAppOneObj.Mnemonic,
-				config.Get().Chain.ChainEncryption,
+				mnemonic,
+				config.Get().Chain.DdcEncryption,
 				hdPath,
 			)
 			if err != nil {
@@ -70,19 +102,76 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 				return types.ErrInternal
 			}
 			_, priv := res.Generate()
-
 			tmpAddress := sdktype.AccAddress(priv.PubKey().Address().Bytes()).String()
+
+			//Converts key to Ethermint secp256k1 implementation
+			ethPrivKey, ok := priv.(*ethsecp256k1.PrivKey)
+			if !ok {
+				return fmt.Errorf("invalid private key type %T, expected %T", priv,&ethsecp256k1.PrivKey{})
+			}
+			keys, err := ethPrivKey.ToECDSA()
+			if err != nil {
+				return err
+			}
+
+			// Formats key for output
+			privB := ethereumcrypto.FromECDSA(keys)
+			keyS := strings.ToUpper(hexutil.Encode(privB)[2:])
+
+			//私钥加密
+			priKey, err := types.Encrypt(keyS, config.Get().Server.DefaultKeyPassword)
+			if err != nil {
+				log.Error("create account", "encrypt prikey error:", err.Error())
+				return types.ErrInternal
+			}
+
+			//hex address
+			ddc721 := client.GetDDC721Service(true)
+			addr, err := ddc721.Bech32ToHex(tmpAddress)
+			if err != nil {
+				return err
+			}
+
+			// add did
+			authority := client.GetAuthorityService()
+			_, err = authority.AddAccountByPlatform(owner.Address, addr, addr, "did:"+addr)
+			if err != nil {
+				return err
+			}
+
+			//recharge
+			charge:=client.GetChargeService()
+			_, err =charge.Recharge(owner.Address,addr,20)
+			if err != nil {
+				return err
+			}
 
 			tmp := &models.TDDCAccount{
 				ProjectID: params.ProjectID,
-				Address:   tmpAddress,
+				Address:   addr,
 				AccIndex:  uint64(index),
-				PriKey:    base64.StdEncoding.EncodeToString(codec.MarshalPrivKey(priv)),
+				PriKey:    base64.StdEncoding.EncodeToString(priKey),
 				PubKey:    base64.StdEncoding.EncodeToString(codec.MarshalPubkey(res.ExportPubKey())),
+				Did: null.StringFrom("did:"+addr),
 			}
 
 			tAccounts = append(tAccounts, tmp)
-			addresses = append(addresses, tmpAddress)
+			addresses = append(addresses, addr)
+			bech32addresses = append(bech32addresses,tmpAddress)
+		}
+
+		//send balance
+		root, err := svc.base.QueryRootAccount()
+		if err != nil {
+			return err
+		}
+		msgs := svc.base.CreateGasMsg(root.Address, bech32addresses)
+		tx := svc.base.CreateBaseTxSync(root.Address, "")
+		tx.Gas = svc.base.CreateAccount(params.Count)
+		_, err = svc.base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
+		if err != nil {
+			log.Error("create account", "build and send, error:", err)
+			return types.ErrBuildAndSend
 		}
 
 		err = tAccounts.InsertAll(context.Background(), exec)
@@ -97,6 +186,10 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 			return types.ErrInternal
 		}
 		// fee grant
+		_, err = svc.base.Grant(bech32addresses)
+		if err != nil {
+			return err
+		}
 		return nil
 	})
 	if err != nil {

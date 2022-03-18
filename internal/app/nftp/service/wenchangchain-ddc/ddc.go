@@ -5,6 +5,10 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
 	service2 "github.com/bianjieai/ddc-sdk-go/app/service"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -21,9 +25,6 @@ import (
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"
-	"strconv"
-	"strings"
-	"time"
 )
 
 type DDC struct {
@@ -32,7 +33,8 @@ type DDC struct {
 }
 
 func NewDDC(base *service.Base) *service.NFTBase {
-	ddc721Service := service.DDCClient.GetDDC721Service(true)
+	client := service.NewDDCClient()
+	ddc721Service := client.GetDDC721Service(true)
 
 	return &service.NFTBase{
 		Module: service.DDC,
@@ -44,7 +46,6 @@ func NewDDC(base *service.Base) *service.NFTBase {
 }
 
 func (svc DDC) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
-
 	var taskId string
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
 		// query class
@@ -103,10 +104,12 @@ func (svc DDC) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 		}
 
 		//签名后的交易计算动态 gas
-		addr, _ := svc.ddc721Service.Bech32ToHex(params.Recipient)
-		SenderAddr, _ := svc.ddc721Service.Bech32ToHex(class.Owner)
-		res, err := svc.ddc721Service.SafeMint(&bind.TransactOpts{From: common.HexToAddress(SenderAddr)}, addr, params.Uri, []byte(params.Data))
-
+		addr, err := DDC721Service.Bech32ToHex(params.Recipient)
+		if err != nil {
+			//ddc sdk 自定义 err
+			return err
+		}
+		res, err := DDC721Service.SafeMint(&bind.TransactOpts{}, addr, params.Uri, []byte(params.Data))
 		if err != nil {
 			log.Error("create ddc", "get hash and gasLimit error:", err.Error())
 			return types.ErrInternal
@@ -118,19 +121,21 @@ func (svc DDC) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 
 		msgsBytes, _ := json.Marshal(sdktype.Msgs{&createNft})
 
+		//null.Int64From(int64(res.GasLimit))
 		ttx := models.TDDCTX{
 			ProjectID:     params.ProjectID,
-			Hash:          res.TxHash,
+			Hash:          taskId,
 			Timestamp:     null.Time{Time: time.Now()},
 			Message:       null.JSONFrom(msgsBytes),
 			Sender:        null.StringFrom(class.Owner),
 			TaskID:        null.StringFrom(taskId),
-			GasUsed:       null.Int64From(0),
+			GasUsed:       null.Int64From(int64(res.GasLimit)),
 			OriginData:    null.BytesFromPtr(&msgsBytes),
 			OperationType: models.TDDCTXSOperationTypeMintNFT,
 			Status:        models.TDDCTXSStatusUndo,
 			Tag:           null.JSONFrom(params.Tag),
 			Retry:         null.Int8From(0),
+			BizFee:        null.Int64From(service.MintFee),
 		}
 		err = ttx.Insert(context.Background(), exec, boil.Infer())
 		if err != nil {

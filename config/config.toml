@@ -6,7 +6,7 @@ log_format = "text"
 log_level = "debug"
 app_env = "stage"
 signature_auth = false
-default_key_password = "AvataApiV1"
+default_key_password = "NFT-Avata-Services-ApiV1"
 
 [mysql]
 db_name = "nftp_open_api"
@@ -26,7 +26,7 @@ project_id = "a36dc219dbdd4dbe809766accbed0ac6"
 project_key = ""
 chain_account_addr = ""
 chain_encryption = "secp256k1"
-
+ddc_encryption = "eth_secp256k1"
 
 gas_coefficient = 1.5
 gas = 400000
@@ -39,3 +39,10 @@ denom = "uirita"
 address = "127.0.0.1:6379"
 db = 0
 password = ""
+
+[ddc]
+ddc_authority_address = "0x0754D6B28cB82cce0E19FE495e9eca445F1431aF"
+ddc_charge_address = "0x49cB5903bA052d6898e784d3DebB1E01b6361e70"
+ddc_721_address = "0xAA06A5BC9D41992AAa4229198cac06fC56C8556f"
+ddc_1155_address = "0xb7333032F3e8858Cab5e1BC5075A726A4E62e0b4"
+ddc_gateway_url = "http://192.168.150.42:8545"
