@@ -106,10 +106,11 @@ func (h authHandler) Signature(r *http.Request, apiSecret string, timestamp stri
 	//for k, v := range mux.Vars(r) {
 	//	params[k] = v
 	//}
-	params["url"] = r.URL.Path
+	params["path_url"] = r.URL.Path
 
 	// 获取 query params
 	for k, v := range r.URL.Query() {
+		k = "query_" + k
 		params[k] = v[0]
 	}
 
@@ -128,6 +129,7 @@ func (h authHandler) Signature(r *http.Request, apiSecret string, timestamp stri
 	hexHash := hash(timestamp + apiSecret)
 
 	for k, v := range paramsBody {
+		k = "body_" + k
 		params[k] = v
 	}
 	// sort params
