@@ -7,6 +7,8 @@ log_level = "debug"
 app_env = "stage"
 signature_auth = false
 default_key_password = "NFT-Avata-Services-ApiV1"
+bsn_url = "https://opbningxia.bsngate.com:18602"
+bsn_project_id = "43e8c1df993d4ab099b110b00bde4a12"
 
 [mysql]
 db_name = "nftp_open_api"

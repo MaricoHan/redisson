@@ -93,6 +93,16 @@ func (n Nft) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 		code := fmt.Sprintf("%s%s%s", class.Owner, models.TDDCTXSOperationTypeMintNFT, time.Now().String())
 		taskId = n.base.EncodeData(code)
 
+		//platform 发行
+		platform, err := models.TDDCAccounts(
+			models.TDDCAccountWhere.ProjectID.EQ(uint64(0)),
+		).OneG(context.Background())
+		if err != nil {
+			//500
+			log.Error("create ddc", "query platform error:", err.Error())
+			return types.ErrInternal
+		}
+
 		//离线数据组装为 msg 入表传到 block sync
 		createNft := nft.MsgMintNFT{
 			Id:        "",
@@ -101,14 +111,16 @@ func (n Nft) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 			URI:       params.Uri,
 			UriHash:   params.UriHash,
 			Data:      params.Data,
-			Sender:    class.Owner,
+			Sender:    platform.Address,
 			Recipient: params.Recipient,
 		}
 
+
 		//签名后的交易计算动态 gas
 		opts:=&bind.TransactOpts{
-			From: common.HexToAddress(class.Owner),
+			From: common.HexToAddress(platform.Address),
 		}
+
 		res, err := DDC721Service.SafeMint(opts, params.Recipient, params.Uri, []byte(params.Data))
 		if err != nil {
 			log.Error("create ddc", "get hash and gasLimit error:", err.Error())

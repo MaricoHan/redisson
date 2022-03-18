@@ -26,6 +26,7 @@ require (
 	github.com/volatiletech/null/v8 v8.1.2
 	github.com/volatiletech/sqlboiler/v4 v4.8.3
 	gitlab.bianjie.ai/irita-paas/orms/orm-nft v0.0.0-00010101000000-000000000000
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	google.golang.org/grpc v1.42.0
 )
 

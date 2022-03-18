@@ -53,7 +53,7 @@ type (
 		AccoutGas      int64   `mapstructure:"account_gas"`
 
 		ChainEncryption string `mapstructure:"chain_encryption"`
-		DdcEncryption string `mapstructure:"ddc_encryption"`
+		DdcEncryption   string `mapstructure:"ddc_encryption"`
 	}
 
 	// Server define a struct for http server
@@ -66,6 +66,8 @@ type (
 		RouterPrefix       string `mapstructure:"router_prefix"`
 		SignatureAuth      bool   `mapstructure:"signature_auth"`
 		DefaultKeyPassword string `mapstructure:"default_key_password"`
+		BSNUrl             string `mapstructure:"bsn_url"`
+		BSNProjectId       string `mapstructure:"bsn_project_id"`
 	}
 
 	// Server define a struct for http server
