@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"strconv"
 	"strings"
 	"time"
@@ -105,12 +106,10 @@ func (n Nft) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 		}
 
 		//签名后的交易计算动态 gas
-		addr, err := DDC721Service.Bech32ToHex(params.Recipient)
-		if err != nil {
-			//ddc sdk 自定义 err
-			return err
+		opts:=&bind.TransactOpts{
+			From: common.HexToAddress(class.Owner),
 		}
-		res, err := DDC721Service.SafeMint(&bind.TransactOpts{}, addr, params.Uri, []byte(params.Data))
+		res, err := DDC721Service.SafeMint(opts, params.Recipient, params.Uri, []byte(params.Data))
 		if err != nil {
 			log.Error("create ddc", "get hash and gasLimit error:", err.Error())
 			return types.ErrInternal
@@ -302,7 +301,10 @@ func (n Nft) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 				log.Error("edit ddc by nftId", "convert ddcId error:", err.Error())
 				return types.ErrInternal
 			}
-			res, err := DDC721Service.SetURI(&bind.TransactOpts{}, ddcId, params.Uri)
+			opts:=&bind.TransactOpts{
+				From: common.HexToAddress(params.Sender),
+			}
+			res, err := DDC721Service.SetURI(opts, ddcId, params.Uri)
 			if err != nil {
 				log.Error("edit ddc by nftId", "get hash and gasLimit error:", err.Error())
 				return types.ErrInternal
