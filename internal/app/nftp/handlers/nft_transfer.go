@@ -98,7 +98,7 @@ func (h nftTransfer) TransferNftByNftId(ctx context.Context, request interface{}
 	authData := h.AuthData(ctx)
 	params := dto.TransferNftByNftIdP{
 		ClassID:    h.ClassID(ctx),
-		Owner:      h.Owner(ctx),
+		Sender:     h.Owner(ctx),
 		NftId:      h.NftId(ctx),
 		Recipient:  recipient,
 		ChainID:    authData.ChainId,
@@ -106,19 +106,26 @@ func (h nftTransfer) TransferNftByNftId(ctx context.Context, request interface{}
 		PlatFormID: authData.PlatformId,
 		Tag:        tagBytes,
 	}
+	//不能自己转让给自己
+	//400
+	if params.Recipient == params.Sender {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrSelfTransfer)
+	}
+
 	service, ok := h.svc[authData.Module]
 	if !ok {
 		return nil, types.ErrModules
 	}
+
 	return service.TransferNFT(params)
 }
 
 func (h nftTransfer) ClassID(ctx context.Context) string {
-	class_id := ctx.Value("class_id")
-	if class_id == nil {
+	classId := ctx.Value("class_id")
+	if classId == nil {
 		return ""
 	}
-	return class_id.(string)
+	return classId.(string)
 }
 
 func (h nftTransfer) Owner(ctx context.Context) string {

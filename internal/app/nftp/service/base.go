@@ -25,9 +25,9 @@ import (
 )
 
 const (
-	MintFee  = 1   //BSN 发行 DDC 官方业务费
-	BurnFee  = 0.3 //BSN 销毁 DDC 官方业务费
-	TransFer = 0.3 //BSN 转让 DDC 官方业务费
+	MintFee  = 100 //BSN 发行 DDC 官方业务费
+	BurnFee  = 30  //BSN 销毁 DDC 官方业务费
+	TransFer = 30  //BSN 转让 DDC 官方业务费
 )
 
 var (
@@ -96,31 +96,8 @@ func (m Base) CreateBaseTxSync(keyName, keyPassword string) sdktype.BaseTx {
 	}
 }
 
-func (m Base) BuildAndSign(msgs sdktype.Msgs, baseTx sdktype.BaseTx) ([]byte, string, error) {
-	root, error := m.QueryRootAccount()
-	if error != nil {
-		return nil, "", error
-	}
-	baseTx.FeePayer = sdktype.AccAddress(root.Address)
-	sigData, err := m.sdkClient.BuildAndSign(msgs, baseTx)
-	if err != nil {
-		return nil, "", err
-	}
-	hashBz := sha256.Sum256(sigData)
-	hash := strings.ToUpper(hex.EncodeToString(hashBz[:]))
-	return sigData, hash, nil
-}
-
-func (m Base) BuildAndSend(msgs sdktype.Msgs, baseTx sdktype.BaseTx) (sdktype.ResultTx, error) {
-	sigData, err := m.sdkClient.BuildAndSend(msgs, baseTx)
-	if err != nil {
-		return sigData, err
-	}
-	return sigData, nil
-}
-
 // UndoTxIntoDataBase operationType : issue_class,mint_nft,edit_nft,edit_nft_batch,burn_nft,burn_nft_batch
-func (m Base) UndoTxIntoDataBase(sender, operationType, taskId, txHash string, ProjectID uint64, signedData, message, tag []byte, gasUsed int64, exec boil.ContextExecutor) (uint64, error) {
+func (b Base) UndoTxIntoDataBase(sender, operationType, taskId, txHash string, ProjectID uint64, signedData, message, tag []byte, gasUsed int64, exec boil.ContextExecutor) (uint64, error) {
 	// Tx into database
 	ttx := models.TTX{
 		ProjectID:     ProjectID,
@@ -143,26 +120,50 @@ func (m Base) UndoTxIntoDataBase(sender, operationType, taskId, txHash string, P
 }
 
 // UndoDDCTxIntoDataBase operationType : issue_class,mint_nft,edit_nft,edit_nft_batch,burn_nft,burn_nft_batch
-func (m Base) UndoDDCTxIntoDataBase(sender, operationType, taskId, txHash string, ProjectID uint64, signedData, message, tag []byte, gasUsed int64, exec boil.ContextExecutor) (uint64, error) {
+func (b Base) UndoDDCTxIntoDataBase(sender, operationType, taskId, txHash string, ProjectID uint64, message, tag []byte, gasUsed, bizFee int64, exec boil.ContextExecutor) (uint64, error) {
+
 	// Tx into database
 	ttx := models.TDDCTX{
 		ProjectID:     ProjectID,
 		Hash:          txHash,
-		OriginData:    null.BytesFrom(signedData),
 		OperationType: operationType,
-		Status:        models.TTXSStatusUndo,
+		Status:        models.TDDCTXSStatusUndo,
 		Sender:        null.StringFrom(sender),
 		Message:       null.JSONFrom(message),
 		TaskID:        null.StringFrom(taskId),
-		GasUsed:       null.Int64From(gasUsed),
 		Tag:           null.JSONFrom(tag),
+		GasUsed:       null.Int64From(gasUsed),
 		Retry:         null.Int8From(0),
+		BizFee:        null.Int64From(bizFee),
 	}
 	err := ttx.Insert(context.Background(), exec, boil.Infer())
 	if err != nil {
 		return 0, err
 	}
 	return ttx.ID, err
+}
+
+func (m Base) BuildAndSign(msgs sdktype.Msgs, baseTx sdktype.BaseTx) ([]byte, string, error) {
+	root, error := m.QueryRootAccount()
+	if error != nil {
+		return nil, "", error
+	}
+	baseTx.FeePayer = sdktype.AccAddress(root.Address)
+	sigData, err := m.sdkClient.BuildAndSign(msgs, baseTx)
+	if err != nil {
+		return nil, "", err
+	}
+	hashBz := sha256.Sum256(sigData)
+	hash := strings.ToUpper(hex.EncodeToString(hashBz[:]))
+	return sigData, hash, nil
+}
+
+func (m Base) BuildAndSend(msgs sdktype.Msgs, baseTx sdktype.BaseTx) (sdktype.ResultTx, error) {
+	sigData, err := m.sdkClient.BuildAndSend(msgs, baseTx)
+	if err != nil {
+		return sigData, err
+	}
+	return sigData, nil
 }
 
 // ValidateTx validate tx status
@@ -353,7 +354,7 @@ func (m Base) DeleteBatchNftGas(nftLen, n uint64) uint64 {
 	return uint64(res)
 }
 
-//Estimated gas required to create account
+// CreateAccount Estimated gas required to create account
 //It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049266
 func (m Base) CreateAccount(count int64) uint64 {
 	count -= 1
@@ -517,6 +518,7 @@ func (m Base) GasThan(chainId, gas, platformId uint64) error {
 		//ddc 交易
 		ddctx, err := models.TDDCTXS(
 			qm.Select("SUM(gas_used) as gas_used"),
+			qm.Select("SUM(biz_fee) as biz_fee"),
 			models.TDDCTXWhere.ProjectID.IN(projects),
 			models.TDDCTXWhere.Status.IN([]string{models.TDDCTXSStatusUndo, models.TDDCTXSStatusPending})).One(context.Background(), exec)
 		if err != nil {
@@ -537,8 +539,8 @@ func (m Base) GasThan(chainId, gas, platformId uint64) error {
 			return errors.New("cannot get float64 of gasPrice")
 		}
 
-		//所有未支付的交易需要扣除的money = gasPrice * unPaidGas
-		unPaidMoney := float64(unPaidGas) * gasPrice
+		//所有未支付的交易需要扣除的money = gasPrice * unPaidGas + 业务费
+		unPaidMoney := float64(unPaidGas)*gasPrice + float64(ddctx.BizFee.Int64/100.0)
 
 		//platformId 的账户
 		pAccount, err := models.TPlatformAccounts(models.TPlatformAccountWhere.ID.EQ(platformId)).One(context.Background(), exec)

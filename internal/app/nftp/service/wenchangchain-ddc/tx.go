@@ -26,7 +26,7 @@ func NewTx() *service.TXBase {
 	}
 }
 
-func (svc *Tx) Show(params dto.TxResultByTxHashP) (*dto.TxResultByTxHashRes, error) {
+func (t *Tx) Show(params dto.TxResultByTxHashP) (*dto.TxResultByTxHashRes, error) {
 	//query
 	txinfo, err := models.TDDCTXS(
 		models.TDDCTXWhere.TaskID.EQ(null.StringFrom(params.TaskId)),
@@ -45,12 +45,14 @@ func (svc *Tx) Show(params dto.TxResultByTxHashP) (*dto.TxResultByTxHashRes, err
 	result := &dto.TxResultByTxHashRes{}
 	result.Type = txinfo.OperationType
 	result.TxHash = txinfo.Hash
-	if txinfo.Status == models.TDDCTXSStatusPending {
+	if txinfo.Status == models.TTXSStatusPending {
 		result.Status = 0
-	} else if txinfo.Status == models.TDDCTXSStatusSuccess {
+	} else if txinfo.Status == models.TTXSStatusSuccess {
 		result.Status = 1
+	} else if txinfo.Status == models.TTXSStatusFailed {
+		result.Status = 2
 	} else {
-		result.Status = 2 // tx.Status == "failed"
+		result.Status = 3 // tx.Status == "undo"
 	}
 
 	var tags map[string]interface{}

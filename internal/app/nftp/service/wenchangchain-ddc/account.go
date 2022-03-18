@@ -57,7 +57,7 @@ func NewDDCAccount(base *service.Base) *service.AccountBase {
 
 const hdPathPrefix = hd.BIP44Prefix + "0'/0/"
 
-func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) {
+func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) {
 	// 写入数据库
 	// sdk 创建账户
 	var addresses, bech32addresses []string
@@ -121,8 +121,10 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 			privB := ethereumcrypto.FromECDSA(keys)
 			keyS := strings.ToUpper(hexutil.Encode(privB)[2:])
 
+			decodestring := base64.StdEncoding.EncodeToString([]byte(keyS))
+
 			//私钥加密
-			priKey, err := types.Encrypt(keyS, config.Get().Server.DefaultKeyPassword)
+			priKey, err := types.Encrypt(decodestring, config.Get().Server.DefaultKeyPassword)
 			if err != nil {
 				log.Error("create account", "encrypt prikey error:", err.Error())
 				return types.ErrInternal
@@ -148,19 +150,19 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 
 				//add did
 				authority := client.GetAuthorityService()
-				_, err = authority.AddAccountByOperator(owner.Address, addr, addr, "did:"+addr, "did:wenchangplatform")
+				_, err = authority.AddAccountByOperator(owner.Address, addr, addr, "did:"+addr, "did:ddcplatform")
 				if err != nil {
 					return err
 				}
 
-				time.Sleep(5 * time.Second)
+				//time.Sleep(5 * time.Second)
 
-				//recharge
-				charge := client.GetChargeService()
-				_, err = charge.Recharge(owner.Address, addr, 20)
-				if err != nil {
-					return err
-				}
+				////recharge
+				//charge := client.GetChargeService()
+				//_, err = charge.Recharge(owner.Address, addr, 20)
+				//if err != nil {
+				//	return err
+				//}
 			}
 
 			tmp := &models.TDDCAccount{
@@ -174,10 +176,11 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 
 			tAccounts = append(tAccounts, tmp)
 			addresses = append(addresses, addr)
+			bech32addresses = append(bech32addresses, tmpAddress)
 			//commonaddresses = append(commonaddresses, common.HexToAddress(addr))
 			//did = append(did, "did:"+addr)
 			//amount = append(amount, big.NewInt(20))
-			//bech32addresses = append(bech32addresses, tmpAddress)
+
 			//adddid[addr] = 0
 		}
 		err = tAccounts.InsertAll(context.Background(), exec)
@@ -225,11 +228,11 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 			}
 		}
 
-		// fee grant
-		_, err = svc.base.Grant(bech32addresses)
-		if err != nil {
-			return err
-		}
+		//// fee grant
+		//_, err = d.base.Grant(bech32addresses)
+		//if err != nil {
+		//	return err
+		//}
 
 		//新合约
 		//// add did
@@ -248,21 +251,6 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 		//	return err
 		//}
 		//
-		//time.Sleep(3*time.Second)
-
-		//send balance
-		root, err := svc.base.QueryRootAccount()
-		if err != nil {
-			return err
-		}
-		msgs := svc.base.CreateGasMsg(root.Address, bech32addresses)
-		tx := svc.base.CreateBaseTxSync(root.Address, "")
-		tx.Gas = svc.base.CreateAccount(params.Count)
-		_, err = svc.base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
-		if err != nil {
-			log.Error("create account", "build and send, error:", err)
-			return types.ErrBuildAndSend
-		}
 
 		return nil
 	})
@@ -270,12 +258,26 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 		return nil, err
 	}
 
+	time.Sleep(3*time.Second)
+	//send balance
+	root, err := d.base.QueryRootAccount()
+	if err != nil {
+		return nil,err
+	}
+	msgs := d.base.CreateGasMsg(root.Address, bech32addresses)
+	tx := d.base.CreateBaseTxSync(root.Address, "")
+	tx.Gas = d.base.CreateAccount(params.Count)
+	_, err = d.base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
+	if err != nil {
+		log.Error("create account", "build and send, error:", err)
+		return nil,types.ErrBuildAndSend
+	}
 	result := &dto.AccountRes{}
 	result.Accounts = addresses
 	return result, nil
 }
 
-func (svc *ddcAccount) Show(params dto.AccountsP) (*dto.AccountsRes, error) {
+func (d *ddcAccount) Show(params dto.AccountsP) (*dto.AccountsRes, error) {
 	result := &dto.AccountsRes{}
 	result.Offset = params.Offset
 	result.Limit = params.Limit
@@ -339,7 +341,7 @@ func (svc *ddcAccount) Show(params dto.AccountsP) (*dto.AccountsRes, error) {
 	return result, nil
 }
 
-func (svc *ddcAccount) History(params dto.AccountsP) (*dto.AccountOperationRecordRes, error) {
+func (d *ddcAccount) History(params dto.AccountsP) (*dto.AccountOperationRecordRes, error) {
 	result := &dto.AccountOperationRecordRes{
 		PageRes: dto.PageRes{
 			Offset:     params.Offset,

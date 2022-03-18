@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"log"
 	"strings"
 
@@ -29,20 +30,27 @@ func (s *SignListener) SignEvent(sender common.Address, tx *types.Transaction) (
 		models.TDDCAccountWhere.Address.EQ("0x" + strings.ToUpper(sender.Hex()[2:])),
 	).OneG(context.Background())
 	if err != nil {
-		return nil, types.ErrInvalidSig
+		log2.Error("sign event", "query account error:", err.Error())
+		return nil, types2.ErrInternal
 	}
-	priKey, err := base64.StdEncoding.DecodeString(account.PriKey)
+	priKeyDecodeString, err := base64.StdEncoding.DecodeString(account.PriKey)
 	if err != nil {
 		log2.Error("sign event", "priKey base64 error:", err.Error())
 		return nil, types2.ErrInternal
 	}
-	prKey, err := types2.Decrypt(priKey, config.Get().Server.DefaultKeyPassword)
+	priKeyStrings, err := types2.Decrypt(priKeyDecodeString, config.Get().Server.DefaultKeyPassword)
 	if err != nil {
 		log2.Error("sign event", "priKey Decrypt error:", err.Error())
 		return nil, types2.ErrInternal
 	}
+	priKey, err := base64.StdEncoding.DecodeString(priKeyStrings)
+	if err != nil {
+		log2.Error("sign event", "priKey Decrypt error:", err.Error())
+		return nil, types2.ErrInternal
+	}
+
 	//提取私钥
-	privateKey, err := StringToPrivateKey("0x" + prKey)
+	privateKey, err := StringToPrivateKey("0x" + fmt.Sprintf("%s",priKey))
 	if err != nil {
 		log.Fatalf("StringToPrivateKey failed:%v", err)
 	}
