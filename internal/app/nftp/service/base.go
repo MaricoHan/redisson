@@ -25,12 +25,13 @@ import (
 )
 
 const (
-	MintFee= 1 //BSN 发行 DDC 官方业务费
-	BurnFee=0.3 //BSN 销毁 DDC 官方业务费
-	TransFer=0.3 //BSN 转让 DDC 官方业务费
+	MintFee  = 1   //BSN 发行 DDC 官方业务费
+	BurnFee  = 0.3 //BSN 销毁 DDC 官方业务费
+	TransFer = 0.3 //BSN 转让 DDC 官方业务费
 )
+
 var (
-	SqlNotFound   = "records not exist"
+	SqlNotFound = "records not exist"
 )
 
 type Base struct {
@@ -49,14 +50,14 @@ func NewBase(sdkClient sdk.Client, gas uint64, denom string, amount int64) *Base
 
 func NewDDCClient() *ddc.DDCSdkClient {
 	ClientBuilder := ddc.DDCSdkClientBuilder{}
-	DDCClient     := ClientBuilder.SetGatewayUrl(config.Get().Ddc.Ddc_gateway_url).
-			SetSignEventListener(new(SignListener)).
-			SetGasPrice(1e10).
-			SetAuthorityAddress(config.Get().Ddc.Ddc_authority_address).
-			SetChargeAddress(config.Get().Ddc.Ddc_charge_address).
-			SetDDC721Address(config.Get().Ddc.Ddc_721_address).
-			SetDDC1155Address(config.Get().Ddc.Ddc_1155_address).
-			Build()
+	DDCClient := ClientBuilder.SetGatewayUrl(config.Get().Ddc.Ddc_gateway_url).
+		SetSignEventListener(new(SignListener)).
+		SetGasPrice(1e10).
+		SetAuthorityAddress(config.Get().Ddc.Ddc_authority_address).
+		SetChargeAddress(config.Get().Ddc.Ddc_charge_address).
+		SetDDC721Address(config.Get().Ddc.Ddc_721_address).
+		SetDDC1155Address(config.Get().Ddc.Ddc_1155_address).
+		Build()
 	return DDCClient
 }
 
@@ -537,7 +538,7 @@ func (m Base) GasThan(chainId, gas, platformId uint64) error {
 		}
 
 		//所有未支付的交易需要扣除的money = gasPrice * unPaidGas
-		unPaidMoney := float64(unPaidGas)*gasPrice
+		unPaidMoney := float64(unPaidGas) * gasPrice
 
 		//platformId 的账户
 		pAccount, err := models.TPlatformAccounts(models.TPlatformAccountWhere.ID.EQ(platformId)).One(context.Background(), exec)

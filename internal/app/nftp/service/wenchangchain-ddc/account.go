@@ -60,7 +60,7 @@ const hdPathPrefix = hd.BIP44Prefix + "0'/0/"
 func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) {
 	// 写入数据库
 	// sdk 创建账户
-	var addresses, bech32addresses, did []string
+	var addresses, bech32addresses []string
 	//var commonaddresses []common.Address
 	//var amount []*big.Int
 	//adddid := make(map[string]uint64)
@@ -89,49 +89,6 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 			log.Error("create account", "mnemonic Decrypt error:", err.Error())
 			return types.ErrInternal
 		}
-
-		if env == "stage" {
-			//bsn 账户授权
-			time := 5 * time.Second
-			ctx, _ := context.WithTimeout(context.Background(), time)
-			group, errCtx := errgroup.WithContext(ctx)
-			for _, v := range tAccounts {
-				value := v
-				group.Go(func() error {
-					var bsnAccount BsnAccount
-					params := map[string]interface{}{
-						"chainClientName": fmt.Sprintf("%s%d%d", tAppOneObj.Name.String, tAppOneObj.ID, value.AccIndex),
-						"chainClientAddr": value.Address,
-					}
-					url := fmt.Sprintf("%s%s", config.Get().Server.BSNUrl, fmt.Sprintf("/api/%s/account/generate", config.Get().Server.BSNProjectId))
-					res, err := http2.Post(errCtx, url, params)
-					if err != nil {
-						return err
-					}
-					defer res.Body.Close()
-					body, err := ioutil.ReadAll(res.Body)
-					json.Unmarshal(body, &bsnAccount)
-					if bsnAccount.Code != 0 || bsnAccount.Message == "" {
-						return errors.New(bsnAccount.Message)
-					}
-					return nil
-				})
-			}
-			if err := group.Wait(); err != nil {
-				log.Error("create account", "group_error:", err)
-				return types.ErrInternal
-			}
-		}
-
-		////查询有授权权限账户
-		//owner, err := models.TDDCAccounts(
-		//	models.TDDCAccountWhere.ProjectID.EQ(uint64(0)),
-		//).OneG(context.Background())
-		//if err != nil {
-		//	//500
-		//	log.Error("create account", "query owner error:", err.Error())
-		//	return types.ErrInternal
-		//}
 
 		for i = 0; i < params.Count; i++ {
 
@@ -178,6 +135,34 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 				return err
 			}
 
+			if env != "stage" {
+				//查询有授权权限账户
+				owner, err := models.TDDCAccounts(
+					models.TDDCAccountWhere.ProjectID.EQ(uint64(0)),
+				).OneG(context.Background())
+				if err != nil {
+					//500
+					log.Error("create account", "query owner error:", err.Error())
+					return types.ErrInternal
+				}
+
+				//add did
+				authority := client.GetAuthorityService()
+				_, err = authority.AddAccountByOperator(owner.Address, addr, addr, "did:"+addr, "did:wenchangplatform")
+				if err != nil {
+					return err
+				}
+
+				time.Sleep(5 * time.Second)
+
+				//recharge
+				charge := client.GetChargeService()
+				_, err = charge.Recharge(owner.Address, addr, 20)
+				if err != nil {
+					return err
+				}
+			}
+
 			tmp := &models.TDDCAccount{
 				ProjectID: params.ProjectID,
 				Address:   addr,
@@ -207,28 +192,46 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 			return types.ErrInternal
 		}
 
+		if env == "stage" {
+			//bsn 账户授权
+			time := 5 * time.Second
+			ctx, _ := context.WithTimeout(context.Background(), time)
+			group, errCtx := errgroup.WithContext(ctx)
+			for _, v := range tAccounts {
+				value := v
+				group.Go(func() error {
+					var bsnAccount BsnAccount
+					params := map[string]interface{}{
+						"chainClientName": fmt.Sprintf("%s%d%d", tAppOneObj.Name.String, tAppOneObj.ID, value.AccIndex),
+						"chainClientAddr": value.Address,
+					}
+					url := fmt.Sprintf("%s%s", config.Get().Server.BSNUrl, fmt.Sprintf("/api/%s/account/generate", config.Get().Server.BSNProjectId))
+					res, err := http2.Post(errCtx, url, params)
+					if err != nil {
+						return err
+					}
+					defer res.Body.Close()
+					body, err := ioutil.ReadAll(res.Body)
+					json.Unmarshal(body, &bsnAccount)
+					if bsnAccount.Code != 0 || bsnAccount.Message == "" {
+						return errors.New(bsnAccount.Message)
+					}
+					return nil
+				})
+			}
+			if err := group.Wait(); err != nil {
+				log.Error("create account", "group_error:", err)
+				return types.ErrInternal
+			}
+		}
+
 		// fee grant
 		_, err = svc.base.Grant(bech32addresses)
 		if err != nil {
 			return err
 		}
 
-		////add did
-		//authority := client.GetAuthorityService()
-		//_, err = authority.AddAccountByPlatform(owner.Address, addr, addr, "did:"+addr)
-		//if err != nil {
-		//	return err
-		//}
-		//
-		//time.Sleep(5*time.Second)
-		//
-		////recharge
-		//charge:=client.GetChargeService()
-		//_, err =charge.Recharge(owner.Address,addr,20)
-		//if err != nil {
-		//	return err
-		//}
-
+		//新合约
 		//// add did
 		//authority := client.GetAuthorityService()
 		//_, err = authority.AddBatchAccountByPlatform(owner.Address, commonaddresses, addresses, did)

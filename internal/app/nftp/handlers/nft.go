@@ -86,7 +86,7 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 	// 若接收者地址不为空，则校验其格式；否则在service中将其默认设为NFT类别的权属者地址
 	if recipient != "" {
 		// 校验接收者地址是否满足当前链的地址规范
-		if !common.IsHexAddress(recipient){
+		if !common.IsHexAddress(recipient) {
 			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
 		}
 	}

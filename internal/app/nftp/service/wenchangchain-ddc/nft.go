@@ -115,9 +115,8 @@ func (n Nft) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 			Recipient: params.Recipient,
 		}
 
-
 		//签名后的交易计算动态 gas
-		opts:=&bind.TransactOpts{
+		opts := &bind.TransactOpts{
 			From: common.HexToAddress(platform.Address),
 		}
 
@@ -313,7 +312,7 @@ func (n Nft) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 				log.Error("edit ddc by nftId", "convert ddcId error:", err.Error())
 				return types.ErrInternal
 			}
-			opts:=&bind.TransactOpts{
+			opts := &bind.TransactOpts{
 				From: common.HexToAddress(params.Sender),
 			}
 			res, err := DDC721Service.SetURI(opts, ddcId, params.Uri)
