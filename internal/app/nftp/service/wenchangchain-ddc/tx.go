@@ -26,7 +26,7 @@ func NewTx() *service.TXBase {
 	}
 }
 
-func (svc *Tx) Show(params dto.TxResultByTxHashP) (*dto.TxResultByTxHashRes, error) {
+func (t *Tx) Show(params dto.TxResultByTxHashP) (*dto.TxResultByTxHashRes, error) {
 	//query
 	txinfo, err := models.TDDCTXS(
 		models.TDDCTXWhere.TaskID.EQ(null.StringFrom(params.TaskId)),

@@ -47,12 +47,12 @@ func NewDDCAccount(base *service.Base) *service.AccountBase {
 
 const hdPathPrefix = hd.BIP44Prefix + "0'/0/"
 
-func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) {
+func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) {
 	// 写入数据库
 	// sdk 创建账户
 	var addresses []string
 	var bech32addresses []string
-	client:=service.NewDDCClient()
+	client := service.NewDDCClient()
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
 		tAppOneObj, err := models.TConfigs(
 			qm.SQL("SELECT * FROM `t_configs` WHERE (`t_configs`.`id` = ?) LIMIT 1 FOR UPDATE;", 1),
@@ -89,7 +89,7 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 
 		for i = 0; i < params.Count; i++ {
 
-			index := accOffsetStart +i
+			index := accOffsetStart + i
 			hdPath := fmt.Sprintf("%s%d", hdPathPrefix, index)
 			res, err := sdkcrypto.NewMnemonicKeyManagerWithHDPath(
 				mnemonic,
@@ -107,7 +107,7 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 			//Converts key to Ethermint secp256k1 implementation
 			ethPrivKey, ok := priv.(*ethsecp256k1.PrivKey)
 			if !ok {
-				return fmt.Errorf("invalid private key type %T, expected %T", priv,&ethsecp256k1.PrivKey{})
+				return fmt.Errorf("invalid private key type %T, expected %T", priv, &ethsecp256k1.PrivKey{})
 			}
 			keys, err := ethPrivKey.ToECDSA()
 			if err != nil {
@@ -140,8 +140,8 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 			}
 
 			//recharge
-			charge:=client.GetChargeService()
-			_, err =charge.Recharge(owner.Address,addr,20)
+			charge := client.GetChargeService()
+			_, err = charge.Recharge(owner.Address, addr, 20)
 			if err != nil {
 				return err
 			}
@@ -152,23 +152,23 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 				AccIndex:  uint64(index),
 				PriKey:    base64.StdEncoding.EncodeToString(priKey),
 				PubKey:    base64.StdEncoding.EncodeToString(codec.MarshalPubkey(res.ExportPubKey())),
-				Did: null.StringFrom("did:"+addr),
+				Did:       null.StringFrom("did:" + addr),
 			}
 
 			tAccounts = append(tAccounts, tmp)
 			addresses = append(addresses, addr)
-			bech32addresses = append(bech32addresses,tmpAddress)
+			bech32addresses = append(bech32addresses, tmpAddress)
 		}
 
 		//send balance
-		root, err := svc.base.QueryRootAccount()
+		root, err := d.base.QueryRootAccount()
 		if err != nil {
 			return err
 		}
-		msgs := svc.base.CreateGasMsg(root.Address, bech32addresses)
-		tx := svc.base.CreateBaseTxSync(root.Address, "")
-		tx.Gas = svc.base.CreateAccount(params.Count)
-		_, err = svc.base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
+		msgs := d.base.CreateGasMsg(root.Address, bech32addresses)
+		tx := d.base.CreateBaseTxSync(root.Address, "")
+		tx.Gas = d.base.CreateAccount(params.Count)
+		_, err = d.base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
 		if err != nil {
 			log.Error("create account", "build and send, error:", err)
 			return types.ErrBuildAndSend
@@ -186,7 +186,7 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 			return types.ErrInternal
 		}
 		// fee grant
-		_, err = svc.base.Grant(bech32addresses)
+		_, err = d.base.Grant(bech32addresses)
 		if err != nil {
 			return err
 		}
@@ -201,7 +201,7 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 	return result, nil
 }
 
-func (svc *ddcAccount) Show(params dto.AccountsP) (*dto.AccountsRes, error) {
+func (d *ddcAccount) Show(params dto.AccountsP) (*dto.AccountsRes, error) {
 	result := &dto.AccountsRes{}
 	result.Offset = params.Offset
 	result.Limit = params.Limit
@@ -265,7 +265,7 @@ func (svc *ddcAccount) Show(params dto.AccountsP) (*dto.AccountsRes, error) {
 	return result, nil
 }
 
-func (svc *ddcAccount) History(params dto.AccountsP) (*dto.AccountOperationRecordRes, error) {
+func (d *ddcAccount) History(params dto.AccountsP) (*dto.AccountOperationRecordRes, error) {
 	result := &dto.AccountOperationRecordRes{
 		PageRes: dto.PageRes{
 			Offset:     params.Offset,

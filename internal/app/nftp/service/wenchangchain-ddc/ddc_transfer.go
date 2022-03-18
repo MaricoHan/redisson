@@ -29,7 +29,8 @@ type DDC721Transfer struct {
 }
 
 func NewDDCTransfer(base *service.Base) *service.TransferBase {
-	ddc721Service := service.DDCClient.GetDDC721Service(true)
+	client := service.NewDDCClient()
+	ddc721Service := client.GetDDC721Service(true)
 	return &service.TransferBase{
 		Module: service.DDC,
 		Service: &DDC721Transfer{
@@ -38,7 +39,7 @@ func NewDDCTransfer(base *service.Base) *service.TransferBase {
 		},
 	}
 }
-func (svc DDC721Transfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*dto.TxRes, error) {
+func (d DDC721Transfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*dto.TxRes, error) {
 	//不能自己转让给自己
 	//400
 	if params.Recipient == params.Owner {
@@ -46,12 +47,12 @@ func (svc DDC721Transfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*d
 	}
 
 	// ValidateSigner
-	if err := svc.base.ValidateSigner(params.Owner, params.ProjectID); err != nil {
+	if err := d.base.ValidateSigner(params.Owner, params.ProjectID); err != nil {
 		return nil, err
 	}
 
 	// ValidateRecipient
-	if err := svc.base.ValidateRecipient(params.Recipient, params.ProjectID); err != nil {
+	if err := d.base.ValidateRecipient(params.Recipient, params.ProjectID); err != nil {
 		return nil, err
 	}
 	//判断class
@@ -91,8 +92,8 @@ func (svc DDC721Transfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*d
 	var taskId string
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		code := fmt.Sprintf("%s%s%s", params.Owner, models.TDDCTXSOperationTypeTransferClass, time.Now().String())
-		taskId = svc.base.EncodeData(code)
-		hash := svc.base.EncodeData(string(msgsByte))
+		taskId = d.base.EncodeData(code)
+		hash := d.base.EncodeData(string(msgsByte))
 		// Tx into database
 		ttx := models.TDDCTX{
 			ProjectID:     params.ProjectID,
@@ -151,14 +152,14 @@ func (svc DDC721Transfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*d
 	}
 	return &dto.TxRes{TaskId: taskId}, nil
 }
-func (svc DDC721Transfer) TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRes, error) {
+func (d DDC721Transfer) TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRes, error) {
 	// ValidateSigner
-	if err := svc.base.ValidateSigner(params.Sender, params.ProjectID); err != nil {
+	if err := d.base.ValidateSigner(params.Sender, params.ProjectID); err != nil {
 		return nil, err
 	}
 
 	// ValidateRecipient
-	if err := svc.base.ValidateRecipient(params.Recipient, params.ProjectID); err != nil {
+	if err := d.base.ValidateRecipient(params.Recipient, params.ProjectID); err != nil {
 		return nil, err
 	}
 
@@ -202,13 +203,13 @@ func (svc DDC721Transfer) TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRe
 	messageByte, _ := json.Marshal(msg)
 	//生成taskId
 	code := fmt.Sprintf("%s%s%s", params.Sender, models.TDDCTXSOperationTypeTransferNFT, time.Now().String())
-	taskId := svc.base.EncodeData(code)
+	taskId := d.base.EncodeData(code)
 	//获取gasLimit和txHash
 	opts := bind.TransactOpts{
 		From: common.HexToAddress(params.Sender),
 	}
 	ddcId, _ := strconv.ParseInt(tDDC.NFTID, 10, 64)
-	res, err := svc.ddc721Service.TransferFrom(&opts, params.Sender, params.Recipient, ddcId)
+	res, err := d.ddc721Service.TransferFrom(&opts, params.Sender, params.Recipient, ddcId)
 	if err != nil {
 		log.Error("transfer ddc by ddcId", "failed to get gasLimit and txHash", err.Error())
 		return nil, types.ErrInternal
@@ -217,7 +218,7 @@ func (svc DDC721Transfer) TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRe
 	//tx存数据库
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		// Tx into database
-		txId, err := svc.UndoTxIntoDataBase(params.Sender,
+		txId, err := d.UndoTxIntoDataBase(params.Sender,
 			models.TDDCTXSOperationTypeTransferNFT,
 			taskId,
 			res.TxHash,
