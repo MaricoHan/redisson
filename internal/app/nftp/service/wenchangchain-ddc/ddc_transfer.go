@@ -157,7 +157,6 @@ func (d DDC721Transfer) TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRes,
 	if err := d.base.ValidateSigner(params.Sender, params.ProjectID); err != nil {
 		return nil, err
 	}
-
 	// ValidateRecipient
 	if err := d.base.ValidateRecipient(params.Recipient, params.ProjectID); err != nil {
 		return nil, err
@@ -226,6 +225,7 @@ func (d DDC721Transfer) TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRes,
 			messageByte,
 			params.Tag,
 			int64(res.GasLimit),
+			service.TransFer,
 			exec)
 		if err != nil {
 			log.Debug("transfer nft by index", "tx Into DataBase error:", err.Error())

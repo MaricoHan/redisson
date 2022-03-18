@@ -132,8 +132,8 @@ require (
 
 replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.4
 
-//replace gitlab.bianjie.ai/irita-paas/orms/orm-nft => gitlab.bianjie.ai/irita-paas/orms/orm-nft.git v1.0.0-beta.0.20220315073819-c8c63131c626
-replace gitlab.bianjie.ai/irita-paas/orms/orm-nft => ../orm-nft
+replace gitlab.bianjie.ai/irita-paas/orms/orm-nft => gitlab.bianjie.ai/irita-paas/orms/orm-nft.git v1.0.0-beta.0.20220315073819-c8c63131c626
+//replace gitlab.bianjie.ai/irita-paas/orms/orm-nft => ../orm-nft
 
 replace github.com/tendermint/tendermint => github.com/bianjieai/tendermint v0.34.1-irita-210113
 
