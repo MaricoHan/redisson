@@ -470,7 +470,6 @@ func (m Base) GasThan(chainId, gas, platformId uint64) error {
 		//ddc 交易
 		ddctx, err := models.TDDCTXS(
 			qm.Select("SUM(gas_used) as gas_used"),
-			qm.Select("SUM(biz_fee) as biz_fee"),
 			models.TDDCTXWhere.ProjectID.IN(projects),
 			models.TDDCTXWhere.Status.IN([]string{models.TDDCTXSStatusUndo, models.TDDCTXSStatusPending})).One(context.Background(), exec)
 		if err != nil {
@@ -491,8 +490,8 @@ func (m Base) GasThan(chainId, gas, platformId uint64) error {
 			return errors.New("cannot get float64 of gasPrice")
 		}
 
-		//所有未支付的交易需要扣除的money = gasPrice * unPaidGas + 所有未支付的 ddcTx 的业务费之和
-		unPaidMoney := float64(unPaidGas)*gasPrice + float64(ddctx.BizFee.Int64)
+		//所有未支付的交易需要扣除的money = gasPrice * unPaidGas
+		unPaidMoney := float64(unPaidGas)*gasPrice
 
 		//platformId 的账户
 		pAccount, err := models.TPlatformAccounts(models.TPlatformAccountWhere.ID.EQ(platformId)).One(context.Background(), exec)
