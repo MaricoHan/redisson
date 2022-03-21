@@ -6,7 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
+
 	"strconv"
 	"strings"
 	"time"
@@ -18,6 +18,8 @@ import (
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
@@ -62,7 +64,7 @@ func (svc *Nft) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 		}
 
 		//400
-		if classOne.Status != models.TNFTSStatusActive {
+		if classOne.Status != models.TClassesStatusActive {
 			return types.ErrNftClassStatus
 		}
 
@@ -99,7 +101,7 @@ func (svc *Nft) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 		baseTx := svc.base.CreateBaseTx(classOne.Owner, "")
 		originData, tHash, _ := svc.base.BuildAndSign(msgs, baseTx)
 		baseTx.Gas = svc.base.MintNftsGas(originData, uint64(params.Amount))
-		err = svc.base.GasThan(classOne.Owner, params.ChainID, baseTx.Gas, params.PlatFormID)
+		err = svc.base.GasThan(params.ChainID, baseTx.Gas, params.PlatFormID)
 		if err != nil {
 			return types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
 		}
@@ -225,7 +227,7 @@ func (svc *Nft) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 	// get gas
 	nftLen := svc.base.LenOfNft(tNft)
 	baseTx.Gas = svc.base.EditNftGas(nftLen, uint64(len(signedData)))
-	err = svc.base.GasThan(params.Sender, params.ChainID, baseTx.Gas, params.PlatFormID)
+	err = svc.base.GasThan(params.ChainID, baseTx.Gas, params.PlatFormID)
 	if err != nil {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
 	}
@@ -327,7 +329,7 @@ func (svc *Nft) Delete(params dto.DeleteNftByNftIdP) (*dto.TxRes, error) {
 	nftLen := svc.base.LenOfNft(tNft)
 	// set gas
 	baseTx.Gas = svc.base.DeleteNftGas(nftLen)
-	err = svc.base.GasThan(params.Sender, params.ChainID, baseTx.Gas, params.PlatFormID)
+	err = svc.base.GasThan(params.ChainID, baseTx.Gas, params.PlatFormID)
 	if err != nil {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
 	}
@@ -387,33 +389,32 @@ func (svc *Nft) Delete(params dto.DeleteNftByNftIdP) (*dto.TxRes, error) {
 }
 
 func (svc *Nft) Show(params dto.NftByNftIdP) (*dto.NftR, error) {
-	// get NFT by app_id,class_id and nftId
+	// get NFT
 	tNft, err := models.TNFTS(models.TNFTWhere.ProjectID.EQ(params.ProjectID),
 		models.TNFTWhere.ClassID.EQ(params.ClassId),
 		models.TNFTWhere.NFTID.EQ(params.NftId)).
 		One(context.Background(), boil.GetContextDB())
-	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
-		(err != nil && strings.Contains(err.Error(), service.SqlNotFound)) {
-		//404
-		return nil, types.ErrNotFound
-	} else if err != nil {
+	if err != nil {
+		if errors.Cause(err) == sql.ErrNoRows || strings.Contains(err.Error(), service.SqlNotFound) {
+			//404
+			return nil, types.ErrNotFound
+		}
 		//500
 		log.Error("nft by nftId", "query nft error:", err.Error())
 		return nil, types.ErrInternal
 	}
-
-	if strings.Contains(models.TNFTSStatusPending, tNft.Status) {
+	if tNft.Status == models.TNFTSStatusPending {
 		return nil, types.ErrNftStatus
 	}
 
 	// get class by class_id
 	class, err := models.TClasses(models.TClassWhere.ClassID.EQ(params.ClassId)).
 		One(context.Background(), boil.GetContextDB())
-	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
-		(err != nil && strings.Contains(err.Error(), service.SqlNotFound)) {
-		//404
-		return nil, types.ErrNotFound
-	} else if err != nil {
+	if err != nil {
+		if errors.Cause(err) == sql.ErrNoRows || strings.Contains(err.Error(), service.SqlNotFound) {
+			//404
+			return nil, types.ErrNotFound
+		}
 		//500
 		log.Error("nft by nftId", "query nft class error:", err.Error())
 		return nil, types.ErrInternal

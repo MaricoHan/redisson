@@ -2,17 +2,20 @@ package wenchangchain_ddc
 
 import (
 	"context"
+	"database/sql"
+	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
-	"database/sql"
-
+	service2 "github.com/bianjieai/ddc-sdk-go/app/service"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/friendsofgo/errors"
 	"github.com/irisnet/irismod-sdk-go/nft"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
-
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
@@ -21,18 +24,23 @@ import (
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"
 )
 
-type DDCNftTransfer struct {
-	base *service.Base
+type DDC721Transfer struct {
+	base          *service.Base
+	ddc721Service *service2.DDC721Service
 }
 
-func NewDDCNftTransfer(base *service.Base) *service.TransferBase {
+func NewDDCTransfer(base *service.Base) *service.TransferBase {
+	client := service.NewDDCClient()
+	ddc721Service := client.GetDDC721Service(true)
 	return &service.TransferBase{
-		Module:  service.DDC,
-		Service: &DDCNftTransfer{base: base},
+		Module: service.DDC,
+		Service: &DDC721Transfer{
+			base:          base,
+			ddc721Service: ddc721Service,
+		},
 	}
 }
-
-func (D DDCNftTransfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*dto.TxRes, error) {
+func (d DDC721Transfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*dto.TxRes, error) {
 	//不能自己转让给自己
 	//400
 	if params.Recipient == params.Owner {
@@ -40,12 +48,12 @@ func (D DDCNftTransfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*dto
 	}
 
 	// ValidateSigner
-	if err := D.base.ValidateSigner(params.Owner, params.ProjectID); err != nil {
+	if err := d.base.ValidateDDCSigner(params.Owner, params.ProjectID); err != nil {
 		return nil, err
 	}
 
 	// ValidateRecipient
-	if err := D.base.ValidateRecipient(params.Recipient, params.ProjectID); err != nil {
+	if err := d.base.ValidateDDCRecipient(params.Recipient, params.ProjectID); err != nil {
 		return nil, err
 	}
 	//判断class
@@ -85,8 +93,8 @@ func (D DDCNftTransfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*dto
 	var taskId string
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		code := fmt.Sprintf("%s%s%s", params.Owner, models.TDDCTXSOperationTypeTransferClass, time.Now().String())
-		taskId = D.base.EncodeData(code)
-		hash := D.base.EncodeData(string(msgsByte))
+		taskId = d.base.EncodeData(code)
+		hash := d.base.EncodeData(string(msgsByte))
 		// Tx into database
 		ttx := models.TDDCTX{
 			ProjectID:     params.ProjectID,
@@ -145,7 +153,100 @@ func (D DDCNftTransfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*dto
 	}
 	return &dto.TxRes{TaskId: taskId}, nil
 }
+func (d DDC721Transfer) TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRes, error) {
+	// ValidateSigner
+	if err := d.base.ValidateDDCSigner(params.Sender, params.ProjectID); err != nil {
+		return nil, err
+	}
+	// ValidateRecipient
+	if err := d.base.ValidateDDCRecipient(params.Recipient, params.ProjectID); err != nil {
+		return nil, err
+	}
 
-func (D DDCNftTransfer) TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRes, error) {
-	return nil, nil
+	//查出要转让的ddc
+	tDDC, err := models.TDDCNFTS(
+		models.TDDCNFTWhere.NFTID.EQ(params.NftId),
+		models.TDDCNFTWhere.ClassID.EQ(params.ClassID),
+		models.TDDCNFTWhere.ProjectID.EQ(params.ProjectID),
+		models.TDDCNFTWhere.Owner.EQ(params.Sender),
+	).OneG(context.Background())
+	if err != nil {
+		if errors.Cause(err) == sql.ErrNoRows || strings.Contains(err.Error(), service.SqlNotFound) {
+			//404
+			return nil, types.ErrNotFound
+		}
+		//500
+		log.Error("transfer nft", "query nft error:", err.Error())
+		return nil, types.ErrInternal
+	}
+	//检验ddc状态
+	//404
+	if tDDC.Status == models.TDDCNFTSStatusBurned {
+		return nil, types.ErrNotFound
+	}
+	//400
+	if tDDC.Status != models.TDDCNFTSStatusActive {
+		return nil, types.ErrNftStatus
+	}
+
+	//组装rawMsg
+	msg := nft.MsgTransferNFT{
+		Id:        tDDC.NFTID,
+		DenomId:   params.ClassID,
+		Name:      tDDC.Name.String,
+		URI:       tDDC.URI.String,
+		Data:      tDDC.Metadata.String,
+		Sender:    params.Sender,
+		Recipient: params.Recipient,
+		UriHash:   tDDC.URIHash.String,
+	}
+	messageByte, _ := json.Marshal(msg)
+	//生成taskId
+	code := fmt.Sprintf("%s%s%s", params.Sender, models.TDDCTXSOperationTypeTransferNFT, time.Now().String())
+	taskId := d.base.EncodeData(code)
+	//获取gasLimit和txHash
+	opts := bind.TransactOpts{
+		From: common.HexToAddress(params.Sender),
+	}
+	ddcId, _ := strconv.ParseInt(tDDC.NFTID, 10, 64)
+	res, err := d.ddc721Service.TransferFrom(&opts, params.Sender, params.Recipient, ddcId)
+	if err != nil {
+		log.Error("transfer ddc by ddcId", "failed to get gasLimit and txHash", err.Error())
+		return nil, types.ErrInternal
+	}
+
+	//tx存数据库
+	err = modext.Transaction(func(exec boil.ContextExecutor) error {
+		// Tx into database
+		txId, err := d.base.UndoDDCTxIntoDataBase(params.Sender,
+			models.TDDCTXSOperationTypeTransferNFT,
+			taskId,
+			taskId,
+			params.ProjectID,
+			messageByte,
+			params.Tag,
+			int64(res.GasLimit),
+			service.TransFer,
+			exec)
+		if err != nil {
+			log.Error("transfer ddc by ddcId", "tx Into DataBase error:", err.Error())
+			return types.ErrInternal
+		}
+
+		// lock the NFT
+		tDDC.Status = models.TDDCNFTSStatusPending
+		tDDC.LockedBy = null.Uint64From(txId)
+		ok, err := tDDC.Update(context.Background(), exec, boil.Infer())
+		if err != nil || ok != 1 {
+			log.Error("transfer ddc by ddcId", "failed to lock the nft:", err.Error())
+			return types.ErrInternal
+		}
+		return err
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &dto.TxRes{TaskId: taskId}, nil
+
 }

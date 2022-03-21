@@ -6,10 +6,12 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
+	"strings"
+
+	ddc "github.com/bianjieai/ddc-sdk-go/app"
 	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"
-	"strings"
 
 	sdk "github.com/irisnet/core-sdk-go"
 	"github.com/irisnet/core-sdk-go/bank"
@@ -23,7 +25,15 @@ import (
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 )
 
-var SqlNotFound = "records not exist"
+const (
+	MintFee  = 100 //BSN 发行 DDC 官方业务费
+	BurnFee  = 30  //BSN 销毁 DDC 官方业务费
+	TransFer = 30  //BSN 转让 DDC 官方业务费
+)
+
+var (
+	SqlNotFound = "records not exist"
+)
 
 type Base struct {
 	sdkClient sdk.Client
@@ -39,7 +49,20 @@ func NewBase(sdkClient sdk.Client, gas uint64, denom string, amount int64) *Base
 	}
 }
 
-func (m Base) QueryRootAccount() (*models.TAccount, *types.AppError) {
+func NewDDCClient() *ddc.DDCSdkClient {
+	ClientBuilder := ddc.DDCSdkClientBuilder{}
+	DDCClient := ClientBuilder.SetGatewayUrl(config.Get().DDC.DDCGatewayUrl).
+		SetSignEventListener(new(SignListener)).
+		SetGasPrice(1e10).
+		SetAuthorityAddress(config.Get().DDC.DDCAuthorityAddress).
+		SetChargeAddress(config.Get().DDC.DDCChargeAddress).
+		SetDDC721Address(config.Get().DDC.DDC721Address).
+		SetDDC1155Address(config.Get().DDC.DDC1155Address).
+		Build()
+	return DDCClient
+}
+
+func (m Base) QueryRootAccount() (*models.TAccount, error) {
 	//platform address
 	account, err := models.TAccounts(
 		models.TAccountWhere.ProjectID.EQ(uint64(0)),
@@ -74,6 +97,53 @@ func (m Base) CreateBaseTxSync(keyName, keyPassword string) sdktype.BaseTx {
 	}
 }
 
+// UndoTxIntoDataBase operationType : issue_class,mint_nft,edit_nft,edit_nft_batch,burn_nft,burn_nft_batch
+func (b Base) UndoTxIntoDataBase(sender, operationType, taskId, txHash string, ProjectID uint64, signedData, message, tag []byte, gasUsed int64, exec boil.ContextExecutor) (uint64, error) {
+	// Tx into database
+	ttx := models.TTX{
+		ProjectID:     ProjectID,
+		Hash:          txHash,
+		OriginData:    null.BytesFrom(signedData),
+		OperationType: operationType,
+		Status:        models.TTXSStatusUndo,
+		Sender:        null.StringFrom(sender),
+		Message:       null.JSONFrom(message),
+		TaskID:        null.StringFrom(taskId),
+		GasUsed:       null.Int64From(gasUsed),
+		Tag:           null.JSONFrom(tag),
+		Retry:         null.Int8From(0),
+	}
+	err := ttx.Insert(context.Background(), exec, boil.Infer())
+	if err != nil {
+		return 0, err
+	}
+	return ttx.ID, err
+}
+
+// UndoDDCTxIntoDataBase operationType : issue_class,mint_nft,edit_nft,edit_nft_batch,burn_nft,burn_nft_batch
+func (b Base) UndoDDCTxIntoDataBase(sender, operationType, taskId, txHash string, ProjectID uint64, message, tag []byte, gasUsed, bizFee int64, exec boil.ContextExecutor) (uint64, error) {
+
+	// Tx into database
+	ttx := models.TDDCTX{
+		ProjectID:     ProjectID,
+		Hash:          txHash,
+		OperationType: operationType,
+		Status:        models.TDDCTXSStatusUndo,
+		Sender:        null.StringFrom(sender),
+		Message:       null.JSONFrom(message),
+		TaskID:        null.StringFrom(taskId),
+		Tag:           null.JSONFrom(tag),
+		GasUsed:       null.Int64From(gasUsed),
+		Retry:         null.Int8From(0),
+		BizFee:        null.Int64From(bizFee),
+	}
+	err := ttx.Insert(context.Background(), exec, boil.Infer())
+	if err != nil {
+		return 0, err
+	}
+	return ttx.ID, err
+}
+
 func (m Base) BuildAndSign(msgs sdktype.Msgs, baseTx sdktype.BaseTx) ([]byte, string, error) {
 	root, error := m.QueryRootAccount()
 	if error != nil {
@@ -95,29 +165,6 @@ func (m Base) BuildAndSend(msgs sdktype.Msgs, baseTx sdktype.BaseTx) (sdktype.Re
 		return sigData, err
 	}
 	return sigData, nil
-}
-
-// UndoTxIntoDataBase operationType : issue_class,mint_nft,edit_nft,edit_nft_batch,burn_nft,burn_nft_batch
-func (m Base) UndoTxIntoDataBase(sender, operationType, taskId, txHash string, ProjectID uint64, signedData, message, tag []byte, gasUsed int64, exec boil.ContextExecutor) (uint64, error) {
-	// Tx into database
-	ttx := models.TTX{
-		ProjectID:     ProjectID,
-		Hash:          txHash,
-		OriginData:    null.BytesFrom(signedData),
-		OperationType: operationType,
-		Status:        models.TTXSStatusUndo,
-		Sender:        null.StringFrom(sender),
-		Message:       null.JSONFrom(message),
-		TaskID:        null.StringFrom(taskId),
-		GasUsed:       null.Int64From(gasUsed),
-		Tag:           null.JSONFrom(tag),
-		Retry:         null.Int8From(0),
-	}
-	err := ttx.Insert(context.Background(), exec, boil.Infer())
-	if err != nil {
-		return 0, err
-	}
-	return ttx.ID, err
 }
 
 // ValidateTx validate tx status
@@ -173,10 +220,8 @@ func (m Base) CreateGasMsg(inputAddress string, outputAddress []string) bank.Msg
 	return msg
 }
 
-/**
-Estimated gas required to issue nft
-It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048328
-*/
+//MintNftsGas Estimated gas required to issue nft
+//It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048328
 func (m Base) MintNftsGas(originData []byte, amount uint64) uint64 {
 	l := uint64(len(originData))
 	if l <= types.MintMinNFTDataSize {
@@ -188,10 +233,8 @@ func (m Base) MintNftsGas(originData []byte, amount uint64) uint64 {
 	return uint64(u)
 }
 
-/**
-Estimated gas required to create denom
-It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048352
-*/
+// CreateDenomGas Estimated gas required to create denom
+//It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048328
 func (m Base) CreateDenomGas(data []byte) uint64 {
 	l := uint64(len(data))
 	if l <= types.CreateMinDENOMDataSize {
@@ -201,10 +244,8 @@ func (m Base) CreateDenomGas(data []byte) uint64 {
 	return uint64(float64(u) * config.Get().Chain.GasCoefficient)
 }
 
-/**
-Estimated gas required to transfer denom
-It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048356
-*/
+// TransferDenomGas Estimated gas required to transfer denim
+//It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048328
 func (m Base) TransferDenomGas(class *models.TClass) uint64 {
 	l := len([]byte(class.ClassID)) + len([]byte(class.Status)) + len([]byte(class.Owner)) + len([]byte(class.TXHash)) + len([]byte(string(class.ProjectID))) + len([]byte(string(class.ID))) + len([]byte(string(class.Offset)))
 	if class.LockedBy.Valid {
@@ -250,10 +291,8 @@ func (m Base) TransferDenomGas(class *models.TClass) uint64 {
 	return uint64(res)
 }
 
-/**
-Estimated gas required to transfer one nft
-It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048358
-*/
+// TransferOneNftGas Estimated gas required to transfer one nft
+//It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048358
 func (m Base) TransferOneNftGas(data []byte) uint64 {
 	l := len(data)
 	if l <= types.TransferMinNFTDataSize {
@@ -263,10 +302,8 @@ func (m Base) TransferOneNftGas(data []byte) uint64 {
 	return uint64(res)
 }
 
-/**
-Estimated gas required to transfer more nft
-It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048358
-*/
+// TransferNftsGas Estimated gas required to transfer more nft
+//It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58048358
 func (m Base) TransferNftsGas(data []byte, amount uint64) uint64 {
 	l := uint64(len(data))
 	if l <= types.TransferMinNFTDataSize {
@@ -284,40 +321,32 @@ func (m Base) LenOfNft(tNft *models.TNFT) uint64 {
 	return uint64(len1 + len2 + len3)
 }
 
-/**
-Estimated gas required to edit nft
-It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049122
-*/
+// EditNftGas Estimated gas required to edit nft
+//It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049122
 func (m Base) EditNftGas(nftLen, signLen uint64) uint64 {
 	gas := types.EditNFTBaseGas + types.EditNFTLenCoefficient*nftLen + types.EditNFTSignLenCoefficient*signLen
 	res := float64(gas) * config.Get().Chain.GasCoefficient
 	return uint64(res)
 }
 
-/**
-Estimated gas required to edit nfts
-It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049126
-*/
+// EditBatchNftGas Estimated gas required to edit nfts
+//It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049126
 func (m Base) EditBatchNftGas(nftLen, signLen uint64) uint64 {
 	gas := types.EditBatchNFTBaseGas + types.EditBatchNFTLenCoefficient*nftLen + types.EditBatchNFTSignLenCoefficient*signLen
 	res := float64(gas) * config.Get().Chain.GasCoefficient
 	return uint64(res)
 }
 
-/**
-Estimated gas required to delete nft
-It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049119
-*/
+// DeleteNftGas Estimated gas required to delete nft
+//It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=5804911
 func (m Base) DeleteNftGas(nftLen uint64) uint64 {
 	gas := types.DeleteNFTBaseGas + (nftLen-types.DeleteNFTBaseLen)*types.DeleteNFTCoefficient
 	res := float64(gas) * config.Get().Chain.GasCoefficient
 	return uint64(res)
 }
 
-/**
-Estimated gas required to delete nfts
-It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049124
-*/
+// DeleteBatchNftGas Estimated gas required to delete nfts
+//It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049124
 func (m Base) DeleteBatchNftGas(nftLen, n uint64) uint64 {
 	basLen := types.DeleteBatchNFTBaseLen + types.DeleteBatchNFTBaseLenCoefficient*(n-1)
 	baseGas := types.DeleteBatchNFTBaseGas + types.DeleteBatchNFTBaseGasCoefficient*(n-1)
@@ -326,11 +355,9 @@ func (m Base) DeleteBatchNftGas(nftLen, n uint64) uint64 {
 	return uint64(res)
 }
 
-/**
-Estimated gas required to create account
-It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049266
-*/
-func (m Base) createAccount(count int64) uint64 {
+// CreateAccount Estimated gas required to create account
+//It is calculated as follows : http://wiki.bianjie.ai/pages/viewpage.action?pageId=58049266
+func (m Base) CreateAccount(count int64) uint64 {
 	count -= 1
 	res := types.CreateAccountGas + types.CreateAccountIncreaseGas*(count)
 	u := float64(res) * config.Get().Chain.GasCoefficient
@@ -374,7 +401,7 @@ func (m Base) Grant(address []string) (string, error) {
 	}
 	baseTx := m.CreateBaseTxSync(root.Address, config.Get().Server.DefaultKeyPassword)
 	//动态计算gas
-	baseTx.Gas = m.createAccount(int64(len(address)))
+	baseTx.Gas = m.CreateAccount(int64(len(address)))
 	res, err := m.BuildAndSend(msgs, baseTx)
 	if err != nil {
 		//500
@@ -384,7 +411,7 @@ func (m Base) Grant(address []string) (string, error) {
 	return res.Hash, nil
 }
 
-// ValidateSigner validate signer
+// ValidateSigner validate nft signer
 func (m Base) ValidateSigner(sender string, projectid uint64) error {
 	//signer不能为project外账户
 	_, err := models.TAccounts(
@@ -403,12 +430,49 @@ func (m Base) ValidateSigner(sender string, projectid uint64) error {
 	return nil
 }
 
-// ValidateRecipient validate recipient
+// ValidateRecipient validate nft recipient
 func (m Base) ValidateRecipient(recipient string, projectid uint64) error {
 	//recipient不能为project外的账户
 	_, err := models.TAccounts(
 		models.TAccountWhere.ProjectID.EQ(projectid),
 		models.TAccountWhere.Address.EQ(recipient)).OneG(context.Background())
+	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
+		(err != nil && strings.Contains(err.Error(), SqlNotFound)) {
+		//400
+		return types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientFound)
+	} else if err != nil {
+		//500
+		log.Error("validate recipient", "query recipient error:", err.Error())
+		return types.ErrInternal
+	}
+	return nil
+}
+
+// ValidateDDCSigner validate ddc signer
+func (m Base) ValidateDDCSigner(sender string, projectid uint64) error {
+	//signer不能为project外账户
+	_, err := models.TDDCAccounts(
+		models.TDDCAccountWhere.ProjectID.EQ(projectid),
+		models.TDDCAccountWhere.Address.EQ(sender)).OneG(context.Background())
+	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
+		(err != nil && strings.Contains(err.Error(), SqlNotFound)) {
+		//404
+		return types.ErrNotFound
+	} else if err != nil {
+		//500
+		log.Error("validate signer", "query signer error:", err.Error())
+		return types.ErrInternal
+	}
+
+	return nil
+}
+
+// ValidateDDCRecipient validate ddc recipient
+func (m Base) ValidateDDCRecipient(recipient string, projectid uint64) error {
+	//recipient不能为project外的账户
+	_, err := models.TDDCAccounts(
+		models.TDDCAccountWhere.ProjectID.EQ(projectid),
+		models.TDDCAccountWhere.Address.EQ(recipient)).OneG(context.Background())
 	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
 		(err != nil && strings.Contains(err.Error(), SqlNotFound)) {
 		//400
@@ -428,19 +492,22 @@ func (m Base) EncodeData(data string) string {
 	return hash
 }
 
-func (m Base) GasThan(address string, chainId, gas, platformId uint64) error {
+func (m Base) GasThan(chainId, gas, platformId uint64) error {
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
+		//查找 platform 下的所有 project
 		tProjects, err := models.TProjects(
 			models.TProjectWhere.PlatformID.EQ(null.Int64From(int64(platformId))),
 		).All(context.Background(), exec)
 		if err != nil {
-			return errors.New("query PlatformID from TProjects failed")
+			return errors.New("query all project by platformId failed")
 		}
+
 		var projects []uint64
 		for _, v := range tProjects {
 			projects = append(projects, v.ID)
 		}
-		// unPaidGas 待支付的gas
+
+		//nft 交易
 		tx, err := models.TTXS(
 			qm.Select("SUM(gas_used) as gas_used"),
 			models.TTXWhere.ProjectID.IN(projects),
@@ -448,30 +515,49 @@ func (m Base) GasThan(address string, chainId, gas, platformId uint64) error {
 		if err != nil {
 			return types.ErrNotFound
 		}
-		unPaidGas := tx.GasUsed.Int64
+
+		//ddc 交易
+		ddctx, err := models.TDDCTXS(
+			qm.Select("SUM(gas_used) as gas_used"),
+			qm.Select("SUM(biz_fee) as biz_fee"),
+			models.TDDCTXWhere.ProjectID.IN(projects),
+			models.TDDCTXWhere.Status.IN([]string{models.TDDCTXSStatusUndo, models.TDDCTXSStatusPending})).One(context.Background(), exec)
+		if err != nil {
+			return types.ErrNotFound
+		}
+
+		//待支付的总 gas
+		unPaidGas := tx.GasUsed.Int64 + ddctx.GasUsed.Int64
+
+		//查找不同链对应的 gasprice
 		chain, err := models.TChains(models.TChainWhere.ID.EQ(chainId),
 			models.TChainWhere.Status.EQ(0)).OneG(context.Background())
 		if err != nil {
 			return types.ErrNotFound
 		}
-		//gasPrice 每条链的gasPrice
 		gasPrice, ok := chain.GasPrice.Big.Float64()
 		if !ok {
 			return errors.New("cannot get float64 of gasPrice")
 		}
-		// unPaidMoney   = 这些未支付的交易需要扣除的money  =  gasPrice * unPaidGas
-		unPaidMoney := float64(unPaidGas) * gasPrice
-		pAccount, err := models.TPlatformAccounts(models.TPlatformAccountWhere.ID.EQ(platformId)).One(context.Background(), exec)
 
+		//所有未支付的交易需要扣除的money = gasPrice * unPaidGas + 业务费
+		unPaidMoney := float64(unPaidGas)*gasPrice + float64(ddctx.BizFee.Int64/100.0)
+
+		//platformId 的账户
+		pAccount, err := models.TPlatformAccounts(models.TPlatformAccountWhere.ID.EQ(platformId)).One(context.Background(), exec)
 		if err != nil {
-			return errors.New(fmt.Sprintf("cannot query PlatFormAccount and platformId is : %v", platformId))
+			return errors.New(fmt.Sprintf("cannot query platformAccount and platformId is : %v", platformId))
 		}
+
 		//amount 平台方的余额
 		amount, ok := pAccount.Amount.Big.Float64()
 		if !ok {
 			return errors.New("cannot get float64 of amount")
 		}
+
+		//加上本次交易预估的费用
 		unPaidMoney = unPaidMoney + float64(gas)*gasPrice
+
 		//如果amount小于未支付金额,返回错误
 		if amount < unPaidMoney {
 			return errors.New("balances not enough")

@@ -6,13 +6,15 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-	"gitlab.bianjie.ai/irita-paas/open-api/config"
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
+
 	"math/rand"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"gitlab.bianjie.ai/irita-paas/open-api/config"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 
 	"github.com/friendsofgo/errors"
 	sdktype "github.com/irisnet/core-sdk-go/types"
@@ -264,7 +266,7 @@ func (svc *NFTClass) Create(params dto.CreateNftClassP) (*dto.TxRes, error) {
 	}
 	originData, txHash, _ := svc.base.BuildAndSign(sdktype.Msgs{&createDenomMsg, &transferDenomMsg}, baseTx)
 	baseTx.Gas = svc.base.CreateDenomGas(originData)
-	err = svc.base.GasThan(params.Owner, params.ChainID, baseTx.Gas, params.PlatFormID)
+	err = svc.base.GasThan(params.ChainID, baseTx.Gas, params.PlatFormID)
 	if err != nil {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
 	}

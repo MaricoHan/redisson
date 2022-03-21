@@ -58,6 +58,7 @@ const (
 	ErrAmountInt      = "amount must be between 1 and 100"
 	ErrRepeat         = "index is repeat"
 	ErrClientParams   = "client params error"
+	ErrUriChain       = "uri cannot be modified"
 
 	// ErrSelfTransfer		error msg service
 	ErrSelfTransfer      = "recipient cannot be owner"

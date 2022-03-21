@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
+
 	"strings"
 	"time"
 
@@ -14,6 +14,7 @@ import (
 	"github.com/irisnet/irismod-sdk-go/nft"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
@@ -79,7 +80,7 @@ func (svc *NftTransfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*dto
 	//sign
 	baseTx := svc.base.CreateBaseTx(params.Owner, "")
 	baseTx.Gas = svc.base.TransferDenomGas(class)
-	err = svc.base.GasThan(params.Owner, params.ChainID, baseTx.Gas, params.PlatFormID)
+	err = svc.base.GasThan(params.ChainID, baseTx.Gas, params.PlatFormID)
 	if err != nil {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
 	}
@@ -142,13 +143,9 @@ func (svc *NftTransfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*dto
 }
 
 func (svc *NftTransfer) TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRes, error) {
-	//不能自己转让给自己
-	//400
-	if params.Recipient == params.Owner {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrSelfTransfer)
-	}
+
 	// ValidateSigner
-	if err := svc.base.ValidateSigner(params.Owner, params.ProjectID); err != nil {
+	if err := svc.base.ValidateSigner(params.Sender, params.ProjectID); err != nil {
 		return nil, err
 	}
 
@@ -162,13 +159,13 @@ func (svc *NftTransfer) TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRes,
 		models.TNFTWhere.NFTID.EQ(params.NftId),
 		models.TNFTWhere.ClassID.EQ(params.ClassID),
 		models.TNFTWhere.ProjectID.EQ(params.ProjectID),
-		models.TNFTWhere.Owner.EQ(params.Owner),
+		models.TNFTWhere.Owner.EQ(params.Sender),
 	).OneG(context.Background())
-	if (err != nil && errors.Cause(err) == sql.ErrNoRows) ||
-		(err != nil && strings.Contains(err.Error(), service.SqlNotFound)) {
-		//404
-		return nil, types.ErrNotFound
-	} else if err != nil {
+	if err != nil {
+		if errors.Cause(err) == sql.ErrNoRows || strings.Contains(err.Error(), service.SqlNotFound) {
+			//404
+			return nil, types.ErrNotFound
+		}
 		//500
 		log.Error("transfer nft", "query nft error:", err.Error())
 		return nil, types.ErrInternal
@@ -190,16 +187,16 @@ func (svc *NftTransfer) TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRes,
 		Name:      res.Name.String,
 		URI:       res.URI.String,
 		Data:      res.Metadata.String,
-		Sender:    params.Owner,
+		Sender:    params.Sender,
 		Recipient: params.Recipient,
 		UriHash:   res.URIHash.String,
 	}
 
 	//build and sign
-	baseTx := svc.base.CreateBaseTx(params.Owner, "")
+	baseTx := svc.base.CreateBaseTx(params.Sender, "")
 	data, hash, _ := svc.base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
 	baseTx.Gas = svc.base.TransferOneNftGas(data)
-	err = svc.base.GasThan(params.Owner, params.ChainID, baseTx.Gas, params.PlatFormID)
+	err = svc.base.GasThan(params.ChainID, baseTx.Gas, params.PlatFormID)
 	if err != nil {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
 	}
@@ -227,11 +224,11 @@ func (svc *NftTransfer) TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRes,
 
 		//写入txs status = undo
 		messageByte, _ := json.Marshal(msgs)
-		code := fmt.Sprintf("%s%s%s", params.Owner, models.TTXSOperationTypeTransferNFT, time.Now().String())
+		code := fmt.Sprintf("%s%s%s", params.Sender, models.TTXSOperationTypeTransferNFT, time.Now().String())
 		taskId = svc.base.EncodeData(code)
 
 		// Tx into database
-		txId, err := svc.base.UndoTxIntoDataBase(params.Owner, models.TTXSOperationTypeTransferNFT, taskId, hash,
+		txId, err := svc.base.UndoTxIntoDataBase(params.Sender, models.TTXSOperationTypeTransferNFT, taskId, hash,
 			params.ProjectID, data, messageByte, params.Tag, int64(baseTx.Gas), exec)
 
 		if err != nil {
@@ -242,10 +239,7 @@ func (svc *NftTransfer) TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRes,
 		res.Status = models.TNFTSStatusPending
 		res.LockedBy = null.Uint64From(txId)
 		ok, err := res.Update(context.Background(), exec, boil.Infer())
-		if err != nil {
-			return types.ErrInternal
-		}
-		if ok != 1 {
+		if err != nil || ok != 1 {
 			return types.ErrInternal
 		}
 		return err

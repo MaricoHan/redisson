@@ -2,19 +2,30 @@ package wenchangchain_ddc
 
 import (
 	"context"
-	"fmt"
-	"strings"
-
 	"encoding/base64"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"strings"
+	"time"
 
+	"github.com/friendsofgo/errors"
+	"golang.org/x/sync/errgroup"
+
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	ethereumcrypto "github.com/ethereum/go-ethereum/crypto"
 	sdkcrypto "github.com/irisnet/core-sdk-go/common/crypto"
 	"github.com/irisnet/core-sdk-go/common/crypto/codec"
 	"github.com/irisnet/core-sdk-go/common/crypto/hd"
+	ethsecp256k1 "github.com/irisnet/core-sdk-go/common/crypto/keys/eth_secp256k1"
 	sdktype "github.com/irisnet/core-sdk-go/types"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-
 	"gitlab.bianjie.ai/irita-paas/open-api/config"
+
+	http2 "gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/http"
+
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
@@ -23,6 +34,13 @@ import (
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"
 )
+
+type BsnAccount struct {
+	Code    int         `json:"code"`
+	Message string      `json:"message"`
+	Detail  string      `json:"detail"`
+	Data    interface{} `json:"data"`
+}
 
 type ddcAccount struct {
 	base *service.Base
@@ -39,10 +57,15 @@ func NewDDCAccount(base *service.Base) *service.AccountBase {
 
 const hdPathPrefix = hd.BIP44Prefix + "0'/0/"
 
-func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) {
+func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) {
 	// 写入数据库
 	// sdk 创建账户
-	var addresses []string
+	var addresses, bech32addresses []string
+	//var commonaddresses []common.Address
+	//var amount []*big.Int
+	//adddid := make(map[string]uint64)
+	client := service.NewDDCClient()
+	env := config.Get().Server.Env
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
 		tAppOneObj, err := models.TConfigs(
 			qm.SQL("SELECT * FROM `t_configs` WHERE (`t_configs`.`id` = ?) LIMIT 1 FOR UPDATE;", 1),
@@ -56,12 +79,24 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 		tAccounts := modext.TDDCAccounts{}
 		var i int64
 		accOffsetStart := tAppOneObj.AccOffset
+		mnemonic64, err := base64.StdEncoding.DecodeString(tAppOneObj.Mnemonic)
+		if err != nil {
+			log.Error("create account", "mnemonic base64 error:", err.Error())
+			return types.ErrInternal
+		}
+		mnemonic, err := types.Decrypt(mnemonic64, config.Get().Server.DefaultKeyPassword)
+		if err != nil {
+			log.Error("create account", "mnemonic Decrypt error:", err.Error())
+			return types.ErrInternal
+		}
+
 		for i = 0; i < params.Count; i++ {
+
 			index := accOffsetStart + i
 			hdPath := fmt.Sprintf("%s%d", hdPathPrefix, index)
 			res, err := sdkcrypto.NewMnemonicKeyManagerWithHDPath(
-				tAppOneObj.Mnemonic,
-				config.Get().Chain.ChainEncryption,
+				mnemonic,
+				config.Get().Chain.DdcEncryption,
 				hdPath,
 			)
 			if err != nil {
@@ -70,21 +105,84 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 				return types.ErrInternal
 			}
 			_, priv := res.Generate()
-
 			tmpAddress := sdktype.AccAddress(priv.PubKey().Address().Bytes()).String()
+
+			//Converts key to Ethermint secp256k1 implementation
+			ethPrivKey, ok := priv.(*ethsecp256k1.PrivKey)
+			if !ok {
+				return fmt.Errorf("invalid private key type %T, expected %T", priv, &ethsecp256k1.PrivKey{})
+			}
+			keys, err := ethPrivKey.ToECDSA()
+			if err != nil {
+				return err
+			}
+
+			// Formats key for output
+			privB := ethereumcrypto.FromECDSA(keys)
+			keyS := strings.ToUpper(hexutil.Encode(privB)[2:])
+
+			decodestring := base64.StdEncoding.EncodeToString([]byte(keyS))
+
+			//私钥加密
+			priKey, err := types.Encrypt(decodestring, config.Get().Server.DefaultKeyPassword)
+			if err != nil {
+				log.Error("create account", "encrypt prikey error:", err.Error())
+				return types.ErrInternal
+			}
+
+			//hex address
+			ddc721 := client.GetDDC721Service(true)
+			addr, err := ddc721.Bech32ToHex(tmpAddress)
+			if err != nil {
+				return err
+			}
+
+			if env != "stage" {
+				//查询有授权权限账户
+				owner, err := models.TDDCAccounts(
+					models.TDDCAccountWhere.ProjectID.EQ(uint64(0)),
+				).OneG(context.Background())
+				if err != nil {
+					//500
+					log.Error("create account", "query owner error:", err.Error())
+					return types.ErrInternal
+				}
+
+				//add did
+				authority := client.GetAuthorityService()
+				_, err = authority.AddAccountByOperator(owner.Address, addr, addr, "did:"+addr, "did:ddcplatform")
+				if err != nil {
+					return err
+				}
+
+				//time.Sleep(5 * time.Second)
+
+				////recharge
+				//charge := client.GetChargeService()
+				//_, err = charge.Recharge(owner.Address, addr, 20)
+				//if err != nil {
+				//	return err
+				//}
+			}
 
 			tmp := &models.TDDCAccount{
 				ProjectID: params.ProjectID,
-				Address:   tmpAddress,
+				Address:   addr,
 				AccIndex:  uint64(index),
-				PriKey:    base64.StdEncoding.EncodeToString(codec.MarshalPrivKey(priv)),
+				PriKey:    base64.StdEncoding.EncodeToString(priKey),
 				PubKey:    base64.StdEncoding.EncodeToString(codec.MarshalPubkey(res.ExportPubKey())),
+				Did:       null.StringFrom("did:" + addr),
 			}
 
 			tAccounts = append(tAccounts, tmp)
-			addresses = append(addresses, tmpAddress)
-		}
+			addresses = append(addresses, addr)
+			bech32addresses = append(bech32addresses, tmpAddress)
+			//commonaddresses = append(commonaddresses, common.HexToAddress(addr))
+			//did = append(did, "did:"+addr)
+			//amount = append(amount, big.NewInt(20))
 
+			//adddid[addr] = 0
+		}
 		err = tAccounts.InsertAll(context.Background(), exec)
 		if err != nil {
 			log.Error("create ddc account", "accounts insert error:", err.Error())
@@ -96,19 +194,90 @@ func (svc *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error
 			log.Error("create ddc account", "apps insert error:", err.Error())
 			return types.ErrInternal
 		}
-		// fee grant
+
+		if env == "stage" {
+			//bsn 账户授权
+			time := 5 * time.Second
+			ctx, _ := context.WithTimeout(context.Background(), time)
+			group, errCtx := errgroup.WithContext(ctx)
+			for _, v := range tAccounts {
+				value := v
+				group.Go(func() error {
+					var bsnAccount BsnAccount
+					params := map[string]interface{}{
+						"chainClientName": fmt.Sprintf("%s%d%d", tAppOneObj.Name.String, tAppOneObj.ID, value.AccIndex),
+						"chainClientAddr": value.Address,
+					}
+					url := fmt.Sprintf("%s%s", config.Get().Server.BSNUrl, fmt.Sprintf("/api/%s/account/generate", config.Get().Server.BSNProjectId))
+					res, err := http2.Post(errCtx, url, params)
+					if err != nil {
+						return err
+					}
+					defer res.Body.Close()
+					body, err := ioutil.ReadAll(res.Body)
+					json.Unmarshal(body, &bsnAccount)
+					if bsnAccount.Code != 0 || bsnAccount.Message == "" {
+						return errors.New(bsnAccount.Message)
+					}
+					return nil
+				})
+			}
+			if err := group.Wait(); err != nil {
+				log.Error("create account", "group_error:", err)
+				return types.ErrInternal
+			}
+		}
+
+		//// fee grant
+		//_, err = d.base.Grant(bech32addresses)
+		//if err != nil {
+		//	return err
+		//}
+
+		//新合约
+		//// add did
+		//authority := client.GetAuthorityService()
+		//_, err = authority.AddBatchAccountByPlatform(owner.Address, commonaddresses, addresses, did)
+		//if err != nil {
+		//	return err
+		//}
+		//
+		//time.Sleep(3*time.Second)
+		//
+		////recharge
+		//charge:=client.GetChargeService()
+		//_, err =charge.RechargeBatch(owner.Address,commonaddresses,amount)
+		//if err != nil {
+		//	return err
+		//}
+		//
+
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
 
+	time.Sleep(3 * time.Second)
+	//send balance
+	root, err := d.base.QueryRootAccount()
+	if err != nil {
+		return nil, err
+	}
+	msgs := d.base.CreateGasMsg(root.Address, bech32addresses)
+	tx := d.base.CreateBaseTxSync(root.Address, "")
+	tx.Gas = d.base.CreateAccount(params.Count)
+	_, err = d.base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
+	if err != nil {
+		log.Error("create account", "build and send, error:", err)
+		return nil, types.ErrBuildAndSend
+	}
 	result := &dto.AccountRes{}
 	result.Accounts = addresses
 	return result, nil
 }
 
-func (svc *ddcAccount) Show(params dto.AccountsP) (*dto.AccountsRes, error) {
+func (d *ddcAccount) Show(params dto.AccountsP) (*dto.AccountsRes, error) {
 	result := &dto.AccountsRes{}
 	result.Offset = params.Offset
 	result.Limit = params.Limit
@@ -172,7 +341,7 @@ func (svc *ddcAccount) Show(params dto.AccountsP) (*dto.AccountsRes, error) {
 	return result, nil
 }
 
-func (svc *ddcAccount) History(params dto.AccountsP) (*dto.AccountOperationRecordRes, error) {
+func (d *ddcAccount) History(params dto.AccountsP) (*dto.AccountOperationRecordRes, error) {
 	result := &dto.AccountOperationRecordRes{
 		PageRes: dto.PageRes{
 			Offset:     params.Offset,

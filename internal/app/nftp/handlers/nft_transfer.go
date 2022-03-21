@@ -2,10 +2,10 @@ package handlers
 
 import (
 	"context"
+	"github.com/ethereum/go-ethereum/common"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 	"strings"
 
-	types2 "github.com/irisnet/core-sdk-go/types"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
@@ -47,7 +47,7 @@ func (h nftTransfer) TransferNftClassByID(ctx context.Context, request interface
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientLen)
 	}
 	// 校验接收者地址是否满足当前链的地址规范
-	if err := types2.ValidateAccAddress(recipient); err != nil {
+	if !common.IsHexAddress(recipient) {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
 	}
 
@@ -86,7 +86,7 @@ func (h nftTransfer) TransferNftByNftId(ctx context.Context, request interface{}
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientLen)
 	}
 	// 校验接收者地址是否满足当前链的地址规范
-	if err := types2.ValidateAccAddress(recipient); err != nil {
+	if !common.IsHexAddress(recipient) {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
 	}
 	tagBytes, err := h.ValidateTag(req.Tag)
@@ -98,7 +98,7 @@ func (h nftTransfer) TransferNftByNftId(ctx context.Context, request interface{}
 	authData := h.AuthData(ctx)
 	params := dto.TransferNftByNftIdP{
 		ClassID:    h.ClassID(ctx),
-		Owner:      h.Owner(ctx),
+		Sender:     h.Owner(ctx),
 		NftId:      h.NftId(ctx),
 		Recipient:  recipient,
 		ChainID:    authData.ChainId,
@@ -106,19 +106,26 @@ func (h nftTransfer) TransferNftByNftId(ctx context.Context, request interface{}
 		PlatFormID: authData.PlatformId,
 		Tag:        tagBytes,
 	}
+	//不能自己转让给自己
+	//400
+	if params.Recipient == params.Sender {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrSelfTransfer)
+	}
+
 	service, ok := h.svc[authData.Module]
 	if !ok {
 		return nil, types.ErrModules
 	}
+
 	return service.TransferNFT(params)
 }
 
 func (h nftTransfer) ClassID(ctx context.Context) string {
-	class_id := ctx.Value("class_id")
-	if class_id == nil {
+	classId := ctx.Value("class_id")
+	if classId == nil {
 		return ""
 	}
-	return class_id.(string)
+	return classId.(string)
 }
 
 func (h nftTransfer) Owner(ctx context.Context) string {

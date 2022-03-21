@@ -42,7 +42,7 @@ func NewDDCClass(base *service.Base) *service.NFTClassBase {
 	}
 }
 
-func (d *DDCClass) List(params dto.NftClassesP) (*dto.NftClassesRes, error) {
+func (svc *DDCClass) List(params dto.NftClassesP) (*dto.NftClassesRes, error) {
 	result := &dto.NftClassesRes{
 		PageRes: dto.PageRes{
 			Offset:     params.Offset,
@@ -159,7 +159,7 @@ func (d *DDCClass) List(params dto.NftClassesP) (*dto.NftClassesRes, error) {
 	return result, nil
 }
 
-func (d *DDCClass) Show(params dto.NftClassesP) (*dto.NftClassRes, error) {
+func (svc *DDCClass) Show(params dto.NftClassesP) (*dto.NftClassRes, error) {
 	var err error
 	var classOne *models.TDDCClass
 	var count int64
@@ -214,7 +214,7 @@ func (d *DDCClass) Show(params dto.NftClassesP) (*dto.NftClassRes, error) {
 	return result, nil
 }
 
-func (d *DDCClass) Create(params dto.CreateNftClassP) (*dto.TxRes, error) {
+func (svc *DDCClass) Create(params dto.CreateNftClassP) (*dto.TxRes, error) {
 	//owner不能为project外的账户
 	_, err := models.TDDCAccounts(
 		models.TDDCAccountWhere.ProjectID.EQ(params.ProjectID),
@@ -256,8 +256,8 @@ func (d *DDCClass) Create(params dto.CreateNftClassP) (*dto.TxRes, error) {
 	message := []interface{}{createDenomMsg}
 	messageBytes, _ := json.Marshal(message)
 	code := fmt.Sprintf("%s%s%s", params.Owner, models.TTXSOperationTypeIssueClass, time.Now().String())
-	taskId := d.base.EncodeData(code)
-	hash := d.base.EncodeData(string(createDenomMsgByte))
+	taskId := svc.base.EncodeData(code)
+	hash := svc.base.EncodeData(string(createDenomMsgByte))
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		ttx := models.TDDCTX{
 			ProjectID:     params.ProjectID,
