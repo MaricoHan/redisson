@@ -25,7 +25,7 @@ import (
 )
 
 type DDC721Transfer struct {
-	base *service.Base
+	base          *service.Base
 	ddc721Service *service2.DDC721Service
 }
 
@@ -35,7 +35,7 @@ func NewDDCTransfer(base *service.Base) *service.TransferBase {
 	return &service.TransferBase{
 		Module: service.DDC,
 		Service: &DDC721Transfer{
-			base: base,
+			base:          base,
 			ddc721Service: ddc721Service,
 		},
 	}
@@ -221,7 +221,7 @@ func (d DDC721Transfer) TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRes,
 		txId, err := d.base.UndoDDCTxIntoDataBase(params.Sender,
 			models.TDDCTXSOperationTypeTransferNFT,
 			taskId,
-			res.TxHash,
+			taskId,
 			params.ProjectID,
 			messageByte,
 			params.Tag,
@@ -229,7 +229,7 @@ func (d DDC721Transfer) TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRes,
 			service.TransFer,
 			exec)
 		if err != nil {
-			log.Debug("transfer nft by index", "tx Into DataBase error:", err.Error())
+			log.Error("transfer ddc by ddcId", "tx Into DataBase error:", err.Error())
 			return types.ErrInternal
 		}
 

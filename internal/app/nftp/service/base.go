@@ -6,11 +6,12 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
+	"strings"
+
 	ddc "github.com/bianjieai/ddc-sdk-go/app"
 	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"
-	"strings"
 
 	sdk "github.com/irisnet/core-sdk-go"
 	"github.com/irisnet/core-sdk-go/bank"
@@ -50,13 +51,13 @@ func NewBase(sdkClient sdk.Client, gas uint64, denom string, amount int64) *Base
 
 func NewDDCClient() *ddc.DDCSdkClient {
 	ClientBuilder := ddc.DDCSdkClientBuilder{}
-	DDCClient := ClientBuilder.SetGatewayUrl(config.Get().Ddc.Ddc_gateway_url).
+	DDCClient := ClientBuilder.SetGatewayUrl(config.Get().DDC.DDCGatewayUrl).
 		SetSignEventListener(new(SignListener)).
 		SetGasPrice(1e10).
-		SetAuthorityAddress(config.Get().Ddc.Ddc_authority_address).
-		SetChargeAddress(config.Get().Ddc.Ddc_charge_address).
-		SetDDC721Address(config.Get().Ddc.Ddc_721_address).
-		SetDDC1155Address(config.Get().Ddc.Ddc_1155_address).
+		SetAuthorityAddress(config.Get().DDC.DDCAuthorityAddress).
+		SetChargeAddress(config.Get().DDC.DDCChargeAddress).
+		SetDDC721Address(config.Get().DDC.DDC721Address).
+		SetDDC1155Address(config.Get().DDC.DDC1155Address).
 		Build()
 	return DDCClient
 }

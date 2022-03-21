@@ -233,7 +233,7 @@ func (svc *DDCClass) Create(params dto.CreateNftClassP) (*dto.TxRes, error) {
 	var data = []byte(params.Owner)
 	data = append(data, []byte(params.Name)...)
 	data = append(data, []byte(strconv.FormatInt(time.Now().Unix(), 10))...)
-	data = append(data, []byte(fmt.Sprintf("%svc", rand.Int()))...)
+	data = append(data, []byte(fmt.Sprintf("%d", rand.Int()))...)
 	classId := ddcNftp + strings.ToLower(hex.EncodeToString(tmhash.Sum(data)))
 
 	createDenomMsg := nft.MsgIssueDenom{

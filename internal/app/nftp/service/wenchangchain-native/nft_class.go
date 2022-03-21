@@ -6,13 +6,15 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-	"gitlab.bianjie.ai/irita-paas/open-api/config"
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
+
 	"math/rand"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"gitlab.bianjie.ai/irita-paas/open-api/config"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 
 	"github.com/friendsofgo/errors"
 	sdktype "github.com/irisnet/core-sdk-go/types"

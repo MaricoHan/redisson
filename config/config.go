@@ -14,7 +14,7 @@ type (
 		Server Server `mapstructure:"server"`
 		Redis  Redis  `mapstructure:"redis"`
 		Chain  Chain  `mapstructure:"chain"`
-		Ddc    Ddc    `mapstructure:"ddc"`
+		DDC    DDC    `mapstructure:"ddc"`
 	}
 
 	// Mysql define a struct for mysql connect
@@ -70,13 +70,12 @@ type (
 		BSNProjectId       string `mapstructure:"bsn_project_id"`
 	}
 
-	// Server define a struct for http server
-	Ddc struct {
-		Ddc_authority_address string `mapstructure:"ddc_authority_address"`
-		Ddc_charge_address    string `mapstructure:"ddc_charge_address"`
-		Ddc_721_address       string `mapstructure:"ddc_721_address"`
-		Ddc_1155_address      string `mapstructure:"ddc_1155_address"`
-		Ddc_gateway_url       string `mapstructure:"ddc_gateway_url"`
+	DDC struct {
+		DDCAuthorityAddress string `mapstructure:"ddc_authority_address"`
+		DDCChargeAddress    string `mapstructure:"ddc_charge_address"`
+		DDC721Address       string `mapstructure:"ddc_721_address"`
+		DDC1155Address      string `mapstructure:"ddc_1155_address"`
+		DDCGatewayUrl       string `mapstructure:"ddc_gateway_url"`
 	}
 )
 

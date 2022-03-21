@@ -52,6 +52,7 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 	key := fmt.Sprintf("%s:%s", appID, req.OperationID)
 	ok, err := redis.Has(key)
 	if err != nil {
+		log.Error("redis error", "redis error:", err)
 		writeInternalResp(w)
 		return
 	}

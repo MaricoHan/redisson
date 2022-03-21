@@ -5,11 +5,11 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/friendsofgo/errors"
 	"io/ioutil"
 	"strings"
 	"time"
 
+	"github.com/friendsofgo/errors"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -258,11 +258,11 @@ func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) 
 		return nil, err
 	}
 
-	time.Sleep(3*time.Second)
+	time.Sleep(3 * time.Second)
 	//send balance
 	root, err := d.base.QueryRootAccount()
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	msgs := d.base.CreateGasMsg(root.Address, bech32addresses)
 	tx := d.base.CreateBaseTxSync(root.Address, "")
@@ -270,7 +270,7 @@ func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) 
 	_, err = d.base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
 	if err != nil {
 		log.Error("create account", "build and send, error:", err)
-		return nil,types.ErrBuildAndSend
+		return nil, types.ErrBuildAndSend
 	}
 	result := &dto.AccountRes{}
 	result.Accounts = addresses

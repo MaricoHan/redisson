@@ -50,7 +50,7 @@ func (s *SignListener) SignEvent(sender common.Address, tx *types.Transaction) (
 	}
 
 	//提取私钥
-	privateKey, err := StringToPrivateKey("0x" + fmt.Sprintf("%s",priKey))
+	privateKey, err := StringToPrivateKey("0x" + fmt.Sprintf("%s", priKey))
 	if err != nil {
 		log.Fatalf("StringToPrivateKey failed:%v", err)
 	}
