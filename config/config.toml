@@ -12,7 +12,7 @@ bsn_project_id = "43e8c1df993d4ab099b110b00bde4a12"
 
 [mysql]
 db_name = "nftp_open_api"
-host = "192.168.150.60"
+host = "192.168.150.40"
 port = "23306"
 user = "nftp"
 password = "nftppassword"
