@@ -499,7 +499,9 @@ func (d DDC) Delete(params dto.DeleteNftByNftIdP) (*dto.TxRes, error) {
 
 	return &dto.TxRes{TaskId: taskId}, nil
 }
-func (d DDC) List(params dto.NftsP) (result *dto.NftsRes, err error) {
+func (d DDC) List(params dto.NftsP) (*dto.NftsRes, error) {
+	result := &dto.NftsRes{}
+	var err error
 	result.Offset = params.Offset
 	result.Limit = params.Limit
 	result.Nfts = []*dto.Nft{}
