@@ -4,7 +4,7 @@
 FROM golang:1.17.5-alpine3.15 as builder
 
 # Set up dependencies
-ENV PACKAGES make gcc git
+ENV PACKAGES make gcc git musl-dev
 
 WORKDIR $GOPATH/src
 COPY . .
