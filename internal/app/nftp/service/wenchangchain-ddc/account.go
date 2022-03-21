@@ -141,6 +141,7 @@ func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) 
 				//查询有授权权限账户
 				owner, err := models.TDDCAccounts(
 					models.TDDCAccountWhere.ProjectID.EQ(uint64(0)),
+					models.TDDCAccountWhere.ID.EQ(uint64(1)),
 				).OneG(context.Background())
 				if err != nil {
 					//500
