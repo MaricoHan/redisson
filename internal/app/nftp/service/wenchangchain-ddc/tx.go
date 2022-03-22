@@ -78,7 +78,7 @@ func (t *Tx) Show(params dto.TxResultByTxHashP) (*dto.TxResultByTxHashRes, error
 			err = json.Unmarshal(bytes, &issueClass)
 			if err != nil {
 				//500
-				log.Error("ddc query tx by hash", "unmarshal tx message error:", err.Error())
+				log.Error("ddc issue class", "unmarshal tx message error:", err.Error())
 				return nil, types.ErrInternal
 			}
 			result.ClassID = issueClass.Id
@@ -88,7 +88,7 @@ func (t *Tx) Show(params dto.TxResultByTxHashP) (*dto.TxResultByTxHashRes, error
 			err = json.Unmarshal(bytes, &transferClass)
 			if err != nil {
 				//500
-				log.Error("ddc query tx by hash", "unmarshal tx message error:", err.Error())
+				log.Error("ddc transfer class", "unmarshal tx message error:", err.Error())
 				return nil, types.ErrInternal
 			}
 			result.ClassID = transferClass.Id
