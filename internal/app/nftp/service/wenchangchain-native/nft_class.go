@@ -36,9 +36,7 @@ type NFTClass struct {
 func NewNFTClass(base *service.Base) *service.NFTClassBase {
 	return &service.NFTClassBase{
 		Module: service.NATIVE,
-		Service: &NFTClass{
-			base: base,
-		},
+		Service: &NFTClass{base: base},
 	}
 }
 
@@ -83,9 +81,9 @@ func (svc *NFTClass) List(params dto.NftClassesP) (*dto.NftClassesRes, error) {
 			orderBy := ""
 			switch params.SortBy {
 			case "DATE_DESC":
-				orderBy = fmt.Sprintf("%s DESC", models.TClassColumns.CreateAt)
+				orderBy = fmt.Sprintf("%s DESC", models.TClassColumns.Timestamp)
 			case "DATE_ASC":
-				orderBy = fmt.Sprintf("%s ASC", models.TClassColumns.CreateAt)
+				orderBy = fmt.Sprintf("%s ASC", models.TClassColumns.Timestamp)
 			}
 			queryMod = append(queryMod, qm.OrderBy(orderBy))
 		}

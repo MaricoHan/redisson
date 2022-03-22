@@ -55,7 +55,12 @@ func NewDDCAccount(base *service.Base) *service.AccountBase {
 	}
 }
 
-const hdPathPrefix = hd.BIP44Prefix + "0'/0/"
+const (
+	hdPathPrefix      = hd.BIP44Prefix + "0'/0/"
+	rootProjectID     = 0 //根账户的 projectID
+	operatorIDInTable = 1 //operator 在表中的 ID
+	platformIDInTable = 2 //platform 在表中的 ID
+)
 
 func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) {
 	// 写入数据库
@@ -140,8 +145,8 @@ func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) 
 			if env != "stage" {
 				//查询有授权权限账户
 				owner, err := models.TDDCAccounts(
-					models.TDDCAccountWhere.ProjectID.EQ(uint64(0)),
-					models.TDDCAccountWhere.ID.EQ(uint64(1)),
+					models.TDDCAccountWhere.ProjectID.EQ(uint64(rootProjectID)),
+					models.TDDCAccountWhere.ID.EQ(uint64(operatorIDInTable)),
 				).OneG(context.Background())
 				if err != nil {
 					//500
@@ -196,7 +201,7 @@ func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) 
 			return types.ErrInternal
 		}
 
-		if env == "stage" {
+		if env == "stage" || env == "prod" {
 			//bsn 账户授权
 			time := 5 * time.Second
 			ctx, _ := context.WithTimeout(context.Background(), time)

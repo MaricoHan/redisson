@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
+
 	"math/rand"
 	"strconv"
 	"strings"
@@ -12,7 +12,7 @@ import (
 
 	"database/sql"
 	"encoding/hex"
-
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/friendsofgo/errors"
 	"github.com/irisnet/irismod-sdk-go/nft"
 	"github.com/tendermint/tendermint/crypto/tmhash"
@@ -84,9 +84,9 @@ func (svc *DDCClass) List(params dto.NftClassesP) (*dto.NftClassesRes, error) {
 			orderBy := ""
 			switch params.SortBy {
 			case "DATE_DESC":
-				orderBy = fmt.Sprintf("%s DESC", models.TDDCClassColumns.CreateAt)
+				orderBy = fmt.Sprintf("%s DESC", models.TDDCClassColumns.Timestamp)
 			case "DATE_ASC":
-				orderBy = fmt.Sprintf("%s ASC", models.TDDCClassColumns.CreateAt)
+				orderBy = fmt.Sprintf("%s ASC", models.TDDCClassColumns.Timestamp)
 			}
 			queryMod = append(queryMod, qm.OrderBy(orderBy))
 		}
@@ -263,7 +263,7 @@ func (svc *DDCClass) Create(params dto.CreateNftClassP) (*dto.TxRes, error) {
 	messageBytes, _ := json.Marshal(message)
 	code := fmt.Sprintf("%s%s%s", params.Owner, models.TTXSOperationTypeIssueClass, time.Now().String())
 	taskId := svc.base.EncodeData(code)
-	hash := svc.base.EncodeData(string(createDenomMsgByte))
+	hash := "0x" + svc.base.EncodeData(string(createDenomMsgByte)) //和上链返回的哈希保持一致
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		ttx := models.TDDCTX{
 			ProjectID:     params.ProjectID,

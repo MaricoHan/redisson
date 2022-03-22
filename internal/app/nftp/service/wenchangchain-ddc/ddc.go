@@ -99,8 +99,8 @@ func (d DDC) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 
 		//platform 发行
 		platform, err := models.TDDCAccounts(
-			models.TDDCAccountWhere.ProjectID.EQ(uint64(0)),
-			models.TDDCAccountWhere.ID.EQ(uint64(2)),
+			models.TDDCAccountWhere.ProjectID.EQ(uint64(rootProjectID)),
+			models.TDDCAccountWhere.ID.EQ(uint64(platformIDInTable)),
 		).OneG(context.Background())
 		if err != nil {
 			//500
@@ -667,18 +667,18 @@ func (d DDC) History(params dto.NftOperationHistoryByNftIdP) (*dto.BNftOperation
 		queryMod = append(queryMod, models.TDDCMSGWhere.Operation.EQ(params.Operation))
 	}
 	if params.StartDate != nil {
-		queryMod = append(queryMod, models.TDDCMSGWhere.CreateAt.GTE(*params.StartDate))
+		queryMod = append(queryMod, models.TDDCMSGWhere.Timestamp.GTE(null.TimeFromPtr(params.StartDate)))
 	}
 	if params.EndDate != nil {
-		queryMod = append(queryMod, models.TDDCMSGWhere.CreateAt.LTE(*params.EndDate))
+		queryMod = append(queryMod, models.TDDCMSGWhere.Timestamp.LTE(null.TimeFromPtr(params.EndDate)))
 	}
 	if params.SortBy != "" {
 		orderBy := ""
 		switch params.SortBy {
 		case "DATE_DESC":
-			orderBy = fmt.Sprintf("%s DESC", models.TDDCMSGWhere.CreateAt)
+			orderBy = fmt.Sprintf("%s DESC", models.TDDCMSGColumns.Timestamp)
 		case "DATE_ASC":
-			orderBy = fmt.Sprintf("%s ASC", models.TDDCMSGWhere.CreateAt)
+			orderBy = fmt.Sprintf("%s ASC", models.TDDCMSGColumns.Timestamp)
 		}
 		queryMod = append(queryMod, qm.OrderBy(orderBy))
 	}
@@ -691,6 +691,7 @@ func (d DDC) History(params dto.NftOperationHistoryByNftIdP) (*dto.BNftOperation
 		int(params.Offset),
 		int(params.Limit),
 	)
+	
 	if err != nil {
 		// records not exist
 		if strings.Contains(err.Error(), service.SqlNotFound) {

@@ -37,9 +37,7 @@ type Nft struct {
 func NewNFT(base *service.Base) *service.NFTBase {
 	return &service.NFTBase{
 		Module: service.NATIVE,
-		Service: &Nft{
-			base: base,
-		},
+		Service: &Nft{base: base},
 	}
 }
 
@@ -487,18 +485,18 @@ func (svc *Nft) History(params dto.NftOperationHistoryByNftIdP) (*dto.BNftOperat
 		queryMod = append(queryMod, models.TMSGWhere.Operation.EQ(params.Operation))
 	}
 	if params.StartDate != nil {
-		queryMod = append(queryMod, models.TMSGWhere.CreateAt.GTE(*params.StartDate))
+		queryMod = append(queryMod, models.TMSGWhere.Timestamp.GTE(null.TimeFromPtr(params.StartDate)))
 	}
 	if params.EndDate != nil {
-		queryMod = append(queryMod, models.TMSGWhere.CreateAt.LTE(*params.EndDate))
+		queryMod = append(queryMod, models.TMSGWhere.Timestamp.GTE(null.TimeFromPtr(params.EndDate)))
 	}
 	if params.SortBy != "" {
 		orderBy := ""
 		switch params.SortBy {
 		case "DATE_DESC":
-			orderBy = fmt.Sprintf("%s DESC", models.TMSGColumns.CreateAt)
+			orderBy = fmt.Sprintf("%s DESC", models.TMSGColumns.Timestamp)
 		case "DATE_ASC":
-			orderBy = fmt.Sprintf("%s ASC", models.TMSGColumns.CreateAt)
+			orderBy = fmt.Sprintf("%s ASC", models.TMSGColumns.Timestamp)
 		}
 		queryMod = append(queryMod, qm.OrderBy(orderBy))
 	}

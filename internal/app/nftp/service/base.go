@@ -29,6 +29,8 @@ const (
 	MintFee  = 100 //BSN 发行 DDC 官方业务费
 	BurnFee  = 30  //BSN 销毁 DDC 官方业务费
 	TransFer = 30  //BSN 转让 DDC 官方业务费
+	rootProjectID =0 //根账户的 projectID
+	ConversionRatio = 100.0 //业务费与人民币换算比例 1元 = 100 业务费
 )
 
 var (
@@ -65,7 +67,7 @@ func NewDDCClient() *ddc.DDCSdkClient {
 func (m Base) QueryRootAccount() (*models.TAccount, error) {
 	//platform address
 	account, err := models.TAccounts(
-		models.TAccountWhere.ProjectID.EQ(uint64(0)),
+		models.TAccountWhere.ProjectID.EQ(uint64(rootProjectID)),
 	).OneG(context.Background())
 	if err != nil {
 		//500
@@ -541,7 +543,7 @@ func (m Base) GasThan(chainId, gas, platformId uint64) error {
 		}
 
 		//所有未支付的交易需要扣除的money = gasPrice * unPaidGas + 业务费
-		unPaidMoney := float64(unPaidGas)*gasPrice + float64(ddctx.BizFee.Int64/100.0)
+		unPaidMoney := float64(unPaidGas)*gasPrice + float64(ddctx.BizFee.Int64/ConversionRatio)
 
 		//platformId 的账户
 		pAccount, err := models.TPlatformAccounts(models.TPlatformAccountWhere.ID.EQ(platformId)).One(context.Background(), exec)
