@@ -5,10 +5,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/bianjieai/ddc-sdk-go/app/constant"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/bianjieai/ddc-sdk-go/app/constant"
 
 	service2 "github.com/bianjieai/ddc-sdk-go/app/service"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -126,7 +127,7 @@ func (d DDC) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 			From: common.HexToAddress(platform.Address),
 		}
 
-		gas, err := d.ddc721Service.EstimateGasLimit(opts,constant.ContrDDC721,constant.FuncSafeMint, common.HexToAddress(params.Recipient), params.Uri, []byte(params.Data))
+		gas, err := d.ddc721Service.EstimateGasLimit(opts, constant.ContrDDC721, constant.FuncSafeMint, common.HexToAddress(params.Recipient), params.Uri, []byte(params.Data))
 		if err != nil {
 			log.Error("create ddc", "get hash and gasLimit error:", err.Error())
 			return types.ErrInternal
@@ -374,7 +375,7 @@ func (d DDC) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 					From: common.HexToAddress(params.Sender),
 				}
 
-				gas, err := d.ddc721Service.EstimateGasLimit(opts,constant.ContrDDC721,constant.FuncSetURI, ddcId, params.Uri)
+				gas, err := d.ddc721Service.EstimateGasLimit(opts, constant.ContrDDC721, constant.FuncSetURI, ddcId, params.Uri)
 				if err != nil {
 					log.Error("edit ddc by nftId", "get hash and gasLimit error:", err.Error())
 					return types.ErrInternal
@@ -472,7 +473,7 @@ func (d DDC) Delete(params dto.DeleteNftByNftIdP) (*dto.TxRes, error) {
 		From: common.HexToAddress(params.Sender),
 	}
 	ddcId, _ := strconv.ParseInt(tDDC.NFTID, 10, 64)
-	gas, err := d.ddc721Service.EstimateGasLimit(&opts,constant.ContrDDC721,constant.FuncBurn, ddcId)
+	gas, err := d.ddc721Service.EstimateGasLimit(&opts, constant.ContrDDC721, constant.FuncBurn, ddcId)
 	if err != nil {
 		log.Error("delete ddc by ddcId", "failed to get gasLimit and txHash", err.Error())
 		return nil, types.ErrInternal
