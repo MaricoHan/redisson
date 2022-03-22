@@ -282,11 +282,11 @@ func (d DDC) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 			messageByte, _ := json.Marshal(msgEditNFT)
 			code := fmt.Sprintf("%s%s%s", params.Sender, models.TDDCTXSOperationTypeEditNFT, time.Now().String())
 			taskId = d.base.EncodeData(code)
-
+			hash := "0x" + d.base.EncodeData(string(messageByte))
 			//tx 表
 			ttx := models.TDDCTX{
 				ProjectID:     params.ProjectID,
-				Hash:          taskId,
+				Hash:          hash,
 				OriginData:    null.BytesFrom(messageByte),
 				OperationType: models.TDDCTXSOperationTypeEditNFT,
 				Status:        models.TDDCTXSStatusSuccess,
@@ -691,7 +691,7 @@ func (d DDC) History(params dto.NftOperationHistoryByNftIdP) (*dto.BNftOperation
 		int(params.Offset),
 		int(params.Limit),
 	)
-	
+
 	if err != nil {
 		// records not exist
 		if strings.Contains(err.Error(), service.SqlNotFound) {

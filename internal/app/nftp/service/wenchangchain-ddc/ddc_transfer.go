@@ -99,7 +99,7 @@ func (d DDC721Transfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*dto
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		code := fmt.Sprintf("%s%s%s", params.Owner, models.TDDCTXSOperationTypeTransferClass, time.Now().String())
 		taskId = d.base.EncodeData(code)
-		hash := d.base.EncodeData(string(msgsByte))
+		hash := "0x" + d.base.EncodeData(string(msgsByte))
 		// Tx into database
 		ttx := models.TDDCTX{
 			ProjectID:     params.ProjectID,
