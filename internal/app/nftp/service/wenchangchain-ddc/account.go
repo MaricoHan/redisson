@@ -91,7 +91,6 @@ func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) 
 		}
 
 		for i = 0; i < params.Count; i++ {
-
 			index := accOffsetStart + i
 			hdPath := fmt.Sprintf("%s%d", hdPathPrefix, index)
 			res, err := sdkcrypto.NewMnemonicKeyManagerWithHDPath(
