@@ -375,6 +375,8 @@ func (m Base) Grant(address []string) (string, error) {
 	baseTx := m.CreateBaseTxSync(root.Address, config.Get().Server.DefaultKeyPassword)
 	//动态计算gas
 	baseTx.Gas = m.createAccount(int64(len(address)))
+        // TODO int64 可能有溢出风险
+	baseTx.Fee= sdktype.NewDecCoins(sdktype.NewDecCoin(config.Get().Chain.Denom, sdktype.NewInt(int64(baseTx.Gas))))
 	res, err := m.BuildAndSend(msgs, baseTx)
 	if err != nil {
 		//500
