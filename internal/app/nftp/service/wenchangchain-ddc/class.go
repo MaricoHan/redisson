@@ -14,7 +14,6 @@ import (
 	"encoding/hex"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/friendsofgo/errors"
-	"github.com/irisnet/irismod-sdk-go/nft"
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -41,6 +40,15 @@ func NewDDCClass(base *service.Base) *service.NFTClassBase {
 			base: base,
 		},
 	}
+}
+
+// NftClass nft类别
+type NftClass struct {
+	Id        string `json:"id"`
+	Name      string `json:"name"`
+	Symbol    string `json:"symbol"`
+	URI       string `json:"uri"`
+	Recipient string `json:"recipient"`
 }
 
 func (svc *DDCClass) List(params dto.NftClassesP) (*dto.NftClassesRes, error) {
@@ -242,24 +250,19 @@ func (svc *DDCClass) Create(params dto.CreateNftClassP) (*dto.TxRes, error) {
 	data = append(data, []byte(fmt.Sprintf("%d", rand.Int()))...)
 	classId := ddcNftp + strings.ToLower(hex.EncodeToString(tmhash.Sum(data)))
 
-	createDenomMsg := nft.MsgIssueDenom{
-		Id:               classId,
-		Name:             params.Name,
-		Sender:           params.Owner,
-		Symbol:           params.Symbol,
-		MintRestricted:   true,
-		UpdateRestricted: false,
-		Description:      params.Description,
-		Uri:              params.Uri,
-		UriHash:          params.UriHash,
-		Data:             params.Data,
+	createDenomMsg := NftClass{
+		Id:        classId,
+		Name:      params.Name,
+		Symbol:    params.Symbol,
+		URI:       params.Uri,
+		Recipient: params.Owner,
 	}
-	createDenomMsgByte, err := createDenomMsg.Marshal()
+	createDenomMsgByte, err := json.Marshal(createDenomMsg)
 	if err != nil {
 		log.Error("create ddc class", "createDenomMsgByte marshal error:", err.Error())
 		return nil, types.ErrInternal
 	}
-	message := []interface{}{createDenomMsg}
+	message := createDenomMsg
 	messageBytes, _ := json.Marshal(message)
 	code := fmt.Sprintf("%s%s%s", params.Owner, models.TTXSOperationTypeIssueClass, time.Now().String())
 	taskId := svc.base.EncodeData(code)
@@ -305,13 +308,13 @@ func (svc *DDCClass) Create(params dto.CreateNftClassP) (*dto.TxRes, error) {
 			ClassID:     createDenomMsg.Id,
 			Name:        null.StringFrom(createDenomMsg.Name),
 			Symbol:      null.StringFrom(createDenomMsg.Symbol),
-			URI:         null.StringFrom(createDenomMsg.Uri),
-			URIHash:     null.StringFrom(createDenomMsg.UriHash),
-			Description: null.StringFrom(createDenomMsg.Description),
-			Owner:       createDenomMsg.Sender,
+			URI:         null.StringFrom(params.Uri),
+			URIHash:     null.StringFrom(params.UriHash),
+			Description: null.StringFrom(params.Description),
+			Owner:       params.Owner,
 			Status:      models.TClassesStatusActive,
 			Timestamp:   null.TimeFrom(time.Now()),
-			Metadata:    null.StringFrom(createDenomMsg.Data),
+			Metadata:    null.StringFrom(params.Data),
 		}
 		err = ddcClass.Insert(context.Background(), exec, boil.Infer())
 		if err != nil {

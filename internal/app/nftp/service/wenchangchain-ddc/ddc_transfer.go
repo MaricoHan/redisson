@@ -87,9 +87,8 @@ func (d DDC721Transfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*dto
 		Sender:    params.Owner,
 		Recipient: params.Recipient,
 	}
-
 	//sign
-	msgsByte, err := msgs.Marshal()
+	msgsByte, err := json.Marshal(msgs)
 	if err != nil {
 		log.Debug("transfer ddc class", "msgs Marshal error:", err.Error())
 		return nil, types.ErrBuildAndSign
@@ -104,7 +103,7 @@ func (d DDC721Transfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*dto
 		ttx := models.TDDCTX{
 			ProjectID:     params.ProjectID,
 			Hash:          hash,
-			OriginData:    null.BytesFrom(msgsByte),
+			OriginData:    null.BytesFromPtr(&msgsByte),
 			OperationType: models.TDDCTXSOperationTypeTransferClass,
 			Status:        models.TDDCTXSStatusSuccess,
 			Sender:        null.StringFrom(params.Owner),
@@ -120,7 +119,6 @@ func (d DDC721Transfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*dto
 			log.Debug("transfer nft class", "Tx Into DataBase error:", err.Error())
 			return err
 		}
-
 		msgsModule := models.TDDCMSG{
 			ProjectID: ttx.ProjectID,
 			TXHash:    ttx.Hash,
