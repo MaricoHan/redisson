@@ -267,6 +267,8 @@ func (d DDC) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 				data = tDDC.Metadata.String
 			}
 
+			uriHash := tDDC.URIHash.String
+
 			// create rawMsg
 			msgEditNFT := nft.MsgEditNFT{
 				Id:      tDDC.NFTID,
@@ -275,14 +277,14 @@ func (d DDC) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 				URI:     uri,
 				Data:    data,
 				Sender:  params.Sender,
-				UriHash: "[do-not-modify]",
+				UriHash: uriHash,
 			}
 
 			// Tx into database
 			messageByte, _ := json.Marshal(msgEditNFT)
 			code := fmt.Sprintf("%s%s%s", params.Sender, models.TDDCTXSOperationTypeEditNFT, time.Now().String())
 			taskId = d.base.EncodeData(code)
-			hash := "0x" + d.base.EncodeData(string(messageByte))
+			hash := "0x" + d.base.EncodeData(string(messageByte)+time.Now().String())
 			//tx 表
 			ttx := models.TDDCTX{
 				ProjectID:     params.ProjectID,
@@ -306,7 +308,7 @@ func (d DDC) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 			//msg 表
 			tmsg := models.TDDCMSG{
 				ProjectID: params.ProjectID,
-				TXHash:    taskId,
+				TXHash:    hash,
 				Module:    models.TDDCMSGSModuleNFT,
 				Operation: models.TDDCMSGSOperationEdit,
 				Signer:    params.Sender,
@@ -323,9 +325,11 @@ func (d DDC) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 			tDDC.Name = null.StringFrom(params.Name)
 			tDDC.URI = null.StringFrom(uri)
 			tDDC.Metadata = null.StringFrom(data)
-			tDDC.URIHash = null.StringFrom("[do-not-modify]")
 			ok, err := tDDC.Update(context.Background(), exec, boil.Infer())
-			if err != nil || ok != 1 {
+			if ok != 1 {
+				return types.ErrNftStatus
+			}
+			if err != nil {
 				log.Error("edit ddc", "ddc status update error: ", err)
 				return types.ErrInternal
 			}
@@ -355,7 +359,7 @@ func (d DDC) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 					URI:     uri,
 					Data:    data,
 					Sender:  params.Sender,
-					UriHash: "[do-not-modify]",
+					UriHash: tDDC.URIHash.String,
 				}
 
 				//签名后的交易计算动态 gas

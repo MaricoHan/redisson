@@ -35,7 +35,7 @@ type NFTClass struct {
 
 func NewNFTClass(base *service.Base) *service.NFTClassBase {
 	return &service.NFTClassBase{
-		Module: service.NATIVE,
+		Module:  service.NATIVE,
 		Service: &NFTClass{base: base},
 	}
 }

@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/mw"
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"strconv"
 	"strings"
 	"unicode"
+
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/mw"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 
 	"github.com/asaskevich/govalidator"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"

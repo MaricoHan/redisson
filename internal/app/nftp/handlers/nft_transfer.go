@@ -3,9 +3,9 @@ package handlers
 import (
 	"context"
 	"strings"
-	
+
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
-	
+
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"

@@ -57,18 +57,16 @@ func NewDDCAccount(base *service.Base) *service.AccountBase {
 
 const (
 	hdPathPrefix      = hd.BIP44Prefix + "0'/0/"
-	rootProjectID     = 0 //根账户的 projectID
-	operatorIDInTable = 1 //operator 在表中的 ID
-	platformIDInTable = 2 //platform 在表中的 ID
+	rootProjectID     = 0                 //根账户的 projectID
+	operatorIDInTable = 1                 //operator 在表中的 ID
+	platformIDInTable = 2                 //platform 在表中的 ID
+	platformDID       = "did:ddcplatform" //platform 在合约中的 DID
 )
 
 func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) {
 	// 写入数据库
 	// sdk 创建账户
 	var addresses, bech32addresses []string
-	//var commonaddresses []common.Address
-	//var amount []*big.Int
-	//adddid := make(map[string]uint64)
 	client := service.NewDDCClient()
 	env := config.Get().Server.Env
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
@@ -142,35 +140,6 @@ func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) 
 				return err
 			}
 
-			if env != "stage" {
-				//查询有授权权限账户
-				owner, err := models.TDDCAccounts(
-					models.TDDCAccountWhere.ProjectID.EQ(uint64(rootProjectID)),
-					models.TDDCAccountWhere.ID.EQ(uint64(operatorIDInTable)),
-				).OneG(context.Background())
-				if err != nil {
-					//500
-					log.Error("create account", "query owner error:", err.Error())
-					return types.ErrInternal
-				}
-
-				//add did
-				authority := client.GetAuthorityService()
-				_, err = authority.AddAccountByOperator(owner.Address, addr, addr, "did:"+addr, "did:ddcplatform")
-				if err != nil {
-					return err
-				}
-
-				//time.Sleep(5 * time.Second)
-
-				////recharge
-				//charge := client.GetChargeService()
-				//_, err = charge.Recharge(owner.Address, addr, 20)
-				//if err != nil {
-				//	return err
-				//}
-			}
-
 			tmp := &models.TDDCAccount{
 				ProjectID: params.ProjectID,
 				Address:   addr,
@@ -183,11 +152,6 @@ func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) 
 			tAccounts = append(tAccounts, tmp)
 			addresses = append(addresses, addr)
 			bech32addresses = append(bech32addresses, tmpAddress)
-			//commonaddresses = append(commonaddresses, common.HexToAddress(addr))
-			//did = append(did, "did:"+addr)
-			//amount = append(amount, big.NewInt(20))
-
-			//adddid[addr] = 0
 		}
 		err = tAccounts.InsertAll(context.Background(), exec)
 		if err != nil {
@@ -232,32 +196,27 @@ func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) 
 				log.Error("create account", "group_error:", err)
 				return types.ErrInternal
 			}
+		} else {
+			//查询有授权权限账户
+			owner, err := models.TDDCAccounts(
+				models.TDDCAccountWhere.ProjectID.EQ(uint64(rootProjectID)),
+				models.TDDCAccountWhere.ID.EQ(uint64(operatorIDInTable)),
+			).OneG(context.Background())
+			if err != nil {
+				//500
+				log.Error("create account", "query owner error:", err.Error())
+				return types.ErrInternal
+			}
+
+			for i := 0; i < len(addresses); i++ {
+				//add did
+				authority := client.GetAuthorityService()
+				_, err = authority.AddAccountByOperator(owner.Address, addresses[i], addresses[i], "did:"+addresses[i], platformDID)
+				if err != nil {
+					return err
+				}
+			}
 		}
-
-		//// fee grant
-		//_, err = d.base.Grant(bech32addresses)
-		//if err != nil {
-		//	return err
-		//}
-
-		//新合约
-		//// add did
-		//authority := client.GetAuthorityService()
-		//_, err = authority.AddBatchAccountByPlatform(owner.Address, commonaddresses, addresses, did)
-		//if err != nil {
-		//	return err
-		//}
-		//
-		//time.Sleep(3*time.Second)
-		//
-		////recharge
-		//charge:=client.GetChargeService()
-		//_, err =charge.RechargeBatch(owner.Address,commonaddresses,amount)
-		//if err != nil {
-		//	return err
-		//}
-		//
-
 		return nil
 	})
 	if err != nil {

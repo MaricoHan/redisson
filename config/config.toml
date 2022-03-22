@@ -36,7 +36,6 @@ amount = 200000
 account_gas = 4000000
 denom = "uirita"
 
-
 [redis]
 address = "127.0.0.1:6379"
 db = 0

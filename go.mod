@@ -138,3 +138,5 @@ replace gitlab.bianjie.ai/irita-paas/orms/orm-nft => gitlab.bianjie.ai/irita-paa
 replace github.com/tendermint/tendermint => github.com/bianjieai/tendermint v0.34.1-irita-210113
 
 replace github.com/prometheus/common v0.32.1 => github.com/prometheus/common v0.23.0
+
+replace github.com/irisnet/core-sdk-go v0.0.0-20220317092329-ae0bba5371c8 => ../core-sdk-go

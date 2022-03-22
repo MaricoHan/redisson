@@ -36,7 +36,7 @@ type Nft struct {
 
 func NewNFT(base *service.Base) *service.NFTBase {
 	return &service.NFTBase{
-		Module: service.NATIVE,
+		Module:  service.NATIVE,
 		Service: &Nft{base: base},
 	}
 }
@@ -211,6 +211,7 @@ func (svc *Nft) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 	if data == "" {
 		data = tNft.Metadata.String
 	}
+	uriHash := tNft.URIHash.String
 
 	// create rawMsg
 	msgEditNFT := nft.MsgEditNFT{
@@ -220,7 +221,7 @@ func (svc *Nft) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 		URI:     uri,
 		Data:    data,
 		Sender:  params.Sender,
-		UriHash: "[do-not-modify]",
+		UriHash: uriHash,
 	}
 
 	// build and sign transaction
