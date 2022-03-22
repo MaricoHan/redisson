@@ -5,6 +5,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"io/ioutil"
 	"strings"
 	"time"
@@ -133,7 +135,7 @@ func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) 
 			}
 
 			//hex address
-			ddc721 := client.GetDDC721Service(true)
+			ddc721 := client.GetDDC721Service()
 			addr, err := ddc721.Bech32ToHex(tmpAddress)
 			if err != nil {
 				return err
@@ -210,7 +212,10 @@ func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) 
 			for i := 0; i < len(addresses); i++ {
 				//add did
 				authority := client.GetAuthorityService()
-				_, err = authority.AddAccountByOperator(owner.Address, addresses[i], addresses[i], "did:"+addresses[i], platformDID)
+				opts := &bind.TransactOpts{
+					From: common.HexToAddress(owner.Address),
+				}
+				_, err = authority.AddAccountByOperator(opts, addresses[i], addresses[i], "did:"+addresses[i], platformDID)
 				if err != nil {
 					return err
 				}

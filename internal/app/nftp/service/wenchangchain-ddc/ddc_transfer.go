@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/bianjieai/ddc-sdk-go/app/constant"
 	"strconv"
 	"strings"
 	"time"
@@ -31,7 +32,7 @@ type DDC721Transfer struct {
 
 func NewDDCTransfer(base *service.Base) *service.TransferBase {
 	client := service.NewDDCClient()
-	ddc721Service := client.GetDDC721Service(true)
+	ddc721Service := client.GetDDC721Service()
 	return &service.TransferBase{
 		Module: service.DDC,
 		Service: &DDC721Transfer{
@@ -216,7 +217,7 @@ func (d DDC721Transfer) TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRes,
 		From: common.HexToAddress(params.Sender),
 	}
 	ddcId, _ := strconv.ParseInt(tDDC.NFTID, 10, 64)
-	res, err := d.ddc721Service.TransferFrom(&opts, params.Sender, params.Recipient, ddcId)
+	gas, err := d.ddc721Service.EstimateGasLimit(&opts,constant.ContrDDC721,constant.FuncTransferFrom,common.HexToAddress(params.Sender), common.HexToAddress(params.Recipient), ddcId)
 	if err != nil {
 		log.Error("transfer ddc by ddcId", "failed to get gasLimit and txHash", err.Error())
 		return nil, types.ErrInternal
@@ -232,7 +233,7 @@ func (d DDC721Transfer) TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRes,
 			params.ProjectID,
 			messageByte,
 			params.Tag,
-			int64(res.GasLimit),
+			int64(gas),
 			service.TransFer,
 			exec)
 		if err != nil {
