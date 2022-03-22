@@ -46,6 +46,13 @@ func NewDDC(base *service.Base) *service.NFTBase {
 }
 
 func (d DDC) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
+	// 若接收者地址不为空，则校验其格式；否则在service中将其默认设为NFT类别的权属者地址
+	if params.Recipient != "" {
+		// 校验接收者地址是否满足当前链的地址规范
+		if !common.IsHexAddress(params.Recipient) {
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
+		}
+	}
 	var taskId string
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
 		// query class

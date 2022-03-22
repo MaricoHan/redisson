@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 	"strings"
 	"time"
@@ -83,13 +82,6 @@ func (h nft) CreateNft(ctx context.Context, request interface{}) (interface{}, e
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientLen)
 	}
 
-	// 若接收者地址不为空，则校验其格式；否则在service中将其默认设为NFT类别的权属者地址
-	if recipient != "" {
-		// 校验接收者地址是否满足当前链的地址规范
-		if !common.IsHexAddress(recipient) {
-			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
-		}
-	}
 	authData := h.AuthData(ctx)
 	params := dto.CreateNftsP{
 		ChainID:    authData.ChainId,

@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"github.com/ethereum/go-ethereum/common"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 	"strings"
 
@@ -46,10 +45,6 @@ func (h nftTransfer) TransferNftClassByID(ctx context.Context, request interface
 	if len([]rune(recipient)) > 128 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientLen)
 	}
-	// 校验接收者地址是否满足当前链的地址规范
-	if !common.IsHexAddress(recipient) {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
-	}
 
 	tagBytes, err := h.ValidateTag(req.Tag)
 	if err != nil {
@@ -85,10 +80,7 @@ func (h nftTransfer) TransferNftByNftId(ctx context.Context, request interface{}
 	if len([]rune(recipient)) > 128 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientLen)
 	}
-	// 校验接收者地址是否满足当前链的地址规范
-	if !common.IsHexAddress(recipient) {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
-	}
+
 	tagBytes, err := h.ValidateTag(req.Tag)
 	if err != nil {
 		return nil, err

@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-
 	"strconv"
 	"strings"
 	"time"
@@ -45,6 +44,12 @@ func NewNFT(base *service.Base) *service.NFTBase {
 }
 
 func (svc *Nft) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
+	if params.Recipient != "" {
+		//检验地址是否为该链的合法地址
+		if err := sdktype.ValidateAccAddress(params.Recipient); err != nil {
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
+		}
+	}
 	var err error
 	var taskId string
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {

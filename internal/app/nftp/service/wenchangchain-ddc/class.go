@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -215,6 +216,11 @@ func (svc *DDCClass) Show(params dto.NftClassesP) (*dto.NftClassRes, error) {
 }
 
 func (svc *DDCClass) Create(params dto.CreateNftClassP) (*dto.TxRes, error) {
+	// 校验接收者地址是否满足当前链的地址规范
+	if !common.IsHexAddress(params.Owner) {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
+	}
+
 	//owner不能为project外的账户
 	_, err := models.TDDCAccounts(
 		models.TDDCAccountWhere.ProjectID.EQ(params.ProjectID),

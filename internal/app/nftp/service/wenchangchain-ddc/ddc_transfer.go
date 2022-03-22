@@ -41,6 +41,11 @@ func NewDDCTransfer(base *service.Base) *service.TransferBase {
 	}
 }
 func (d DDC721Transfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*dto.TxRes, error) {
+	// 校验接收者地址是否满足当前链的地址规范
+	if !common.IsHexAddress(params.Recipient) {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
+	}
+
 	//不能自己转让给自己
 	//400
 	if params.Recipient == params.Owner {
@@ -154,6 +159,10 @@ func (d DDC721Transfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*dto
 	return &dto.TxRes{TaskId: taskId}, nil
 }
 func (d DDC721Transfer) TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRes, error) {
+	// 校验接收者地址是否满足当前链的地址规范
+	if !common.IsHexAddress(params.Recipient) {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
+	}
 	// ValidateSigner
 	if err := d.base.ValidateDDCSigner(params.Sender, params.ProjectID); err != nil {
 		return nil, err

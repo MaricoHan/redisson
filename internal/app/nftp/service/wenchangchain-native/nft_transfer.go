@@ -35,6 +35,11 @@ func NewNftTransfer(base *service.Base) *service.TransferBase {
 }
 
 func (svc *NftTransfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*dto.TxRes, error) {
+	//检验地址是否为该链的合法地址
+	if err := sdktype.ValidateAccAddress(params.Recipient); err != nil {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
+	}
+
 	//不能自己转让给自己
 	//400
 	if params.Recipient == params.Owner {
@@ -143,6 +148,10 @@ func (svc *NftTransfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*dto
 }
 
 func (svc *NftTransfer) TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRes, error) {
+	//检验地址是否为该链的合法地址
+	if err := sdktype.ValidateAccAddress(params.Recipient); err != nil {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
+	}
 
 	// ValidateSigner
 	if err := svc.base.ValidateSigner(params.Sender, params.ProjectID); err != nil {

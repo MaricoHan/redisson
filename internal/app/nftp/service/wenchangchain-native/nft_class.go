@@ -214,6 +214,11 @@ func (svc *NFTClass) Show(params dto.NftClassesP) (*dto.NftClassRes, error) {
 }
 
 func (svc *NFTClass) Create(params dto.CreateNftClassP) (*dto.TxRes, error) {
+	//检验地址是否为该链的合法地址
+	if err := sdktype.ValidateAccAddress(params.Owner); err != nil {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
+	}
+
 	//owner不能为project外的账户
 	_, err := models.TAccounts(
 		models.TAccountWhere.ProjectID.EQ(params.ProjectID),
