@@ -111,6 +111,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Info("signature: ", h.Signature(r, projectKeyResult.APISecret, reqTimestampStr, reqSignature))
+	r.Header.Set("X-App-Id", fmt.Sprintf("%d", authData.ProjectId))
 	r.Header.Set("X-Auth-Data", fmt.Sprintf("%s", string(authDataBytes)))
 	h.next.ServeHTTP(w, r)
 }
