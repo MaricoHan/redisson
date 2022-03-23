@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"strings"
 
-	ddc "github.com/bianjieai/ddc-sdk-go/app"
+	ddc "github.com/bianjieai/ddc-sdk-go/ddc-sdk-operator-go/app"
 	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"

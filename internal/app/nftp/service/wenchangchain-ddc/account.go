@@ -217,12 +217,10 @@ func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) 
 					From: common.HexToAddress(owner.Address),
 					NoSend: false,
 				}
-				fmt.Println("123456789",addresses[i],"65432",owner.Address)
-				hash, err := authority.AddAccountByOperator(opts, addresses[i], addresses[i], "did:"+addresses[i], platformDID)
+				_, err := authority.AddAccountByOperator(opts, addresses[i], addresses[i], "did:"+addresses[i], platformDID)
 				if err != nil {
 					return err
 				}
-				fmt.Println("123456789",hash.Hash())
 			}
 		}
 		return nil

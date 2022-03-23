@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bianjieai/ddc-sdk-go/app/constant"
+	"github.com/bianjieai/ddc-sdk-go/ddc-sdk-operator-go/app/constant"
 
-	service2 "github.com/bianjieai/ddc-sdk-go/app/service"
+	service2 "github.com/bianjieai/ddc-sdk-go/ddc-sdk-operator-go/app/service"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/friendsofgo/errors"
