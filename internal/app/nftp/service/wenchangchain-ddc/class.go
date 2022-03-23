@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"math/rand"
 	"strconv"
 	"strings"
@@ -11,7 +12,7 @@ import (
 
 	"database/sql"
 	"encoding/hex"
-
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/friendsofgo/errors"
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	"github.com/volatiletech/null/v8"
@@ -91,9 +92,9 @@ func (svc *DDCClass) List(params dto.NftClassesP) (*dto.NftClassesRes, error) {
 			orderBy := ""
 			switch params.SortBy {
 			case "DATE_DESC":
-				orderBy = fmt.Sprintf("%s DESC", models.TDDCClassColumns.CreateAt)
+				orderBy = fmt.Sprintf("%s DESC", models.TDDCClassColumns.Timestamp)
 			case "DATE_ASC":
-				orderBy = fmt.Sprintf("%s ASC", models.TDDCClassColumns.CreateAt)
+				orderBy = fmt.Sprintf("%s ASC", models.TDDCClassColumns.Timestamp)
 			}
 			queryMod = append(queryMod, qm.OrderBy(orderBy))
 		}
@@ -223,6 +224,11 @@ func (svc *DDCClass) Show(params dto.NftClassesP) (*dto.NftClassRes, error) {
 }
 
 func (svc *DDCClass) Create(params dto.CreateNftClassP) (*dto.TxRes, error) {
+	// 校验接收者地址是否满足当前链的地址规范
+	if !common.IsHexAddress(params.Owner) {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
+	}
+
 	//owner不能为project外的账户
 	_, err := models.TDDCAccounts(
 		models.TDDCAccountWhere.ProjectID.EQ(params.ProjectID),
@@ -260,7 +266,7 @@ func (svc *DDCClass) Create(params dto.CreateNftClassP) (*dto.TxRes, error) {
 	messageBytes, _ := json.Marshal(message)
 	code := fmt.Sprintf("%s%s%s", params.Owner, models.TTXSOperationTypeIssueClass, time.Now().String())
 	taskId := svc.base.EncodeData(code)
-	hash := svc.base.EncodeData(string(createDenomMsgByte))
+	hash := "0x" + svc.base.EncodeData(string(createDenomMsgByte)) //和上链返回的哈希保持一致
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		ttx := models.TDDCTX{
 			ProjectID:     params.ProjectID,

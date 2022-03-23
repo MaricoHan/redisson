@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bianjieai/ddc-sdk-go/app/constant"
 	service2 "github.com/bianjieai/ddc-sdk-go/app/service"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -31,7 +32,7 @@ type DDC721Transfer struct {
 
 func NewDDCTransfer(base *service.Base) *service.TransferBase {
 	client := service.NewDDCClient()
-	ddc721Service := client.GetDDC721Service(true)
+	ddc721Service := client.GetDDC721Service()
 	return &service.TransferBase{
 		Module: service.DDC,
 		Service: &DDC721Transfer{
@@ -41,6 +42,11 @@ func NewDDCTransfer(base *service.Base) *service.TransferBase {
 	}
 }
 func (d DDC721Transfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*dto.TxRes, error) {
+	// 校验接收者地址是否满足当前链的地址规范
+	if !common.IsHexAddress(params.Recipient) {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
+	}
+
 	//不能自己转让给自己
 	//400
 	if params.Recipient == params.Owner {
@@ -93,7 +99,7 @@ func (d DDC721Transfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*dto
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		code := fmt.Sprintf("%s%s%s", params.Owner, models.TDDCTXSOperationTypeTransferClass, time.Now().String())
 		taskId = d.base.EncodeData(code)
-		hash := d.base.EncodeData(string(msgsByte))
+		hash := "0x" + d.base.EncodeData(string(msgsByte))
 		// Tx into database
 		ttx := models.TDDCTX{
 			ProjectID:     params.ProjectID,
@@ -152,6 +158,10 @@ func (d DDC721Transfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*dto
 	return &dto.TxRes{TaskId: taskId}, nil
 }
 func (d DDC721Transfer) TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRes, error) {
+	// 校验接收者地址是否满足当前链的地址规范
+	if !common.IsHexAddress(params.Recipient) {
+		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
+	}
 	// ValidateSigner
 	if err := d.base.ValidateDDCSigner(params.Sender, params.ProjectID); err != nil {
 		return nil, err
@@ -207,7 +217,7 @@ func (d DDC721Transfer) TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRes,
 		From: common.HexToAddress(params.Sender),
 	}
 	ddcId, _ := strconv.ParseInt(tDDC.NFTID, 10, 64)
-	res, err := d.ddc721Service.TransferFrom(&opts, params.Sender, params.Recipient, ddcId)
+	gas, err := d.ddc721Service.EstimateGasLimit(&opts, constant.ContrDDC721, constant.FuncTransferFrom, common.HexToAddress(params.Sender), common.HexToAddress(params.Recipient), ddcId)
 	if err != nil {
 		log.Error("transfer ddc by ddcId", "failed to get gasLimit and txHash", err.Error())
 		return nil, types.ErrInternal
@@ -223,7 +233,7 @@ func (d DDC721Transfer) TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRes,
 			params.ProjectID,
 			messageByte,
 			params.Tag,
-			int64(res.GasLimit),
+			int64(gas),
 			service.TransFer,
 			exec)
 		if err != nil {

@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bianjieai/ddc-sdk-go/app/constant"
+
 	service2 "github.com/bianjieai/ddc-sdk-go/app/service"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -34,7 +36,7 @@ type DDC struct {
 
 func NewDDC(base *service.Base) *service.NFTBase {
 	client := service.NewDDCClient()
-	ddc721Service := client.GetDDC721Service(true)
+	ddc721Service := client.GetDDC721Service()
 
 	return &service.NFTBase{
 		Module: service.DDC,
@@ -46,6 +48,13 @@ func NewDDC(base *service.Base) *service.NFTBase {
 }
 
 func (d DDC) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
+	// 若接收者地址不为空，则校验其格式；否则在service中将其默认设为NFT类别的权属者地址
+	if params.Recipient != "" {
+		// 校验接收者地址是否满足当前链的地址规范
+		if !common.IsHexAddress(params.Recipient) {
+			return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
+		}
+	}
 	var taskId string
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
 		// query class
@@ -92,8 +101,8 @@ func (d DDC) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 
 		//platform 发行
 		platform, err := models.TDDCAccounts(
-			models.TDDCAccountWhere.ProjectID.EQ(uint64(0)),
-			models.TDDCAccountWhere.ID.EQ(uint64(2)),
+			models.TDDCAccountWhere.ProjectID.EQ(uint64(rootProjectID)),
+			models.TDDCAccountWhere.ID.EQ(uint64(platformIDInTable)),
 		).OneG(context.Background())
 		if err != nil {
 			//500
@@ -118,12 +127,13 @@ func (d DDC) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 			From: common.HexToAddress(platform.Address),
 		}
 
-		res, err := d.ddc721Service.SafeMint(opts, params.Recipient, params.Uri, []byte(params.Data))
+		gas, err := d.ddc721Service.EstimateGasLimit(opts, constant.ContrDDC721, constant.FuncSafeMint, common.HexToAddress(params.Recipient), params.Uri, []byte(params.Data))
 		if err != nil {
 			log.Error("create ddc", "get hash and gasLimit error:", err.Error())
 			return types.ErrInternal
 		}
-		err = d.base.GasThan(params.ChainID, res.GasLimit, params.PlatFormID)
+
+		err = d.base.GasThan(params.ChainID, gas, params.PlatFormID)
 		if err != nil {
 			return types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
 		}
@@ -138,7 +148,7 @@ func (d DDC) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 			Message:       null.JSONFrom(msgsBytes),
 			Sender:        null.StringFrom(class.Owner),
 			TaskID:        null.StringFrom(taskId),
-			GasUsed:       null.Int64From(int64(res.GasLimit)),
+			GasUsed:       null.Int64From(int64(gas)),
 			OriginData:    null.BytesFromPtr(&msgsBytes),
 			OperationType: models.TDDCTXSOperationTypeMintNFT,
 			Status:        models.TDDCTXSStatusUndo,
@@ -260,6 +270,8 @@ func (d DDC) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 				data = tDDC.Metadata.String
 			}
 
+			uriHash := tDDC.URIHash.String
+
 			// create rawMsg
 			msgEditNFT := nft.MsgEditNFT{
 				Id:      tDDC.NFTID,
@@ -268,18 +280,18 @@ func (d DDC) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 				URI:     uri,
 				Data:    data,
 				Sender:  params.Sender,
-				UriHash: "[do-not-modify]",
+				UriHash: uriHash,
 			}
 
 			// Tx into database
 			messageByte, _ := json.Marshal(msgEditNFT)
 			code := fmt.Sprintf("%s%s%s", params.Sender, models.TDDCTXSOperationTypeEditNFT, time.Now().String())
 			taskId = d.base.EncodeData(code)
-
+			hash := "0x" + d.base.EncodeData(string(messageByte)+time.Now().String())
 			//tx 表
 			ttx := models.TDDCTX{
 				ProjectID:     params.ProjectID,
-				Hash:          taskId,
+				Hash:          hash,
 				OriginData:    null.BytesFrom(messageByte),
 				OperationType: models.TDDCTXSOperationTypeEditNFT,
 				Status:        models.TDDCTXSStatusSuccess,
@@ -299,7 +311,7 @@ func (d DDC) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 			//msg 表
 			tmsg := models.TDDCMSG{
 				ProjectID: params.ProjectID,
-				TXHash:    taskId,
+				TXHash:    hash,
 				Module:    models.TDDCMSGSModuleNFT,
 				Operation: models.TDDCMSGSOperationEdit,
 				Signer:    params.Sender,
@@ -316,9 +328,11 @@ func (d DDC) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 			tDDC.Name = null.StringFrom(params.Name)
 			tDDC.URI = null.StringFrom(uri)
 			tDDC.Metadata = null.StringFrom(data)
-			tDDC.URIHash = null.StringFrom("[do-not-modify]")
 			ok, err := tDDC.Update(context.Background(), exec, boil.Infer())
-			if err != nil || ok != 1 {
+			if ok != 1 {
+				return types.ErrNftStatus
+			}
+			if err != nil {
 				log.Error("edit ddc", "ddc status update error: ", err)
 				return types.ErrInternal
 			}
@@ -348,7 +362,7 @@ func (d DDC) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 					URI:     uri,
 					Data:    data,
 					Sender:  params.Sender,
-					UriHash: "[do-not-modify]",
+					UriHash: tDDC.URIHash.String,
 				}
 
 				//签名后的交易计算动态 gas
@@ -361,12 +375,12 @@ func (d DDC) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 					From: common.HexToAddress(params.Sender),
 				}
 
-				res, err := d.ddc721Service.SetURI(opts, ddcId, params.Uri)
+				gas, err := d.ddc721Service.EstimateGasLimit(opts, constant.ContrDDC721, constant.FuncSetURI, ddcId, params.Uri)
 				if err != nil {
 					log.Error("edit ddc by nftId", "get hash and gasLimit error:", err.Error())
 					return types.ErrInternal
 				}
-				err = d.base.GasThan(params.ChainID, res.GasLimit, params.PlatFormID)
+				err = d.base.GasThan(params.ChainID, gas, params.PlatFormID)
 				if err != nil {
 					return types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
 				}
@@ -381,11 +395,11 @@ func (d DDC) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 					params.Sender,
 					models.TTXSOperationTypeEditNFT,
 					taskId,
-					res.TxHash,
+					taskId,
 					params.ProjectID,
 					messageByte,
 					params.Tag,
-					int64(res.GasLimit),
+					int64(gas),
 					0,
 					exec)
 				if err != nil {
@@ -459,7 +473,7 @@ func (d DDC) Delete(params dto.DeleteNftByNftIdP) (*dto.TxRes, error) {
 		From: common.HexToAddress(params.Sender),
 	}
 	ddcId, _ := strconv.ParseInt(tDDC.NFTID, 10, 64)
-	res, err := d.ddc721Service.Burn(&opts, ddcId)
+	gas, err := d.ddc721Service.EstimateGasLimit(&opts, constant.ContrDDC721, constant.FuncBurn, ddcId)
 	if err != nil {
 		log.Error("delete ddc by ddcId", "failed to get gasLimit and txHash", err.Error())
 		return nil, types.ErrInternal
@@ -475,7 +489,7 @@ func (d DDC) Delete(params dto.DeleteNftByNftIdP) (*dto.TxRes, error) {
 			params.ProjectID,
 			messageByte,
 			params.Tag,
-			int64(res.GasLimit),
+			int64(gas),
 			service.BurnFee,
 			exec)
 		if err != nil {
@@ -660,18 +674,18 @@ func (d DDC) History(params dto.NftOperationHistoryByNftIdP) (*dto.BNftOperation
 		queryMod = append(queryMod, models.TDDCMSGWhere.Operation.EQ(params.Operation))
 	}
 	if params.StartDate != nil {
-		queryMod = append(queryMod, models.TDDCMSGWhere.CreateAt.GTE(*params.StartDate))
+		queryMod = append(queryMod, models.TDDCMSGWhere.Timestamp.GTE(null.TimeFromPtr(params.StartDate)))
 	}
 	if params.EndDate != nil {
-		queryMod = append(queryMod, models.TDDCMSGWhere.CreateAt.LTE(*params.EndDate))
+		queryMod = append(queryMod, models.TDDCMSGWhere.Timestamp.LTE(null.TimeFromPtr(params.EndDate)))
 	}
 	if params.SortBy != "" {
 		orderBy := ""
 		switch params.SortBy {
 		case "DATE_DESC":
-			orderBy = fmt.Sprintf("%s DESC", models.TDDCMSGWhere.CreateAt)
+			orderBy = fmt.Sprintf("%s DESC", models.TDDCMSGColumns.Timestamp)
 		case "DATE_ASC":
-			orderBy = fmt.Sprintf("%s ASC", models.TDDCMSGWhere.CreateAt)
+			orderBy = fmt.Sprintf("%s ASC", models.TDDCMSGColumns.Timestamp)
 		}
 		queryMod = append(queryMod, qm.OrderBy(orderBy))
 	}
@@ -684,6 +698,7 @@ func (d DDC) History(params dto.NftOperationHistoryByNftIdP) (*dto.BNftOperation
 		int(params.Offset),
 		int(params.Limit),
 	)
+
 	if err != nil {
 		// records not exist
 		if strings.Contains(err.Error(), service.SqlNotFound) {
