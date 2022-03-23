@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"strconv"
 	"strings"
 	"time"
@@ -330,7 +331,8 @@ func (d DDC) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 			tDDC.Metadata = null.StringFrom(data)
 			ok, err := tDDC.Update(context.Background(), exec, boil.Infer())
 			if ok != 1 {
-				return types.ErrNftStatus
+				log.Error("edit ddc", "ddc status update error: ", err)
+				return types.ErrInternal
 			}
 			if err != nil {
 				log.Error("edit ddc", "ddc status update error: ", err)
@@ -375,7 +377,7 @@ func (d DDC) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 					From: common.HexToAddress(params.Sender),
 				}
 
-				gas, err := d.ddc721Service.EstimateGasLimit(opts, constant.ContrDDC721, constant.FuncSetURI, ddcId, params.Uri)
+				gas, err := d.ddc721Service.EstimateGasLimit(opts, constant.ContrDDC721, constant.FuncSetURI, big.NewInt(ddcId), params.Uri)
 				if err != nil {
 					log.Error("edit ddc by nftId", "get hash and gasLimit error:", err.Error())
 					return types.ErrInternal
@@ -473,7 +475,7 @@ func (d DDC) Delete(params dto.DeleteNftByNftIdP) (*dto.TxRes, error) {
 		From: common.HexToAddress(params.Sender),
 	}
 	ddcId, _ := strconv.ParseInt(tDDC.NFTID, 10, 64)
-	gas, err := d.ddc721Service.EstimateGasLimit(&opts, constant.ContrDDC721, constant.FuncBurn, ddcId)
+	gas, err := d.ddc721Service.EstimateGasLimit(&opts, constant.ContrDDC721, constant.FuncBurn, big.NewInt(ddcId))
 	if err != nil {
 		log.Error("delete ddc by ddcId", "failed to get gasLimit and txHash", err.Error())
 		return nil, types.ErrInternal
