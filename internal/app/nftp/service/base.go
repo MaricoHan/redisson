@@ -495,7 +495,7 @@ func (m Base) EncodeData(data string) string {
 	return hash
 }
 
-func (m Base) GasThan(chainId, gas, platformId uint64) error {
+func (m Base) GasThan(chainId, gas, bizFee, platformId uint64) error {
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
 		//查找 platform 下的所有 project
 		tProjects, err := models.TProjects(
@@ -560,7 +560,7 @@ func (m Base) GasThan(chainId, gas, platformId uint64) error {
 		}
 
 		//加上本次交易预估的费用
-		unPaidMoney = unPaidMoney + float64(gas)*gasPrice
+		unPaidMoney = unPaidMoney + float64(gas)*gasPrice + float64(bizFee/ConversionRatio)
 
 		//如果amount小于未支付金额,返回错误
 		if amount < unPaidMoney {
