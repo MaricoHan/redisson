@@ -5,12 +5,13 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/bianjieai/ddc-sdk-go/app/constant"
-	service2 "github.com/bianjieai/ddc-sdk-go/app/service"
+	"github.com/bianjieai/ddc-sdk-go/ddc-sdk-operator-go/app/constant"
+	service2 "github.com/bianjieai/ddc-sdk-go/ddc-sdk-operator-go/app/service"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/friendsofgo/errors"
@@ -217,7 +218,7 @@ func (d DDC721Transfer) TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRes,
 		From: common.HexToAddress(params.Sender),
 	}
 	ddcId, _ := strconv.ParseInt(tDDC.NFTID, 10, 64)
-	gas, err := d.ddc721Service.EstimateGasLimit(&opts, constant.ContrDDC721, constant.FuncTransferFrom, common.HexToAddress(params.Sender), common.HexToAddress(params.Recipient), ddcId)
+	gas, err := d.ddc721Service.EstimateGasLimit(&opts, constant.ContrDDC721, constant.FuncTransferFrom, common.HexToAddress(params.Sender), common.HexToAddress(params.Recipient), big.NewInt(ddcId))
 	if err != nil {
 		log.Error("transfer ddc by ddcId", "failed to get gasLimit and txHash", err.Error())
 		return nil, types.ErrInternal

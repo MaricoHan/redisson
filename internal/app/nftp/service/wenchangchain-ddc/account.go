@@ -215,8 +215,9 @@ func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) 
 				authority := client.GetAuthorityService()
 				opts := &bind.TransactOpts{
 					From: common.HexToAddress(owner.Address),
+					NoSend: false,
 				}
-				_, err = authority.AddAccountByOperator(opts, addresses[i], addresses[i], "did:"+addresses[i], platformDID)
+				_, err := authority.AddAccountByOperator(opts, addresses[i], addresses[i], "did:"+addresses[i], platformDID)
 				if err != nil {
 					return err
 				}
@@ -228,20 +229,20 @@ func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) 
 		return nil, err
 	}
 
-	time.Sleep(3 * time.Second)
-	//send balance
-	root, err := d.base.QueryRootAccount()
-	if err != nil {
-		return nil, err
-	}
-	msgs := d.base.CreateGasMsg(root.Address, bech32addresses)
-	tx := d.base.CreateBaseTxSync(root.Address, "")
-	tx.Gas = d.base.CreateAccount(params.Count)
-	_, err = d.base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
-	if err != nil {
-		log.Error("create account", "build and send, error:", err)
-		return nil, types.ErrBuildAndSend
-	}
+	//time.Sleep(3 * time.Second)
+	////send balance
+	//root, err := d.base.QueryRootAccount()
+	//if err != nil {
+	//	return nil, err
+	//}
+	//msgs := d.base.CreateGasMsg(root.Address, bech32addresses)
+	//tx := d.base.CreateBaseTxSync(root.Address, "")
+	//tx.Gas = d.base.CreateAccount(params.Count)
+	//_, err = d.base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
+	//if err != nil {
+	//	log.Error("create account", "build and send, error:", err)
+	//	return nil, types.ErrBuildAndSend
+	//}
 	result := &dto.AccountRes{}
 	result.Accounts = addresses
 	return result, nil
