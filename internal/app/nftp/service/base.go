@@ -524,6 +524,7 @@ func (m Base) GasThan(chainId, gas, platformId uint64) error {
 			qm.Select("SUM(gas_used) as gas_used"),
 			qm.Select("SUM(biz_fee) as biz_fee"),
 			models.TDDCTXWhere.ProjectID.IN(projects),
+			models.TDDCTXWhere.OperationType.EQ(models.TDDCTXSOperationTypeMintNFT),
 			models.TDDCTXWhere.Status.IN([]string{models.TDDCTXSStatusUndo, models.TDDCTXSStatusPending})).One(context.Background(), exec)
 		if err != nil {
 			return types.ErrNotFound
