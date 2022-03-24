@@ -134,7 +134,7 @@ func (d DDC) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 			return types.ErrInternal
 		}
 
-		err = d.base.GasThan(params.ChainID, gas, params.PlatFormID)
+		err = d.base.GasThan(params.ChainID, gas,service.MintFee, params.PlatFormID)
 		if err != nil {
 			return types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
 		}
@@ -382,7 +382,7 @@ func (d DDC) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 					log.Error("edit ddc by nftId", "get hash and gasLimit error:", err.Error())
 					return types.ErrInternal
 				}
-				err = d.base.GasThan(params.ChainID, gas, params.PlatFormID)
+				err = d.base.GasThan(params.ChainID, gas, 0,params.PlatFormID)
 				if err != nil {
 					return types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
 				}

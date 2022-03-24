@@ -94,14 +94,14 @@ func (svc *Tx) Show(params dto.TxResultByTxHashP) (*dto.TxResultByTxHashRes, err
 			result.ClassID = transferClass.Id
 		case models.TTXSOperationTypeMintNFT:
 			bytes := txinfo.Message.JSON
-			var mintNft nft.MsgMintNFT
+			var mintNft []nft.MsgMintNFT
 			err = json.Unmarshal(bytes, &mintNft)
 			if err != nil {
 				//500
 				log.Error("query tx by hash", "unmarshal tx message error:", err.Error())
 				return nil, types.ErrInternal
 			}
-			result.ClassID = mintNft.DenomId
+			result.ClassID = mintNft[0].DenomId
 
 			nftTx, err := models.TMSGS(
 				models.TDDCMSGWhere.TXHash.EQ(txinfo.Hash),
