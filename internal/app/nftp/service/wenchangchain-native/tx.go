@@ -84,14 +84,14 @@ func (svc *Tx) Show(params dto.TxResultByTxHashP) (*dto.TxResultByTxHashRes, err
 			result.ClassID = issueClass[0].Id
 		case models.TTXSOperationTypeTransferClass:
 			bytes := txinfo.Message.JSON
-			var transferClass []nft.MsgTransferDenom
+			var transferClass nft.MsgTransferDenom
 			err = json.Unmarshal(bytes, &transferClass)
 			if err != nil {
 				//500
 				log.Error("query tx by hash", "unmarshal tx message error:", err.Error())
 				return nil, types.ErrInternal
 			}
-			result.ClassID = transferClass[0].Id
+			result.ClassID = transferClass.Id
 		case models.TTXSOperationTypeMintNFT:
 			bytes := txinfo.Message.JSON
 			var mintNft []nft.MsgMintNFT
@@ -115,37 +115,37 @@ func (svc *Tx) Show(params dto.TxResultByTxHashP) (*dto.TxResultByTxHashRes, err
 			result.NftID = nftTx.NFTID.String
 		case models.TTXSOperationTypeEditNFT:
 			bytes := txinfo.Message.JSON
-			var editNft []nft.MsgEditNFT
+			var editNft nft.MsgEditNFT
 			err = json.Unmarshal(bytes, &editNft)
 			if err != nil {
 				//500
 				log.Error("query tx by hash", "unmarshal tx message error:", err.Error())
 				return nil, types.ErrInternal
 			}
-			result.ClassID = editNft[0].DenomId
-			result.NftID = editNft[0].Id
+			result.ClassID = editNft.DenomId
+			result.NftID = editNft.Id
 		case models.TTXSOperationTypeBurnNFT:
 			bytes := txinfo.Message.JSON
-			var burnNft []nft.MsgBurnNFT
+			var burnNft nft.MsgBurnNFT
 			err = json.Unmarshal(bytes, &burnNft)
 			if err != nil {
 				//500
 				log.Error("query tx by hash", "unmarshal tx message error:", err.Error())
 				return nil, types.ErrInternal
 			}
-			result.ClassID = burnNft[0].DenomId
-			result.NftID = burnNft[0].Id
+			result.ClassID = burnNft.DenomId
+			result.NftID = burnNft.Id
 		case models.TTXSOperationTypeTransferNFT:
 			bytes := txinfo.Message.JSON
-			var transferNft []nft.MsgTransferNFT
+			var transferNft nft.MsgTransferNFT
 			err = json.Unmarshal(bytes, &transferNft)
 			if err != nil {
 				//500
 				log.Error("query tx by hash", "unmarshal tx message error:", err.Error())
 				return nil, types.ErrInternal
 			}
-			result.ClassID = transferNft[0].DenomId
-			result.NftID = transferNft[0].Id
+			result.ClassID = transferNft.DenomId
+			result.NftID = transferNft.Id
 		}
 	}
 	return result, nil

@@ -86,7 +86,7 @@ func (svc *NftTransfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*dto
 	//sign
 	baseTx := base.CreateBaseTx(params.Owner, "")
 	baseTx.Gas = base.TransferDenomGas(class)
-	err = base.GasThan(params.ChainID, baseTx.Gas, params.PlatFormID)
+	err = base.GasThan(params.ChainID, baseTx.Gas, 0, params.PlatFormID)
 	if err != nil {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
 	}
@@ -207,7 +207,7 @@ func (svc *NftTransfer) TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRes,
 	baseTx := base.CreateBaseTx(params.Sender, "")
 	data, hash, _ := base.BuildAndSign(sdktype.Msgs{&msgs}, baseTx)
 	baseTx.Gas = base.TransferOneNftGas(data)
-	err = base.GasThan(params.ChainID, baseTx.Gas, params.PlatFormID)
+	err = base.GasThan(params.ChainID, baseTx.Gas, 0, params.PlatFormID)
 	if err != nil {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
 	}

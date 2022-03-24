@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"strings"
 
-	ddc "github.com/bianjieai/ddc-sdk-go/app"
+	ddc "github.com/bianjieai/ddc-sdk-go/ddc-sdk-operator-go/app"
 	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"
@@ -495,7 +495,7 @@ func (m Base) EncodeData(data string) string {
 	return hash
 }
 
-func (m Base) GasThan(chainId, gas, platformId uint64) error {
+func (m Base) GasThan(chainId, gas, bizFee, platformId uint64) error {
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
 		//查找 platform 下的所有 project
 		tProjects, err := models.TProjects(
@@ -524,6 +524,7 @@ func (m Base) GasThan(chainId, gas, platformId uint64) error {
 			qm.Select("SUM(gas_used) as gas_used"),
 			qm.Select("SUM(biz_fee) as biz_fee"),
 			models.TDDCTXWhere.ProjectID.IN(projects),
+			models.TDDCTXWhere.OperationType.EQ(models.TDDCTXSOperationTypeMintNFT),
 			models.TDDCTXWhere.Status.IN([]string{models.TDDCTXSStatusUndo, models.TDDCTXSStatusPending})).One(context.Background(), exec)
 		if err != nil {
 			return types.ErrNotFound
@@ -559,7 +560,7 @@ func (m Base) GasThan(chainId, gas, platformId uint64) error {
 		}
 
 		//加上本次交易预估的费用
-		unPaidMoney = unPaidMoney + float64(gas)*gasPrice
+		unPaidMoney = unPaidMoney + float64(gas)*gasPrice + float64(bizFee/ConversionRatio)
 
 		//如果amount小于未支付金额,返回错误
 		if amount < unPaidMoney {
