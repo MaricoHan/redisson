@@ -89,7 +89,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	//// 1.1 判断时间误差
 	// todo
-	// 生产的时候打开
+	//生产的时候打开
 	//reqTimestampInt, err := strconv.ParseInt(reqTimestampStr, 10, 64)
 	//if err != nil {
 	//	writeBadRequestResp(w, types.ErrParams)
