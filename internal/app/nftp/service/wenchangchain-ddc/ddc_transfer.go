@@ -27,11 +27,11 @@ import (
 )
 
 type DDC721Transfer struct {
-	base          *service.Base
+	base          map[string]*service.Base
 	ddc721Service *service2.DDC721Service
 }
 
-func NewDDCTransfer(base *service.Base) *service.TransferBase {
+func NewDDCTransfer(base map[string]*service.Base) *service.TransferBase {
 	client := service.NewDDCClient()
 	ddc721Service := client.GetDDC721Service()
 	return &service.TransferBase{
@@ -43,6 +43,7 @@ func NewDDCTransfer(base *service.Base) *service.TransferBase {
 	}
 }
 func (d DDC721Transfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*dto.TxRes, error) {
+	base, _ := d.base[service.DDC]
 	// 校验接收者地址是否满足当前链的地址规范
 	if !common.IsHexAddress(params.Recipient) {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
@@ -55,12 +56,12 @@ func (d DDC721Transfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*dto
 	}
 
 	// ValidateSigner
-	if err := d.base.ValidateDDCSigner(params.Owner, params.ProjectID); err != nil {
+	if err := base.ValidateDDCSigner(params.Owner, params.ProjectID); err != nil {
 		return nil, err
 	}
 
 	// ValidateRecipient
-	if err := d.base.ValidateDDCRecipient(params.Recipient, params.ProjectID); err != nil {
+	if err := base.ValidateDDCRecipient(params.Recipient, params.ProjectID); err != nil {
 		return nil, err
 	}
 	//判断class
@@ -101,8 +102,8 @@ func (d DDC721Transfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*dto
 	var taskId string
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		code := fmt.Sprintf("%s%s%s", params.Owner, models.TDDCTXSOperationTypeTransferClass, time.Now().String())
-		taskId = d.base.EncodeData(code)
-		hash := "0x" + d.base.EncodeData(string(msgsByte))
+		taskId = base.EncodeData(code)
+		hash := "0x" + base.EncodeData(string(msgsByte))
 		// Tx into database
 		ttx := models.TDDCTX{
 			ProjectID:     params.ProjectID,
@@ -161,16 +162,17 @@ func (d DDC721Transfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*dto
 	return &dto.TxRes{TaskId: taskId}, nil
 }
 func (d DDC721Transfer) TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRes, error) {
+	base, _ := d.base[service.DDC]
 	// 校验接收者地址是否满足当前链的地址规范
 	if !common.IsHexAddress(params.Recipient) {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
 	}
 	// ValidateSigner
-	if err := d.base.ValidateDDCSigner(params.Sender, params.ProjectID); err != nil {
+	if err := base.ValidateDDCSigner(params.Sender, params.ProjectID); err != nil {
 		return nil, err
 	}
 	// ValidateRecipient
-	if err := d.base.ValidateDDCRecipient(params.Recipient, params.ProjectID); err != nil {
+	if err := base.ValidateDDCRecipient(params.Recipient, params.ProjectID); err != nil {
 		return nil, err
 	}
 
@@ -214,7 +216,7 @@ func (d DDC721Transfer) TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRes,
 	messageByte, _ := json.Marshal(msg)
 	//生成taskId
 	code := fmt.Sprintf("%s%s%s", params.Sender, models.TDDCTXSOperationTypeTransferNFT, time.Now().String())
-	taskId := d.base.EncodeData(code)
+	taskId := base.EncodeData(code)
 	//获取gasLimit和txHash
 	opts := bind.TransactOpts{
 		From: common.HexToAddress(params.Sender),
@@ -229,7 +231,7 @@ func (d DDC721Transfer) TransferNFT(params dto.TransferNftByNftIdP) (*dto.TxRes,
 	//tx存数据库
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		// Tx into database
-		txId, err := d.base.UndoDDCTxIntoDataBase(params.Sender,
+		txId, err := base.UndoDDCTxIntoDataBase(params.Sender,
 			models.TDDCTXSOperationTypeTransferNFT,
 			taskId,
 			taskId,

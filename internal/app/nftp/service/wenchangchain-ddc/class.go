@@ -30,10 +30,10 @@ import (
 const ddcNftp = "ddcNftp"
 
 type DDCClass struct {
-	base *service.Base
+	base map[string]*service.Base
 }
 
-func NewDDCClass(base *service.Base) *service.NFTClassBase {
+func NewDDCClass(base map[string]*service.Base) *service.NFTClassBase {
 	return &service.NFTClassBase{
 		Module: service.DDC,
 		Service: &DDCClass{
@@ -224,6 +224,7 @@ func (svc *DDCClass) Show(params dto.NftClassesP) (*dto.NftClassRes, error) {
 }
 
 func (svc *DDCClass) Create(params dto.CreateNftClassP) (*dto.TxRes, error) {
+	base, _ := svc.base[service.DDC]
 	// 校验接收者地址是否满足当前链的地址规范
 	if !common.IsHexAddress(params.Owner) {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
@@ -265,8 +266,8 @@ func (svc *DDCClass) Create(params dto.CreateNftClassP) (*dto.TxRes, error) {
 	message := createDenomMsg
 	messageBytes, _ := json.Marshal(message)
 	code := fmt.Sprintf("%s%s%s", params.Owner, models.TTXSOperationTypeIssueClass, time.Now().String())
-	taskId := svc.base.EncodeData(code)
-	hash := "0x" + svc.base.EncodeData(string(createDenomMsgByte)) //和上链返回的哈希保持一致
+	taskId := base.EncodeData(code)
+	hash := "0x" + base.EncodeData(string(createDenomMsgByte)) //和上链返回的哈希保持一致
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		ttx := models.TDDCTX{
 			ProjectID:     params.ProjectID,
