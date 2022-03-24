@@ -28,13 +28,14 @@ project_id = "a36dc219dbdd4dbe809766accbed0ac6"
 project_key = ""
 chain_account_addr = ""
 chain_encryption = "secp256k1"
-ddc_encryption = "eth_secp256k1"
+
 
 gas_coefficient = 1.5
 gas = 400000
 amount = 200000
 account_gas = 4000000
 denom = "uirita"
+
 
 [redis]
 address = "127.0.0.1:6379"
@@ -47,3 +48,17 @@ ddc_charge_address = "0x95aDFbA9050C5D886419334Ae478b9844f413eF2"
 ddc_721_address = "0x1C917baf05863417391acCfe85d305Eae41401Ec"
 ddc_1155_address = "0x02A25C69843E197e3063Ed848f6FEA512633CB8E"
 ddc_gateway_url = "http://192.168.150.42:8545"
+
+chain_id = "dev"
+grpc_address = "192.168.150.42:9090"
+rpc_address = "tcp://192.168.150.42:26657"
+project_id = "a36dc219dbdd4dbe809766accbed0ac6"
+project_key = ""
+chain_account_addr = ""
+ddc_encryption = "eth_secp256k1"
+
+gas_coefficient = 1.5
+gas = 400000
+amount = 200000
+account_gas = 4000000
+denom  = "ugas"
