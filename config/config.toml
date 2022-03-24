@@ -61,4 +61,4 @@ gas_coefficient = 1.5
 gas = 400000
 amount = 200000
 account_gas = 4000000
-denom = "uirita"
+denom  = "ugas"
