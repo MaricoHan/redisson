@@ -83,9 +83,11 @@ func (d DDC721Transfer) TransferNFTClass(params dto.TransferNftClassByIDP) (*dto
 	}
 
 	//msg
-	msgs := nft.MsgTransferDenom{
-		Id:        params.ClassID,
-		Sender:    params.Owner,
+	msgs := NftClass{
+		Id:        class.ClassID,
+		Name:      class.Name.String,
+		Symbol:    class.Symbol.String,
+		URI:       class.URI.String,
 		Recipient: params.Recipient,
 	}
 	//sign

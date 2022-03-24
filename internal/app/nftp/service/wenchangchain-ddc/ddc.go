@@ -513,6 +513,7 @@ func (d DDC) Delete(params dto.DeleteNftByNftIdP) (*dto.TxRes, error) {
 
 	return &dto.TxRes{TaskId: taskId}, nil
 }
+
 func (d DDC) List(params dto.NftsP) (*dto.NftsRes, error) {
 	result := &dto.NftsRes{}
 	var err error
@@ -630,6 +631,7 @@ func (d DDC) List(params dto.NftsP) (*dto.NftsRes, error) {
 	return result, nil
 
 }
+
 func (d DDC) History(params dto.NftOperationHistoryByNftIdP) (*dto.BNftOperationHistoryByNftIdRes, error) {
 	result := &dto.BNftOperationHistoryByNftIdRes{
 		PageRes: dto.PageRes{
@@ -653,7 +655,6 @@ func (d DDC) History(params dto.NftOperationHistoryByNftIdP) (*dto.BNftOperation
 		log.Error("query ddc operation history", "query ddc error:", err.Error())
 		return nil, types.ErrInternal
 	}
-
 	queryMod := []qm.QueryMod{
 		qm.From(models.TableNames.TDDCMSGS),
 		qm.Select(models.TDDCMSGColumns.TXHash,
