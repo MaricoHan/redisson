@@ -43,10 +43,10 @@ db = 0
 password = ""
 
 [ddc]
-ddc_authority_address = "0x6a3B24042dA7Bb5F2CBF1BCB2ABE0C632590C580"
-ddc_charge_address = "0x95aDFbA9050C5D886419334Ae478b9844f413eF2"
-ddc_721_address = "0x1C917baf05863417391acCfe85d305Eae41401Ec"
-ddc_1155_address = "0x02A25C69843E197e3063Ed848f6FEA512633CB8E"
+ddc_authority_address = "0xBcE9AA1924D7197C9C945e43638Bf589f91bcB71"
+ddc_charge_address = "0xF41b6185bFB22E2EFC5fB8395Fa3B952951E2d0b"
+ddc_721_address = "0x74b6114d011891Ac21FD1d586bc7F3407c63c216"
+ddc_1155_address = "0x9f7388e114DfDFAbAF8e4b881894E4C7e1b52C17"
 ddc_gateway_url = "http://192.168.150.42:8545"
 
 chain_id = "dev"

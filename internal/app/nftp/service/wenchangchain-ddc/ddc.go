@@ -136,7 +136,7 @@ func (d DDC) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 		}
 		err = base.GasThan(params.ChainID, gas, service.MintFee, params.PlatFormID)
 		if err != nil {
-			return types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
+			return types.NewAppError(types.RootCodeSpace, types.ErrOutOfGas, err.Error())
 		}
 
 		msgsBytes, _ := json.Marshal(sdktype.Msgs{&createNft})
@@ -385,7 +385,7 @@ func (d DDC) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 				}
 				err = base.GasThan(params.ChainID, gas, 0, params.PlatFormID)
 				if err != nil {
-					return types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
+					return types.NewAppError(types.RootCodeSpace, types.ErrOutOfGas, err.Error())
 				}
 
 				// Tx into database

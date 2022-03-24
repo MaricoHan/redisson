@@ -272,7 +272,7 @@ func (svc *NFTClass) Create(params dto.CreateNftClassP) (*dto.TxRes, error) {
 	baseTx.Gas = base.CreateDenomGas(originData)
 	err = base.GasThan(params.ChainID, baseTx.Gas, 0, params.PlatFormID)
 	if err != nil {
-		return nil, types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
+		return nil, types.NewAppError(types.RootCodeSpace, types.ErrOutOfGas, err.Error())
 	}
 	originData, txHash, err = base.BuildAndSign(sdktype.Msgs{&createDenomMsg, &transferDenomMsg}, baseTx)
 	if err != nil {
