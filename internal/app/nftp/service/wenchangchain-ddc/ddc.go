@@ -31,11 +31,11 @@ import (
 )
 
 type DDC struct {
-	base          *service.Base
+	base          map[string]*service.Base
 	ddc721Service *service2.DDC721Service
 }
 
-func NewDDC(base *service.Base) *service.NFTBase {
+func NewDDC(base map[string]*service.Base) *service.NFTBase {
 	client := service.NewDDCClient()
 	ddc721Service := client.GetDDC721Service()
 
@@ -49,6 +49,7 @@ func NewDDC(base *service.Base) *service.NFTBase {
 }
 
 func (d DDC) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
+	base, _ := d.base[service.DDC]
 	// 若接收者地址不为空，则校验其格式；否则在service中将其默认设为NFT类别的权属者地址
 	if params.Recipient != "" {
 		// 校验接收者地址是否满足当前链的地址规范
@@ -79,7 +80,7 @@ func (d DDC) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 		}
 
 		// ValidateSigner
-		if err := d.base.ValidateDDCSigner(class.Owner, params.ProjectID); err != nil {
+		if err := base.ValidateDDCSigner(class.Owner, params.ProjectID); err != nil {
 			return err
 		}
 
@@ -92,13 +93,13 @@ func (d DDC) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 		}
 
 		// ValidateRecipient
-		if err := d.base.ValidateDDCRecipient(params.Recipient, params.ProjectID); err != nil {
+		if err := base.ValidateDDCRecipient(params.Recipient, params.ProjectID); err != nil {
 			return err
 		}
 
 		//taskId
 		code := fmt.Sprintf("%s%s%s", class.Owner, models.TDDCTXSOperationTypeMintNFT, time.Now().String())
-		taskId = d.base.EncodeData(code)
+		taskId = base.EncodeData(code)
 
 		//platform 发行
 		platform, err := models.TDDCAccounts(
@@ -133,8 +134,7 @@ func (d DDC) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 			log.Error("create ddc", "get hash and gasLimit error:", err.Error())
 			return types.ErrInternal
 		}
-
-		err = d.base.GasThan(params.ChainID, gas,service.MintFee, params.PlatFormID)
+		err = base.GasThan(params.ChainID, gas, service.MintFee, params.PlatFormID)
 		if err != nil {
 			return types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
 		}
@@ -229,10 +229,11 @@ func (d DDC) Show(params dto.NftByNftIdP) (*dto.NftR, error) {
 }
 
 func (d DDC) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
+	base, _ := d.base[service.DDC]
 	var taskId string
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
 		// ValidateSigner
-		if err := d.base.ValidateDDCSigner(params.Sender, params.ProjectID); err != nil {
+		if err := base.ValidateDDCSigner(params.Sender, params.ProjectID); err != nil {
 			return err
 		}
 
@@ -287,8 +288,8 @@ func (d DDC) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 			// Tx into database
 			messageByte, _ := json.Marshal(msgEditNFT)
 			code := fmt.Sprintf("%s%s%s", params.Sender, models.TDDCTXSOperationTypeEditNFT, time.Now().String())
-			taskId = d.base.EncodeData(code)
-			hash := "0x" + d.base.EncodeData(string(messageByte)+time.Now().String())
+			taskId = base.EncodeData(code)
+			hash := "0x" + base.EncodeData(string(messageByte)+time.Now().String())
 			//tx 表
 			ttx := models.TDDCTX{
 				ProjectID:     params.ProjectID,
@@ -382,7 +383,7 @@ func (d DDC) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 					log.Error("edit ddc by nftId", "get hash and gasLimit error:", err.Error())
 					return types.ErrInternal
 				}
-				err = d.base.GasThan(params.ChainID, gas, 0,params.PlatFormID)
+				err = base.GasThan(params.ChainID, gas, 0, params.PlatFormID)
 				if err != nil {
 					return types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
 				}
@@ -390,10 +391,10 @@ func (d DDC) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 				// Tx into database
 				messageByte, _ := json.Marshal(msgEditNFT)
 				code := fmt.Sprintf("%s%s%s", params.Sender, models.TTXSOperationTypeEditNFT, time.Now().String())
-				taskId = d.base.EncodeData(code)
+				taskId = base.EncodeData(code)
 
 				// Tx into database
-				txId, err := d.base.UndoDDCTxIntoDataBase(
+				txId, err := base.UndoDDCTxIntoDataBase(
 					params.Sender,
 					models.TTXSOperationTypeEditNFT,
 					taskId,
@@ -430,8 +431,9 @@ func (d DDC) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 }
 
 func (d DDC) Delete(params dto.DeleteNftByNftIdP) (*dto.TxRes, error) {
+	base, _ := d.base[service.DDC]
 	//ValidateSigner
-	if err := d.base.ValidateDDCSigner(params.Sender, params.ProjectID); err != nil {
+	if err := base.ValidateDDCSigner(params.Sender, params.ProjectID); err != nil {
 		return nil, err
 	}
 	//查出要删除的ddc
@@ -468,7 +470,7 @@ func (d DDC) Delete(params dto.DeleteNftByNftIdP) (*dto.TxRes, error) {
 	messageByte, _ := json.Marshal(msgBurnNFT)
 	//生成taskId
 	code := fmt.Sprintf("%s%s%s", params.Sender, models.TDDCTXSOperationTypeBurnNFT, time.Now().String())
-	taskId := d.base.EncodeData(code)
+	taskId := base.EncodeData(code)
 
 	//获取gasLimit和txHash
 	opts := bind.TransactOpts{
@@ -484,7 +486,7 @@ func (d DDC) Delete(params dto.DeleteNftByNftIdP) (*dto.TxRes, error) {
 	//tx存数据库
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		// Tx into database
-		txId, err := d.base.UndoDDCTxIntoDataBase(params.Sender,
+		txId, err := base.UndoDDCTxIntoDataBase(params.Sender,
 			models.TDDCTXSOperationTypeBurnNFT,
 			taskId,
 			taskId,
@@ -515,6 +517,7 @@ func (d DDC) Delete(params dto.DeleteNftByNftIdP) (*dto.TxRes, error) {
 
 	return &dto.TxRes{TaskId: taskId}, nil
 }
+
 func (d DDC) List(params dto.NftsP) (*dto.NftsRes, error) {
 	result := &dto.NftsRes{}
 	var err error
@@ -632,6 +635,7 @@ func (d DDC) List(params dto.NftsP) (*dto.NftsRes, error) {
 	return result, nil
 
 }
+
 func (d DDC) History(params dto.NftOperationHistoryByNftIdP) (*dto.BNftOperationHistoryByNftIdRes, error) {
 	result := &dto.BNftOperationHistoryByNftIdRes{
 		PageRes: dto.PageRes{
@@ -655,7 +659,6 @@ func (d DDC) History(params dto.NftOperationHistoryByNftIdP) (*dto.BNftOperation
 		log.Error("query ddc operation history", "query ddc error:", err.Error())
 		return nil, types.ErrInternal
 	}
-
 	queryMod := []qm.QueryMod{
 		qm.From(models.TableNames.TDDCMSGS),
 		qm.Select(models.TDDCMSGColumns.TXHash,

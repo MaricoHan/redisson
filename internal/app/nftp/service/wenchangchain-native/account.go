@@ -26,10 +26,10 @@ import (
 const hdPathPrefix = hd.BIP44Prefix + "0'/0/"
 
 type nativeAccount struct {
-	base *service.Base
+	base map[string]*service.Base
 }
 
-func NewNFTAccount(base *service.Base) *service.AccountBase {
+func NewNFTAccount(base map[string]*service.Base) *service.AccountBase {
 	return &service.AccountBase{
 		Module:  service.NATIVE,
 		Service: &nativeAccount{base: base},
@@ -37,6 +37,7 @@ func NewNFTAccount(base *service.Base) *service.AccountBase {
 }
 
 func (svc *nativeAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) {
+	base, _ := svc.base[service.NATIVE]
 	// 写入数据库
 	// sdk 创建账户
 	var addresses []string
@@ -110,7 +111,7 @@ func (svc *nativeAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, er
 			return types.ErrInternal
 		}
 		// fee grant
-		_, err = svc.base.Grant(addresses)
+		_, err = base.Grant(addresses)
 		if err != nil {
 			return err
 		}

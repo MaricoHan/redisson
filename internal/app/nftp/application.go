@@ -48,7 +48,10 @@ func (s NFTPServer) Initialize() {
 		orm.WriteOption(log.Log),
 	)
 	// 链客户端初始化
-	chain.NewSdkClient(conf.Chain, orm.GetDB())
+	chainMap := make(map[string]interface{}, 2)
+	chainMap["ddc"] = conf.DDC
+	chainMap["native"] = conf.Chain
+	chain.NewSdkClient(chainMap, orm.GetDB())
 }
 
 func (s NFTPServer) Stop() {
