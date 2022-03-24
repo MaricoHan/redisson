@@ -67,8 +67,8 @@ const (
 	ErrNftStatusMsg      = "nft status is invalid"
 	ErrNftClassStatusMsg = "nft class status is invalid"
 	ErrOwnerFound        = "owner not found"
-	ErrDIDAccount        = "Authority: Account alreadyexists!"
-	ErrGasNotEnough      = "gas not enough"
+	ErrDIDAlreadyExists  = "Authority: Account alreadyexists!"
+	ErrOutOfGas          = "out of gas"
 )
 
 var (

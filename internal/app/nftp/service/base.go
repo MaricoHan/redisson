@@ -654,7 +654,7 @@ func (m Base) AddDIDAccount(authority *service.AuthorityService, addresses []str
 		}
 		_, err := authority.AddAccountByOperator(opts, addresses[i], addresses[i], "did:"+addresses[i], platformDID)
 		if err != nil {
-			if strings.Contains(err.Error(), types.ErrDIDAccount) {
+			if strings.Contains(err.Error(), types.ErrDIDAlreadyExists) {
 				//账户已存在
 				continue
 			} else {
