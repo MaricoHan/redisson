@@ -104,8 +104,8 @@ func (svc *Tx) Show(params dto.TxResultByTxHashP) (*dto.TxResultByTxHashRes, err
 			result.ClassID = mintNft[0].DenomId
 
 			nftTx, err := models.TMSGS(
-				models.TDDCMSGWhere.TXHash.EQ(txinfo.Hash),
-				models.TDDCMSGWhere.ProjectID.EQ(params.ProjectID),
+				models.TMSGWhere.TXHash.EQ(txinfo.Hash),
+				models.TMSGWhere.ProjectID.EQ(params.ProjectID),
 			).OneG(context.Background())
 			if err != nil {
 				//500

@@ -3,17 +3,8 @@ package wenchangchain_ddc
 import (
 	"context"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"strings"
-	"time"
-
-	"github.com/friendsofgo/errors"
-	"golang.org/x/sync/errgroup"
-
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	ethereumcrypto "github.com/ethereum/go-ethereum/crypto"
@@ -27,8 +18,6 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"gitlab.bianjie.ai/irita-paas/open-api/config"
 
-	http2 "gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/http"
-
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
@@ -37,13 +26,6 @@ import (
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"
 )
-
-type BsnAccount struct {
-	Code    int         `json:"code"`
-	Message string      `json:"message"`
-	Detail  string      `json:"detail"`
-	Data    interface{} `json:"data"`
-}
 
 type ddcAccount struct {
 	base map[string]*service.Base
@@ -60,18 +42,17 @@ func NewDDCAccount(base map[string]*service.Base) *service.AccountBase {
 
 const (
 	hdPathPrefix      = hd.BIP44Prefix + "0'/0/"
-	rootProjectID     = 0                 //根账户的 projectID
-	operatorIDInTable = 1                 //operator 在表中的 ID
-	platformIDInTable = 2                 //platform 在表中的 ID
-	platformDID       = "did:ddcplatform" //platform 在合约中的 DID
+	rootProjectID     = 0 //根账户的 projectID
+	platformIDInTable = 2 //platform 在表中的 ID
 )
 
 func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) {
-	//base, _ := d.base[service.DDC]
+	base, _ := d.base[service.DDC]
 	// 写入数据库
 	// sdk 创建账户
 	var addresses, bech32addresses []string
 	client := service.NewDDCClient()
+	authority := client.GetAuthorityService()
 	env := config.Get().Server.Env
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
 		tAppOneObj, err := models.TConfigs(
@@ -137,10 +118,10 @@ func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) 
 			}
 
 			//hex address
-			ddc721 := client.GetDDC721Service()
-			addr, err := ddc721.Bech32ToHex(tmpAddress)
+			addr, err := authority.Bech32ToHex(tmpAddress)
 			if err != nil {
-				return err
+				log.Error("create account", "bech32 to hex error:", err.Error())
+				return types.ErrInternal
 			}
 
 			tmp := &models.TDDCAccount{
@@ -156,11 +137,13 @@ func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) 
 			addresses = append(addresses, addr)
 			bech32addresses = append(bech32addresses, tmpAddress)
 		}
+
 		err = tAccounts.InsertAll(context.Background(), exec)
 		if err != nil {
 			log.Error("create ddc account", "accounts insert error:", err.Error())
 			return types.ErrInternal
 		}
+
 		tAppOneObj.AccOffset += params.Count
 		updateRes, err := tAppOneObj.Update(context.Background(), exec, boil.Infer())
 		if err != nil || updateRes == 0 {
@@ -168,60 +151,15 @@ func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) 
 			return types.ErrInternal
 		}
 
-		if env == "stage" || env == "prod" {
-			//bsn 账户授权
-			time := 5 * time.Second
-			ctx, _ := context.WithTimeout(context.Background(), time)
-			group, errCtx := errgroup.WithContext(ctx)
-			for _, v := range tAccounts {
-				value := v
-				group.Go(func() error {
-					var bsnAccount BsnAccount
-					params := map[string]interface{}{
-						"chainClientName": fmt.Sprintf("%s%d%d", tAppOneObj.Name.String, tAppOneObj.ID, value.AccIndex),
-						"chainClientAddr": value.Address,
-					}
-					url := fmt.Sprintf("%s%s", config.Get().Server.BSNUrl, fmt.Sprintf("/api/%s/account/generate", config.Get().Server.BSNProjectId))
-					res, err := http2.Post(errCtx, url, params)
-					if err != nil {
-						return err
-					}
-					defer res.Body.Close()
-					body, err := ioutil.ReadAll(res.Body)
-					json.Unmarshal(body, &bsnAccount)
-					if bsnAccount.Code != 0 || bsnAccount.Message == "" {
-						return errors.New(bsnAccount.Message)
-					}
-					return nil
-				})
-			}
-			if err := group.Wait(); err != nil {
-				log.Error("create account", "group_error:", err)
-				return types.ErrInternal
+		if env == "prod" {
+			err = base.AddDIDAccountProd(tAppOneObj, tAccounts)
+			if err != nil {
+				return err
 			}
 		} else {
-			//查询有授权权限账户
-			owner, err := models.TDDCAccounts(
-				models.TDDCAccountWhere.ProjectID.EQ(uint64(rootProjectID)),
-				models.TDDCAccountWhere.ID.EQ(uint64(operatorIDInTable)),
-			).OneG(context.Background())
+			err = base.AddDIDAccount(authority, addresses)
 			if err != nil {
-				//500
-				log.Error("create account", "query owner error:", err.Error())
-				return types.ErrInternal
-			}
-
-			for i := 0; i < len(addresses); i++ {
-				//add did
-				authority := client.GetAuthorityService()
-				opts := &bind.TransactOpts{
-					From:   common.HexToAddress(owner.Address),
-					NoSend: false,
-				}
-				_, err := authority.AddAccountByOperator(opts, addresses[i], addresses[i], "did:"+addresses[i], platformDID)
-				if err != nil {
-					return err
-				}
+				return err
 			}
 		}
 		return nil
@@ -230,20 +168,6 @@ func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) 
 		return nil, err
 	}
 
-	//time.Sleep(3 * time.Second)
-	////send balance
-	//root, err := base.QueryRootAccount()
-	//if err != nil {
-	//	return nil, err
-	//}
-	//msgs := base.CreateGasMsg(root.Address, bech32addresses)
-	//tx := base.CreateBaseTxSync(root.Address, "")
-	//tx.Gas = base.CreateAccount(params.Count)
-	//_, err = base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
-	//if err != nil {
-	//	log.Error("create account", "build and send, error:", err)
-	//	return nil, types.ErrBuildAndSend
-	//}
 	result := &dto.AccountRes{}
 	result.Accounts = addresses
 	return result, nil
