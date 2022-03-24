@@ -31,10 +31,10 @@ import (
 const nftp = "nftp"
 
 type Nft struct {
-	base *service.Base
+	base map[string]*service.Base
 }
 
-func NewNFT(base *service.Base) *service.NFTBase {
+func NewNFT(base map[string]*service.Base) *service.NFTBase {
 	return &service.NFTBase{
 		Module:  service.NATIVE,
 		Service: &Nft{base: base},
@@ -42,6 +42,7 @@ func NewNFT(base *service.Base) *service.NFTBase {
 }
 
 func (svc *Nft) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
+	base, _ := svc.base[service.NATIVE]
 	if params.Recipient != "" {
 		//检验地址是否为该链的合法地址
 		if err := sdktype.ValidateAccAddress(params.Recipient); err != nil {
@@ -72,7 +73,7 @@ func (svc *Nft) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 		}
 
 		// ValidateSigner
-		if err := svc.base.ValidateSigner(classOne.Owner, params.ProjectID); err != nil {
+		if err := base.ValidateSigner(classOne.Owner, params.ProjectID); err != nil {
 			return err
 		}
 
@@ -86,7 +87,7 @@ func (svc *Nft) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 				params.Recipient = classOne.Owner
 			}
 			// ValidateRecipient
-			if err := svc.base.ValidateRecipient(params.Recipient, params.ProjectID); err != nil {
+			if err := base.ValidateRecipient(params.Recipient, params.ProjectID); err != nil {
 				return err
 			}
 			createNft := nft.MsgMintNFT{
@@ -101,27 +102,27 @@ func (svc *Nft) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 			}
 			msgs = append(msgs, &createNft)
 		}
-		baseTx := svc.base.CreateBaseTx(classOne.Owner, "")
-		originData, tHash, _ := svc.base.BuildAndSign(msgs, baseTx)
-		baseTx.Gas = svc.base.MintNftsGas(originData, uint64(params.Amount))
-		err = svc.base.GasThan(params.ChainID, baseTx.Gas, params.PlatFormID)
+		baseTx := base.CreateBaseTx(classOne.Owner, "")
+		originData, tHash, _ := base.BuildAndSign(msgs, baseTx)
+		baseTx.Gas = base.MintNftsGas(originData, uint64(params.Amount))
+		err = base.GasThan(params.ChainID, baseTx.Gas, params.PlatFormID)
 		if err != nil {
 			return types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
 		}
-		originData, tHash, err = svc.base.BuildAndSign(msgs, baseTx)
+		originData, tHash, err = base.BuildAndSign(msgs, baseTx)
 		if err != nil {
 			log.Debug("create nfts", "buildandsign error:", err.Error())
 			return types.ErrBuildAndSign
 		}
 
 		//validate tx
-		txOne, err := svc.base.ValidateTx(tHash)
+		txOne, err := base.ValidateTx(tHash)
 		if err != nil {
 			return err
 		}
 		if txOne != nil && txOne.Status == models.TTXSStatusFailed {
 			baseTx.Memo = fmt.Sprintf("%d", txOne.ID)
-			originData, tHash, err = svc.base.BuildAndSign(msgs, baseTx)
+			originData, tHash, err = base.BuildAndSign(msgs, baseTx)
 			if err != nil {
 				log.Debug("create nfts", "buildandsign error:", err.Error())
 				return types.ErrBuildAndSign
@@ -130,7 +131,7 @@ func (svc *Nft) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 
 		msgsBytes, _ := json.Marshal(msgs)
 		code := fmt.Sprintf("%s%s%s", classOne.Owner, models.TTXSOperationTypeMintNFT, time.Now().String())
-		taskId = svc.base.EncodeData(code)
+		taskId = base.EncodeData(code)
 		ttx := models.TTX{
 			ProjectID:     params.ProjectID,
 			Hash:          tHash,
@@ -174,8 +175,9 @@ func (svc *Nft) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 }
 
 func (svc *Nft) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
+	base, _ := svc.base[service.NATIVE]
 	// ValidateSigner
-	if err := svc.base.ValidateSigner(params.Sender, params.ProjectID); err != nil {
+	if err := base.ValidateSigner(params.Sender, params.ProjectID); err != nil {
 		return nil, err
 	}
 	tNft, err := models.TNFTS(models.TNFTWhere.ProjectID.EQ(params.ProjectID),
@@ -225,17 +227,17 @@ func (svc *Nft) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 	}
 
 	// build and sign transaction
-	baseTx := svc.base.CreateBaseTx(params.Sender, "")
-	signedData, txHash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgEditNFT}, baseTx)
+	baseTx := base.CreateBaseTx(params.Sender, "")
+	signedData, txHash, err := base.BuildAndSign(sdktype.Msgs{&msgEditNFT}, baseTx)
 
 	// get gas
-	nftLen := svc.base.LenOfNft(tNft)
-	baseTx.Gas = svc.base.EditNftGas(nftLen, uint64(len(signedData)))
-	err = svc.base.GasThan(params.ChainID, baseTx.Gas, params.PlatFormID)
+	nftLen := base.LenOfNft(tNft)
+	baseTx.Gas = base.EditNftGas(nftLen, uint64(len(signedData)))
+	err = base.GasThan(params.ChainID, baseTx.Gas, params.PlatFormID)
 	if err != nil {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
 	}
-	signedData, txHash, err = svc.base.BuildAndSign(sdktype.Msgs{&msgEditNFT}, baseTx)
+	signedData, txHash, err = base.BuildAndSign(sdktype.Msgs{&msgEditNFT}, baseTx)
 
 	if err != nil {
 		log.Debug("edit nft by nftId", "BuildAndSign error:", err.Error())
@@ -245,13 +247,13 @@ func (svc *Nft) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 	var taskId string
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		//validate tx
-		txOne, err := svc.base.ValidateTx(txHash)
+		txOne, err := base.ValidateTx(txHash)
 		if err != nil {
 			return err
 		}
 		if txOne != nil && txOne.Status == models.TTXSStatusFailed {
 			baseTx.Memo = fmt.Sprintf("%d", txOne.ID)
-			signedData, txHash, err = svc.base.BuildAndSign(sdktype.Msgs{&msgEditNFT}, baseTx)
+			signedData, txHash, err = base.BuildAndSign(sdktype.Msgs{&msgEditNFT}, baseTx)
 			if err != nil {
 				log.Debug("edit nft by nftId", "BuildAndSign error:", err.Error())
 				return types.ErrBuildAndSign
@@ -261,10 +263,10 @@ func (svc *Nft) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 		// Tx into database
 		messageByte, _ := json.Marshal(msgEditNFT)
 		code := fmt.Sprintf("%s%s%s", params.Sender, models.TTXSOperationTypeEditNFT, time.Now().String())
-		taskId = svc.base.EncodeData(code)
+		taskId = base.EncodeData(code)
 
 		// Tx into database
-		txId, err := svc.base.UndoTxIntoDataBase(params.Sender, models.TTXSOperationTypeEditNFT, taskId, txHash,
+		txId, err := base.UndoTxIntoDataBase(params.Sender, models.TTXSOperationTypeEditNFT, taskId, txHash,
 			params.ProjectID, signedData, messageByte, params.Tag, int64(baseTx.Gas), exec)
 		if err != nil {
 			log.Debug("edit nft by nftId", "Tx into database error:", err.Error())
@@ -290,8 +292,9 @@ func (svc *Nft) Update(params dto.EditNftByNftIdP) (*dto.TxRes, error) {
 }
 
 func (svc *Nft) Delete(params dto.DeleteNftByNftIdP) (*dto.TxRes, error) {
+	base, _ := svc.base[service.NATIVE]
 	// ValidateSigner
-	if err := svc.base.ValidateSigner(params.Sender, params.ProjectID); err != nil {
+	if err := base.ValidateSigner(params.Sender, params.ProjectID); err != nil {
 		return nil, err
 	}
 
@@ -328,16 +331,16 @@ func (svc *Nft) Delete(params dto.DeleteNftByNftIdP) (*dto.TxRes, error) {
 	}
 
 	// build and sign transaction
-	baseTx := svc.base.CreateBaseTx(params.Sender, "")
+	baseTx := base.CreateBaseTx(params.Sender, "")
 
-	nftLen := svc.base.LenOfNft(tNft)
+	nftLen := base.LenOfNft(tNft)
 	// set gas
-	baseTx.Gas = svc.base.DeleteNftGas(nftLen)
-	err = svc.base.GasThan(params.ChainID, baseTx.Gas, params.PlatFormID)
+	baseTx.Gas = base.DeleteNftGas(nftLen)
+	err = base.GasThan(params.ChainID, baseTx.Gas, params.PlatFormID)
 	if err != nil {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
 	}
-	signedData, txHash, err := svc.base.BuildAndSign(sdktype.Msgs{&msgBurnNFT}, baseTx)
+	signedData, txHash, err := base.BuildAndSign(sdktype.Msgs{&msgBurnNFT}, baseTx)
 
 	if err != nil {
 		log.Debug("delete nft by nftId", "BuildAndSign error:", err.Error())
@@ -347,13 +350,13 @@ func (svc *Nft) Delete(params dto.DeleteNftByNftIdP) (*dto.TxRes, error) {
 	var taskId string
 	err = modext.Transaction(func(exec boil.ContextExecutor) error {
 		//validate tx
-		txone, err := svc.base.ValidateTx(txHash)
+		txone, err := base.ValidateTx(txHash)
 		if err != nil {
 			return err
 		}
 		if txone != nil && txone.Status == models.TTXSStatusFailed {
 			baseTx.Memo = fmt.Sprintf("%d", txone.ID)
-			signedData, txHash, err = svc.base.BuildAndSign(sdktype.Msgs{&msgBurnNFT}, baseTx)
+			signedData, txHash, err = base.BuildAndSign(sdktype.Msgs{&msgBurnNFT}, baseTx)
 			if err != nil {
 				log.Debug("delete nft by nftId", "BuildAndSign error:", err.Error())
 				return types.ErrBuildAndSign
@@ -363,9 +366,9 @@ func (svc *Nft) Delete(params dto.DeleteNftByNftIdP) (*dto.TxRes, error) {
 		// Tx into database
 		messageByte, _ := json.Marshal(msgBurnNFT)
 		code := fmt.Sprintf("%s%s%s", params.Sender, models.TTXSOperationTypeBurnNFT, time.Now().String())
-		taskId = svc.base.EncodeData(code)
+		taskId = base.EncodeData(code)
 		// Tx into database
-		txId, err := svc.base.UndoTxIntoDataBase(params.Sender, models.TTXSOperationTypeBurnNFT, taskId, txHash,
+		txId, err := base.UndoTxIntoDataBase(params.Sender, models.TTXSOperationTypeBurnNFT, taskId, txHash,
 			params.ProjectID, signedData, messageByte, params.Tag, int64(baseTx.Gas), exec)
 
 		if err != nil {

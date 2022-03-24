@@ -46,10 +46,10 @@ type BsnAccount struct {
 }
 
 type ddcAccount struct {
-	base *service.Base
+	base map[string]*service.Base
 }
 
-func NewDDCAccount(base *service.Base) *service.AccountBase {
+func NewDDCAccount(base map[string]*service.Base) *service.AccountBase {
 	return &service.AccountBase{
 		Module: service.DDC,
 		Service: &ddcAccount{
@@ -67,6 +67,7 @@ const (
 )
 
 func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) {
+	base, _ := d.base[service.DDC]
 	// 写入数据库
 	// sdk 创建账户
 	var addresses, bech32addresses []string
@@ -101,7 +102,7 @@ func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) 
 			hdPath := fmt.Sprintf("%s%d", hdPathPrefix, index)
 			res, err := sdkcrypto.NewMnemonicKeyManagerWithHDPath(
 				mnemonic,
-				config.Get().Chain.DdcEncryption,
+				config.Get().DDC.ChainEncryption,
 				hdPath,
 			)
 			if err != nil {
@@ -230,14 +231,14 @@ func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) 
 
 	time.Sleep(3 * time.Second)
 	//send balance
-	root, err := d.base.QueryRootAccount()
+	root, err := base.QueryRootAccount()
 	if err != nil {
 		return nil, err
 	}
-	msgs := d.base.CreateGasMsg(root.Address, bech32addresses)
-	tx := d.base.CreateBaseTxSync(root.Address, "")
-	tx.Gas = d.base.CreateAccount(params.Count)
-	_, err = d.base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
+	msgs := base.CreateGasMsg(root.Address, bech32addresses)
+	tx := base.CreateBaseTxSync(root.Address, "")
+	tx.Gas = base.CreateAccount(params.Count)
+	_, err = base.BuildAndSend(sdktype.Msgs{&msgs}, tx)
 	if err != nil {
 		log.Error("create account", "build and send, error:", err)
 		return nil, types.ErrBuildAndSend

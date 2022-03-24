@@ -30,10 +30,10 @@ import (
 )
 
 type NFTClass struct {
-	base *service.Base
+	base map[string]*service.Base
 }
 
-func NewNFTClass(base *service.Base) *service.NFTClassBase {
+func NewNFTClass(base map[string]*service.Base) *service.NFTClassBase {
 	return &service.NFTClassBase{
 		Module:  service.NATIVE,
 		Service: &NFTClass{base: base},
@@ -212,6 +212,7 @@ func (svc *NFTClass) Show(params dto.NftClassesP) (*dto.NftClassRes, error) {
 }
 
 func (svc *NFTClass) Create(params dto.CreateNftClassP) (*dto.TxRes, error) {
+	base, _ := svc.base[service.NATIVE]
 	//检验地址是否为该链的合法地址
 	if err := sdktype.ValidateAccAddress(params.Owner); err != nil {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrRecipientAddr)
@@ -249,7 +250,7 @@ func (svc *NFTClass) Create(params dto.CreateNftClassP) (*dto.TxRes, error) {
 	classId := nftp + strings.ToLower(hex.EncodeToString(tmhash.Sum(data)))
 
 	//txMsg, Platform side created
-	baseTx := svc.base.CreateBaseTx(pAddress, config.Get().Server.DefaultKeyPassword)
+	baseTx := base.CreateBaseTx(pAddress, config.Get().Server.DefaultKeyPassword)
 	createDenomMsg := nft.MsgIssueDenom{
 		Id:               classId,
 		Name:             params.Name,
@@ -267,26 +268,26 @@ func (svc *NFTClass) Create(params dto.CreateNftClassP) (*dto.TxRes, error) {
 		Sender:    pAddress,
 		Recipient: params.Owner,
 	}
-	originData, txHash, _ := svc.base.BuildAndSign(sdktype.Msgs{&createDenomMsg, &transferDenomMsg}, baseTx)
-	baseTx.Gas = svc.base.CreateDenomGas(originData)
-	err = svc.base.GasThan(params.ChainID, baseTx.Gas, params.PlatFormID)
+	originData, txHash, _ := base.BuildAndSign(sdktype.Msgs{&createDenomMsg, &transferDenomMsg}, baseTx)
+	baseTx.Gas = base.CreateDenomGas(originData)
+	err = base.GasThan(params.ChainID, baseTx.Gas, params.PlatFormID)
 	if err != nil {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ErrGasNotEnough, err.Error())
 	}
-	originData, txHash, err = svc.base.BuildAndSign(sdktype.Msgs{&createDenomMsg, &transferDenomMsg}, baseTx)
+	originData, txHash, err = base.BuildAndSign(sdktype.Msgs{&createDenomMsg, &transferDenomMsg}, baseTx)
 	if err != nil {
 		log.Debug("create nft class", "BuildAndSign error:", err.Error())
 		return nil, types.ErrBuildAndSign
 	}
 
 	//validate tx
-	txone, err := svc.base.ValidateTx(txHash)
+	txone, err := base.ValidateTx(txHash)
 	if err != nil {
 		return nil, err
 	}
 	if txone != nil && txone.Status == models.TTXSStatusFailed {
 		baseTx.Memo = fmt.Sprintf("%d", txone.ID)
-		originData, txHash, err = svc.base.BuildAndSign(sdktype.Msgs{&createDenomMsg, &transferDenomMsg}, baseTx)
+		originData, txHash, err = base.BuildAndSign(sdktype.Msgs{&createDenomMsg, &transferDenomMsg}, baseTx)
 		if err != nil {
 			log.Debug("create nft class", "BuildAndSign error:", err.Error())
 			return nil, types.ErrBuildAndSign
@@ -296,7 +297,7 @@ func (svc *NFTClass) Create(params dto.CreateNftClassP) (*dto.TxRes, error) {
 	message := []interface{}{createDenomMsg, transferDenomMsg}
 	messageBytes, _ := json.Marshal(message)
 	code := fmt.Sprintf("%s%s%s", params.Owner, models.TTXSOperationTypeIssueClass, time.Now().String())
-	taskId := svc.base.EncodeData(code)
+	taskId := base.EncodeData(code)
 	ttx := models.TTX{
 		ProjectID:     params.ProjectID,
 		Hash:          txHash,
