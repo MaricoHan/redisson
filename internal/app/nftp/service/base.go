@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/shopspring/decimal"
+
 	ddc "github.com/bianjieai/ddc-sdk-go/ddc-sdk-operator-go/app"
 	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -545,7 +547,7 @@ func (m Base) GasThan(chainId, gas, bizFee, platformId uint64) error {
 		}
 
 		//所有未支付的交易需要扣除的money = gasPrice * unPaidGas + 业务费
-		unPaidMoney := float64(unPaidGas)*gasPrice + float64(ddctx.BizFee.Int64/ConversionRatio)
+		unPaidMoney := decimal.NewFromFloat(float64(unPaidGas)).Mul(decimal.NewFromFloat(gasPrice)).Sub(decimal.NewFromFloat(float64(ddctx.BizFee.Int64 / ConversionRatio)))
 
 		//platformId 的账户
 		pAccount, err := models.TPlatformAccounts(models.TPlatformAccountWhere.ID.EQ(platformId)).One(context.Background(), exec)
@@ -560,10 +562,10 @@ func (m Base) GasThan(chainId, gas, bizFee, platformId uint64) error {
 		}
 
 		//加上本次交易预估的费用
-		unPaidMoney = unPaidMoney + float64(gas)*gasPrice + float64(bizFee/ConversionRatio)
+		unPaidMoney = unPaidMoney.Sub(decimal.NewFromFloat(float64(gas)).Mul(decimal.NewFromFloat(gasPrice)).Sub(decimal.NewFromFloat(float64(bizFee / ConversionRatio))))
 
 		//如果amount小于未支付金额,返回错误
-		if amount < unPaidMoney {
+		if decimal.NewFromFloat(amount).Cmp(unPaidMoney) == -1 {
 			return errors.New("balances not enough")
 		}
 		return err
