@@ -5,10 +5,18 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
-	"strings"
-
+	"github.com/bianjieai/ddc-sdk-go/ddc-sdk-operator-go/app/service"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/shopspring/decimal"
+	http2 "gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/http"
+	"golang.org/x/sync/errgroup"
+	"io/ioutil"
+	"math/big"
+	"strings"
+	"time"
 
 	ddc "github.com/bianjieai/ddc-sdk-go/ddc-sdk-operator-go/app"
 	"github.com/friendsofgo/errors"
@@ -27,12 +35,21 @@ import (
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/models"
 )
 
+type BsnAccount struct {
+	Code    int         `json:"code"`
+	Message string      `json:"message"`
+	Detail  string      `json:"detail"`
+	Data    interface{} `json:"data"`
+}
+
 const (
 	MintFee         = 100   //BSN 发行 DDC 官方业务费
 	BurnFee         = 30    //BSN 销毁 DDC 官方业务费
 	TransFer        = 30    //BSN 转让 DDC 官方业务费
 	rootProjectID   = 0     //根账户的 projectID
 	ConversionRatio = 100.0 //业务费与人民币换算比例 1元 = 100 业务费
+	operatorIDInTable = 1                 //operator 在表中的 ID
+	platformDID       = "did:wenchangplatform" //platform 在合约中的 DID
 )
 
 var (
@@ -57,7 +74,7 @@ func NewDDCClient() *ddc.DDCSdkClient {
 	ClientBuilder := ddc.DDCSdkClientBuilder{}
 	DDCClient := ClientBuilder.SetGatewayUrl(config.Get().DDC.DDCGatewayUrl).
 		SetSignEventListener(new(SignListener)).
-		SetGasPrice(1e10).
+		SetGasPrice(1).
 		SetAuthorityAddress(config.Get().DDC.DDCAuthorityAddress).
 		SetChargeAddress(config.Get().DDC.DDCChargeAddress).
 		SetDDC721Address(config.Get().DDC.DDC721Address).
@@ -571,4 +588,80 @@ func (m Base) GasThan(chainId, gas, bizFee, platformId uint64) error {
 		return err
 	})
 	return err
+}
+
+func(m Base) AddDIDAccountProd(tAppOneObj *models.TConfig, tAccounts modext.TDDCAccounts) error {
+	//bsn 账户授权
+	time := 5 * time.Second
+	ctx, _ := context.WithTimeout(context.Background(), time)
+	group, errCtx := errgroup.WithContext(ctx)
+	for _, v := range tAccounts {
+		value := v
+		group.Go(func() error {
+			var bsnAccount BsnAccount
+			params := map[string]interface{}{
+				"chainClientName": fmt.Sprintf("%s%d%d", tAppOneObj.Name.String, tAppOneObj.ID, value.AccIndex),
+				"chainClientAddr": value.Address,
+			}
+			url := fmt.Sprintf("%s%s", config.Get().Server.BSNUrl, fmt.Sprintf("/api/%s/account/generate", config.Get().Server.BSNProjectId))
+			res, err := http2.Post(errCtx, url, params)
+			if err != nil {
+				return err
+			}
+			defer res.Body.Close()
+			body, err := ioutil.ReadAll(res.Body)
+			json.Unmarshal(body, &bsnAccount)
+			if bsnAccount.Code != 0 || bsnAccount.Message == "" {
+				return errors.New(bsnAccount.Message)
+			}
+			return nil
+		})
+	}
+	if err := group.Wait(); err != nil {
+		log.Error("create account", "group_error:", err)
+		return types.ErrInternal
+	}
+	return nil
+}
+
+func (m Base)AddDIDAccount(authority *service.AuthorityService, addresses []string) error {
+	//查询有授权权限账户
+	owner, err := models.TDDCAccounts(
+		models.TDDCAccountWhere.ProjectID.EQ(uint64(rootProjectID)),
+		models.TDDCAccountWhere.ID.EQ(uint64(operatorIDInTable)),
+	).OneG(context.Background())
+	if err != nil {
+		//500
+		log.Error("create account", "query owner error:", err.Error())
+		return types.ErrInternal
+	}
+
+	//获取account的sequence
+	sequence, err := authority.GetNonce(common.HexToAddress(owner.Address))
+	if err != nil {
+		//500
+		log.Error("create account", "query owner sequence error:", err.Error())
+		return types.ErrInternal
+	}
+
+	for i := 0; i < len(addresses); i++ {
+		//add did
+		opts := &bind.TransactOpts{
+			From:   common.HexToAddress(owner.Address),
+			NoSend: false,
+			Nonce:  big.NewInt(int64(sequence)),
+		}
+		_, err := authority.AddAccountByOperator(opts, addresses[i], addresses[i], "did:"+addresses[i], platformDID)
+		if err != nil {
+			if strings.Contains(err.Error(), types.ErrDIDAccount) {
+				//账户已存在
+				continue
+			} else {
+				log.Error("create account", "add did account error:", err.Error())
+				return types.ErrInternal
+			}
+		}
+		sequence++
+	}
+	return nil
 }
