@@ -7,16 +7,17 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"math/big"
+	"strings"
+	"time"
+
 	"github.com/bianjieai/ddc-sdk-go/ddc-sdk-operator-go/app/service"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/shopspring/decimal"
 	http2 "gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/http"
 	"golang.org/x/sync/errgroup"
-	"io/ioutil"
-	"math/big"
-	"strings"
-	"time"
 
 	ddc "github.com/bianjieai/ddc-sdk-go/ddc-sdk-operator-go/app"
 	"github.com/friendsofgo/errors"
@@ -43,12 +44,12 @@ type BsnAccount struct {
 }
 
 const (
-	MintFee         = 100   //BSN 发行 DDC 官方业务费
-	BurnFee         = 30    //BSN 销毁 DDC 官方业务费
-	TransFer        = 30    //BSN 转让 DDC 官方业务费
-	rootProjectID   = 0     //根账户的 projectID
-	ConversionRatio = 100.0 //业务费与人民币换算比例 1元 = 100 业务费
-	operatorIDInTable = 1                 //operator 在表中的 ID
+	MintFee           = 100                    //BSN 发行 DDC 官方业务费
+	BurnFee           = 30                     //BSN 销毁 DDC 官方业务费
+	TransFer          = 30                     //BSN 转让 DDC 官方业务费
+	rootProjectID     = 0                      //根账户的 projectID
+	ConversionRatio   = 100.0                  //业务费与人民币换算比例 1元 = 100 业务费
+	operatorIDInTable = 1                      //operator 在表中的 ID
 	platformDID       = "did:wenchangplatform" //platform 在合约中的 DID
 )
 
@@ -590,7 +591,7 @@ func (m Base) GasThan(chainId, gas, bizFee, platformId uint64) error {
 	return err
 }
 
-func(m Base) AddDIDAccountProd(tAppOneObj *models.TConfig, tAccounts modext.TDDCAccounts) error {
+func (m Base) AddDIDAccountProd(tAppOneObj *models.TConfig, tAccounts modext.TDDCAccounts) error {
 	//bsn 账户授权
 	time := 5 * time.Second
 	ctx, _ := context.WithTimeout(context.Background(), time)
@@ -618,13 +619,13 @@ func(m Base) AddDIDAccountProd(tAppOneObj *models.TConfig, tAccounts modext.TDDC
 		})
 	}
 	if err := group.Wait(); err != nil {
-		log.Error("create account", "group_error:", err)
+		log.Error("add did account", "group_error:", err)
 		return types.ErrInternal
 	}
 	return nil
 }
 
-func (m Base)AddDIDAccount(authority *service.AuthorityService, addresses []string) error {
+func (m Base) AddDIDAccount(authority *service.AuthorityService, addresses []string) error {
 	//查询有授权权限账户
 	owner, err := models.TDDCAccounts(
 		models.TDDCAccountWhere.ProjectID.EQ(uint64(rootProjectID)),
@@ -632,7 +633,7 @@ func (m Base)AddDIDAccount(authority *service.AuthorityService, addresses []stri
 	).OneG(context.Background())
 	if err != nil {
 		//500
-		log.Error("create account", "query owner error:", err.Error())
+		log.Error("add did account", "query owner error:", err.Error())
 		return types.ErrInternal
 	}
 
@@ -640,7 +641,7 @@ func (m Base)AddDIDAccount(authority *service.AuthorityService, addresses []stri
 	sequence, err := authority.GetNonce(common.HexToAddress(owner.Address))
 	if err != nil {
 		//500
-		log.Error("create account", "query owner sequence error:", err.Error())
+		log.Error("add did account", "query owner sequence error:", err.Error())
 		return types.ErrInternal
 	}
 
@@ -657,7 +658,7 @@ func (m Base)AddDIDAccount(authority *service.AuthorityService, addresses []stri
 				//账户已存在
 				continue
 			} else {
-				log.Error("create account", "add did account error:", err.Error())
+				log.Error("add did account", "add did account error:", err.Error())
 				return types.ErrInternal
 			}
 		}
