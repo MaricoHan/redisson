@@ -247,7 +247,7 @@ func (c Controller) serverOptions(
 		} else {
 			switch appErr.Code() {
 			case types.ClientParamsError, types.FrequentRequestsNotSupports, types.NftStatusAbnormal,
-				types.NftClassStatusAbnormal, types.MaximumLimitExceeded, types.ErrGasNotEnough:
+				types.NftClassStatusAbnormal, types.MaximumLimitExceeded, types.ErrOutOfGas, types.ModuleFailed:
 				metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "400"}...).Add(1)
 				w.WriteHeader(http.StatusBadRequest) //400
 			case types.AuthenticationFailed, types.StructureSignTransactionFailed:

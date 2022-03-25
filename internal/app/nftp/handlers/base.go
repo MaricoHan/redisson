@@ -8,6 +8,9 @@ import (
 	"strings"
 	"unicode"
 
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/mw"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
+
 	"github.com/asaskevich/govalidator"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 )
@@ -21,34 +24,19 @@ const (
 type base struct {
 }
 
-func (h base) ProjectID(ctx context.Context) uint64 {
-	keysList := ctx.Value("X-App-Id")
-	keysListString, ok := keysList.([]string)
+func (h base) AuthData(ctx context.Context) mw.AuthData {
+	authDataString := ctx.Value("X-Auth-Data")
+	authDataSlice, ok := authDataString.([]string)
 	if !ok {
-		return 0
+		return mw.AuthData{}
 	}
-	projectID, _ := strconv.ParseInt(keysListString[0], 10, 64)
-	return uint64(projectID)
-}
-
-func (h base) ChainID(ctx context.Context) uint64 {
-	keysList := ctx.Value("X-Chain-Id")
-	keysListString, ok := keysList.([]string)
-	if !ok {
-		return 0
+	var authData mw.AuthData
+	err := json.Unmarshal([]byte(authDataSlice[0]), &authData)
+	if err != nil {
+		log.Error("auth data Error: ", err)
+		return mw.AuthData{}
 	}
-	ChainID, _ := strconv.ParseInt(keysListString[0], 10, 64)
-	return uint64(ChainID)
-}
-
-func (h base) PlatFormID(ctx context.Context) uint64 {
-	keysList := ctx.Value("X-Platform-Id")
-	keysListString, ok := keysList.([]string)
-	if !ok {
-		return 0
-	}
-	PlatFormID, _ := strconv.ParseInt(keysListString[0], 10, 64)
-	return uint64(PlatFormID)
+	return authData
 }
 
 func (h base) UriCheck(uri string) error {

@@ -2,12 +2,14 @@ package controller
 
 import (
 	"context"
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/chain"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/handlers"
 
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service/wenchangchain-ddc"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service/wenchangchain-native"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/chain"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/kit"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 )
@@ -26,15 +28,18 @@ func GetAllControllers() []kit.IController {
 	bc := BaseController{
 		Controller: kit.NewController(),
 	}
-
-	baseSvc := service.NewBase(chain.GetSdkClient(), chain.GetGas(), chain.GetDenom(), chain.GetAmount())
+	baseSecs := make(map[string]*service.Base)
+	for k, v := range chain.GetSdkClients() {
+		baseSvc := service.NewBase(v.Client, v.Gas, v.Denom, v.Amount)
+		baseSecs[k] = baseSvc
+	}
 	controllers := []kit.IController{
 		NewDemoController(bc, handlers.NewDemo()),
-		NewAccountsController(bc, handlers.NewAccount(service.NewAccount(baseSvc))),
-		NewNftClassController(bc, handlers.NewNftClass(service.NewNftClass(baseSvc))),
-		NewNftController(bc, handlers.NewNft(service.NewNft(baseSvc))),
-		NewNftTransferController(bc, handlers.NewNftTransfer(service.NewNftTransfer(baseSvc))),
-		NewTxController(bc, handlers.NewTx(service.NewTx())),
+		NewAccountsController(bc, handlers.NewAccount(wenchangchain_native.NewNFTAccount(baseSecs), wenchangchain_ddc.NewDDCAccount(baseSecs))),
+		NewNftClassController(bc, handlers.NewNFTClass(wenchangchain_native.NewNFTClass(baseSecs), wenchangchain_ddc.NewDDCClass(baseSecs))),
+		NewNftController(bc, handlers.NewNft(wenchangchain_native.NewNFT(baseSecs), wenchangchain_ddc.NewDDC(baseSecs))),
+		NewNftTransferController(bc, handlers.NewNftTransfer(wenchangchain_native.NewNftTransfer(baseSecs), wenchangchain_ddc.NewDDCTransfer(baseSecs))),
+		NewTxController(bc, handlers.NewTx(wenchangchain_native.NewTx(), wenchangchain_ddc.NewTx())),
 	}
 
 	return controllers

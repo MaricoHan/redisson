@@ -5,7 +5,9 @@ import (
 	"github.com/spf13/viper"
 )
 
-var conf Config
+var (
+	conf Config
+)
 
 type (
 	// Config define a struct for starting the http server
@@ -14,6 +16,7 @@ type (
 		Server Server `mapstructure:"server"`
 		Redis  Redis  `mapstructure:"redis"`
 		Chain  Chain  `mapstructure:"chain"`
+		DDC    DDC    `mapstructure:"ddc"`
 	}
 
 	// Mysql define a struct for mysql connect
@@ -64,6 +67,32 @@ type (
 		RouterPrefix       string `mapstructure:"router_prefix"`
 		SignatureAuth      bool   `mapstructure:"signature_auth"`
 		DefaultKeyPassword string `mapstructure:"default_key_password"`
+		BSNUrl             string `mapstructure:"bsn_url"`
+		BSNProjectId       string `mapstructure:"bsn_project_id"`
+	}
+
+	DDC struct {
+		DDCAuthorityAddress string `mapstructure:"ddc_authority_address"`
+		DDCChargeAddress    string `mapstructure:"ddc_charge_address"`
+		DDC721Address       string `mapstructure:"ddc_721_address"`
+		DDC1155Address      string `mapstructure:"ddc_1155_address"`
+		DDCGatewayUrl       string `mapstructure:"ddc_gateway_url"`
+
+		RcpAddr          string `mapstructure:"rpc_address"`
+		GrpcAddr         string `mapstructure:"grpc_address"`
+		WsAddr           string `mapstructure:"ws_addr"`
+		ChainID          string `mapstructure:"chain_id"`
+		ProjectID        string `mapstructure:"project_id"`
+		ProjectKey       string `mapstructure:"project_key"`
+		ChainAccountAddr string `mapstructure:"chain_account_addr"`
+
+		GasCoefficient float64 `mapstructure:"gas_coefficient"`
+		Gas            uint64  `mapstructure:"gas"`
+		Denom          string  `mapstructure:"denom"`
+		Amount         int64   `mapstructure:"amount"`
+		AccoutGas      int64   `mapstructure:"account_gas"`
+
+		ChainEncryption string `mapstructure:"ddc_encryption"`
 	}
 )
 

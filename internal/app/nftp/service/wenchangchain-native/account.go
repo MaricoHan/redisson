@@ -1,10 +1,9 @@
-package service
+package wenchangchain_native
 
 import (
 	"context"
 	"encoding/base64"
 	"fmt"
-
 	"strings"
 
 	sdkcrypto "github.com/irisnet/core-sdk-go/common/crypto"
@@ -13,8 +12,10 @@ import (
 	sdktype "github.com/irisnet/core-sdk-go/types"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+
 	"gitlab.bianjie.ai/irita-paas/open-api/config"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/dto"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft"
@@ -22,32 +23,27 @@ import (
 	"gitlab.bianjie.ai/irita-paas/orms/orm-nft/modext"
 )
 
-const algo = "secp256k1"
 const hdPathPrefix = hd.BIP44Prefix + "0'/0/"
 
-type BsnAccount struct {
-	Code    int         `json:"code"`
-	Message string      `json:"message"`
-	Detail  string      `json:"detail"`
-	Data    interface{} `json:"data"`
+type nativeAccount struct {
+	base map[string]*service.Base
 }
 
-type Account struct {
-	base *Base
+func NewNFTAccount(base map[string]*service.Base) *service.AccountBase {
+	return &service.AccountBase{
+		Module:  service.NATIVE,
+		Service: &nativeAccount{base: base},
+	}
 }
 
-func NewAccount(base *Base) *Account {
-	return &Account{base: base}
-}
-
-func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, error) {
+func (svc *nativeAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) {
+	base, _ := svc.base[service.NATIVE]
 	// 写入数据库
 	// sdk 创建账户
 	var addresses []string
-
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
-		tAppOneObj, err := models.TApps(
-			qm.SQL("SELECT * FROM `t_apps` WHERE (`t_apps`.`id` = ?) LIMIT 1 FOR UPDATE;", 1),
+		tAppOneObj, err := models.TConfigs(
+			qm.SQL("SELECT * FROM `t_configs` WHERE (`t_configs`.`id` = ?) LIMIT 1 FOR UPDATE;", 1),
 		).One(context.Background(), exec)
 		if err != nil {
 			//500
@@ -107,6 +103,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, e
 			log.Error("create account", "accounts insert error:", err.Error())
 			return types.ErrInternal
 		}
+
 		tAppOneObj.AccOffset += params.Count
 		updateRes, err := tAppOneObj.Update(context.Background(), exec, boil.Infer())
 		if err != nil || updateRes == 0 {
@@ -114,7 +111,7 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, e
 			return types.ErrInternal
 		}
 		// fee grant
-		_, err = svc.base.Grant(addresses)
+		_, err = base.Grant(addresses)
 		if err != nil {
 			return err
 		}
@@ -124,13 +121,12 @@ func (svc *Account) CreateAccount(params dto.CreateAccountP) (*dto.AccountRes, e
 	if err != nil {
 		return nil, err
 	}
-
 	result := &dto.AccountRes{}
 	result.Accounts = addresses
 	return result, nil
 }
 
-func (svc *Account) Accounts(params dto.AccountsP) (*dto.AccountsRes, error) {
+func (svc *nativeAccount) Show(params dto.AccountsP) (*dto.AccountsRes, error) {
 	result := &dto.AccountsRes{}
 	result.Offset = params.Offset
 	result.Limit = params.Limit
@@ -173,7 +169,7 @@ func (svc *Account) Accounts(params dto.AccountsP) (*dto.AccountsRes, error) {
 	)
 	if err != nil {
 		// records not exist
-		if strings.Contains(err.Error(), SqlNotFound) {
+		if strings.Contains(err.Error(), service.SqlNotFound) {
 			return result, nil
 		}
 		return nil, types.ErrInternal
@@ -193,7 +189,7 @@ func (svc *Account) Accounts(params dto.AccountsP) (*dto.AccountsRes, error) {
 	return result, nil
 }
 
-func (svc *Account) AccountsHistory(params dto.AccountsP) (*dto.AccountOperationRecordRes, error) {
+func (svc *nativeAccount) History(params dto.AccountsP) (*dto.AccountOperationRecordRes, error) {
 	result := &dto.AccountOperationRecordRes{
 		PageRes: dto.PageRes{
 			Offset:     params.Offset,
@@ -245,7 +241,7 @@ func (svc *Account) AccountsHistory(params dto.AccountsP) (*dto.AccountOperation
 	)
 	if err != nil {
 		// records not exist
-		if strings.Contains(err.Error(), SqlNotFound) {
+		if strings.Contains(err.Error(), service.SqlNotFound) {
 			return result, nil
 		}
 		log.Error("account history", "query error:", err)

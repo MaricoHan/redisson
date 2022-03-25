@@ -4,9 +4,11 @@ router_prefix = "v1beta1"
 prometheus_addr = ":9090"
 log_format = "text"
 log_level = "debug"
-app_env = "stage"
+app_env = "dev"
 signature_auth = false
 default_key_password = "NFT-Avata-Services-ApiV1"
+bsn_url = "https://opbningxia.bsngate.com:18602"
+bsn_project_id = "43e8c1df993d4ab099b110b00bde4a12"
 
 [mysql]
 db_name = "nftp_open_api"
@@ -39,3 +41,24 @@ denom = "uirita"
 address = "127.0.0.1:6379"
 db = 0
 password = ""
+
+[ddc]
+ddc_authority_address = "0xBcE9AA1924D7197C9C945e43638Bf589f91bcB71"
+ddc_charge_address = "0xF41b6185bFB22E2EFC5fB8395Fa3B952951E2d0b"
+ddc_721_address = "0x74b6114d011891Ac21FD1d586bc7F3407c63c216"
+ddc_1155_address = "0x9f7388e114DfDFAbAF8e4b881894E4C7e1b52C17"
+ddc_gateway_url = "http://192.168.150.42:8545"
+
+chain_id = "dev"
+grpc_address = "192.168.150.42:9090"
+rpc_address = "tcp://192.168.150.42:26657"
+project_id = "a36dc219dbdd4dbe809766accbed0ac6"
+project_key = ""
+chain_account_addr = ""
+ddc_encryption = "eth_secp256k1"
+
+gas_coefficient = 1.5
+gas = 400000
+amount = 200000
+account_gas = 4000000
+denom  = "uirita"

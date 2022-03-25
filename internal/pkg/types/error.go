@@ -22,6 +22,7 @@ const (
 	TxStatusPending                = "TX_STATUS_PENDING"
 	TxStatusUndo                   = "TX_STATUS_UNDO"
 	StructureSendTransactionFailed = "STRUCTURE_SEND_TRANSACTION_FAILED"
+	ModuleFailed                   = "MODULE_ERROR"
 
 	// ErrOffset		error msg handle
 	ErrOffset         = "offset format error"
@@ -57,6 +58,7 @@ const (
 	ErrAmountInt      = "amount must be between 1 and 100"
 	ErrRepeat         = "index is repeat"
 	ErrClientParams   = "client params error"
+	ErrUriChain       = "uri cannot be modified"
 
 	// ErrSelfTransfer		error msg service
 	ErrSelfTransfer      = "recipient cannot be owner"
@@ -65,8 +67,8 @@ const (
 	ErrNftStatusMsg      = "nft status is invalid"
 	ErrNftClassStatusMsg = "nft class status is invalid"
 	ErrOwnerFound        = "owner not found"
-
-	ErrGasNotEnough = "gas not enough"
+	ErrDIDAlreadyExists  = "Authority: Account alreadyexists!"
+	ErrOutOfGas          = "out of gas"
 )
 
 var (
@@ -84,6 +86,7 @@ var (
 	ErrTXStatusSuccess = Register(RootCodeSpace, TxStatusSuccess, "tx transaction success")
 	ErrTXStatusPending = Register(RootCodeSpace, TxStatusPending, "tx transaction is in progress, please wait")
 	ErrTXStatusUndo    = Register(RootCodeSpace, TxStatusUndo, "tx transaction not executed, please wait")
+	ErrModules         = Register(RootCodeSpace, ModuleFailed, ErrModule)
 )
 
 var usedErrorCodes = map[string]*AppError{}
