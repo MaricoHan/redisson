@@ -12,7 +12,6 @@ import (
 	"sort"
 	"time"
 
-	"github.com/gorilla/mux"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/config"
@@ -120,12 +119,14 @@ func (h authHandler) Signature(r *http.Request, apiSecret string, timestamp stri
 
 	// 获取 path params
 	params := map[string]interface{}{}
-	for k, v := range mux.Vars(r) {
-		params[k] = v
-	}
+	//for k, v := range mux.Vars(r) {
+	//	params[k] = v
+	//}
+	params["path_url"] = r.URL.Path
 
 	// 获取 query params
 	for k, v := range r.URL.Query() {
+		k = "query_" + k
 		params[k] = v[0]
 	}
 
@@ -144,6 +145,7 @@ func (h authHandler) Signature(r *http.Request, apiSecret string, timestamp stri
 	hexHash := hash(timestamp + apiSecret)
 
 	for k, v := range paramsBody {
+		k = "body_" + k
 		params[k] = v
 	}
 	// sort params
