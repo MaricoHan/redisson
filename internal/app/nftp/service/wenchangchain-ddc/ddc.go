@@ -162,15 +162,6 @@ func (d DDC) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 			log.Error("create ddc", "ttx insert error: ", err)
 			return types.ErrInternal
 		}
-
-		//class locked
-		class.Status = models.TDDCClassesStatusPending
-		class.LockedBy = null.Uint64FromPtr(&ttx.ID)
-		ok, err := class.Update(context.Background(), exec, boil.Infer())
-		if err != nil || ok != 1 {
-			log.Error("create ddc", "class status update error: ", err)
-			return types.ErrInternal
-		}
 		return err
 	})
 	if err != nil {
