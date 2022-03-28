@@ -492,7 +492,7 @@ func (svc *Nft) History(params dto.NftOperationHistoryByNftIdP) (*dto.BNftOperat
 		queryMod = append(queryMod, models.TMSGWhere.Timestamp.GTE(null.TimeFromPtr(params.StartDate)))
 	}
 	if params.EndDate != nil {
-		queryMod = append(queryMod, models.TMSGWhere.Timestamp.GTE(null.TimeFromPtr(params.EndDate)))
+		queryMod = append(queryMod, models.TMSGWhere.Timestamp.LTE(null.TimeFromPtr(params.EndDate)))
 	}
 	if params.SortBy != "" {
 		orderBy := ""
