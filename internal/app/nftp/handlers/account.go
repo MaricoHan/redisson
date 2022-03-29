@@ -3,8 +3,6 @@ package handlers
 import (
 	"context"
 	"fmt"
-	"github.com/volatiletech/null/v8"
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"time"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/service"
@@ -76,28 +74,6 @@ func (h account) Create(ctx context.Context, request interface{}) (interface{}, 
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrCountLen)
 	}
 
-	projects, err := models.TProjects(models.TProjectWhere.PlatformID.EQ(null.Int64From(int64(authData.PlatformId)))).AllG(context.Background())
-	if err != nil {
-		log.Error("account", "query project error:", err.Error())
-		return nil, types.ErrInternal
-	}
-	projectIDs := []uint64{}
-	for _, v := range projects {
-		projectIDs = append(projectIDs, v.ID)
-	}
-	ddcCount, err := models.TDDCAccounts(models.TDDCAccountWhere.ProjectID.IN(projectIDs)).CountG(context.Background())
-	if err != nil {
-		log.Error("account", "query ddc accounts count error:", err.Error())
-		return nil, types.ErrInternal
-	}
-	nativeCount, err := models.TAccounts(models.TAccountWhere.ProjectID.IN(projectIDs)).CountG(context.Background())
-	if err != nil {
-		log.Error("account", "query native accounts count error:", err.Error())
-		return nil, types.ErrInternal
-	}
-	if (ddcCount + nativeCount + params.Count) > 200 {
-		return nil, types.ErrAccount
-	}
 	//if config.Get().Server.Env == "prod" && params.Count > 10 {
 	//	log.Error("create account", "params error:", "config.Get().Server.Env == \"prod\" && params.Count > 10")
 	//	return nil, types.ErrParams

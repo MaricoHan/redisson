@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"github.com/volatiletech/null/v8"
 	"strings"
 
 	sdkcrypto "github.com/irisnet/core-sdk-go/common/crypto"
@@ -50,7 +51,28 @@ func (svc *nativeAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, er
 			log.Error("create account", "query app error:", err.Error())
 			return types.ErrInternal
 		}
-
+		projects, err := models.TProjects(models.TProjectWhere.PlatformID.EQ(null.Int64From(int64(params.PlatFormID)))).All(context.Background(), exec)
+		if err != nil {
+			log.Error("create account", "query project error:", err.Error())
+			return types.ErrInternal
+		}
+		projectIDs := []uint64{}
+		for _, v := range projects {
+			projectIDs = append(projectIDs, v.ID)
+		}
+		count, err := models.TAccounts(models.TAccountWhere.ProjectID.IN(projectIDs)).Count(context.Background(), exec)
+		if err != nil {
+			log.Error("creat account", "query accounts count error:", err.Error())
+			return types.ErrInternal
+		}
+		ddcCount, err := models.TDDCAccounts(models.TDDCAccountWhere.ProjectID.IN(projectIDs)).Count(context.Background(), exec)
+		if err != nil {
+			log.Error("create ddc account", "query accounts count error:", err.Error())
+			return types.ErrInternal
+		}
+		if (count + ddcCount + params.Count) > 200 {
+			return types.ErrAccount
+		}
 		tAccounts := modext.TAccounts{}
 		var i int64
 		accOffsetStart := tAppOneObj.AccOffset
