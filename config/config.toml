@@ -4,7 +4,7 @@ router_prefix = "v1beta1"
 prometheus_addr = ":9090"
 log_format = "text"
 log_level = "debug"
-app_env = "prod"
+app_env = "dev"
 signature_auth = false
 default_key_password = "NFT-Avata-Services-ApiV1"
 
