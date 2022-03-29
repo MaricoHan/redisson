@@ -55,6 +55,14 @@ func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) 
 	authority := client.GetAuthorityService()
 	env := config.Get().Server.Env
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
+		tAppOneObj, err := models.TConfigs(
+			qm.SQL("SELECT * FROM `t_configs` WHERE (`t_configs`.`id` = ?) LIMIT 1 FOR UPDATE;", 1),
+		).One(context.Background(), exec)
+		if err != nil {
+			//500
+			log.Error("create ddc account", "query app error:", err.Error())
+			return types.ErrInternal
+		}
 		projects, err := models.TProjects(models.TProjectWhere.PlatformID.EQ(null.Int64From(int64(params.PlatFormID)))).All(context.Background(), exec)
 		if err != nil {
 			log.Error("create ddc account", "query project error:", err.Error())
@@ -78,16 +86,6 @@ func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) 
 		if (count + nativeCount + params.Count) > 200 {
 			return types.ErrAccount
 		}
-
-		tAppOneObj, err := models.TConfigs(
-			qm.SQL("SELECT * FROM `t_configs` WHERE (`t_configs`.`id` = ?) LIMIT 1 FOR UPDATE;", 1),
-		).One(context.Background(), exec)
-		if err != nil {
-			//500
-			log.Error("create ddc account", "query app error:", err.Error())
-			return types.ErrInternal
-		}
-
 		tAccounts := modext.TDDCAccounts{}
 		var i int64
 		accOffsetStart := tAppOneObj.AccOffset

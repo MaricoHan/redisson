@@ -73,6 +73,7 @@ func (h account) Create(ctx context.Context, request interface{}) (interface{}, 
 	if params.Count < 1 || params.Count > 1000 {
 		return nil, types.NewAppError(types.RootCodeSpace, types.ClientParamsError, types.ErrCountLen)
 	}
+
 	//if config.Get().Server.Env == "prod" && params.Count > 10 {
 	//	log.Error("create account", "params error:", "config.Get().Server.Env == \"prod\" && params.Count > 10")
 	//	return nil, types.ErrParams
