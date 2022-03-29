@@ -69,7 +69,13 @@ func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) 
 			log.Error("create ddc account", "query accounts count error:", err.Error())
 			return types.ErrInternal
 		}
-		if count > 200 {
+		nativeCount, err := models.TAccounts(models.TAccountWhere.ProjectID.IN(projectIDs)).Count(context.Background(), exec)
+		if err != nil {
+			log.Error("create ddc account", "query accounts count error:", err.Error())
+			return types.ErrInternal
+		}
+
+		if (count + nativeCount) > 200 {
 			return types.ErrAccount
 		}
 
