@@ -23,6 +23,7 @@ const (
 	TxStatusUndo                   = "TX_STATUS_UNDO"
 	StructureSendTransactionFailed = "STRUCTURE_SEND_TRANSACTION_FAILED"
 	ModuleFailed                   = "MODULE_ERROR"
+	AccountFAiled                  = "ACCOUNT_ERROR"
 
 	// ErrOffset		error msg handle
 	ErrOffset         = "offset format error"
@@ -59,6 +60,7 @@ const (
 	ErrRepeat         = "index is repeat"
 	ErrClientParams   = "client params error"
 	ErrUriChain       = "uri cannot be modified"
+	ErrAccountCount   = "number that can be created exceeds the limit"
 
 	// ErrSelfTransfer		error msg service
 	ErrSelfTransfer      = "recipient cannot be owner"
@@ -87,6 +89,7 @@ var (
 	ErrTXStatusPending = Register(RootCodeSpace, TxStatusPending, "tx transaction is in progress, please wait")
 	ErrTXStatusUndo    = Register(RootCodeSpace, TxStatusUndo, "tx transaction not executed, please wait")
 	ErrModules         = Register(RootCodeSpace, ModuleFailed, ErrModule)
+	ErrAccount         = Register(RootCodeSpace, AccountFAiled, ErrAccountCount)
 )
 
 var usedErrorCodes = map[string]*AppError{}
