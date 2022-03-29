@@ -7,8 +7,6 @@ log_level = "debug"
 app_env = "dev"
 signature_auth = false
 default_key_password = "NFT-Avata-Services-ApiV1"
-bsn_url = "https://opbningxia.bsngate.com:18602"
-bsn_project_id = "43e8c1df993d4ab099b110b00bde4a12"
 
 [mysql]
 db_name = "nftp_open_api"
@@ -62,3 +60,21 @@ gas = 400000
 amount = 200000
 account_gas = 4000000
 denom  = "uirita"
+
+[bsn]
+#门户OpenAPI URL
+bsn_url = "http://117.107.141.162:18080"
+#创建账户接口地址
+api_address="/ddcoai/sys/v1/opb/account/create/save"
+#门户OpenAPI Token
+api_token = "eyJ0eXAiOiJKV1QiLCJ0eXBlIjoiT1BFTi1BUEktSldUIiwiYWxnIjoiSFMyNTYifQ.eyJsb2dpbk5hbWUiOiJCaWFuamllQUkyMDIyIiwiZXhwIjo0ODA0MTk1MzY2fQ.knlVH7QxQV5Q-T3zXUf4P22mX0bJZlXQ7inkA8E-8ms"
+#用户类型(1=平台方 2=平台方的用户)
+opb_chain_client_type= 2
+#开放联盟链框架ID（调用接口：开放联盟链-框架列表查询）
+opb_chain_id= 2
+#链账户类型（调用接口：开放联盟链-框架支持的链账户类型）
+opb_key_type= 3
+#是否接入官方DDC合约 1=不接入 5=接入
+open_ddc= 5
+#DDC业务开通凭证 内容需要通过json转义
+proof="{\"claim\":{\"entName\":\"上海边界智能科技有限公司\",\"domain\":\"https://wenchang.bianjie.ai\",\"loginName\":\"BianjieAI2022\",\"did\":\"did:bsn:ryJ1DZexzEr2ouLtLhXoNju3NKw\"},\"context\":\"https://www.w3.org/2018/credentials/v1\",\"cptId\":\"512201102044218347\",\"created\":\"2022-03-22 06:57:26\",\"expirationDate\":\"2042-03-22\",\"id\":\"1506163121985818624\",\"issuerDid\":\"did:bsn:34XUcjabSjGdwJMF686FUz6oBDXn\",\"proof\":{\"creator\":\"did:bsn:34XUcjabSjGdwJMF686FUz6oBDXn\",\"type\":\"Secp256k1\",\"signatureValue\":\"MQyB2exd/NcXerzAHwLViUw60BEN+O468VbJIh6gKgUJSik5B1lRtANP+a2/XOoWocLakSbWenl0sOLkxXP2BAE=\"},\"type\":\"Proof\",\"userDid\":\"did:bsn:ryJ1DZexzEr2ouLtLhXoNju3NKw\"}"
