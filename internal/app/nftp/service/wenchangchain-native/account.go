@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"github.com/volatiletech/null/v8"
 	"strings"
 
 	sdkcrypto "github.com/irisnet/core-sdk-go/common/crypto"
@@ -42,6 +43,23 @@ func (svc *nativeAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, er
 	// sdk 创建账户
 	var addresses []string
 	err := modext.Transaction(func(exec boil.ContextExecutor) error {
+		projects, err := models.TProjects(models.TProjectWhere.PlatformID.EQ(null.Int64From(int64(params.PlatFormID)))).All(context.Background(), exec)
+		if err != nil {
+			log.Error("create account", "query project error:", err.Error())
+			return types.ErrInternal
+		}
+		projectIDs := []uint64{}
+		for _, v := range projects {
+			projectIDs = append(projectIDs, v.ID)
+		}
+		count, err := models.TAccounts(models.TAccountWhere.ProjectID.IN(projectIDs)).Count(context.Background(), exec)
+		if err != nil {
+			log.Error("creat account", "query accounts count error:", err.Error())
+			return types.ErrInternal
+		}
+		if count > 200 {
+			return types.ErrAccount
+		}
 		tAppOneObj, err := models.TConfigs(
 			qm.SQL("SELECT * FROM `t_configs` WHERE (`t_configs`.`id` = ?) LIMIT 1 FOR UPDATE;", 1),
 		).One(context.Background(), exec)
