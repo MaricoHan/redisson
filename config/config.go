@@ -17,6 +17,7 @@ type (
 		Redis  Redis  `mapstructure:"redis"`
 		Chain  Chain  `mapstructure:"chain"`
 		DDC    DDC    `mapstructure:"ddc"`
+		BSN    BSN    `mapstructure:"bsn"`
 	}
 
 	// Mysql define a struct for mysql connect
@@ -67,8 +68,6 @@ type (
 		RouterPrefix       string `mapstructure:"router_prefix"`
 		SignatureAuth      bool   `mapstructure:"signature_auth"`
 		DefaultKeyPassword string `mapstructure:"default_key_password"`
-		BSNUrl             string `mapstructure:"bsn_url"`
-		BSNProjectId       string `mapstructure:"bsn_project_id"`
 	}
 
 	DDC struct {
@@ -93,6 +92,17 @@ type (
 		AccoutGas      int64   `mapstructure:"account_gas"`
 
 		ChainEncryption string `mapstructure:"ddc_encryption"`
+	}
+
+	BSN struct {
+		BSNUrl             string `mapstructure:"bsn_url"`
+		APIAddress         string `mapstructure:"api_address"`
+		APIToken           string `mapstructure:"api_token"`
+		OPBChainClientType string `mapstructure:"opb_chain_client_type"`
+		OPBChainID         string `mapstructure:"opb_chain_id"`
+		OPBKeyType         string `mapstructure:"opb_key_type"`
+		OpenDDC            string `mapstructure:"open_ddc"`
+		Proof              string `mapstructure:"proof"`
 	}
 )
 
