@@ -110,7 +110,7 @@ func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) 
 			)
 			if err != nil {
 				//500
-				log.Debug("create ddc account", "NewMnemonicKeyManagerWithHDPath error:", err.Error())
+				log.Error("create ddc account", "NewMnemonicKeyManagerWithHDPath error:", err.Error())
 				return types.ErrInternal
 			}
 			_, priv := res.Generate()
@@ -119,11 +119,13 @@ func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) 
 			//Converts key to Ethermint secp256k1 implementation
 			ethPrivKey, ok := priv.(*ethsecp256k1.PrivKey)
 			if !ok {
-				return fmt.Errorf("invalid private key type %T, expected %T", priv, &ethsecp256k1.PrivKey{})
+				log.Error("create ddc account", "invalid private key type %T, expected %T", priv, &ethsecp256k1.PrivKey{})
+				return types.ErrInternal
 			}
 			keys, err := ethPrivKey.ToECDSA()
 			if err != nil {
-				return err
+				log.Error("create ddc account", "keys to ecdsa", err.Error())
+				return types.ErrInternal
 			}
 
 			// Formats key for output

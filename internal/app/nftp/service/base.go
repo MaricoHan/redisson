@@ -37,10 +37,11 @@ import (
 )
 
 type BsnAccount struct {
-	Code    int         `json:"code"`
-	Message string      `json:"message"`
-	Detail  string      `json:"detail"`
-	Data    interface{} `json:"data"`
+	Code            int         `json:"code"`
+	ErrorLogCode    string      `json:"errorLogCode"`
+	ErrorLogMessage string      `json:"errorLogMessage"`
+	Message         string      `json:"message"`
+	Data            interface{} `json:"data"`
 }
 
 const (
@@ -601,10 +602,15 @@ func (m Base) AddDIDAccountProd(tAppOneObj *models.TConfig, tAccounts modext.TDD
 		group.Go(func() error {
 			var bsnAccount BsnAccount
 			params := map[string]interface{}{
-				"chainClientName": fmt.Sprintf("%s%d%d", tAppOneObj.Name.String, tAppOneObj.ID, value.AccIndex),
-				"chainClientAddr": value.Address,
+				"opbChainClientName": fmt.Sprintf("%s", value.Address),
+				"opbChainClientType": fmt.Sprintf("%s", config.Get().BSN.OPBChainClientType),
+				"opbChainId":         config.Get().BSN.OPBChainID,
+				"opbClientAddress":   value.Address,
+				"opbKeyType":         config.Get().BSN.OPBKeyType,
+				"openDdc":            config.Get().BSN.OpenDDC,
+				"proof":              config.Get().BSN.Proof,
 			}
-			url := fmt.Sprintf("%s%s", config.Get().Server.BSNUrl, fmt.Sprintf("/api/%s/account/generate", config.Get().Server.BSNProjectId))
+			url := fmt.Sprintf("%s%s", config.Get().BSN.BSNUrl, config.Get().BSN.APIAddress)
 			res, err := http2.Post(errCtx, url, params)
 			if err != nil {
 				return err
@@ -612,8 +618,13 @@ func (m Base) AddDIDAccountProd(tAppOneObj *models.TConfig, tAccounts modext.TDD
 			defer res.Body.Close()
 			body, err := ioutil.ReadAll(res.Body)
 			json.Unmarshal(body, &bsnAccount)
-			if bsnAccount.Code != 0 || bsnAccount.Message == "" {
-				return errors.New(bsnAccount.Message)
+			if bsnAccount.Code != 0 {
+				log.Error("add did account", "bsn error:", bsnAccount.Message)
+				return types.ErrInternal
+			}
+			if bsnAccount.ErrorLogCode != "" {
+				log.Error("add did account", "bsn error:", bsnAccount.ErrorLogCode)
+				return types.ErrInternal
 			}
 			return nil
 		})
