@@ -65,12 +65,7 @@ func (svc *nativeAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, er
 			log.Error("creat account", "query accounts count error:", err.Error())
 			return types.ErrInternal
 		}
-		ddcCount, err := models.TDDCAccounts(models.TDDCAccountWhere.ProjectID.IN(projectIDs)).Count(context.Background(), exec)
-		if err != nil {
-			log.Error("create ddc account", "query accounts count error:", err.Error())
-			return types.ErrInternal
-		}
-		if (count + ddcCount + params.Count) > 200 {
+		if (count + params.Count) > 200 {
 			return types.ErrAccount
 		}
 		tAccounts := modext.TAccounts{}
