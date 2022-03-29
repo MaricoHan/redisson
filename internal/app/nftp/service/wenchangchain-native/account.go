@@ -62,7 +62,7 @@ func (svc *nativeAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, er
 			log.Error("create ddc account", "query accounts count error:", err.Error())
 			return types.ErrInternal
 		}
-		if (count + ddcCount) > 200 {
+		if (count + ddcCount + params.Count) > 200 {
 			return types.ErrAccount
 		}
 		tAppOneObj, err := models.TConfigs(

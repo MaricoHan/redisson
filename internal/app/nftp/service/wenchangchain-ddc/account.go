@@ -75,7 +75,7 @@ func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) 
 			return types.ErrInternal
 		}
 
-		if (count + nativeCount) > 200 {
+		if (count + nativeCount + params.Count) > 200 {
 			return types.ErrAccount
 		}
 
