@@ -615,13 +615,13 @@ func (m Base) AddDIDAccountProd(tAccounts modext.TDDCAccounts) error {
 			url := fmt.Sprintf("%s%s", config.Get().BSN.BSNUrl, config.Get().BSN.APIAddress)
 			res, err := http2.Post(errCtx, url, params)
 			if err != nil {
-				log.Error("add did account", "bsn http response error:", err)
+				log.Error("add did account", "bsn error:", err)
 				return types.ErrInternal
 			}
 			defer res.Body.Close()
 			body, err := ioutil.ReadAll(res.Body)
 			if err != nil {
-				log.Error("add did account", "bsn res body error:", err)
+				log.Error("add did account", "bsn error:", err)
 				return types.ErrInternal
 			}
 			json.Unmarshal(body, &bsnAccount)
