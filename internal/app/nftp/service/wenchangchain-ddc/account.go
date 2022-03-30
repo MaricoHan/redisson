@@ -153,7 +153,7 @@ func (d *ddcAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) 
 		}
 
 		if env == "prod" {
-			err = base.AddDIDAccountProd(tAppOneObj, tAccounts)
+			err = base.AddDIDAccountProd(tAccounts)
 			if err != nil {
 				return err
 			}
