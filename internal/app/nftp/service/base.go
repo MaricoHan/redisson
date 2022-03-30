@@ -52,6 +52,8 @@ const (
 	ConversionRatio   = 100.0                  //业务费与人民币换算比例 1元 = 100 业务费
 	operatorIDInTable = 1                      //operator 在表中的 ID
 	platformDID       = "did:wenchangplatform" //platform 在合约中的 DID
+	BSNErrName        = "MSG_10021010"         //链账户名称重复
+	BSNErrAddr        = "MSG_10021011"         //链账户地址重复
 )
 
 var (
@@ -592,7 +594,7 @@ func (m Base) GasThan(chainId, gas, bizFee, platformId uint64) error {
 	return err
 }
 
-func (m Base) AddDIDAccountProd(tAppOneObj *models.TConfig, tAccounts modext.TDDCAccounts) error {
+func (m Base) AddDIDAccountProd(tAccounts modext.TDDCAccounts) error {
 	//bsn 账户授权
 	time := 5 * time.Second
 	ctx, _ := context.WithTimeout(context.Background(), time)
@@ -602,8 +604,8 @@ func (m Base) AddDIDAccountProd(tAppOneObj *models.TConfig, tAccounts modext.TDD
 		group.Go(func() error {
 			var bsnAccount BsnAccount
 			params := map[string]interface{}{
-				"opbChainClientName": fmt.Sprintf("%s", value.Address),
-				"opbChainClientType": fmt.Sprintf("%s", config.Get().BSN.OPBChainClientType),
+				"opbChainClientName": value.Address,
+				"opbChainClientType": config.Get().BSN.OPBChainClientType,
 				"opbChainId":         config.Get().BSN.OPBChainID,
 				"opbClientAddress":   value.Address,
 				"opbKeyType":         config.Get().BSN.OPBKeyType,
@@ -613,18 +615,27 @@ func (m Base) AddDIDAccountProd(tAppOneObj *models.TConfig, tAccounts modext.TDD
 			url := fmt.Sprintf("%s%s", config.Get().BSN.BSNUrl, config.Get().BSN.APIAddress)
 			res, err := http2.Post(errCtx, url, params)
 			if err != nil {
-				return err
+				log.Error("add did account", "bsn error:", err)
+				return types.ErrInternal
 			}
 			defer res.Body.Close()
 			body, err := ioutil.ReadAll(res.Body)
-			json.Unmarshal(body, &bsnAccount)
-			if bsnAccount.Code != 0 {
-				log.Error("add did account", "bsn error:", bsnAccount.Message)
+			if err != nil {
+				log.Error("add did account", "bsn error:", err)
 				return types.ErrInternal
 			}
-			if bsnAccount.ErrorLogCode != "" {
-				log.Error("add did account", "bsn error:", bsnAccount.ErrorLogCode)
-				return types.ErrInternal
+			json.Unmarshal(body, &bsnAccount)
+			if bsnAccount.Code != 0 {
+				if bsnAccount.Message == BSNErrName || bsnAccount.Message == BSNErrAddr {
+					return nil
+				} else {
+					if bsnAccount.ErrorLogCode != "" {
+						log.Error("add did account", "bsn error message:", bsnAccount.Message, "bsn error log:", bsnAccount.ErrorLogCode)
+						return types.ErrInternal
+					}
+					log.Error("add did account", "bsn error message:", bsnAccount.Message)
+					return types.ErrInternal
+				}
 			}
 			return nil
 		})
