@@ -13,5 +13,6 @@ golangci-lint:
   image: golangci/golangci-lint:v1.45.2
   stage: lint
   script:
+    - export GO111MODULE=off
     - golangci-lint run -v
 
