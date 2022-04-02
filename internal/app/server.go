@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"net"
 	"net/http"
 	"os"
@@ -40,6 +41,9 @@ func Start() {
 	metric.NewPrometheus().InitPrometheus()
 	//crontab
 	mw.ProcessTimer()
+
+	// 白名单
+	types.NewAccountWhiteListCache(config.Get().Server)
 
 	lis, err := net.Listen("tcp", config.Get().Server.Address)
 	if err != nil {

@@ -8,7 +8,7 @@ app_env = "dev"
 signature_auth = false
 default_key_password = "NFT-Avata-Services-ApiV1"
 account_white_list = ""
-account_count = 5
+account_count = ""
 
 [mysql]
 db_name = "nftp_open_api"

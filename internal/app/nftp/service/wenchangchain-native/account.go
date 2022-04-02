@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"strconv"
 	"strings"
 
 	sdkcrypto "github.com/irisnet/core-sdk-go/common/crypto"
@@ -66,26 +65,13 @@ func (svc *nativeAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, er
 			log.Error("creat account", "query accounts count error:", err.Error())
 			return types.ErrInternal
 		}
-		list := strings.Split(config.Get().Server.AccountWhiteList, ",")
-		// 是否白名单用户
-		var ifWhiteUser bool
-		for _, v := range list {
-			val, err := strconv.ParseInt(v, 10, 64)
-			if err != nil {
-				log.Error("create account", "strconv parseInt error: ", err)
-				continue
-			}
-			if uint64(val) != params.PlatFormID {
-				continue
-			}
-			ifWhiteUser = true
-		}
-		if ifWhiteUser {
-			if (count + params.Count) > config.Get().Server.AccountCount {
+		accountCount, ok := types.AccountWhiteList[params.PlatFormID]
+		if ok {
+			if (count + params.Count) > accountCount {
 				return types.ErrAccount
 			}
 		} else {
-			if (count + params.Count) > 200 {
+			if (count + params.Count) > 3 {
 				return types.ErrAccount
 			}
 		}
