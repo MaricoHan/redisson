@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 	"net"
 	"net/http"
 	"os"
@@ -18,6 +17,8 @@ import (
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/kit"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/metric"
+
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 )
 
 //Server define a http Server
