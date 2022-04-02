@@ -65,8 +65,15 @@ func (svc *nativeAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, er
 			log.Error("creat account", "query accounts count error:", err.Error())
 			return types.ErrInternal
 		}
-		if (count + params.Count) > 200 {
-			return types.ErrAccount
+		accountCount, ok := types.AccountWhiteList[params.PlatFormID]
+		if ok {
+			if (count + params.Count) > accountCount {
+				return types.ErrAccount
+			}
+		} else {
+			if (count + params.Count) > 3 {
+				return types.ErrAccount
+			}
 		}
 		tAccounts := modext.TAccounts{}
 		var i int64

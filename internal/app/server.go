@@ -17,6 +17,8 @@ import (
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/kit"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/metric"
+
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 )
 
 //Server define a http Server
@@ -40,6 +42,9 @@ func Start() {
 	metric.NewPrometheus().InitPrometheus()
 	//crontab
 	mw.ProcessTimer()
+
+	// 白名单
+	types.NewAccountWhiteListCache(config.Get().Server)
 
 	lis, err := net.Listen("tcp", config.Get().Server.Address)
 	if err != nil {
