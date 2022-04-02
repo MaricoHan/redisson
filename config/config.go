@@ -68,6 +68,8 @@ type (
 		RouterPrefix       string `mapstructure:"router_prefix"`
 		SignatureAuth      bool   `mapstructure:"signature_auth"`
 		DefaultKeyPassword string `mapstructure:"default_key_password"`
+		AccountWhiteList   string `mapstructure:"account_white_list"`
+		AccountCount       int64  `mapstructure:"account_count"`
 	}
 
 	DDC struct {
