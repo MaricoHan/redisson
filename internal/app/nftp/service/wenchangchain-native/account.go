@@ -71,7 +71,7 @@ func (svc *nativeAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, er
 				return types.ErrAccount
 			}
 		} else {
-			if (count + params.Count) > 3 {
+			if (count + params.Count) > 200 {
 				return types.ErrAccount
 			}
 		}
