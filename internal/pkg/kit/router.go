@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/redis"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -184,6 +185,14 @@ func (c Controller) encodeResponse(ctx context.Context, w http.ResponseWriter, r
 	}
 	method := ctx.Value(httptransport.ContextKeyRequestMethod)
 	uri := ctx.Value(httptransport.ContextKeyRequestURI)
+	appID := ctx.Value("X-App-Id")
+	operationID := w.Header().Get("X-Operation-ID")
+	key := fmt.Sprintf("%s:%s", appID, operationID)
+	if operationID != "" {
+		if err := redis.Set(key, "1", time.Second*60); err != nil {
+			log.Error("encode redis set err: ", err)
+		}
+	}
 	metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "200"}...).Add(1)
 	return httptransport.EncodeJSONResponse(ctx, w, response)
 }

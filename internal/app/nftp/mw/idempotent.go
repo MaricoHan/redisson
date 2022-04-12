@@ -4,13 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-	"time"
-
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/redis"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
+	"io/ioutil"
+	"net/http"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 )
@@ -61,10 +59,6 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		writeBadRequestResp(w, types.ErrIdempotent)
 		return
 	}
-
-	if err := redis.Set(key, "1", time.Second*60); err != nil {
-		writeBadRequestResp(w, types.ErrInternal)
-		return
-	}
+	w.Header().Set("X-Operation-ID", req.OperationID)
 	h.next.ServeHTTP(w, r)
 }
