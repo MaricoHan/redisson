@@ -155,16 +155,16 @@ func (svc *Nft) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 
 		//class locked
 		//classOne.Status = models.TTXSStatusPending
-		//classOne.Offset = classOne.Offset + uint64(params.Amount)
+		classOne.Offset = classOne.Offset + uint64(params.Amount)
 		//classOne.LockedBy = null.Uint64FromPtr(&ttx.ID)
-		//ok, err := classOne.Update(context.Background(), exec, boil.Infer())
-		//if err != nil {
-		//	log.Error("create nft", "class status update error: ", err)
-		//	return types.ErrInternal
-		//}
-		//if ok != 1 {
-		//	return types.ErrInternal
-		//}
+		ok, err := classOne.Update(context.Background(), exec, boil.Infer())
+		if err != nil {
+			log.Error("create nft", "class status update error: ", err)
+			return types.ErrInternal
+		}
+		if ok != 1 {
+			return types.ErrInternal
+		}
 		return err
 	})
 	if err != nil {
