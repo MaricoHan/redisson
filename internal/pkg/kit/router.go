@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/redis"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -22,6 +21,7 @@ import (
 	entranslations "github.com/go-playground/validator/v10/translations/en"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/metric"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/redis"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 )
 
