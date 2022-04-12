@@ -66,5 +66,6 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		writeBadRequestResp(w, types.ErrInternal)
 		return
 	}
+	w.Header().Set("X-Operation-ID", req.OperationID)
 	h.next.ServeHTTP(w, r)
 }

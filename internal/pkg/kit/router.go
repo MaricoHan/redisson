@@ -21,6 +21,7 @@ import (
 	entranslations "github.com/go-playground/validator/v10/translations/en"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/log"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/metric"
+	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/redis"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/types"
 )
 
@@ -227,6 +228,19 @@ func (c Controller) serverOptions(
 	//format error
 	errorEncoderOption := func(ctx context.Context, err error, w http.ResponseWriter) {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		appID := ctx.Value("X-App-Id")
+		authIDSlice, ok := appID.([]string)
+		if !ok {
+			log.Error("errorEncoderOption assertions section")
+		} else {
+			operationID := w.Header().Get("X-Operation-ID")
+			key := fmt.Sprintf("%s:%s", authIDSlice[0], operationID)
+			if operationID != "" {
+				if err := redis.Delete(key); err != nil {
+					log.Error("encode redis delete err: ", err)
+				}
+			}
+		}
 		var response Response
 		method := ctx.Value(httptransport.ContextKeyRequestMethod)
 		uri := ctx.Value(httptransport.ContextKeyRequestURI)
