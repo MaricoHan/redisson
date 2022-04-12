@@ -38,7 +38,6 @@ func NewNFTAccount(base map[string]*service.Base) *service.AccountBase {
 }
 
 func (svc *nativeAccount) Create(params dto.CreateAccountP) (*dto.AccountRes, error) {
-	return nil, fmt.Errorf("s")
 	base, _ := svc.base[service.NATIVE]
 	// 写入数据库
 	// sdk 创建账户
