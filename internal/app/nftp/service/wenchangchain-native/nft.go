@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"strconv"
 	"strings"
 	"time"
@@ -77,11 +78,15 @@ func (svc *Nft) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 			return err
 		}
 
-		offSet := classOne.Offset
+		//offSet := classOne.Offset
 		var msgs sdktype.Msgs
 		for i := 1; i <= params.Amount; i++ {
-			index := int(offSet) + i
-			nftId := nftp + strings.ToLower(hex.EncodeToString(tmhash.Sum([]byte(params.ClassId)))) + strconv.Itoa(index)
+			//index := int(offSet) + i
+			//nftId := nftp + strings.ToLower(hex.EncodeToString(tmhash.Sum([]byte(params.ClassId)))) + strconv.Itoa(index)
+			var data = []byte(classOne.ClassID)
+			data = append(data, []byte(strconv.FormatInt(time.Now().Unix(), 10))...)
+			data = append(data, []byte(fmt.Sprintf("%d", rand.Int()))...)
+			nftId := nftp + strings.ToLower(hex.EncodeToString(tmhash.Sum(data)))
 			if params.Recipient == "" {
 				//默认为 NFT 类别的权属者地址
 				params.Recipient = classOne.Owner
@@ -155,16 +160,16 @@ func (svc *Nft) Create(params dto.CreateNftsP) (*dto.TxRes, error) {
 
 		//class locked
 		//classOne.Status = models.TTXSStatusPending
-		classOne.Offset = classOne.Offset + uint64(params.Amount)
+		//classOne.Offset = classOne.Offset + uint64(params.Amount)
 		//classOne.LockedBy = null.Uint64FromPtr(&ttx.ID)
-		ok, err := classOne.Update(context.Background(), exec, boil.Infer())
-		if err != nil {
-			log.Error("create nft", "class status update error: ", err)
-			return types.ErrInternal
-		}
-		if ok != 1 {
-			return types.ErrInternal
-		}
+		//ok, err := classOne.Update(context.Background(), exec, boil.Infer())
+		//if err != nil {
+		//	log.Error("create nft", "class status update error: ", err)
+		//	return types.ErrInternal
+		//}
+		//if ok != 1 {
+		//	return types.ErrInternal
+		//}
 		return err
 	})
 	if err != nil {
