@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/app/nftp/models/vo"
 	"gitlab.bianjie.ai/irita-paas/open-api/internal/pkg/redis"
@@ -58,6 +59,11 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 
 	if ok {
 		writeBadRequestResp(w, types.ErrIdempotent)
+		return
+	}
+
+	if err := redis.Set(key, "1", time.Second*60); err != nil {
+		writeBadRequestResp(w, types.ErrInternal)
 		return
 	}
 	w.Header().Set("X-Operation-ID", req.OperationID)

@@ -185,14 +185,6 @@ func (c Controller) encodeResponse(ctx context.Context, w http.ResponseWriter, r
 	}
 	method := ctx.Value(httptransport.ContextKeyRequestMethod)
 	uri := ctx.Value(httptransport.ContextKeyRequestURI)
-	appID := ctx.Value("X-App-Id")
-	operationID := w.Header().Get("X-Operation-ID")
-	key := fmt.Sprintf("%s:%s", appID, operationID)
-	if operationID != "" {
-		if err := redis.Set(key, "1", time.Second*60); err != nil {
-			log.Error("encode redis set err: ", err)
-		}
-	}
 	metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "200"}...).Add(1)
 	return httptransport.EncodeJSONResponse(ctx, w, response)
 }
@@ -236,6 +228,19 @@ func (c Controller) serverOptions(
 	//format error
 	errorEncoderOption := func(ctx context.Context, err error, w http.ResponseWriter) {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		appID := ctx.Value("X-App-Id")
+		authIDSlice, ok := appID.([]string)
+		if !ok {
+			log.Error("errorEncoderOption assertions section")
+		} else {
+			operationID := w.Header().Get("X-Operation-ID")
+			key := fmt.Sprintf("%s:%s", authIDSlice[0], operationID)
+			if operationID != "" {
+				if err := redis.Delete(key); err != nil {
+					log.Error("encode redis delete err: ", err)
+				}
+			}
+		}
 		var response Response
 		method := ctx.Value(httptransport.ContextKeyRequestMethod)
 		uri := ctx.Value(httptransport.ContextKeyRequestURI)
