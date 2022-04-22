@@ -21,7 +21,7 @@ var (
 	prometheusOnce  sync.Once
 )
 
-// NewPrometheus 单列模式
+// NewPrometheus 单例模式
 func NewPrometheus() *prometheusModel {
 	prometheusOnce.Do(func() {
 		prometheusCache = &prometheusModel{}

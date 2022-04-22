@@ -16,5 +16,5 @@ RUN apk add --no-cache $PACKAGES && \
 
 FROM alpine:3.12
 
-COPY --from=builder /go/bin/nftp /usr/local/bin/nftp
-CMD ["sh","-c","nftp start"]
+COPY --from=builder /go/bin/open-api /usr/local/bin/open-api
+CMD ["sh","-c","open-api start"]

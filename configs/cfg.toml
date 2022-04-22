@@ -1,0 +1,30 @@
+[app]
+name = "open-api"
+version = "v0.4.0"
+env = "dev"
+log_level = "debug"
+log_format = "text"
+addr = "0.0.0.0:8080"
+prometheus_addr = "0.0.0.0:9090"
+signature_auth = false
+timestamp_auth = false
+router_prefix = "v1beta1"
+grpc_timeout = 15
+
+[mysql]
+host = "mysql.db"
+port = 3306
+db = "console_server"
+username = "console"
+password = "consolePassword"
+
+[etcd]
+host = "etcd.db:2379"
+username = "root"
+password = "JmZMbqQ1nc"
+prefix = ""
+
+[redis]
+host="redis-master.db:6379"
+password="redisPassword"
+db=11
