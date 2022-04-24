@@ -62,17 +62,16 @@ func InitMysqlDB(cfg *configs.Config, logger *log.Logger) {
 	MysqlDB = mysqlDB
 }
 
-
-func InitGrpcClient(cfg *configs.Config, logger *log.Logger){
+func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	GrpcConnMap = make(map[string]*grpc.ClientConn)
 	wenNativeConn, err := grpc.Dial(cfg.GrpcClient.WenchangchainNativeAddr, grpc.WithInsecure())
 	if err != nil {
-		logger.Fatal("get wenchangchain-ddc grpc connect failed, err: ",err.Error())
+		logger.Fatal("get wenchangchain-ddc grpc connect failed, err: ", err.Error())
 	}
 	GrpcConnMap[constant.WenchangNative] = wenNativeConn
 	wenDDcConn, err := grpc.Dial(cfg.GrpcClient.WenchangchainDDCAddr, grpc.WithInsecure())
 	if err != nil {
-		logger.Fatal("get wenchangchain-ddc grpc connect failed, err: ",err.Error())
+		logger.Fatal("get wenchangchain-ddc grpc connect failed, err: ", err.Error())
 	}
 	GrpcConnMap[constant.WenchangDDC] = wenDDcConn
 

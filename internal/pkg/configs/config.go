@@ -4,9 +4,9 @@ var Cfg Config
 
 type (
 	Config struct {
-		App   App   `mapstructure:"app"`
-		Mysql Mysql `mapstructure:"mysql"`
-		Redis Redis `mapstructure:"redis"`
+		App        App        `mapstructure:"app"`
+		Mysql      Mysql      `mapstructure:"mysql"`
+		Redis      Redis      `mapstructure:"redis"`
 		GrpcClient GrpcClient `mapstructure:"grpc_client"`
 	}
 
@@ -39,9 +39,8 @@ type (
 		DB       int64  `mapstructure:"db"`
 	}
 
-
 	GrpcClient struct {
-		WenchangchainDDCAddr string `mapstructure:"wenchangchain_ddc_addr"`
+		WenchangchainDDCAddr    string `mapstructure:"wenchangchain_ddc_addr"`
 		WenchangchainNativeAddr string `mapstructure:"wenchangchain_native_addr"`
 	}
 )

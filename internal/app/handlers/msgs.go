@@ -6,7 +6,6 @@ import (
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
 )
 
-
 type IMsgs interface {
 	GetNFTHistory(ctx context.Context, _ interface{}) (interface{}, error)
 	GetAccountHistory(ctx context.Context, _ interface{}) (interface{}, error)

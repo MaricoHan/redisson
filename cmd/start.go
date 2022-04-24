@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	localConfig                       string
+	localConfig string
 
 	startCmd = &cobra.Command{
 		Use:     "start",
@@ -26,7 +26,6 @@ func init() {
 	startCmd.Flags().StringVarP(&localConfig, "config", "c", "", "config path: /opt/local.toml")
 	rootCmd.AddCommand(startCmd)
 }
-
 
 func run() {
 	data, err := ioutil.ReadFile(localConfig)
