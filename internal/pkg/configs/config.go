@@ -7,7 +7,7 @@ type (
 		App   App   `mapstructure:"app"`
 		Mysql Mysql `mapstructure:"mysql"`
 		Redis Redis `mapstructure:"redis"`
-		Etcd  Etcd  `mapstructure:"etcd"`
+		GrpcClient GrpcClient `mapstructure:"grpc_client"`
 	}
 
 	App struct {
@@ -39,9 +39,9 @@ type (
 		DB       int64  `mapstructure:"db"`
 	}
 
-	Etcd struct {
-		Host     string `mapstructure:"host"`
-		Username string `mapstructure:"username"`
-		Password string `mapstructure:"password"`
+
+	GrpcClient struct {
+		WenchangchainDDCAddr string `mapstructure:"wenchangchain_ddc_addr"`
+		WenchangchainNativeAddr string `mapstructure:"wenchangchain_native_addr"`
 	}
 )

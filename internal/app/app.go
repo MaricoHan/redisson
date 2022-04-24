@@ -32,8 +32,8 @@ func Start(ctx *configs.Context) {
 	initialize.InitRedisClient(ctx.Config, ctx.Logger)
 	//初始化mysql
 	initialize.InitMysqlDB(ctx.Config, ctx.Logger)
-	//初始化etcd解析器
-	initialize.InitEtcdResolver(ctx.Config, ctx.Logger)
+	//初始化微服务grpc实例
+	initialize.InitGrpcClient(ctx.Config, ctx.Logger)
 
 	app := server.NewApplication(ctx.Logger)
 	s := server.NewServer(ctx)

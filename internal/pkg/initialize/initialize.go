@@ -1,9 +1,7 @@
 package initialize
 
 import (
-	"context"
 	"fmt"
-	"github.com/go-kit/kit/sd/etcdv3"
 	log "github.com/sirupsen/logrus"
 	pb_account "gitlab.bianjie.ai/avata/chains/api/pb/account"
 	pb_business "gitlab.bianjie.ai/avata/chains/api/pb/buy"
@@ -13,25 +11,22 @@ import (
 	pb_tx "gitlab.bianjie.ai/avata/chains/api/pb/tx"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
-	"gitlab.bianjie.ai/avata/open-api/internal/pkg/etcd"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/redis"
 	"gitlab.bianjie.ai/avata/open-api/pkg/logs"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/resolver"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"time"
 )
 
 var RedisClient *redis.RedisClient
 var MysqlDB *gorm.DB
+var GrpcConnMap map[string]*grpc.ClientConn
 var AccountClientMap map[string]pb_account.AccountClient
 var BusineessClientMap map[string]pb_business.BuyClient
 var MsgsClientMap map[string]pb_msgs.MSGSClient
 var NftClientMap map[string]pb_nft.NFTClient
 var ClassClientMap map[string]pb_class.ClassClient
 var TxClientMap map[string]pb_tx.TxClient
-var GrpcConnMap map[string]*grpc.ClientConn
 
 func Logger(cfg *configs.Config) *log.Logger {
 	if cfg.App.Env == constant.EnvPro {
@@ -67,42 +62,17 @@ func InitMysqlDB(cfg *configs.Config, logger *log.Logger) {
 	MysqlDB = mysqlDB
 }
 
-func InitEtcdClient(host string, port string, username string, pwd string) (etcdv3.Client, error) {
-	//etcd连接参数
-	option := etcdv3.ClientOptions{
-		DialTimeout:   time.Second * 3,
-		DialKeepAlive: time.Second * 3,
-		Username:      username,
-		Password:      pwd,
-	}
-	//创建连接
-	url := fmt.Sprintf("%s:%s", host, port)
-	client, err := etcdv3.NewClient(context.Background(), []string{url}, option)
-	if err != nil {
-		log.Fatal("init etcd client failed:", err.Error())
-	}
-	return client, err
-}
 
-func InitEtcdResolver(cfg *configs.Config, logger *log.Logger) {
-
+func InitGrpcClient(cfg *configs.Config, logger *log.Logger){
 	GrpcConnMap = make(map[string]*grpc.ClientConn)
-	wenNativeBuilder := etcd.NewResolver(cfg.Etcd.Host, logger)
-	//nativeBuilder := etcd.NewResolver(cfg.Etcd.Host, logger)
-	resolver.Register(wenNativeBuilder)
-	target := fmt.Sprintf("%s:///%s", wenNativeBuilder.Scheme(), constant.WenchangNativeEndpoint)
-	wenNativeConn, err := grpc.Dial(target, grpc.WithBalancerName("round_robin"), grpc.WithInsecure())
+	wenNativeConn, err := grpc.Dial(cfg.GrpcClient.WenchangchainNativeAddr, grpc.WithInsecure())
 	if err != nil {
-		log.Fatal("init etcd resolver failed:", err.Error())
+		logger.Fatal("get wenchangchain-ddc grpc connect failed, err: ",err.Error())
 	}
 	GrpcConnMap[constant.WenchangNative] = wenNativeConn
-
-	wenDDCBuilder := etcd.NewResolver(cfg.Etcd.Host, logger)
-	resolver.Register(wenDDCBuilder)
-	target = fmt.Sprintf("%s:///%s", wenDDCBuilder.Scheme(), constant.WenchangDDCEndpoint)
-	wenDDcConn, err := grpc.Dial(target, grpc.WithBalancerName("round_robin"), grpc.WithInsecure())
+	wenDDcConn, err := grpc.Dial(cfg.GrpcClient.WenchangchainDDCAddr, grpc.WithInsecure())
 	if err != nil {
-		log.Fatal("init etcd resolver failed:", err.Error())
+		logger.Fatal("get wenchangchain-ddc grpc connect failed, err: ",err.Error())
 	}
 	GrpcConnMap[constant.WenchangDDC] = wenDDcConn
 
