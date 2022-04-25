@@ -28,7 +28,7 @@ func run() {
 	v := viper.New()
 	// Find home directory.
 	v.AddConfigPath(localConfig)
-	v.SetConfigName("cfg")
+	v.SetConfigName("config")
 	v.SetConfigType("toml")
 
 	// Find and read the config file
