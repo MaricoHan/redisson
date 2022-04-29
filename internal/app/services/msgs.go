@@ -113,6 +113,7 @@ func (s *msgs) GetAccountHistory(params dto.AccountsInfo) (*dto.AccountOperation
 	logFields["func"] = "GetAccountHistory"
 	logFields["module"] = params.Module
 	logFields["code"] = params.Code
+
 	var operation, module int32
 	var ok bool
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
@@ -157,6 +158,7 @@ func (s *msgs) GetAccountHistory(params dto.AccountsInfo) (*dto.AccountOperation
 		Address:   params.Account,
 		Module:    pb.Module(module),
 		Operation: pb.Operation(operation),
+		TxHash:    params.TxHash,
 	}
 
 	resp := &pb.AccountHistoryResponse{}
@@ -191,12 +193,14 @@ func (s *msgs) GetAccountHistory(params dto.AccountsInfo) (*dto.AccountOperation
 			return nil, err
 		}
 		accountOperationRecord := &dto.AccountOperationRecords{
-			TxHash:    item.TxHash,
-			Module:    item.Module,
-			Operation: item.Operation,
-			Signer:    item.Signer,
-			Timestamp: item.Timestamp,
-			Message:   typeJson,
+			TxHash:      item.TxHash,
+			Module:      item.Module,
+			Operation:   item.Operation,
+			Signer:      item.Signer,
+			Timestamp:   item.Timestamp,
+			Message:     typeJson,
+			GasFee:      item.GasFee,
+			BusinessFee: item.BusinessFee,
 		}
 		accountOperationRecords = append(accountOperationRecords, accountOperationRecord)
 	}

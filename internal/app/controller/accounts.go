@@ -22,6 +22,11 @@ func (c AccountController) GetEndpoints() []kit.Endpoint {
 		kit.Endpoint{
 			URI:     "/accounts",
 			Method:  http.MethodPost,
+			Handler: c.makeHandler(c.handler.BatchCreateAccount, &vo.BatchCreateAccountRequest{}),
+		},
+		kit.Endpoint{
+			URI:     "/account",
+			Method:  http.MethodPost,
 			Handler: c.makeHandler(c.handler.CreateAccount, &vo.CreateAccountRequest{}),
 		},
 		kit.Endpoint{
@@ -29,7 +34,6 @@ func (c AccountController) GetEndpoints() []kit.Endpoint {
 			Method:  http.MethodGet,
 			Handler: c.makeHandler(c.handler.GetAccounts, nil),
 		},
-
 	)
 	return ends
 }

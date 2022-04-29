@@ -36,11 +36,12 @@ func (s *nftTransfer) TransferNFTClass(params dto.TransferNftClassById) (*dto.Tx
 	defer cancel()
 
 	req := pb.ClassTransferRequest{
-		ClassId:   params.ClassID,
-		Owner:     params.Owner,
-		Recipient: params.Recipient,
-		ProjectId: params.ProjectID,
-		Tag:       string(params.Tag),
+		ClassId:     params.ClassID,
+		Owner:       params.Owner,
+		Recipient:   params.Recipient,
+		ProjectId:   params.ProjectID,
+		Tag:         string(params.Tag),
+		OperationId: params.OperationId,
 	}
 	resp := &pb.ClassTransferResponse{}
 	var err error
@@ -58,7 +59,7 @@ func (s *nftTransfer) TransferNFTClass(params dto.TransferNftClassById) (*dto.Tx
 	if resp == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
-	return &dto.TxRes{TaskId: resp.TaskId}, nil
+	return &dto.TxRes{TaskId: resp.TaskId, OperationId: resp.OperationId}, nil
 
 }
 
@@ -71,12 +72,13 @@ func (s *nftTransfer) TransferNFT(params dto.TransferNftByNftId) (*dto.TxRes, er
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	req := pb2.NFTTransferRequest{
-		ClassId:   params.ClassID,
-		Owner:     params.Sender,
-		NftId:     params.NftId,
-		Recipient: params.Recipient,
-		ProjectId: params.ProjectID,
-		Tag:       string(params.Tag),
+		ClassId:     params.ClassID,
+		Owner:       params.Sender,
+		NftId:       params.NftId,
+		Recipient:   params.Recipient,
+		ProjectId:   params.ProjectID,
+		Tag:         string(params.Tag),
+		OperationId: params.OperationId,
 	}
 	resp := &pb2.NFTTransferResponse{}
 	var err error
@@ -94,5 +96,5 @@ func (s *nftTransfer) TransferNFT(params dto.TransferNftByNftId) (*dto.TxRes, er
 	if resp == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
-	return &dto.TxRes{TaskId: resp.TaskId}, nil
+	return &dto.TxRes{TaskId: resp.TaskId, OperationId: resp.OperationId}, nil
 }

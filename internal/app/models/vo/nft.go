@@ -41,12 +41,14 @@ type CreateNftsRequest struct {
 }
 
 type EditNftByIndexRequest struct {
-	Name string                 `json:"name" validate:"required"`
-	Uri  string                 `json:"uri"`
-	Data string                 `json:"data"`
-	Tag  map[string]interface{} `json:"tag"`
+	Name        string                 `json:"name" validate:"required"`
+	Uri         string                 `json:"uri"`
+	Data        string                 `json:"data"`
+	Tag         map[string]interface{} `json:"tag"`
+	OperationID string                 `json:"operation_id"`
 }
 
 type DeleteNftByNftIdRequest struct {
-	Tag map[string]interface{} `json:"tag"`
+	Tag         map[string]interface{} `json:"tag"`
+	OperationID string                 `json:"operation_id"`
 }

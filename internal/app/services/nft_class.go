@@ -160,6 +160,7 @@ func (n *nftClass) CreateNFTClass(params dto.CreateNftClass) (*dto.TxRes, error)
 		Data:        params.Data,
 		ProjectId:   params.ProjectID,
 		Tag:         string(params.Tag),
+		OperationId: params.OperationId,
 	}
 
 	resp := &pb.ClassCreateResponse{}
@@ -178,5 +179,5 @@ func (n *nftClass) CreateNFTClass(params dto.CreateNftClass) (*dto.TxRes, error)
 	if resp == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
-	return &dto.TxRes{TaskId: resp.TaskId}, nil
+	return &dto.TxRes{TaskId: resp.TaskId, OperationId: resp.OperationId}, nil
 }

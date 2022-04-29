@@ -3,7 +3,10 @@ package utils
 import (
 	"context"
 	"encoding/json"
+	"regexp"
+
 	log "github.com/sirupsen/logrus"
+	
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 )
 
@@ -20,4 +23,12 @@ func AuthData(ctx context.Context) vo.AuthData {
 		return vo.AuthData{}
 	}
 	return authData
+}
+
+func StrNameCheck(str string) bool {
+	ok, err := regexp.MatchString("^[\u4E00-\u9FA5A-Za-z0-9]{1,20}$", str)
+	if !ok || err != nil {
+		return false
+	}
+	return true
 }

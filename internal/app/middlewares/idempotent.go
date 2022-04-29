@@ -43,11 +43,11 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		return
 	}
 	if len(req.OperationID) == 0 {
-		writeBadRequestResp(w, constant.NewAppError(constant.RootCodeSpace, errors2.StrToCode[errors2.RequestsFailed], "operation_id is a required field"))
+		writeBadRequestResp(w, constant.NewAppError(constant.RootCodeSpace, errors2.StrToCode[errors2.DuplicateRequest], "operation_id is a required field"))
 		return
 	}
 	if len(req.OperationID) >= 65 {
-		writeBadRequestResp(w, constant.NewAppError(constant.RootCodeSpace, errors2.StrToCode[errors2.RequestsFailed], "operation_id does not comply with the rules"))
+		writeBadRequestResp(w, constant.NewAppError(constant.RootCodeSpace, errors2.StrToCode[errors2.DuplicateRequest], "operation_id does not comply with the rules"))
 		return
 	}
 

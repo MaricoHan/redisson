@@ -73,7 +73,8 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 
 	if result.Status == pb.Status_value["success"] { //交易成功
 		//根据 type 返回交易对象 id
-
+		result.BlockHeight = resp.Detail.BlockHeight
+		result.Timestamp = resp.Detail.Timestamp
 		switch resp.Detail.OperationType {
 
 		case pb.OperationType_name[0]:
