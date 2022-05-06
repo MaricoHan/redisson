@@ -1,0 +1,29 @@
+[app]
+name = "open-api"
+version = "v0.4.0"
+env = "dev"
+log_level = "debug"
+log_format = "text"
+addr = "0.0.0.0:8080"
+prometheus_addr = "0.0.0.0:9090"
+signature_auth = false
+timestamp_auth = false
+router_prefix = "v1beta1"
+grpc_timeout = 15
+
+[mysql]
+host = "192.168.150.40"
+port = 23306
+db = "console_server"
+username = "console"
+password = "consolePassword"
+
+
+[redis]
+host = "192.168.150.40:6379"
+password = "redisPassword"
+db = 11
+
+[grpc_client]
+wenchangchain_ddc_addr = "192.168.2.98:10000"
+wenchangchain_native_addr = "192.168.2.74:10000"
