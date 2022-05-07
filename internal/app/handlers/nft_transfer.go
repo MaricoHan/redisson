@@ -29,6 +29,9 @@ func (h *NFTTransfer) TransferNftClassByID(ctx context.Context, request interfac
 	req := request.(*vo.TransferNftClassByIDRequest)
 	recipient := strings.TrimSpace(req.Recipient)
 	operationId := strings.TrimSpace(req.OperationID)
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
 	if recipient == "" {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrRecipient)
 	}
@@ -65,6 +68,9 @@ func (h *NFTTransfer) TransferNftByNftId(ctx context.Context, request interface{
 	req := request.(*vo.TransferNftByNftIdRequest)
 	recipient := strings.TrimSpace(req.Recipient)
 	operationId := strings.TrimSpace(req.OperationID)
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
 	if recipient == "" {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrRecipient)
 	}

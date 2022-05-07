@@ -38,6 +38,9 @@ func (h *NFT) CreateNft(ctx context.Context, request interface{}) (interface{}, 
 	data := strings.TrimSpace(req.Data)
 	recipient := strings.TrimSpace(req.Recipient)
 	operationId := strings.TrimSpace(req.OperationID)
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
 
 	tagBytes, err := h.ValidateTag(req.Tag)
 	if err != nil {
