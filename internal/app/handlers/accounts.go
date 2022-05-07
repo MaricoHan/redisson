@@ -32,6 +32,9 @@ func (h *Account) BatchCreateAccount(ctx context.Context, request interface{}) (
 	req := request.(*vo.BatchCreateAccountRequest)
 
 	operationId := strings.TrimSpace(req.OperationID)
+	if operationId == "" {
+		return nil, errors.New(errors.ClientParams, errors.ErrOperationID)
+	}
 
 	if len(operationId) == 0 || len(operationId) >= 65 {
 		return nil, errors.New(errors.ClientParams, errors.ErrOperationIDLen)
@@ -62,7 +65,9 @@ func (h *Account) CreateAccount(ctx context.Context, request interface{}) (inter
 	req := request.(*vo.CreateAccountRequest)
 	name := strings.TrimSpace(req.Name)
 	operationId := strings.TrimSpace(req.OperationID)
-
+	if operationId == "" {
+		return nil, errors.New(errors.ClientParams, errors.ErrOperationID)
+	}
 	if name == "" {
 		return nil, errors.New(errors.ClientParams, errors.ErrName)
 	}
