@@ -45,10 +45,10 @@ type EditNftByIndexRequest struct {
 	Uri         string                 `json:"uri"`
 	Data        string                 `json:"data"`
 	Tag         map[string]interface{} `json:"tag"`
-	OperationID string                 `json:"operation_id"`
+	OperationID string                 `json:"operation_id" validate:"required"`
 }
 
 type DeleteNftByNftIdRequest struct {
 	Tag         map[string]interface{} `json:"tag"`
-	OperationID string                 `json:"operation_id"`
+	OperationID string                 `json:"operation_id" validate:"required"`
 }
