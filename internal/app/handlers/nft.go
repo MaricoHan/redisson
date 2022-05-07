@@ -93,6 +93,10 @@ func (h *NFT) EditNftByNftId(ctx context.Context, request interface{}) (interfac
 		return nil, err
 	}
 
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
+
 	if len(operationId) == 0 || len(operationId) >= 65 {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
 	}
@@ -139,6 +143,9 @@ func (h *NFT) DeleteNftByNftId(ctx context.Context, request interface{}) (interf
 		}
 	}
 	operationId := strings.TrimSpace(req.OperationID)
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
 	if len(operationId) == 0 || len(operationId) >= 65 {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
 	}
