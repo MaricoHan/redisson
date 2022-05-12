@@ -62,6 +62,7 @@ type Account struct {
 	OperationId string `json:"operation_id"`
 	Gas         uint64 `json:"gas"`
 	BizFee      uint64 `json:"biz_fee"` // 余额业务
+	Status      uint64 `json:"status"`
 }
 
 type AccountOperationRecordRes struct {

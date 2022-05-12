@@ -161,6 +161,7 @@ func (a *account) GetAccounts(params dto.AccountsInfo) (*dto.AccountsRes, error)
 			BizFee:      result.BizFee,
 			Name:        result.Name,
 			OperationId: result.OperationId,
+			Status:      uint64(result.Status),
 		}
 		accounts = append(accounts, account)
 	}
