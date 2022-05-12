@@ -58,7 +58,7 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 	result.Type = resp.Detail.OperationType
 	result.TxHash = ""
 	result.Status = status
-	if status == int32(pb.Status_success) {
+	if status == int32(pb.Status_success) || status == int32(pb.Status_failed) {
 		result.TxHash = resp.Detail.Hash
 	}
 	if resp.Detail.Tag != "" {
