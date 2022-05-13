@@ -111,6 +111,7 @@ func (h *Msgs) GetAccountHistory(ctx context.Context, _ interface{}) (interface{
 
 	params.SortBy = h.SortBy(ctx)
 	params.Operation = h.operation(ctx)
+	params.TxHash = h.Txhash(ctx)
 
 	return h.svc.GetAccountHistory(params)
 }

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
-	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -183,7 +182,7 @@ func (c Controller) encodeResponse(ctx context.Context, w http.ResponseWriter, r
 	return httptransport.EncodeJSONResponse(ctx, w, response)
 }
 
-func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []httptransport.ServerOption, after []httptransport.ServerResponseFunc, ) []httptransport.ServerOption {
+func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []httptransport.ServerOption, after []httptransport.ServerResponseFunc) []httptransport.ServerOption {
 	//copy params from Form,PostForm to Context
 	copyParams := func(ctx context.Context, request *http.Request) context.Context {
 		log.Debug("Merge request params to Context,", "method,", "serverBefore")
@@ -218,19 +217,6 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 	//format error
 	errorEncoderOption := func(ctx context.Context, err error, w http.ResponseWriter) {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		appID := ctx.Value("X-App-Id")
-		authIDSlice, ok := appID.([]string)
-		if !ok {
-			log.Error("errorEncoderOption assertions section")
-		} else {
-			operationID := w.Header().Get("X-Operation-ID")
-			key := fmt.Sprintf("%s:%s", authIDSlice[0], operationID)
-			if operationID != "" {
-				if err := initialize.RedisClient.Delete(key); err != nil {
-					log.Error("redis delete err: ", err)
-				}
-			}
-		}
 
 		var response constant.Response
 		method := ctx.Value(httptransport.ContextKeyRequestMethod)
@@ -256,7 +242,7 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 
 		if errMesg != "" && respErr.Message() != "" {
 			switch respErr.Code() {
-			case errors2.ClientParams, errors2.StatusFailed, errors2.ChainFailed, errors2.RequestsFailed, errors2.OrderFailed:
+			case errors2.ClientParams, errors2.StatusFailed, errors2.ChainFailed, errors2.DuplicateRequest, errors2.OrderFailed:
 				metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "400"}...).Add(1)
 				w.WriteHeader(http.StatusBadRequest) //400
 			case errors2.Authentication:

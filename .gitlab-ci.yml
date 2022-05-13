@@ -1,0 +1,18 @@
+# gitlab CI/CD pipeline配置文件
+
+stages:
+  - lint
+
+# 准备工作
+before_script:
+  - ls
+
+# lint stage
+# job 1 : golangci-lint
+golangci-lint:
+  image: golangci/golangci-lint:v1.45-alpine
+  stage: lint
+  script:
+    - export GO111MODULE=off
+    - golangci-lint run -v
+

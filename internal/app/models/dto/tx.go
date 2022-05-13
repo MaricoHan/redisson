@@ -10,11 +10,13 @@ type TxResultByTxHash struct {
 }
 
 type TxResultByTxHashRes struct {
-	Type    string                 `json:"type"`
-	TxHash  string                 `json:"tx_hash"`
-	Status  int32                  `json:"status"`
-	ClassID string                 `json:"class_id"`
-	NftID   string                 `json:"nft_id"`
-	Message string                 `json:"message"`
-	Tag     map[string]interface{} `json:"tag"`
+	Type        string                 `json:"type"`
+	TxHash      string                 `json:"tx_hash"`
+	Status      int32                  `json:"status"`
+	ClassID     string                 `json:"class_id"`
+	NftID       string                 `json:"nft_id"`
+	Message     string                 `json:"message"`
+	BlockHeight uint64                 `json:"block_height"`
+	Timestamp   string                 `json:"timestamp"`
+	Tag         map[string]interface{} `json:"tag"`
 }

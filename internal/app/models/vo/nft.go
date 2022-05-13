@@ -2,7 +2,7 @@ package vo
 
 type CreateNftClassRequest struct {
 	//Base
-	OperationID string                 `json:"operation_id" validate:"required"`
+	OperationID string                 `json:"operation_id"`
 	Name        string                 `json:"name" validate:"required"`
 	Symbol      string                 `json:"symbol"`
 	Description string                 `json:"description"`
@@ -15,21 +15,21 @@ type CreateNftClassRequest struct {
 
 type TransferNftClassByIDRequest struct {
 	//Base
-	OperationID string                 `json:"operation_id" validate:"required"`
+	OperationID string                 `json:"operation_id"`
 	Recipient   string                 `json:"recipient" validate:"required"`
 	Tag         map[string]interface{} `json:"tag"`
 }
 
 type TransferNftByNftIdRequest struct {
 	//Base
-	OperationID string                 `json:"operation_id" validate:"required"`
+	OperationID string                 `json:"operation_id"`
 	Recipient   string                 `json:"recipient" validate:"required"`
 	Tag         map[string]interface{} `json:"tag"`
 }
 
 type CreateNftsRequest struct {
 	//Base
-	OperationID string `json:"operation_id" validate:"required"`
+	OperationID string `json:"operation_id"`
 	Name        string `json:"name" validate:"required"`
 	Uri         string `json:"uri"`
 	UriHash     string `json:"uri_hash"`
@@ -41,12 +41,14 @@ type CreateNftsRequest struct {
 }
 
 type EditNftByIndexRequest struct {
-	Name string                 `json:"name" validate:"required"`
-	Uri  string                 `json:"uri"`
-	Data string                 `json:"data"`
-	Tag  map[string]interface{} `json:"tag"`
+	Name        string                 `json:"name" validate:"required"`
+	Uri         string                 `json:"uri"`
+	Data        string                 `json:"data"`
+	Tag         map[string]interface{} `json:"tag"`
+	OperationID string                 `json:"operation_id"`
 }
 
 type DeleteNftByNftIdRequest struct {
-	Tag map[string]interface{} `json:"tag"`
+	Tag         map[string]interface{} `json:"tag"`
+	OperationID string                 `json:"operation_id"`
 }

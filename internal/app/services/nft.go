@@ -112,14 +112,15 @@ func (s *nft) Create(params dto.CreateNfts) (*dto.TxRes, error) {
 	logFields["code"] = params.Code
 
 	req := pb.NFTCreateRequest{
-		ProjectId: params.ProjectID,
-		ClassId:   params.ClassId,
-		Name:      params.Name,
-		Uri:       params.Uri,
-		UriHash:   params.UriHash,
-		Data:      params.Data,
-		Recipient: params.Recipient,
-		Tag:       string(params.Tag),
+		ProjectId:   params.ProjectID,
+		ClassId:     params.ClassId,
+		Name:        params.Name,
+		Uri:         params.Uri,
+		UriHash:     params.UriHash,
+		Data:        params.Data,
+		Recipient:   params.Recipient,
+		Tag:         string(params.Tag),
+		OperationId: params.OperationId,
 	}
 	resp := &pb.NFTCreateResponse{}
 	var err error
@@ -139,7 +140,7 @@ func (s *nft) Create(params dto.CreateNfts) (*dto.TxRes, error) {
 	if resp == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
-	return &dto.TxRes{TaskId: resp.TaskId}, nil
+	return &dto.TxRes{TaskId: resp.TaskId, OperationId: resp.OperationId}, nil
 
 }
 
@@ -199,14 +200,15 @@ func (s *nft) Update(params dto.EditNftByNftId) (*dto.TxRes, error) {
 	logFields["code"] = params.Code
 
 	req := pb.NFTUpdateRequest{
-		ProjectId: params.ProjectID,
-		ClassId:   params.ClassId,
-		Name:      params.Name,
-		Uri:       params.Uri,
-		NftId:     params.NftId,
-		Data:      params.Data,
-		Owner:     params.Sender,
-		Tag:       string(params.Tag),
+		ProjectId:   params.ProjectID,
+		ClassId:     params.ClassId,
+		Name:        params.Name,
+		Uri:         params.Uri,
+		NftId:       params.NftId,
+		Data:        params.Data,
+		Owner:       params.Sender,
+		Tag:         string(params.Tag),
+		OperationId: params.OperationId,
 	}
 	resp := &pb.NFTUpdateResponse{}
 	var err error
@@ -226,7 +228,7 @@ func (s *nft) Update(params dto.EditNftByNftId) (*dto.TxRes, error) {
 	if resp == nil {
 		return nil, errors.New("grpc response is nil")
 	}
-	return &dto.TxRes{TaskId: resp.TaskId}, nil
+	return &dto.TxRes{TaskId: resp.TaskId, OperationId: resp.OperationId}, nil
 }
 
 func (s *nft) Delete(params dto.DeleteNftByNftId) (*dto.TxRes, error) {
@@ -237,11 +239,12 @@ func (s *nft) Delete(params dto.DeleteNftByNftId) (*dto.TxRes, error) {
 	logFields["code"] = params.Code
 
 	req := pb.NFTDeleteRequest{
-		ProjectId: params.ProjectID,
-		ClassId:   params.ClassId,
-		NftId:     params.NftId,
-		Owner:     params.Sender,
-		Tag:       string(params.Tag),
+		ProjectId:   params.ProjectID,
+		ClassId:     params.ClassId,
+		NftId:       params.NftId,
+		Owner:       params.Sender,
+		Tag:         string(params.Tag),
+		OperationId: params.OperationId,
 	}
 	resp := &pb.NFTDeleteResponse{}
 	var err error
@@ -261,5 +264,5 @@ func (s *nft) Delete(params dto.DeleteNftByNftId) (*dto.TxRes, error) {
 	if resp == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
-	return &dto.TxRes{TaskId: resp.TaskId}, nil
+	return &dto.TxRes{TaskId: resp.TaskId, OperationId: resp.OperationId}, nil
 }

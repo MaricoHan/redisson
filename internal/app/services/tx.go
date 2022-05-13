@@ -54,9 +54,13 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
 	result := &dto.TxResultByTxHashRes{}
+	status := pb.Status_value[resp.Detail.Status]
 	result.Type = resp.Detail.OperationType
-	result.TxHash = resp.Detail.Hash
-	result.Status = pb.Status_value[resp.Detail.Status]
+	result.TxHash = ""
+	result.Status = status
+	if status == int32(pb.Status_success) || status == int32(pb.Status_failed) {
+		result.TxHash = resp.Detail.Hash
+	}
 	if resp.Detail.Tag != "" {
 		var tagInterface interface{}
 		err = json.Unmarshal([]byte(resp.Detail.Tag), &tagInterface)
@@ -73,7 +77,8 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 
 	if result.Status == pb.Status_value["success"] { //交易成功
 		//根据 type 返回交易对象 id
-
+		result.BlockHeight = resp.Detail.BlockHeight
+		result.Timestamp = resp.Detail.Timestamp
 		switch resp.Detail.OperationType {
 
 		case pb.OperationType_name[0]:

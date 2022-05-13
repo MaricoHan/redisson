@@ -4,8 +4,7 @@ version = "v0.4.0"
 env = "dev"
 log_level = "debug"
 log_format = "text"
-#addr = "0.0.0.0:8080"
-addr = "0.0.0.0:9000"
+addr = "192.168.2.124:8080"
 prometheus_addr = "0.0.0.0:9090"
 signature_auth = false
 timestamp_auth = false
@@ -27,4 +26,4 @@ db = 11
 
 [grpc_client]
 wenchangchain_ddc_addr = "192.168.2.98:10000"
-wenchangchain_native_addr = "0.0.0.0:10000"
+wenchangchain_native_addr = "192.168.2.74:10000"

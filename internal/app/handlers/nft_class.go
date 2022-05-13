@@ -38,6 +38,10 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 	uriHash := strings.TrimSpace(req.UriHash)
 	data := strings.TrimSpace(req.Data)
 	owner := strings.TrimSpace(req.Owner)
+	operationId := strings.TrimSpace(req.OperationID)
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
 
 	tagBytes, err := h.ValidateTag(req.Tag)
 	if err != nil {
@@ -47,8 +51,12 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrName)
 	}
 
-	if len([]rune(name)) < 3 || len([]rune(name)) > 64 {
+	if len([]rune(name)) < 1 || len([]rune(name)) > 64 {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrNameLen)
+	}
+
+	if len(operationId) == 0 || len(operationId) >= 65 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
 	}
 
 	if (symbol != "" && len([]rune(symbol)) < 3) || len([]rune(symbol)) > 64 {
@@ -94,6 +102,7 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 		Owner:       owner,
 		Tag:         tagBytes,
 		Code:        authData.Code,
+		OperationId: operationId,
 	}
 	return h.svc.CreateNFTClass(params)
 }

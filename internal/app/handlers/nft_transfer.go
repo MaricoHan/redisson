@@ -28,8 +28,16 @@ func (h *NFTTransfer) TransferNftClassByID(ctx context.Context, request interfac
 	// 校验参数 start
 	req := request.(*vo.TransferNftClassByIDRequest)
 	recipient := strings.TrimSpace(req.Recipient)
+	operationId := strings.TrimSpace(req.OperationID)
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
 	if recipient == "" {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrRecipient)
+	}
+
+	if len(operationId) == 0 || len(operationId) >= 65 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
 	}
 
 	tagBytes, err := h.ValidateTag(req.Tag)
@@ -40,15 +48,16 @@ func (h *NFTTransfer) TransferNftClassByID(ctx context.Context, request interfac
 	//校验参数 end
 	authData := h.AuthData(ctx)
 	params := dto.TransferNftClassById{
-		ClassID:    h.ClassID(ctx),
-		Owner:      h.Owner(ctx),
-		Recipient:  recipient,
-		ChainID:    authData.ChainId,
-		ProjectID:  authData.ProjectId,
-		PlatFormID: authData.PlatformId,
-		Module:     authData.Module,
-		Tag:        tagBytes,
-		Code:       authData.Code,
+		ClassID:     h.ClassID(ctx),
+		Owner:       h.Owner(ctx),
+		Recipient:   recipient,
+		ChainID:     authData.ChainId,
+		ProjectID:   authData.ProjectId,
+		PlatFormID:  authData.PlatformId,
+		Module:      authData.Module,
+		Tag:         tagBytes,
+		Code:        authData.Code,
+		OperationId: operationId,
 	}
 	return h.svc.TransferNFTClass(params)
 }
@@ -58,8 +67,16 @@ func (h *NFTTransfer) TransferNftByNftId(ctx context.Context, request interface{
 	// 校验参数 start
 	req := request.(*vo.TransferNftByNftIdRequest)
 	recipient := strings.TrimSpace(req.Recipient)
+	operationId := strings.TrimSpace(req.OperationID)
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
 	if recipient == "" {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrRecipient)
+	}
+
+	if len(operationId) == 0 || len(operationId) >= 65 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
 	}
 
 	tagBytes, err := h.ValidateTag(req.Tag)
@@ -70,16 +87,17 @@ func (h *NFTTransfer) TransferNftByNftId(ctx context.Context, request interface{
 	// 校验参数 end
 	authData := h.AuthData(ctx)
 	params := dto.TransferNftByNftId{
-		ClassID:    h.ClassID(ctx),
-		Sender:     h.Owner(ctx),
-		NftId:      h.NftId(ctx),
-		Recipient:  recipient,
-		ChainID:    authData.ChainId,
-		ProjectID:  authData.ProjectId,
-		PlatFormID: authData.PlatformId,
-		Module:     authData.Module,
-		Tag:        tagBytes,
-		Code:       authData.Code,
+		ClassID:     h.ClassID(ctx),
+		Sender:      h.Owner(ctx),
+		NftId:       h.NftId(ctx),
+		Recipient:   recipient,
+		ChainID:     authData.ChainId,
+		ProjectID:   authData.ProjectId,
+		PlatFormID:  authData.PlatformId,
+		Module:      authData.Module,
+		Tag:         tagBytes,
+		Code:        authData.Code,
+		OperationId: operationId,
 	}
 	//不能自己转让给自己
 	//400

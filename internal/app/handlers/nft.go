@@ -37,6 +37,11 @@ func (h *NFT) CreateNft(ctx context.Context, request interface{}) (interface{}, 
 	uriHash := strings.TrimSpace(req.UriHash)
 	data := strings.TrimSpace(req.Data)
 	recipient := strings.TrimSpace(req.Recipient)
+	operationId := strings.TrimSpace(req.OperationID)
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
+
 	tagBytes, err := h.ValidateTag(req.Tag)
 	if err != nil {
 		return nil, err
@@ -44,6 +49,10 @@ func (h *NFT) CreateNft(ctx context.Context, request interface{}) (interface{}, 
 
 	if name == "" {
 		return nil, errors2.New(errors2.ClientParams, constant.ErrName)
+	}
+
+	if len(operationId) == 0 || len(operationId) >= 65 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
 	}
 
 	if err := h.base.UriCheck(uri); err != nil {
@@ -62,9 +71,10 @@ func (h *NFT) CreateNft(ctx context.Context, request interface{}) (interface{}, 
 		UriHash:    uriHash,
 		Data:       data,
 		//Amount:    req.Amount,
-		Recipient: recipient,
-		Tag:       tagBytes,
-		Code:      authData.Code,
+		Recipient:   recipient,
+		Tag:         tagBytes,
+		Code:        authData.Code,
+		OperationId: operationId,
 	}
 
 	params.Amount = 1
@@ -80,9 +90,18 @@ func (h *NFT) EditNftByNftId(ctx context.Context, request interface{}) (interfac
 	name := strings.TrimSpace(req.Name)
 	uri := strings.TrimSpace(req.Uri)
 	data := strings.TrimSpace(req.Data)
+	operationId := strings.TrimSpace(req.OperationID)
 	tagBytes, err := h.ValidateTag(req.Tag)
 	if err != nil {
 		return nil, err
+	}
+
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
+
+	if len(operationId) == 0 || len(operationId) >= 65 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
 	}
 	//check start
 	if name == "" {
@@ -96,18 +115,19 @@ func (h *NFT) EditNftByNftId(ctx context.Context, request interface{}) (interfac
 	//check end
 	authData := h.AuthData(ctx)
 	params := dto.EditNftByNftId{
-		ChainID:    authData.ChainId,
-		ProjectID:  authData.ProjectId,
-		PlatFormID: authData.PlatformId,
-		ClassId:    h.ClassId(ctx),
-		Sender:     h.Owner(ctx),
-		NftId:      h.NftId(ctx),
-		Module:     authData.Module,
-		Name:       name,
-		Uri:        uri,
-		Data:       data,
-		Tag:        tagBytes,
-		Code:       authData.Code,
+		ChainID:     authData.ChainId,
+		ProjectID:   authData.ProjectId,
+		PlatFormID:  authData.PlatformId,
+		ClassId:     h.ClassId(ctx),
+		Sender:      h.Owner(ctx),
+		NftId:       h.NftId(ctx),
+		Module:      authData.Module,
+		Name:        name,
+		Uri:         uri,
+		Data:        data,
+		Tag:         tagBytes,
+		Code:        authData.Code,
+		OperationId: operationId,
 	}
 
 	return h.svc.Update(params)
@@ -118,24 +138,32 @@ func (h *NFT) DeleteNftByNftId(ctx context.Context, request interface{}) (interf
 
 	var tagBytes []byte
 	var err error
-	if request != nil {
-		req := request.(*vo.DeleteNftByNftIdRequest)
+	req := request.(*vo.DeleteNftByNftIdRequest)
+	if req.Tag != nil {
 		tagBytes, err = h.ValidateTag(req.Tag)
 		if err != nil {
 			return nil, err
 		}
 	}
+	operationId := strings.TrimSpace(req.OperationID)
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
+	if len(operationId) == 0 || len(operationId) >= 65 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
+	}
 	authData := h.AuthData(ctx)
 	params := dto.DeleteNftByNftId{
-		ChainID:    authData.ChainId,
-		ProjectID:  authData.ProjectId,
-		PlatFormID: authData.PlatformId,
-		Module:     authData.Module,
-		ClassId:    h.ClassId(ctx),
-		Sender:     h.Owner(ctx),
-		NftId:      h.NftId(ctx),
-		Tag:        tagBytes,
-		Code:       authData.Code,
+		ChainID:     authData.ChainId,
+		ProjectID:   authData.ProjectId,
+		PlatFormID:  authData.PlatformId,
+		Module:      authData.Module,
+		ClassId:     h.ClassId(ctx),
+		Sender:      h.Owner(ctx),
+		NftId:       h.NftId(ctx),
+		Tag:         tagBytes,
+		Code:        authData.Code,
+		OperationId: operationId,
 	}
 
 	return h.svc.Delete(params)
