@@ -26,11 +26,14 @@ type (
 	}
 
 	Mysql struct {
-		Host     string `mapstructure:"host"`
-		Port     int    `mapstructure:"port"`
-		DB       string `mapstructure:"db"`
-		Username string `mapstructure:"username"`
-		Password string `mapstructure:"password"`
+		Host         string `mapstructure:"host"`
+		Port         int    `mapstructure:"port"`
+		DB           string `mapstructure:"db"`
+		Username     string `mapstructure:"username"`
+		Password     string `mapstructure:"password"`
+		MaxOpenConns int    `mapstructure:"max_open_conns"`
+		MaxIdleConns int    `mapstructure:"max_idle_conns"`
+		MaxLifetime  int    `mapstructure:"max_life_time"`
 	}
 
 	Redis struct {
