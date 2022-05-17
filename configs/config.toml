@@ -4,7 +4,7 @@ version = "v0.4.0"
 env = "dev"
 log_level = "debug"
 log_format = "text"
-addr = "192.168.2.124:8080"
+addr = ":8080"
 prometheus_addr = "0.0.0.0:9090"
 signature_auth = false
 timestamp_auth = false
@@ -17,6 +17,10 @@ port = 23306
 db = "console_server"
 username = "console"
 password = "consolePassword"
+max_open_conns = 100
+max_idle_conns = 20
+#单位为小时
+max_life_time = 1
 
 
 [redis]

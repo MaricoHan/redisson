@@ -16,6 +16,7 @@ import (
 	"google.golang.org/grpc"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"time"
 )
 
 var RedisClient *redis.RedisClient
@@ -59,6 +60,17 @@ func InitMysqlDB(cfg *configs.Config, logger *log.Logger) {
 	if err != nil {
 		log.Fatal("init mysqlDB failed: ", err.Error())
 	}
+	sqlDB, err := mysqlDB.DB()
+	if err != nil {
+		log.Fatal("init sqlDB failed: ", err.Error())
+	}
+	// SetMaxOpenConns 设置打开数据库连接的最大数量
+	sqlDB.SetMaxOpenConns(cfg.Mysql.MaxOpenConns)
+	// 设置数据库缓存池大小
+	sqlDB.SetMaxIdleConns(cfg.Mysql.MaxIdleConns)
+	// SetConnMaxLifetime 设置了连接可复用的最大时间
+	sqlDB.SetConnMaxLifetime(time.Hour * time.Duration(cfg.Mysql.MaxLifetime))
+
 	MysqlDB = mysqlDB
 }
 
