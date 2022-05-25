@@ -132,6 +132,23 @@ func (c Controller) GetPagation(ctx context.Context) (int, int) {
 	return page, size
 }
 
+//深度克隆，可以克隆任意数据类型
+func DeepClone(src interface{}) interface{} {
+	typ := reflect.TypeOf(src)
+	if typ.Kind() == reflect.Ptr { //如果是指针类型
+		typ = typ.Elem()                          //获取源实际类型(否则为指针类型)
+		dst := reflect.New(typ).Elem()            //创建对象
+		b, _ := json.Marshal(src)                 //导出json
+		json.Unmarshal(b, dst.Addr().Interface()) //json序列化
+		return dst.Addr().Interface()             //返回指针
+	} else {
+		dst := reflect.New(typ).Elem()            //创建对象
+		b, _ := json.Marshal(src)                 //导出json
+		json.Unmarshal(b, dst.Addr().Interface()) //json序列化
+		return dst.Interface()                    //返回值
+	}
+}
+
 // decodeRequest decode request(http.request -> model.request)
 func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFunc {
 	return func(ctx context.Context, r *http.Request) (request interface{}, err error) {
@@ -140,13 +157,14 @@ func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFu
 		}
 		p := reflect.ValueOf(req).Elem()
 		p.Set(reflect.Zero(p.Type()))
+		tmpReq := DeepClone(req)
 		if r.Method != constant.Delete {
-			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			if err := json.NewDecoder(r.Body).Decode(&tmpReq); err != nil {
 				log.Error("Execute decode request failed,", "error", err.Error())
 				return nil, errors2.New(errors2.ClientParams, constant.ErrClientParams)
 			}
 		} else if r.Method == constant.Delete && fmt.Sprintf("%s", r.Body) != "{}" {
-			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			if err := json.NewDecoder(r.Body).Decode(&tmpReq); err != nil {
 				log.Error("Execute decode request failed", "error", err.Error())
 				return nil, errors2.New(errors2.ClientParams, constant.ErrClientParams)
 			}
@@ -155,17 +173,18 @@ func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFu
 		switch p.Type().Kind() {
 		case reflect.Struct:
 			//validate request
-			if err := c.validate.Struct(req); err != nil {
+			if err := c.validate.Struct(tmpReq); err != nil {
 				log.Error("Execute decode request failed,", "validate struct", err.Error(), "req:", req)
 				return nil, errors2.New(errors2.ClientParams, Translate(err))
 			}
 		case reflect.Array:
-			if err := c.validate.Var(req, ""); err != nil {
+			if err := c.validate.Var(tmpReq, ""); err != nil {
 				log.Error("Execute decode request failed,", "validate struct", err.Error(), "req:", req)
 				return nil, errors2.New(errors2.ClientParams, Translate(err))
 			}
 		}
-		return req, nil
+
+		return tmpReq, nil
 	}
 }
 
