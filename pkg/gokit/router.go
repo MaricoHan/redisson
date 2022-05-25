@@ -183,7 +183,7 @@ func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFu
 				return nil, errors2.New(errors2.ClientParams, Translate(err))
 			}
 		}
-		log.Printf("%v",tmpReq)
+
 		return tmpReq, nil
 	}
 }
