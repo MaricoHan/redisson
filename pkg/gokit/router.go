@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -22,6 +21,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/metric"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
+
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 )
 
 type (
@@ -183,7 +184,6 @@ func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFu
 				return nil, errors2.New(errors2.ClientParams, Translate(err))
 			}
 		}
-		log.Printf("%v",tmpReq)
 		return tmpReq, nil
 	}
 }
