@@ -12,6 +12,7 @@ import (
 
 type INft interface {
 	CreateNft(ctx context.Context, _ interface{}) (interface{}, error)
+	BatchCreateNft(ctx context.Context, _ interface{}) (interface{}, error)
 	EditNftByNftId(ctx context.Context, _ interface{}) (interface{}, error)
 	DeleteNftByNftId(ctx context.Context, _ interface{}) (interface{}, error)
 	Nfts(ctx context.Context, _ interface{}) (interface{}, error)
@@ -80,6 +81,57 @@ func (h *NFT) CreateNft(ctx context.Context, request interface{}) (interface{}, 
 	params.Amount = 1
 
 	return h.svc.Create(params)
+}
+
+func (h *NFT) BatchCreateNft(ctx context.Context, request interface{}) (interface{}, error) {
+	// 校验参数 start
+	req := request.(*vo.BatchCreateNftsRequest)
+
+	name := strings.TrimSpace(req.Name)
+	uri := strings.TrimSpace(req.Uri)
+	uriHash := strings.TrimSpace(req.UriHash)
+	data := strings.TrimSpace(req.Data)
+	recipients := req.Recipients
+	operationId := strings.TrimSpace(req.OperationID)
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
+
+	tagBytes, err := h.ValidateTag(req.Tag)
+	if err != nil {
+		return nil, err
+	}
+
+	if name == "" {
+		return nil, errors2.New(errors2.ClientParams, constant.ErrName)
+	}
+
+	if len(operationId) == 0 || len(operationId) >= 65 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
+	}
+
+	if err := h.base.UriCheck(uri); err != nil {
+		return nil, err
+	}
+
+	authData := h.AuthData(ctx)
+	params := dto.BatchCreateNfts{
+		ChainID:     authData.ChainId,
+		ProjectID:   authData.ProjectId,
+		PlatFormID:  authData.PlatformId,
+		Module:      authData.Module,
+		ClassId:     h.ClassId(ctx),
+		Name:        name,
+		Uri:         uri,
+		UriHash:     uriHash,
+		Data:        data,
+		Recipients:  recipients,
+		Tag:         tagBytes,
+		Code:        authData.Code,
+		OperationId: operationId,
+	}
+
+	return h.svc.BatchCreate(params)
 }
 
 // EditNftByNftId Edit a nft and return the edited result

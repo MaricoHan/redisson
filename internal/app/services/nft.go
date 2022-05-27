@@ -16,6 +16,7 @@ import (
 type INFT interface {
 	List(params dto.Nfts) (*dto.NftsRes, error)
 	Create(params dto.CreateNfts) (*dto.TxRes, error)
+	BatchCreate(params dto.BatchCreateNfts) (*dto.TxRes, error)
 	Show(params dto.NftByNftId) (*dto.NftReq, error)
 	Update(params dto.EditNftByNftId) (*dto.TxRes, error)
 	Delete(params dto.DeleteNftByNftId) (*dto.TxRes, error)
