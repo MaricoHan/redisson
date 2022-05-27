@@ -127,6 +127,7 @@ func (a *account) GetAccounts(params dto.AccountsInfo) (*dto.AccountsRes, error)
 		StartDate:   params.StartDate,
 		EndDate:     params.EndDate,
 		OperationId: params.OperationId,
+		Name:        params.Name,
 	}
 
 	resp := &pb.AccountShowResponse{}

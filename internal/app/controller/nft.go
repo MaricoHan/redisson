@@ -45,7 +45,6 @@ func (c NftController) GetEndpoints() []kit.Endpoint {
 			Method:  http.MethodGet,
 			Handler: c.makeHandler(c.handler.NftByNftId, nil),
 		},
-
 	)
 	return ends
 }

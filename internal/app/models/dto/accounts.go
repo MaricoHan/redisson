@@ -38,6 +38,7 @@ type AccountsInfo struct {
 	Code            string `json:"code"`
 	TxHash          string `json:"tx_hash"`
 	OperationId     string `json:"operation_id"`
+	Name            string `json:"name"`
 }
 
 type BatchAccountRes struct {

@@ -158,6 +158,7 @@ func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFu
 		}
 		p := reflect.ValueOf(req).Elem()
 		p.Set(reflect.Zero(p.Type()))
+
 		tmpReq := DeepClone(req)
 		if r.Method != constant.Delete {
 			if err := json.NewDecoder(r.Body).Decode(&tmpReq); err != nil {
