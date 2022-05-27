@@ -169,7 +169,7 @@ func (h *NFT) DeleteNftByNftId(ctx context.Context, request interface{}) (interf
 	return h.svc.Delete(params)
 }
 
-// Nfts return class list
+// Nfts return nft list
 func (h *NFT) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 	status, err := h.Status(ctx)
 	if err != nil {
@@ -188,6 +188,7 @@ func (h *NFT) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 		TxHash:     h.TxHash(ctx),
 		Status:     status,
 		Code:       authData.Code,
+		Name:       h.Name(ctx),
 	}
 	offset, err := h.Offset(ctx)
 	if err != nil {
@@ -282,6 +283,14 @@ func (h *NFT) ClassId(ctx context.Context) string {
 	}
 	return classId.(string)
 
+}
+
+func (h *NFT) Name(ctx context.Context) string {
+	name := ctx.Value("name")
+	if name == nil {
+		return ""
+	}
+	return name.(string)
 }
 
 func (h *NFT) Owner(ctx context.Context) string {

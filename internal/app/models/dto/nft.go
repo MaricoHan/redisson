@@ -43,6 +43,7 @@ type CreateNftClass struct {
 	Module      string `json:"module"`
 	Code        string `json:"code"`
 	OperationId string `json:"operation_id"`
+	ClassId     string `json:"class_id"`
 }
 
 type NftClasses struct {
@@ -169,6 +170,7 @@ type Nfts struct {
 	PlatFormID uint64 `json:"plat_form_id"`
 	Module     string `json:"module"`
 	Code       string `json:"code"`
+	Name       string `json:"name"`
 }
 
 type CreateNfts struct {

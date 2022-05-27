@@ -107,6 +107,7 @@ func (h *Account) GetAccounts(ctx context.Context, _ interface{}) (interface{}, 
 		Module:      authData.Module,
 		Code:        authData.Code,
 		OperationId: h.OperationID(ctx),
+		Name:        h.Name(ctx),
 	}
 	offset, err := h.Offset(ctx)
 	if err != nil {
@@ -155,4 +156,12 @@ func (h *Account) OperationID(ctx context.Context) string {
 		return ""
 	}
 	return OperationID.(string)
+}
+
+func (h *Account) Name(ctx context.Context) string {
+	name := ctx.Value("name")
+	if name == nil {
+		return ""
+	}
+	return name.(string)
 }
