@@ -19,7 +19,6 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	"gitlab.bianjie.ai/avata/open-api/internal/pkg/metric"
 )
 
 // 误差时间
@@ -37,17 +36,17 @@ type authHandler struct {
 func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Debug("user request", " method:", r.Method, " url:", r.URL.Path)
 
-	createTime := time.Now()
-	defer func(createTime time.Time) {
-		//监控响应时间
-		interval := time.Now().Sub(createTime)
-		metric.NewPrometheus().ApiHttpRequestRtSeconds.With([]string{
-			"method",
-			r.Method,
-			"uri",
-			r.RequestURI,
-		}...).Observe(float64(interval))
-	}(createTime)
+	//createTime := time.Now()
+	//defer func(createTime time.Time) {
+	//	//监控响应时间
+	//	interval := time.Now().Sub(createTime)
+	//	metric.NewPrometheus().ApiHttpRequestRtSeconds.With([]string{
+	//		"method",
+	//		r.Method,
+	//		"uri",
+	//		r.RequestURI,
+	//	}...).Observe(float64(interval))
+	//}(createTime)
 
 	appKey := r.Header.Get("X-Api-Key")
 
