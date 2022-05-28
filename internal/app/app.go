@@ -62,6 +62,9 @@ func Start(ctx *configs.Context) {
 
 	safe.GoSafe(func() {
 		http.Handle("/metrics", promhttp.Handler())
+		http.HandleFunc("/health", func(writer http.ResponseWriter, request *http.Request) {
+			writer.Write([]byte("health"))
+		})
 		http.ListenAndServe(ctx.Config.App.PrometheusAddr, nil)
 	}, func(err error) {
 		log.Info("http server listenidg error: %s", err)
