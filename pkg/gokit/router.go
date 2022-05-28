@@ -20,7 +20,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"gitlab.bianjie.ai/avata/open-api/internal/pkg/metric"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 )
 
@@ -194,9 +193,9 @@ func (c Controller) encodeResponse(ctx context.Context, w http.ResponseWriter, r
 	response := constant.Response{
 		Data: resp,
 	}
-	method := ctx.Value(httptransport.ContextKeyRequestMethod)
-	uri := ctx.Value(httptransport.ContextKeyRequestURI)
-	metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "200"}...).Add(1)
+	//method := ctx.Value(httptransport.ContextKeyRequestMethod)
+	//uri := ctx.Value(httptransport.ContextKeyRequestURI)
+	//metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "200"}...).Add(1)
 
 	return httptransport.EncodeJSONResponse(ctx, w, response)
 }
@@ -238,8 +237,8 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
 		var response constant.Response
-		method := ctx.Value(httptransport.ContextKeyRequestMethod)
-		uri := ctx.Value(httptransport.ContextKeyRequestURI)
+		//method := ctx.Value(httptransport.ContextKeyRequestMethod)
+		//uri := ctx.Value(httptransport.ContextKeyRequestURI)
 		urlPath := ctx.Value(httptransport.ContextKeyRequestPath)
 		url := strings.SplitN(urlPath.(string)[1:], "/", 3)
 		codeSpace := strings.ToUpper(url[1])
@@ -262,16 +261,16 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 		if errMesg != "" && respErr.Message() != "" {
 			switch respErr.Code() {
 			case errors2.ClientParams, errors2.StatusFailed, errors2.ChainFailed, errors2.DuplicateRequest, errors2.OrderFailed:
-				metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "400"}...).Add(1)
+				//metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "400"}...).Add(1)
 				w.WriteHeader(http.StatusBadRequest) //400
 			case errors2.Authentication:
-				metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "403"}...).Add(1)
+				//metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "403"}...).Add(1)
 				w.WriteHeader(http.StatusForbidden) //401
 			case errors2.NotFound:
-				metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "404"}...).Add(1)
+				//metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "404"}...).Add(1)
 				w.WriteHeader(http.StatusNotFound) //404
 			default:
-				metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "500"}...).Add(1)
+				//metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "500"}...).Add(1)
 				w.WriteHeader(http.StatusInternalServerError) //500
 			}
 			response = constant.Response{
@@ -283,7 +282,7 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 			}
 		}
 		if (respErr.Code().String() == "Unknown" || respErr.Code().String() == "Unavailable" || respErr.Code().String() == "DeadlineExceeded") && respErr.Message() != "" {
-			metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "500"}...).Add(1)
+			//metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "500"}...).Add(1)
 			w.WriteHeader(http.StatusInternalServerError) //500
 			response = constant.Response{
 				ErrorResp: &constant.ErrorResp{
@@ -299,16 +298,16 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 			switch appErr.Code() {
 			case constant.ClientParamsError, constant.FrequentRequestsNotSupports, constant.NftStatusAbnormal,
 				constant.NftClassStatusAbnormal, constant.MaximumLimitExceeded, constant.ErrOutOfGas, constant.ModuleFailed, constant.AccountFailed:
-				metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "400"}...).Add(1)
+				//metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "400"}...).Add(1)
 				w.WriteHeader(http.StatusBadRequest) //400
 			case constant.AuthenticationFailed, constant.StructureSignTransactionFailed:
-				metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "403"}...).Add(1)
+				//metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "403"}...).Add(1)
 				w.WriteHeader(http.StatusForbidden) //403
 			case constant.NotFound:
-				metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "404"}...).Add(1)
+				//metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "404"}...).Add(1)
 				w.WriteHeader(http.StatusNotFound) //404
 			default:
-				metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "500"}...).Add(1)
+				//metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "500"}...).Add(1)
 				w.WriteHeader(http.StatusInternalServerError) //500
 				appErr = constant.ErrInternal
 			}
