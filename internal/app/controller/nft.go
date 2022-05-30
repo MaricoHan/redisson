@@ -28,7 +28,7 @@ func (c NftController) GetEndpoints() []kit.Endpoint {
 		kit.Endpoint{
 			URI:     "/nft/batch/nfts/{class_id}",
 			Method:  http.MethodPost,
-			Handler: c.makeHandler(c.handler.CreateNft, &vo.CreateNftsRequest{}),
+			Handler: c.makeHandler(c.handler.BatchCreateNft, &vo.BatchCreateNftsRequest{}),
 		},
 		kit.Endpoint{
 			URI:     "/nft/nfts/{class_id}/{owner}/{nft_id}",
