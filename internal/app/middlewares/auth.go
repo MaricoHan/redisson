@@ -113,7 +113,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			writeForbiddenResp(w, "")
 			return
 		}
-		log.Debugf("signature: ", h.Signature(r, projectInfo.ApiSecret, reqTimestampStr, reqSignature))
+		log.Debugf("signature: %v", h.Signature(r, projectInfo.ApiSecret, reqTimestampStr, reqSignature))
 	}
 
 	r.Header.Set("X-App-Id", fmt.Sprintf("%d", authData.ProjectId))

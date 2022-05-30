@@ -13,6 +13,7 @@ type CreateNftClassRequest struct {
 	Data        string                 `json:"data"`
 	Owner       string                 `json:"owner" validate:"required"`
 	Tag         map[string]interface{} `json:"tag"`
+	ClassId     string                 `json:"class_id"`
 }
 
 type TransferNftClassByIDRequest struct {

@@ -56,6 +56,7 @@ func (s *nft) List(params dto.Nfts) (*dto.NftsRes, error) {
 		TxHash:    params.TxHash,
 		Status:    pb.Status(pb.Status_value[params.Status]),
 		SortBy:    pb.Sorts(sort),
+		Name:      params.Name,
 	}
 
 	resp := &pb.NFTListResponse{}

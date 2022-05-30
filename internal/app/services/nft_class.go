@@ -161,6 +161,7 @@ func (n *nftClass) CreateNFTClass(params dto.CreateNftClass) (*dto.TxRes, error)
 		ProjectId:   params.ProjectID,
 		Tag:         string(params.Tag),
 		OperationId: params.OperationId,
+		ClassId:     params.ClassId,
 	}
 
 	resp := &pb.ClassCreateResponse{}

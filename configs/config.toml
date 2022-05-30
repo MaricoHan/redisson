@@ -22,12 +22,11 @@ max_idle_conns = 20
 #单位为小时
 max_life_time = 1
 
-
 [redis]
-host = "127.0.0.1:6379"
-#password = "redisPassword"
+host = "192.168.150.40:6379"
+password = "redisPassword"
 db = 11
 
 [grpc_client]
-wenchangchain_ddc_addr = "192.168.2.98:10000"
-wenchangchain_native_addr = "127.0.0.1:10000"
+wenchangchain_ddc_addr = "192.168.2.98:10001"
+wenchangchain_native_addr = "127.0.0.1:10002"

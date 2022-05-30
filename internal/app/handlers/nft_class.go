@@ -2,11 +2,13 @@ package handlers
 
 import (
 	"context"
+	"regexp"
+	"strings"
+
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
-	"strings"
 )
 
 type INftClass interface {
@@ -32,6 +34,7 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 	req := request.(*vo.CreateNftClassRequest)
 
 	name := strings.TrimSpace(req.Name)
+	classId := strings.TrimSpace(req.ClassId)
 	description := strings.TrimSpace(req.Description)
 	symbol := strings.TrimSpace(req.Symbol)
 	uri := strings.TrimSpace(req.Uri)
@@ -87,6 +90,17 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOwnerLen)
 	}
 
+	// 包含3-64个字符
+	if len([]rune(classId)) < 3 || len([]rune(classId)) > 64 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrClassIDLen)
+	}
+
+	// 仅支持小写字母及数字
+	ok, err := regexp.MatchString("^[a-z0-9]+$", classId)
+	if !ok || err != nil {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrClassFormat)
+	}
+
 	authData := h.AuthData(ctx)
 	params := dto.CreateNftClass{
 		ChainID:     authData.ChainId,
@@ -103,6 +117,7 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 		Tag:         tagBytes,
 		Code:        authData.Code,
 		OperationId: operationId,
+		ClassId:     classId,
 	}
 	return h.svc.CreateNFTClass(params)
 }
