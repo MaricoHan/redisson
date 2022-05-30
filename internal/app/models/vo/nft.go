@@ -1,5 +1,7 @@
 package vo
 
+import pb "gitlab.bianjie.ai/avata/chains/api/pb/nft"
+
 type CreateNftClassRequest struct {
 	//Base
 	OperationID string                 `json:"operation_id"`
@@ -52,4 +54,22 @@ type EditNftByIndexRequest struct {
 type DeleteNftByNftIdRequest struct {
 	Tag         map[string]interface{} `json:"tag"`
 	OperationID string                 `json:"operation_id"`
+}
+
+type BatchTransferRequest struct {
+	Data        []*pb.NFTBatchTransferData `json:"data" validate:"required"`
+	Tag         map[string]interface{}     `json:"tag"`
+	OperationID string                     `json:"operation_id" validate:"required"`
+}
+
+type BatchEditRequest struct {
+	Nfts        []*pb.NFTBatchEditData `json:"nfts"`
+	Tag         map[string]interface{} `json:"tag"`
+	OperationID string                 `json:"operation_id" validate:"required"`
+}
+
+type BatchDeleteRequest struct {
+	Nfts        []*pb.NFTIndex         `json:"nfts"`
+	Tag         map[string]interface{} `json:"tag"`
+	OperationID string                 `json:"operation_id" validate:"required"`
 }
