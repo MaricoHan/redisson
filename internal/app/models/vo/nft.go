@@ -56,27 +56,12 @@ type DeleteNftByNftIdRequest struct {
 	OperationID string                 `json:"operation_id"`
 }
 
-//type NFTIndex struct {
-//	ClassID string `json:"class_id" validate:"required"`
-//	NftID   string `json:"nft_id" validate:"required"`
-//}
-//type BatchTransferRequestData struct {
-//	Nfts      []*NFTIndex `json:"nfts"`
-//	Recipient string      `json:"recipient" validate:"required"`
-//}
-
 type BatchTransferRequest struct {
 	Data        []*pb.NFTBatchTransferData `json:"data" validate:"required"`
 	Tag         map[string]interface{}     `json:"tag"`
 	OperationID string                     `json:"operation_id" validate:"required"`
 }
 
-//type BatchEditRequestData struct {
-//	pb.NFTIndex
-//	Name string `json:"name" validate:"required"`
-//	Uri  string `json:"uri"`
-//	Data string `json:"data"`
-//}
 type BatchEditRequest struct {
 	Nfts        []*pb.NFTBatchEditData `json:"nfts"`
 	Tag         map[string]interface{} `json:"tag"`

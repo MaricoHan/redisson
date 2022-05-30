@@ -2,13 +2,13 @@ package handlers
 
 import (
 	"context"
-	"fmt"
+	"strings"
+
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
-	"strings"
 )
 
 type INft interface {
@@ -249,7 +249,6 @@ func (h *NFT) BatchTransfer(ctx context.Context, request interface{}) (interface
 	// 接收请求
 	req, ok := request.(*vo.BatchTransferRequest)
 	if !ok {
-		fmt.Println("++++++++++++++++++++++++++++++++++++++++", req)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
 	}
 	// 校验tag

@@ -5,14 +5,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
-	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 	"strconv"
 	"strings"
 	"unicode"
 
 	"github.com/asaskevich/govalidator"
+	log "github.com/sirupsen/logrus"
+	errors2 "gitlab.bianjie.ai/avata/utils/errors"
+
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 )
 
 type base struct {

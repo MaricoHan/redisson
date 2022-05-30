@@ -1,10 +1,11 @@
 package controller
 
 import (
+	"net/http"
+
 	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	kit "gitlab.bianjie.ai/avata/open-api/pkg/gokit"
-	"net/http"
 )
 
 type NftController struct {
