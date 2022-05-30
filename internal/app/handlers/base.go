@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
@@ -54,7 +55,7 @@ func (h base) ValidateTag(tags map[string]interface{}) ([]byte, error) {
 		tagBytes, _ = json.Marshal(tags)
 		tag := string(tagBytes)
 		if _, err := h.IsValTag(tag); err != nil {
-			return tagBytes, errors2.New(errors2.ClientParams, err.Error())
+			return tagBytes, errors2.New(errors2.ClientParams, fmt.Sprintf("invalid tag :%s", err.Error()))
 			//return tagBytes, constant.NewAppError(constant.RootCodeSpace, constant.ClientParamsError, err.Error())
 		}
 	}

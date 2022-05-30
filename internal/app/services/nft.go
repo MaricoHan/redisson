@@ -19,8 +19,10 @@ type INFT interface {
 	Show(params dto.NftByNftId) (*dto.NftReq, error)
 	Update(params dto.EditNftByNftId) (*dto.TxRes, error)
 	Delete(params dto.DeleteNftByNftId) (*dto.TxRes, error)
+	BatchTransfer(params *dto.BatchTransferRequest) (*dto.BatchTxRes, error)
+	BatchEdit(params *dto.BatchEditRequest) (*dto.BatchTxRes, error)
+	BatchDelete(params *dto.BatchDeleteRequest) (*dto.BatchTxRes, error)
 }
-
 type nft struct {
 	logger *log.Logger
 }
@@ -265,4 +267,110 @@ func (s *nft) Delete(params dto.DeleteNftByNftId) (*dto.TxRes, error) {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
 	return &dto.TxRes{TaskId: resp.TaskId, OperationId: resp.OperationId}, nil
+}
+func (s *nft) BatchTransfer(params *dto.BatchTransferRequest) (*dto.BatchTxRes, error) {
+	logFields := log.Fields{}
+	logFields["model"] = "nft"
+	logFields["func"] = "BatchTransfer"
+	logFields["module"] = params.Module
+	logFields["code"] = params.Code
+
+	req := pb.NFTBatchTransferRequest{
+		ProjectId:   params.ProjectID,
+		Owner:       params.Sender,
+		Data:        params.Data,
+		Tag:         params.Tag,
+		OperationId: params.OperationID,
+	}
+	resp := new(pb.NFTBatchTransferResponse)
+
+	var err error
+	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+	grpcClient, ok := initialize.NftClientMap[mapKey]
+	if !ok {
+		log.WithFields(logFields).Error(errors2.ErrService)
+		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
+	}
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+	resp, err = grpcClient.BatchTransfer(ctx, &req)
+	if err != nil {
+		log.WithFields(logFields).Error("request err:", err.Error())
+		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+	}
+	return &dto.BatchTxRes{OperationId: resp.OperationId}, nil
+}
+func (s *nft) BatchEdit(params *dto.BatchEditRequest) (*dto.BatchTxRes, error) {
+	logFields := log.Fields{}
+	logFields["model"] = "nft"
+	logFields["func"] = "BatchEdit"
+	logFields["module"] = params.Module
+	logFields["code"] = params.Code
+
+	req := pb.NFTBatchEditRequest{
+		ProjectId:   params.ProjectID,
+		Owner:       params.Sender,
+		Nfts:        params.Nfts,
+		Tag:         params.Tag,
+		OperationId: params.OperationID,
+	}
+	resp := new(pb.NFTBatchEditResponse)
+
+	var err error
+	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+	grpcClient, ok := initialize.NftClientMap[mapKey]
+	if !ok {
+		log.WithFields(logFields).Error(errors2.ErrService)
+		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
+	}
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+	resp, err = grpcClient.BatchEdit(ctx, &req)
+	if err != nil {
+		log.WithFields(logFields).Error("request err:", err.Error())
+		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+	}
+	return &dto.BatchTxRes{OperationId: resp.OperationId}, nil
+}
+
+func (s *nft) BatchDelete(params *dto.BatchDeleteRequest) (*dto.BatchTxRes, error) {
+	logFields := log.Fields{}
+	logFields["model"] = "nft"
+	logFields["func"] = "BatchDelete"
+	logFields["module"] = params.Module
+	logFields["code"] = params.Code
+
+	req := pb.NFTBatchDeleteRequest{
+		ProjectId:   params.ProjectID,
+		Owner:       params.Sender,
+		Nfts:        params.Nfts,
+		Tag:         params.Tag,
+		OperationId: params.OperationID,
+	}
+	resp := new(pb.NFTBatchDeleteResponse)
+
+	var err error
+	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+	grpcClient, ok := initialize.NftClientMap[mapKey]
+	if !ok {
+		log.WithFields(logFields).Error(errors2.ErrService)
+		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
+	}
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+	resp, err = grpcClient.BatchDelete(ctx, &req)
+	if err != nil {
+		log.WithFields(logFields).Error("request err:", err.Error())
+		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+	}
+	return &dto.BatchTxRes{OperationId: resp.OperationId}, nil
 }

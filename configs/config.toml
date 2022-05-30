@@ -24,10 +24,10 @@ max_life_time = 1
 
 
 [redis]
-host = "192.168.150.40:6379"
-password = "redisPassword"
+host = "127.0.0.1:6379"
+#password = "redisPassword"
 db = 11
 
 [grpc_client]
 wenchangchain_ddc_addr = "192.168.2.98:10000"
-wenchangchain_native_addr = "192.168.2.74:10000"
+wenchangchain_native_addr = "127.0.0.1:10000"
