@@ -4,6 +4,8 @@ import (
 	"context"
 	"strings"
 
+	log "github.com/sirupsen/logrus"
+
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
@@ -249,6 +251,7 @@ func (h *NFT) BatchTransfer(ctx context.Context, request interface{}) (interface
 	// 接收请求
 	req, ok := request.(*vo.BatchTransferRequest)
 	if !ok {
+		log.Debugf("failed to assert : %v", request)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
 	}
 	// 校验tag
@@ -289,6 +292,7 @@ func (h *NFT) BatchEdit(ctx context.Context, request interface{}) (interface{}, 
 	// 接收请求
 	req, ok := request.(*vo.BatchEditRequest)
 	if !ok {
+		log.Debugf("failed to assert : %v", request)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
 	}
 	// 校验tag
@@ -329,6 +333,7 @@ func (h *NFT) BatchDelete(ctx context.Context, request interface{}) (interface{}
 	// 接收请求
 	req, ok := request.(*vo.BatchDeleteRequest)
 	if !ok {
+		log.Debugf("failed to assert : %v", request)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
 	}
 	// 校验tag
