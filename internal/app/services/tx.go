@@ -85,25 +85,9 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 			result.ClassID = resp.Detail.ClassId
 		case pb.OperationType_name[5]:
 			result.ClassID = resp.Detail.ClassId
-		case pb.OperationType_name[1]:
-			result.ClassID = resp.Detail.ClassId
-			result.NftID = resp.Detail.NftId
-		case pb.OperationType_name[2]:
-			result.ClassID = resp.Detail.ClassId
-			result.NftID = resp.Detail.NftId
-		case pb.OperationType_name[3]:
-			result.ClassID = resp.Detail.ClassId
-			result.NftID = resp.Detail.NftId
-		case pb.OperationType_name[4]:
-			result.ClassID = resp.Detail.ClassId
-			result.NftID = resp.Detail.NftId
 		default:
 			result.ClassID = resp.Detail.ClassId
 			result.NftID = resp.Detail.NftId
-		case pb.OperationType_name[7]:
-			result.ClassID = resp.Detail.ClassId
-			result.NftID = resp.Detail.NftId
-
 		}
 	}
 	return result, nil
