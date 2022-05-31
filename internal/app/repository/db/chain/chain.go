@@ -40,8 +40,8 @@ func (c *ChainRepo) InsertChain(chain entity.Chain) error {
 	return c.db.Create(&chain).Error
 }
 
-func (c *ChainRepo) QueryChainById(chainId uint64) (chain *entity.Chain, err error) {
-	err = c.db.Where("id = ?", chainId).Find(&chain).Error
+func (c *ChainRepo) QueryChainById(chainId uint64) (chain entity.Chain, err error) {
+	err = c.db.Where("id = ? and status = ?", chainId,1).Find(&chain).Error
 	return chain, err
 
 }
