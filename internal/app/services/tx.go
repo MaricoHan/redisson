@@ -97,6 +97,9 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 		case pb.OperationType_name[4]:
 			result.ClassID = resp.Detail.ClassId
 			result.NftID = resp.Detail.NftId
+		default:
+			result.ClassID = resp.Detail.ClassId
+			result.NftID = resp.Detail.NftId
 		}
 	}
 	return result, nil
