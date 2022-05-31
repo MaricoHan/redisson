@@ -150,7 +150,7 @@ func (s *nft) Create(params dto.CreateNfts) (*dto.TxRes, error) {
 
 }
 
-func (s *nft) BatchCreate(params dto.BatchCreateNfts) (*dto.TxRes, error) {
+func (s *nft) BatchCreate(params dto.BatchCreateNfts) (*dto.BatchTxRes, error) {
 	logFields := log.Fields{}
 	logFields["model"] = "nft"
 	logFields["func"] = "BatchCreate"
@@ -186,8 +186,7 @@ func (s *nft) BatchCreate(params dto.BatchCreateNfts) (*dto.TxRes, error) {
 	if resp == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
-	return &dto.TxRes{OperationId: resp.OperationId}, nil
-
+	return &dto.BatchTxRes{OperationId: resp.OperationId}, nil
 }
 
 func (s *nft) Show(params dto.NftByNftId) (*dto.NftReq, error) {
