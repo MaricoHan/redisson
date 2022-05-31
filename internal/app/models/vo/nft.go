@@ -43,6 +43,17 @@ type CreateNftsRequest struct {
 	Tag       map[string]interface{} `json:"tag"`
 }
 
+type BatchCreateNftsRequest struct {
+	//Base
+	OperationID string                         `json:"operation_id"`
+	Name        string                         `json:"name" validate:"required"`
+	Uri         string                         `json:"uri"`
+	UriHash     string                         `json:"uri_hash"`
+	Data        string                         `json:"data"`
+	Recipients  []*pb.NFTBatchCreateRecipients `json:"recipients"`
+	Tag         map[string]interface{}         `json:"tag"`
+}
+
 type EditNftByIndexRequest struct {
 	Name        string                 `json:"name" validate:"required"`
 	Uri         string                 `json:"uri"`

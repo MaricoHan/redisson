@@ -197,6 +197,23 @@ type CreateNfts struct {
 	OperationId string `json:"operation_id"`
 }
 
+type BatchCreateNfts struct {
+	ProjectID   uint64                         `json:"project_id"`
+	ChainID     uint64                         `json:"chain_id"`
+	PlatFormID  uint64                         `json:"plat_form_id"`
+	ClassId     string                         `json:"class_id"`
+	Name        string                         `json:"name"`
+	Uri         string                         `json:"uri"`
+	UriHash     string                         `json:"uri_hash"`
+	Data        string                         `json:"data"`
+	Amount      int                            `json:"amount"`
+	Recipients  []*pb.NFTBatchCreateRecipients `json:"recipients"`
+	Tag         []byte                         `json:"tag"`
+	Module      string                         `json:"module"`
+	Code        string                         `json:"code"`
+	OperationId string                         `json:"operation_id"`
+}
+
 type NftByNftId struct {
 	ProjectID  uint64 `json:"project_id"`
 	ChainID    uint64 `json:"chain_id"`

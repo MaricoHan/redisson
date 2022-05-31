@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"regexp"
 	"strings"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
@@ -88,17 +87,6 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 
 	if len([]rune(owner)) > 128 {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOwnerLen)
-	}
-
-	// 包含3-64个字符
-	if len([]rune(classId)) < 3 || len([]rune(classId)) > 64 {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrClassIDLen)
-	}
-
-	// 仅支持小写字母及数字
-	ok, err := regexp.MatchString("^[a-z0-9]+$", classId)
-	if !ok || err != nil {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrClassFormat)
 	}
 
 	authData := h.AuthData(ctx)
