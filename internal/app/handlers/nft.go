@@ -2,12 +2,15 @@ package handlers
 
 import (
 	"context"
+	"strings"
+
+	log "github.com/sirupsen/logrus"
+
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
-	"strings"
 )
 
 type INft interface {
@@ -17,6 +20,9 @@ type INft interface {
 	DeleteNftByNftId(ctx context.Context, _ interface{}) (interface{}, error)
 	Nfts(ctx context.Context, _ interface{}) (interface{}, error)
 	NftByNftId(ctx context.Context, _ interface{}) (interface{}, error)
+	BatchTransfer(ctx context.Context, _ interface{}) (interface{}, error)
+	BatchEdit(ctx context.Context, _ interface{}) (interface{}, error)
+	BatchDelete(ctx context.Context, _ interface{}) (interface{}, error)
 }
 
 type NFT struct {
@@ -291,6 +297,129 @@ func (h *NFT) NftByNftId(ctx context.Context, _ interface{}) (interface{}, error
 
 	return h.svc.Show(params)
 
+}
+
+func (h *NFT) BatchTransfer(ctx context.Context, request interface{}) (interface{}, error) {
+	// 接收请求
+	req, ok := request.(*vo.BatchTransferRequest)
+	if !ok {
+		log.Debugf("failed to assert : %v", request)
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	}
+	// 校验tag
+	var tagBz []byte
+	var err error
+	if req.Tag != nil {
+		tagBz, err = h.ValidateTag(req.Tag)
+		if err != nil {
+			return nil, err
+		}
+	}
+	// 校验operationID
+	operationId := strings.TrimSpace(req.OperationID)
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
+	if len(operationId) == 0 || len(operationId) >= 65 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
+	}
+	// 获取账户基本信息
+	authData := h.AuthData(ctx)
+	params := dto.BatchTransferRequest{
+		ChainID:     authData.ChainId,
+		ProjectID:   authData.ProjectId,
+		PlatFormID:  authData.PlatformId,
+		Module:      authData.Module,
+		Code:        authData.Code,
+		Sender:      h.Owner(ctx),
+		Data:        req.Data,
+		Tag:         string(tagBz),
+		OperationID: operationId,
+	}
+
+	return h.svc.BatchTransfer(&params)
+}
+
+func (h *NFT) BatchEdit(ctx context.Context, request interface{}) (interface{}, error) {
+	// 接收请求
+	req, ok := request.(*vo.BatchEditRequest)
+	if !ok {
+		log.Debugf("failed to assert : %v", request)
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	}
+	// 校验tag
+	var tagBz []byte
+	var err error
+	if req.Tag != nil {
+		tagBz, err = h.ValidateTag(req.Tag)
+		if err != nil {
+			return nil, err
+		}
+	}
+	// 校验operationID
+	operationId := strings.TrimSpace(req.OperationID)
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
+	if len(operationId) == 0 || len(operationId) >= 65 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
+	}
+	// 获取账户基本信息
+	authData := h.AuthData(ctx)
+	params := dto.BatchEditRequest{
+		ChainID:     authData.ChainId,
+		ProjectID:   authData.ProjectId,
+		PlatFormID:  authData.PlatformId,
+		Module:      authData.Module,
+		Code:        authData.Code,
+		Sender:      h.Owner(ctx),
+		Nfts:        req.Nfts,
+		Tag:         string(tagBz),
+		OperationID: operationId,
+	}
+
+	return h.svc.BatchEdit(&params)
+}
+
+func (h *NFT) BatchDelete(ctx context.Context, request interface{}) (interface{}, error) {
+	// 接收请求
+	req, ok := request.(*vo.BatchDeleteRequest)
+	if !ok {
+		log.Debugf("failed to assert : %v", request)
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	}
+	// 校验tag
+	var tagBz []byte
+	var err error
+	if req.Tag != nil {
+		tagBz, err = h.ValidateTag(req.Tag)
+		if err != nil {
+			return nil, err
+		}
+	}
+	// 校验operationID
+	operationId := strings.TrimSpace(req.OperationID)
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
+	if len(operationId) == 0 || len(operationId) >= 65 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
+	}
+	// 获取账户基本信息
+	authData := h.AuthData(ctx)
+	params := dto.BatchDeleteRequest{
+		ChainID:     authData.ChainId,
+		ProjectID:   authData.ProjectId,
+		PlatFormID:  authData.PlatformId,
+		Module:      authData.Module,
+		Code:        authData.Code,
+		Sender:      h.Owner(ctx),
+		Nfts:        req.Nfts,
+		Tag:         string(tagBz),
+		OperationID: operationId,
+	}
+
+	return h.svc.BatchDelete(&params)
 }
 
 func (h *NFT) Signer(ctx context.Context) string {

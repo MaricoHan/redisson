@@ -1,6 +1,8 @@
 package dto
 
-import pb "gitlab.bianjie.ai/avata/chains/api/pb/nft"
+import (
+	pb "gitlab.bianjie.ai/avata/chains/api/pb/nft"
+)
 
 type NftOperationHistoryByNftId struct {
 	Page
@@ -63,6 +65,9 @@ type NftClasses struct {
 
 type TxRes struct {
 	TaskId      string `json:"task_id"`
+	OperationId string `json:"operation_id"`
+}
+type BatchTxRes struct {
 	OperationId string `json:"operation_id"`
 }
 
@@ -246,4 +251,43 @@ type DeleteNftByNftId struct {
 	Module      string `json:"module"`
 	Code        string `json:"code"`
 	OperationId string `json:"operation_id"`
+}
+
+type BatchTransferRequest struct {
+	Module     string `json:"module"`
+	ProjectID  uint64 `json:"project_id"`
+	ChainID    uint64 `json:"chain_id"`
+	PlatFormID uint64 `json:"plat_form_id"`
+	Sender     string `json:"owner"`
+	Code       string `json:"code"`
+
+	Data        []*pb.NFTBatchTransferData `json:"data" validate:"required"`
+	Tag         string                     `json:"tag"`
+	OperationID string                     `json:"operation_id" validate:"required"`
+}
+
+type BatchEditRequest struct {
+	Module     string `json:"module"`
+	ProjectID  uint64 `json:"project_id"`
+	ChainID    uint64 `json:"chain_id"`
+	PlatFormID uint64 `json:"plat_form_id"`
+	Sender     string `json:"owner"`
+	Code       string `json:"code"`
+
+	Nfts        []*pb.NFTBatchEditData `json:"nfts"`
+	Tag         string                 `json:"tag"`
+	OperationID string                 `json:"operation_id" validate:"required"`
+}
+
+type BatchDeleteRequest struct {
+	Module     string `json:"module"`
+	ProjectID  uint64 `json:"project_id"`
+	ChainID    uint64 `json:"chain_id"`
+	PlatFormID uint64 `json:"plat_form_id"`
+	Sender     string `json:"owner"`
+	Code       string `json:"code"`
+
+	Nfts        []*pb.NFTIndex `json:"nfts"`
+	Tag         string         `json:"tag"`
+	OperationID string         `json:"operation_id" validate:"required"`
 }
