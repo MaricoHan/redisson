@@ -91,7 +91,7 @@ func (h base) IsValTag(tag string) (bool, error) {
 				return false, errors.New("key must contain only letters , numbers and Chinese characters")
 			}
 		}
-		if len(sValue) == 0 || len(sValue) > 64 {
+		if len([]rune(sValue)) == 0 || len([]rune(sValue)) > 64 {
 			return false, errors.New("value’s length must between 1 and 64")
 		}
 		for _, s := range sValue {
