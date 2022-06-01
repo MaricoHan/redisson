@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -306,23 +307,9 @@ func (h *NFT) BatchTransfer(ctx context.Context, request interface{}) (interface
 		log.Debugf("failed to assert : %v", request)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
 	}
-	// 校验tag
-	var tagBz []byte
-	var err error
-	if req.Tag != nil {
-		tagBz, err = h.ValidateTag(req.Tag)
-		if err != nil {
-			return nil, err
-		}
-	}
-	// 校验operationID
-	operationId := strings.TrimSpace(req.OperationID)
-	if operationId == "" {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
-	}
-	if len(operationId) == 0 || len(operationId) >= 65 {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
-	}
+	tagBz, _ := json.Marshal(req.Tag)
+	req.OperationID = strings.TrimSpace(req.OperationID)
+
 	// 获取账户基本信息
 	authData := h.AuthData(ctx)
 	params := dto.BatchTransferRequest{
@@ -334,7 +321,7 @@ func (h *NFT) BatchTransfer(ctx context.Context, request interface{}) (interface
 		Sender:      h.Owner(ctx),
 		Data:        req.Data,
 		Tag:         string(tagBz),
-		OperationID: operationId,
+		OperationID: req.OperationID,
 	}
 
 	return h.svc.BatchTransfer(&params)
@@ -347,23 +334,9 @@ func (h *NFT) BatchEdit(ctx context.Context, request interface{}) (interface{}, 
 		log.Debugf("failed to assert : %v", request)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
 	}
-	// 校验tag
-	var tagBz []byte
-	var err error
-	if req.Tag != nil {
-		tagBz, err = h.ValidateTag(req.Tag)
-		if err != nil {
-			return nil, err
-		}
-	}
-	// 校验operationID
-	operationId := strings.TrimSpace(req.OperationID)
-	if operationId == "" {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
-	}
-	if len(operationId) == 0 || len(operationId) >= 65 {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
-	}
+	tagBz, _ := json.Marshal(req.Tag)
+	req.OperationID = strings.TrimSpace(req.OperationID)
+
 	// 获取账户基本信息
 	authData := h.AuthData(ctx)
 	params := dto.BatchEditRequest{
@@ -375,7 +348,7 @@ func (h *NFT) BatchEdit(ctx context.Context, request interface{}) (interface{}, 
 		Sender:      h.Owner(ctx),
 		Nfts:        req.Nfts,
 		Tag:         string(tagBz),
-		OperationID: operationId,
+		OperationID: req.OperationID,
 	}
 
 	return h.svc.BatchEdit(&params)
@@ -388,23 +361,9 @@ func (h *NFT) BatchDelete(ctx context.Context, request interface{}) (interface{}
 		log.Debugf("failed to assert : %v", request)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
 	}
-	// 校验tag
-	var tagBz []byte
-	var err error
-	if req.Tag != nil {
-		tagBz, err = h.ValidateTag(req.Tag)
-		if err != nil {
-			return nil, err
-		}
-	}
-	// 校验operationID
-	operationId := strings.TrimSpace(req.OperationID)
-	if operationId == "" {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
-	}
-	if len(operationId) == 0 || len(operationId) >= 65 {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
-	}
+	tagBz, _ := json.Marshal(req.Tag)
+	req.OperationID = strings.TrimSpace(req.OperationID)
+
 	// 获取账户基本信息
 	authData := h.AuthData(ctx)
 	params := dto.BatchDeleteRequest{
@@ -416,7 +375,7 @@ func (h *NFT) BatchDelete(ctx context.Context, request interface{}) (interface{}
 		Sender:      h.Owner(ctx),
 		Nfts:        req.Nfts,
 		Tag:         string(tagBz),
-		OperationID: operationId,
+		OperationID: req.OperationID,
 	}
 
 	return h.svc.BatchDelete(&params)
