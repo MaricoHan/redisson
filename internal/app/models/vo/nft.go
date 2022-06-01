@@ -74,13 +74,13 @@ type BatchTransferRequest struct {
 }
 
 type BatchEditRequest struct {
-	Nfts        []*pb.NFTBatchEditData `json:"nfts"`
+	Nfts        []*pb.NFTBatchEditData `json:"nfts" validate:"required"`
 	Tag         map[string]interface{} `json:"tag"`
 	OperationID string                 `json:"operation_id" validate:"required"`
 }
 
 type BatchDeleteRequest struct {
-	Nfts        []*pb.NFTIndex         `json:"nfts"`
+	Nfts        []*pb.NFTIndex         `json:"nfts" validate:"required"`
 	Tag         map[string]interface{} `json:"tag"`
 	OperationID string                 `json:"operation_id" validate:"required"`
 }

@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/chain"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/project"
@@ -19,7 +20,6 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	"gitlab.bianjie.ai/avata/open-api/internal/pkg/metric"
 )
 
 // 误差时间
@@ -37,42 +37,78 @@ type authHandler struct {
 func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Debug("user request", " method:", r.Method, " url:", r.URL.Path)
 
-	createTime := time.Now()
-	defer func(createTime time.Time) {
-		//监控响应时间
-		interval := time.Now().Sub(createTime)
-		metric.NewPrometheus().ApiHttpRequestRtSeconds.With([]string{
-			"method",
-			r.Method,
-			"uri",
-			r.RequestURI,
-		}...).Observe(float64(interval))
-	}(createTime)
+	//createTime := time.Now()
+	//defer func(createTime time.Time) {
+	//	//监控响应时间
+	//	interval := time.Now().Sub(createTime)
+	//	metric.NewPrometheus().ApiHttpRequestRtSeconds.With([]string{
+	//		"method",
+	//		r.Method,
+	//		"uri",
+	//		r.RequestURI,
+	//	}...).Observe(float64(interval))
+	//}(createTime)
 
 	appKey := r.Header.Get("X-Api-Key")
 
-	//查询project信息
-	projectRepo := project.NewProjectRepo(initialize.MysqlDB)
-	projectInfo, err := projectRepo.GetProjectByApiKey(appKey)
+	//查询缓存
+	var projectInfo entity.Project
+	err := initialize.RedisClient.GetObject(fmt.Sprintf("%s%s", constant.KeyProjectApikey, appKey), &projectInfo)
 	if err != nil {
-		log.Error("server http", "project error:", err)
+		log.Error("server http", "get project cache error:", err)
 		writeInternalResp(w)
 		return
 	}
+	if projectInfo.ID < 1 {
+		//查询project信息
+		projectRepo := project.NewProjectRepo(initialize.MysqlDB)
+		projectInfo, err = projectRepo.GetProjectByApiKey(appKey)
+		if err != nil {
+			log.Error("server http", "project error:", err)
+			writeInternalResp(w)
+			return
+		}
+
+		// save cache
+		if err := initialize.RedisClient.SetObject(fmt.Sprintf("%s%s", constant.KeyProjectApikey, appKey), projectInfo, time.Hour*24); err != nil {
+			log.Error("server http", "save project cache error:", err)
+			writeInternalResp(w)
+			return
+		}
+
+	}
+
 	if projectInfo.ID == 0 {
 		log.Error("server http:", constant.ErrApikey)
 		writeForbiddenResp(w, constant.ErrApikey)
 		return
 	}
 
-	// 获取链信息
-	chainRepo := chain.NewChainRepo(initialize.MysqlDB)
-	chainInfo, err := chainRepo.QueryChainById(projectInfo.ChainID)
+	//查询缓存
+	var chainInfo entity.Chain
+	err = initialize.RedisClient.GetObject(fmt.Sprintf("%s%d", constant.KeyChain, projectInfo.ChainID), &chainInfo)
 	if err != nil {
-		log.Error("server http", "chain error:", err)
+		log.Error("server http", "get chain cache error:", err)
 		writeInternalResp(w)
 		return
 	}
+	if chainInfo.ID < 1 {
+		// 获取链信息
+		chainRepo := chain.NewChainRepo(initialize.MysqlDB)
+		chainInfo, err = chainRepo.QueryChainById(projectInfo.ChainID)
+		if err != nil {
+			log.Error("server http", "chain error:", err)
+			writeInternalResp(w)
+			return
+		}
+		// save cache
+		if err := initialize.RedisClient.SetObject(fmt.Sprintf("%s%d", constant.KeyChain, projectInfo.ChainID), chainInfo, time.Hour*24); err != nil {
+			log.Error("server http", "save project cache error:", err)
+			writeInternalResp(w)
+			return
+		}
+	}
+
 	if chainInfo.ID == 0 {
 		log.Error("server http", "project not exist:")
 		writeInternalResp(w)

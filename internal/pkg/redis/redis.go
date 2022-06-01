@@ -2,10 +2,12 @@ package redis
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	redis "github.com/go-redis/redis/v8"
 	log "github.com/sirupsen/logrus"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
+	"strings"
 	"time"
 )
 
@@ -59,4 +61,26 @@ func (r *RedisClient) Delete(key string) error {
 
 func keyPrefix(key string) string {
 	return fmt.Sprintf("%s:%s", constant.RedisPrefix, key)
+}
+
+// SetObject save a object value to redis by special key
+func (r *RedisClient) SetObject(key string, value interface{}, expiration time.Duration) error {
+	data, err := json.Marshal(value)
+	if err != nil {
+		return err
+	}
+
+	return r.client.Set(context.Background(), keyPrefix(key), data, expiration).Err()
+}
+
+// GetObject return a object value from redis by special key
+func (r *RedisClient) GetObject(key string, value interface{}) error {
+	data, err := r.client.Get(context.Background(), keyPrefix(key)).Bytes()
+	if err != nil && !strings.Contains(err.Error(), "redis: nil") {
+		return err
+	}
+	if data == nil {
+		return nil
+	}
+	return json.Unmarshal(data, value)
 }
