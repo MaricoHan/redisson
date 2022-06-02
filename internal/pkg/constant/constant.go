@@ -19,8 +19,6 @@ const (
 
 	Delete = "DELETE"
 
-	RedisPrefix = "nftp"
-
 	//orderType
 	OrderTypeGas      = "gas"
 	OrderTypeBusiness = "business"
@@ -41,4 +39,11 @@ const (
 	// Enum values for NFTSStatus
 	NFTSStatusActive = "active"
 	NFTSStatusBurned = "burned"
+)
+
+// redis key
+const (
+	RedisPrefix = "open-api"
+	KeyProjectApikey = "project:apikey:"
+	KeyChain   = "chain:"
 )

@@ -77,7 +77,7 @@ func Start(ctx *configs.Context) {
 	//释放所有资源
 	initialize.GrpcConnMap[constant.WenchangNative].Close()
 	initialize.GrpcConnMap[constant.WenchangDDC].Close()
-	initialize.RedisClient.Close()
+
 	log.WithFields(log.Fields{
 		"transport": "http",
 		"http_addr": ctx.Config.App.Addr,
