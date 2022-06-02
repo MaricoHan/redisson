@@ -59,7 +59,7 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	if err := initialize.RedisClient.Set(key, "1", time.Second*11); err != nil {
+	if err := initialize.RedisClient.Expire(key, time.Second*11); err != nil {
 		// 自动过期时间设置大于open-api超时时间
 		log.Error("redis error", "redis set error:", err)
 		writeBadRequestResp(w, constant.ErrInternal)

@@ -91,3 +91,6 @@ func (r *RedisClient) GetObject(key string, value interface{}) error {
 	return json.Unmarshal(data, value)
 }
 
+func (r *RedisClient) Expire(key string,expiration time.Duration) error {
+	return  r.client.Expire(context.Background(),keyPrefix(key),expiration).Err()
+}

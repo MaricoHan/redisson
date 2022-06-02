@@ -19,7 +19,7 @@ const (
 	StructureSignTransactionFailed = "STRUCTURE_SIGN_TRANSACTION_FAILED"
 	ModuleFailed                   = "MODULE_ERROR"
 	AccountFailed                  = "ACCOUNT_ERROR"
-	TimestampTimeout               = "Timestamp_Timeout"
+	TimestampTimeout               = "TIMESTAMP_TIME"
 	DuplicateRequest               = "DUPLICATE_REQUEST"
 
 	// ErrOffset		error msg handle
