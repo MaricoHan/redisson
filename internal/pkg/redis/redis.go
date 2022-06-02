@@ -63,6 +63,12 @@ func keyPrefix(key string) string {
 	return fmt.Sprintf("%s:%s", constant.RedisPrefix, key)
 }
 
+
+func (r *RedisClient) Incr(key string) int64 {
+	return  r.client.Incr(context.Background(),keyPrefix(key)).Val()
+}
+
+
 // SetObject save a object value to redis by special key
 func (r *RedisClient) SetObject(key string, value interface{}, expiration time.Duration) error {
 	data, err := json.Marshal(value)
@@ -83,4 +89,8 @@ func (r *RedisClient) GetObject(key string, value interface{}) error {
 		return nil
 	}
 	return json.Unmarshal(data, value)
+}
+
+func (r *RedisClient) Expire(key string,expiration time.Duration) error {
+	return  r.client.Expire(context.Background(),keyPrefix(key),expiration).Err()
 }

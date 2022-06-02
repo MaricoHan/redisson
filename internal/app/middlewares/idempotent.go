@@ -53,22 +53,19 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 
 	appID := r.Header.Get("X-App-Id")
 	key := fmt.Sprintf("%s:%s", appID, req.OperationID)
-	ok, err := initialize.RedisClient.Has(key)
-	if err != nil {
-		log.Error("redis error", "redis get error:", err)
-		writeInternalResp(w)
+	incr := initialize.RedisClient.Incr(key)
+	if incr > 1 {
+		writeBadRequestResp(w, constant.ErrDuplicate)
 		return
 	}
 
-	if ok {
-		writeBadRequestResp(w, constant.ErrIdempotent)
-		return
-	}
-	if err := initialize.RedisClient.Set(key, "1", time.Second*60); err != nil {
+	if err := initialize.RedisClient.Expire(key, time.Second*11); err != nil {
+		// 自动过期时间设置大于open-api超时时间
 		log.Error("redis error", "redis set error:", err)
 		writeBadRequestResp(w, constant.ErrInternal)
 		return
 	}
 	w.Header().Set("X-Operation-ID", req.OperationID)
+	r.Header.Set("X-App-Operation-Key", fmt.Sprintf("%s", key))
 	h.next.ServeHTTP(w, r)
 }

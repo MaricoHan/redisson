@@ -19,7 +19,8 @@ const (
 	StructureSignTransactionFailed = "STRUCTURE_SIGN_TRANSACTION_FAILED"
 	ModuleFailed                   = "MODULE_ERROR"
 	AccountFailed                  = "ACCOUNT_ERROR"
-	TimestampTimeout               = "Timestamp_Timeout"
+	TimestampTimeout               = "TIMESTAMP_TIME"
+	DuplicateRequest               = "DUPLICATE_REQUEST"
 
 	// ErrOffset		error msg handle
 	ErrName         = "name is a required field"
@@ -41,6 +42,7 @@ var (
 	ErrIdempotent   = Register(RootCodeSpace, FrequentRequestsNotSupports, "frequent requests not supports")
 	ErrNftStatus    = Register(RootCodeSpace, NftStatusAbnormal, ErrNftStatusMsg)
 	ErrTimestamp    = Register(RootCodeSpace, TimestampTimeout, "timestamp is timeout")
+	ErrDuplicate   = Register(RootCodeSpace, DuplicateRequest, "duplicate request")
 )
 
 var usedErrorCodes = map[string]*AppError{}
