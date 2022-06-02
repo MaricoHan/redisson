@@ -6,7 +6,7 @@ import (
 	"regexp"
 
 	log "github.com/sirupsen/logrus"
-	
+
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 )
 

@@ -4,14 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	log "github.com/sirupsen/logrus"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
-	errors2 "gitlab.bianjie.ai/avata/utils/errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"unicode"
 
 	"github.com/asaskevich/govalidator"
+	log "github.com/sirupsen/logrus"
+	errors2 "gitlab.bianjie.ai/avata/utils/errors"
+
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 )
 
 type base struct {
@@ -54,7 +56,7 @@ func (h base) ValidateTag(tags map[string]interface{}) ([]byte, error) {
 		tagBytes, _ = json.Marshal(tags)
 		tag := string(tagBytes)
 		if _, err := h.IsValTag(tag); err != nil {
-			return tagBytes, errors2.New(errors2.ClientParams, err.Error())
+			return tagBytes, errors2.New(errors2.ClientParams, fmt.Sprintf("invalid tag :%s", err.Error()))
 			//return tagBytes, constant.NewAppError(constant.RootCodeSpace, constant.ClientParamsError, err.Error())
 		}
 	}
@@ -89,7 +91,7 @@ func (h base) IsValTag(tag string) (bool, error) {
 				return false, errors.New("key must contain only letters , numbers and Chinese characters")
 			}
 		}
-		if len(sValue) == 0 || len(sValue) > 64 {
+		if len([]rune(sValue)) == 0 || len([]rune(sValue)) > 64 {
 			return false, errors.New("value’s length must between 1 and 64")
 		}
 		for _, s := range sValue {

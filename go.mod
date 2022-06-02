@@ -24,7 +24,7 @@ require (
 )
 
 require (
-	gitlab.bianjie.ai/avata/chains/api v0.0.0-00010101000000-000000000000
+	gitlab.bianjie.ai/avata/chains/api v0.1.1-0.20220527015904-0b2faa331977
 	gitlab.bianjie.ai/avata/utils/errors v0.0.0-00010101000000-000000000000
 )
 
@@ -76,6 +76,6 @@ require (
 
 replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.4
-	gitlab.bianjie.ai/avata/chains/api => gitlab.bianjie.ai/avata/chains/api.git v0.1.1-0.20220512082817-bf2d90fad663
-	gitlab.bianjie.ai/avata/utils/errors => gitlab.bianjie.ai/avata/utils/errors.git v0.1.1-0.20220512102620-75e462267829
+	gitlab.bianjie.ai/avata/chains/api => gitlab.bianjie.ai/avata/chains/api.git v0.0.0-20220530113249-cc7beb9d3af2
+	gitlab.bianjie.ai/avata/utils/errors => gitlab.bianjie.ai/avata/utils/errors.git v0.1.1-0.20220530071014-8eb83bc3c976
 )

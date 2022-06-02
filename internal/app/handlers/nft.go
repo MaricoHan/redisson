@@ -2,20 +2,28 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
+	"strings"
+
+	log "github.com/sirupsen/logrus"
+
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
-	"strings"
 )
 
 type INft interface {
 	CreateNft(ctx context.Context, _ interface{}) (interface{}, error)
+	BatchCreateNft(ctx context.Context, _ interface{}) (interface{}, error)
 	EditNftByNftId(ctx context.Context, _ interface{}) (interface{}, error)
 	DeleteNftByNftId(ctx context.Context, _ interface{}) (interface{}, error)
 	Nfts(ctx context.Context, _ interface{}) (interface{}, error)
 	NftByNftId(ctx context.Context, _ interface{}) (interface{}, error)
+	BatchTransfer(ctx context.Context, _ interface{}) (interface{}, error)
+	BatchEdit(ctx context.Context, _ interface{}) (interface{}, error)
+	BatchDelete(ctx context.Context, _ interface{}) (interface{}, error)
 }
 
 type NFT struct {
@@ -80,6 +88,57 @@ func (h *NFT) CreateNft(ctx context.Context, request interface{}) (interface{}, 
 	params.Amount = 1
 
 	return h.svc.Create(params)
+}
+
+func (h *NFT) BatchCreateNft(ctx context.Context, request interface{}) (interface{}, error) {
+	// 校验参数 start
+	req := request.(*vo.BatchCreateNftsRequest)
+
+	name := strings.TrimSpace(req.Name)
+	uri := strings.TrimSpace(req.Uri)
+	uriHash := strings.TrimSpace(req.UriHash)
+	data := strings.TrimSpace(req.Data)
+	recipients := req.Recipients
+	operationId := strings.TrimSpace(req.OperationID)
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
+
+	tagBytes, err := h.ValidateTag(req.Tag)
+	if err != nil {
+		return nil, err
+	}
+
+	if name == "" {
+		return nil, errors2.New(errors2.ClientParams, constant.ErrName)
+	}
+
+	if len(operationId) == 0 || len(operationId) >= 65 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
+	}
+
+	if err := h.base.UriCheck(uri); err != nil {
+		return nil, err
+	}
+
+	authData := h.AuthData(ctx)
+	params := dto.BatchCreateNfts{
+		ChainID:     authData.ChainId,
+		ProjectID:   authData.ProjectId,
+		PlatFormID:  authData.PlatformId,
+		Module:      authData.Module,
+		ClassId:     h.ClassId(ctx),
+		Name:        name,
+		Uri:         uri,
+		UriHash:     uriHash,
+		Data:        data,
+		Recipients:  recipients,
+		Tag:         tagBytes,
+		Code:        authData.Code,
+		OperationId: operationId,
+	}
+
+	return h.svc.BatchCreate(params)
 }
 
 // EditNftByNftId Edit a nft and return the edited result
@@ -169,7 +228,7 @@ func (h *NFT) DeleteNftByNftId(ctx context.Context, request interface{}) (interf
 	return h.svc.Delete(params)
 }
 
-// Nfts return class list
+// Nfts return nft list
 func (h *NFT) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 	status, err := h.Status(ctx)
 	if err != nil {
@@ -188,6 +247,7 @@ func (h *NFT) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 		TxHash:     h.TxHash(ctx),
 		Status:     status,
 		Code:       authData.Code,
+		Name:       h.Name(ctx),
 	}
 	offset, err := h.Offset(ctx)
 	if err != nil {
@@ -240,6 +300,87 @@ func (h *NFT) NftByNftId(ctx context.Context, _ interface{}) (interface{}, error
 
 }
 
+func (h *NFT) BatchTransfer(ctx context.Context, request interface{}) (interface{}, error) {
+	// 接收请求
+	req, ok := request.(*vo.BatchTransferRequest)
+	if !ok {
+		log.Debugf("failed to assert : %v", request)
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	}
+	tagBz, _ := json.Marshal(req.Tag)
+	req.OperationID = strings.TrimSpace(req.OperationID)
+
+	// 获取账户基本信息
+	authData := h.AuthData(ctx)
+	params := dto.BatchTransferRequest{
+		ChainID:     authData.ChainId,
+		ProjectID:   authData.ProjectId,
+		PlatFormID:  authData.PlatformId,
+		Module:      authData.Module,
+		Code:        authData.Code,
+		Sender:      h.Owner(ctx),
+		Data:        req.Data,
+		Tag:         string(tagBz),
+		OperationID: req.OperationID,
+	}
+
+	return h.svc.BatchTransfer(&params)
+}
+
+func (h *NFT) BatchEdit(ctx context.Context, request interface{}) (interface{}, error) {
+	// 接收请求
+	req, ok := request.(*vo.BatchEditRequest)
+	if !ok {
+		log.Debugf("failed to assert : %v", request)
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	}
+	tagBz, _ := json.Marshal(req.Tag)
+	req.OperationID = strings.TrimSpace(req.OperationID)
+
+	// 获取账户基本信息
+	authData := h.AuthData(ctx)
+	params := dto.BatchEditRequest{
+		ChainID:     authData.ChainId,
+		ProjectID:   authData.ProjectId,
+		PlatFormID:  authData.PlatformId,
+		Module:      authData.Module,
+		Code:        authData.Code,
+		Sender:      h.Owner(ctx),
+		Nfts:        req.Nfts,
+		Tag:         string(tagBz),
+		OperationID: req.OperationID,
+	}
+
+	return h.svc.BatchEdit(&params)
+}
+
+func (h *NFT) BatchDelete(ctx context.Context, request interface{}) (interface{}, error) {
+	// 接收请求
+	req, ok := request.(*vo.BatchDeleteRequest)
+	if !ok {
+		log.Debugf("failed to assert : %v", request)
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	}
+	tagBz, _ := json.Marshal(req.Tag)
+	req.OperationID = strings.TrimSpace(req.OperationID)
+
+	// 获取账户基本信息
+	authData := h.AuthData(ctx)
+	params := dto.BatchDeleteRequest{
+		ChainID:     authData.ChainId,
+		ProjectID:   authData.ProjectId,
+		PlatFormID:  authData.PlatformId,
+		Module:      authData.Module,
+		Code:        authData.Code,
+		Sender:      h.Owner(ctx),
+		Nfts:        req.Nfts,
+		Tag:         string(tagBz),
+		OperationID: req.OperationID,
+	}
+
+	return h.svc.BatchDelete(&params)
+}
+
 func (h *NFT) Signer(ctx context.Context) string {
 	signer := ctx.Value("signer")
 	if signer == nil || signer == "" {
@@ -282,6 +423,14 @@ func (h *NFT) ClassId(ctx context.Context) string {
 	}
 	return classId.(string)
 
+}
+
+func (h *NFT) Name(ctx context.Context) string {
+	name := ctx.Value("name")
+	if name == nil {
+		return ""
+	}
+	return name.(string)
 }
 
 func (h *NFT) Owner(ctx context.Context) string {

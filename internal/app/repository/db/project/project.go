@@ -41,7 +41,7 @@ func (p *ProjectRepo) Insert(project entity.Project) error {
 	return p.db.Create(&project).Error
 }
 
-func (p *ProjectRepo) GetProjectByApiKey(apiKey string) (project *entity.Project, err error) {
+func (p *ProjectRepo) GetProjectByApiKey(apiKey string) (project entity.Project, err error) {
 	err = p.db.Where("api_key=?", apiKey).Find(&project).Error
 	return project, err
 }

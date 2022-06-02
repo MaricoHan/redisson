@@ -4,8 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
-	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
+
 	"net/http"
 	"reflect"
 	"strconv"
@@ -21,6 +20,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 )
 
@@ -157,6 +158,7 @@ func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFu
 		}
 		p := reflect.ValueOf(req).Elem()
 		p.Set(reflect.Zero(p.Type()))
+
 		tmpReq := DeepClone(req)
 		if r.Method != constant.Delete {
 			if err := json.NewDecoder(r.Body).Decode(&tmpReq); err != nil {
@@ -183,7 +185,6 @@ func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFu
 				return nil, errors2.New(errors2.ClientParams, Translate(err))
 			}
 		}
-
 		return tmpReq, nil
 	}
 }

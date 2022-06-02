@@ -2,11 +2,12 @@ package handlers
 
 import (
 	"context"
+	"strings"
+
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
-	"strings"
 )
 
 type INftClass interface {
@@ -32,6 +33,7 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 	req := request.(*vo.CreateNftClassRequest)
 
 	name := strings.TrimSpace(req.Name)
+	classId := strings.TrimSpace(req.ClassId)
 	description := strings.TrimSpace(req.Description)
 	symbol := strings.TrimSpace(req.Symbol)
 	uri := strings.TrimSpace(req.Uri)
@@ -103,6 +105,7 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 		Tag:         tagBytes,
 		Code:        authData.Code,
 		OperationId: operationId,
+		ClassId:     classId,
 	}
 	return h.svc.CreateNFTClass(params)
 }
