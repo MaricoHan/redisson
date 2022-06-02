@@ -22,7 +22,7 @@ func NewServer(ctx *configs.Context) Server {
 	middlewares := []func(http.Handler) http.Handler{
 		//should be last one
 		middlewares.RecoverMiddleware,
-		//middlewares.IdempotentMiddleware,
+		middlewares.IdempotentMiddleware,
 		middlewares.AuthMiddleware,
 	}
 

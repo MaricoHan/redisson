@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -193,7 +194,17 @@ func (c Controller) encodeResponse(ctx context.Context, w http.ResponseWriter, r
 	response := constant.Response{
 		Data: resp,
 	}
-	//method := ctx.Value(httptransport.ContextKeyRequestMethod)
+	method := ctx.Value(httptransport.ContextKeyRequestMethod)
+	if method == "POST" {
+		operationIdKey := ctx.Value("X-App-Operation-Key")
+		operationIdKey = operationIdKey.([]string)[0]
+		if operationIdKey != "" {
+			// 清除operation缓存
+			if err := initialize.RedisClient.Delete(operationIdKey.(string)); err != nil {
+				log.Infof("del operation id key：%s,err:%s", operationIdKey, err)
+			}
+		}
+	}
 	//uri := ctx.Value(httptransport.ContextKeyRequestURI)
 	//metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "200"}...).Add(1)
 
@@ -237,7 +248,17 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
 		var response constant.Response
-		//method := ctx.Value(httptransport.ContextKeyRequestMethod)
+		method := ctx.Value(httptransport.ContextKeyRequestMethod)
+		if method == "POST" {
+			operationIdKey := ctx.Value("X-App-Operation-Key")
+			operationIdKey = operationIdKey.([]string)[0]
+			if operationIdKey != "" {
+				// 清除operation缓存
+				if err := initialize.RedisClient.Delete(operationIdKey.(string)); err != nil {
+					log.Infof("del operation id key：%s,err:%s", operationIdKey, err)
+				}
+			}
+		}
 		//uri := ctx.Value(httptransport.ContextKeyRequestURI)
 		urlPath := ctx.Value(httptransport.ContextKeyRequestPath)
 		url := strings.SplitN(urlPath.(string)[1:], "/", 3)

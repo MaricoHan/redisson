@@ -60,3 +60,7 @@ func (r *RedisClient) Delete(key string) error {
 func keyPrefix(key string) string {
 	return fmt.Sprintf("%s:%s", constant.RedisPrefix, key)
 }
+
+func (r *RedisClient) Incr(key string) int64 {
+	return  r.client.Incr(context.Background(),keyPrefix(key)).Val()
+}
