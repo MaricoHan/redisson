@@ -43,7 +43,7 @@ const (
 
 // redis key
 const (
-	RedisPrefix = "nftp"
+	RedisPrefix = "open-api"
 	KeyProjectApikey = "project:apikey:"
 	KeyChain   = "chain:"
 )
