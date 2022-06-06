@@ -42,8 +42,12 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		writeBadRequestResp(w, constant.ErrParams)
 		return
 	}
-	if len(req.OperationID) == 0 {
-		writeBadRequestResp(w, constant.NewAppError(constant.RootCodeSpace, errors2.StrToCode[errors2.DuplicateRequest], "operation_id is a required field"))
+
+
+	if len(req.OperationID) < 1 {
+		// 部分接口operation_id 不是必填
+		// 不存在operation_id，具有验证规则由目标微服务处理
+		h.next.ServeHTTP(w, r)
 		return
 	}
 	if len(req.OperationID) >= 65 {

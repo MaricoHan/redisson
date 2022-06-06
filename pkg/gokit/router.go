@@ -198,11 +198,13 @@ func (c Controller) encodeResponse(ctx context.Context, w http.ResponseWriter, r
 	method := ctx.Value(httptransport.ContextKeyRequestMethod)
 	if method == "POST" {
 		operationIdKey := ctx.Value("X-App-Operation-Key")
-		operationIdKey = operationIdKey.([]string)[0]
-		if operationIdKey != "" {
-			// 清除operation缓存
-			if err := initialize.RedisClient.Delete(operationIdKey.(string)); err != nil {
-				log.Infof("del operation id key：%s,err:%s", operationIdKey, err)
+		if operationIdKey != nil {
+			operationIdKey = operationIdKey.([]string)[0]
+			if operationIdKey != "" {
+				// 清除operation缓存
+				if err := initialize.RedisClient.Delete(operationIdKey.(string)); err != nil {
+					log.Infof("del operation id key：%s,err:%s", operationIdKey, err)
+				}
 			}
 		}
 	}
@@ -252,11 +254,13 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 		method := ctx.Value(httptransport.ContextKeyRequestMethod)
 		if method == "POST" {
 			operationIdKey := ctx.Value("X-App-Operation-Key")
-			operationIdKey = operationIdKey.([]string)[0]
-			if operationIdKey != "" {
-				// 清除operation缓存
-				if err := initialize.RedisClient.Delete(operationIdKey.(string)); err != nil {
-					log.Infof("del operation id key：%s,err:%s", operationIdKey, err)
+			if operationIdKey != nil {
+				operationIdKey = operationIdKey.([]string)[0]
+				if operationIdKey != "" {
+					// 清除operation缓存
+					if err := initialize.RedisClient.Delete(operationIdKey.(string)); err != nil {
+						log.Infof("del operation id key：%s,err:%s", operationIdKey, err)
+					}
 				}
 			}
 		}
