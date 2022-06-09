@@ -59,7 +59,7 @@ func (h *NFT) CreateNft(ctx context.Context, request interface{}) (interface{}, 
 		return nil, errors2.New(errors2.ClientParams, constant.ErrName)
 	}
 
-	if len(operationId) == 0 || len(operationId) >= 65 {
+	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
 	}
 
@@ -113,7 +113,7 @@ func (h *NFT) BatchCreateNft(ctx context.Context, request interface{}) (interfac
 		return nil, errors2.New(errors2.ClientParams, constant.ErrName)
 	}
 
-	if len(operationId) == 0 || len(operationId) >= 65 {
+	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
 	}
 
@@ -159,7 +159,7 @@ func (h *NFT) EditNftByNftId(ctx context.Context, request interface{}) (interfac
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
 	}
 
-	if len(operationId) == 0 || len(operationId) >= 65 {
+	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
 	}
 	//check start
@@ -208,7 +208,7 @@ func (h *NFT) DeleteNftByNftId(ctx context.Context, request interface{}) (interf
 	if operationId == "" {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
 	}
-	if len(operationId) == 0 || len(operationId) >= 65 {
+	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
 	}
 	authData := h.AuthData(ctx)

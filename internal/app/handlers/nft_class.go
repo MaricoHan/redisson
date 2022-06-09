@@ -57,7 +57,7 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrNameLen)
 	}
 
-	if len(operationId) == 0 || len(operationId) >= 65 {
+	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
 	}
 
