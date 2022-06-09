@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
-	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -50,10 +49,10 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		h.next.ServeHTTP(w, r)
 		return
 	}
-	if len(req.OperationID) >= 65 {
-		writeBadRequestResp(w, constant.NewAppError(constant.RootCodeSpace, errors2.StrToCode[errors2.DuplicateRequest], "operation_id does not comply with the rules"))
-		return
-	}
+	//if len(req.OperationID) >= 65 {
+	//	writeBadRequestResp(w, constant.NewAppError(constant.RootCodeSpace, errors2.StrToCode[errors2.DuplicateRequest], "operation_id does not comply with the rules"))
+	//	return
+	//}
 
 	appID := r.Header.Get("X-App-Id")
 	key := fmt.Sprintf("%s:%s", appID, req.OperationID)
