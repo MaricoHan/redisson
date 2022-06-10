@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
-	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -42,14 +41,18 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		writeBadRequestResp(w, constant.ErrParams)
 		return
 	}
-	if len(req.OperationID) == 0 {
-		writeBadRequestResp(w, constant.NewAppError(constant.RootCodeSpace, errors2.StrToCode[errors2.DuplicateRequest], "operation_id is a required field"))
+
+
+	if len(req.OperationID) < 1 {
+		// 部分接口operation_id 不是必填
+		// 不存在operation_id请求，具体验证规则由目标微服务处理
+		h.next.ServeHTTP(w, r)
 		return
 	}
-	if len(req.OperationID) >= 65 {
-		writeBadRequestResp(w, constant.NewAppError(constant.RootCodeSpace, errors2.StrToCode[errors2.DuplicateRequest], "operation_id does not comply with the rules"))
-		return
-	}
+	//if len(req.OperationID) >= 65 {
+	//	writeBadRequestResp(w, constant.NewAppError(constant.RootCodeSpace, errors2.StrToCode[errors2.DuplicateRequest], "operation_id does not comply with the rules"))
+	//	return
+	//}
 
 	appID := r.Header.Get("X-App-Id")
 	key := fmt.Sprintf("%s:%s", appID, req.OperationID)
