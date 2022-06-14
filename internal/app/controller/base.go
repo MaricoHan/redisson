@@ -5,6 +5,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/services/mt"
+
 	kit "gitlab.bianjie.ai/avata/open-api/pkg/gokit"
 )
 
@@ -24,6 +26,7 @@ func GetAllControllers(logger *log.Logger) []kit.IController {
 		NewNftClassController(baseController, handlers.NewNFTClass(services.NewNFTClass(logger))),
 		NewNftController(baseController, handlers.NewNft(services.NewNFT(logger))),
 		NewNftTransferController(baseController, handlers.NewNFTTransfer(services.NewNFTTransfer(logger))),
+		NewMTController(baseController, handlers.NewMT(mt.NewMT(logger))),
 		NewEmptionController(baseController, handlers.NewBusiness(services.NewBusiness(logger))),
 	}
 
