@@ -3,14 +3,14 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
+	service "gitlab.bianjie.ai/avata/open-api/internal/app/services"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
 
-	dto "gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/mt"
 	vo "gitlab.bianjie.ai/avata/open-api/internal/app/models/vo/mt"
 
-	service "gitlab.bianjie.ai/avata/open-api/internal/app/services/mt"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 )
 

@@ -1,28 +1,36 @@
 package controller
 
 import (
-	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
-	kit "gitlab.bianjie.ai/avata/open-api/pkg/gokit"
 	"net/http"
+
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
+	
+	kit "gitlab.bianjie.ai/avata/open-api/pkg/gokit"
+	
+	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
 )
 
-type MtClassController struct {
+type MTClassController struct {
 	BaseController
-	handler handlers.IMtClass
+	handler handlers.IMTClass
 }
 
-func NewMtClassController(bc BaseController, handler handlers.IMtClass) kit.IController {
-	return MtClassController{bc, handler}
+func NewMTClassController(bc BaseController, handler handlers.IMTClass) kit.IController {
+	return MTClassController{bc, handler}
 }
 
-// GetEndpoints implement the method GetRouter of the interfce IController
-func (m MtClassController) GetEndpoints() []kit.Endpoint {
+func (m MTClassController) GetEndpoints() []kit.Endpoint {
 	var ends []kit.Endpoint
 	ends = append(ends,
 		kit.Endpoint{
 			URI:     "/mt/classes",
 			Method:  http.MethodGet,
 			Handler: m.makeHandler(m.handler.List, nil),
+		},
+		kit.Endpoint{
+			URI:     "/mt/classes",
+			Method:  http.MethodPost,
+			Handler: m.makeHandler(m.handler.CreateMTClass, &vo.CreateMTClassRequest{}),
 		},
 		kit.Endpoint{
 			URI:     "/mt/classes/{mt_class_id}",

@@ -1,8 +1,4 @@
-package mt
-
-import (
-	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
-)
+package dto
 
 type MTClassShowRequest struct {
 	ProjectID uint64 `json:"project_id"`
@@ -30,7 +26,7 @@ type MTClassShowResponse struct {
 }
 
 type MTClassListRequest struct {
-	dto.Page
+	Page
 	ProjectID   uint64 `json:"project_id"`
 	MtClassName string `json:"mt_class_name"` // MT ID
 	MtClassId   string `json:"mt_class_id"`   // 类别ID
@@ -44,12 +40,12 @@ type MTClassListRequest struct {
 }
 
 type MTClassListResponse struct {
-	dto.PageRes
+	PageRes
 	MtClasses []*MTClass `json:"mt_classes"`
 }
 
 type MTClass struct {
-	dto.Page
+	Page
 	MtClassId   string `json:"mt_class_id"`
 	MtClassName string `json:"mt_class_name"`
 	Owner       string `json:"owner"`

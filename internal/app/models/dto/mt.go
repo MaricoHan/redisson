@@ -1,8 +1,7 @@
-package mt
+package dto
 
 import (
 	pb "gitlab.bianjie.ai/avata/chains/api/pb/mt"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 )
 
 type IssueRequest struct {
@@ -53,7 +52,7 @@ type MTShowResponse struct {
 }
 
 type MTListRequest struct {
-	dto.Page
+	Page
 	ProjectID uint64 `json:"project_id"`
 	MtId      string `json:"mt_id"`       // MT ID
 	MtClassId string `json:"mt_class_id"` // 类别ID
@@ -64,7 +63,7 @@ type MTListRequest struct {
 }
 
 type MTListResponse struct {
-	dto.PageRes
+	PageRes
 	Mts []*MT `json:"mts"`
 }
 
@@ -76,4 +75,17 @@ type MT struct {
 	MtCount     uint64 `json:"mt_count"`      // MT 流通总量
 	OwnerCount  uint64 `json:"owner_count"`   // MT 拥有者数量
 	Timestamp   string `json:"timestamp"`
+}
+
+type CreateMTClass struct {
+	Name        string `json:"name"`
+	Data        string `json:"data"`
+	Owner       string `json:"owner"`
+	ProjectID   uint64 `json:"project_id"`
+	ChainID     uint64 `json:"chain_id"`
+	PlatFormID  uint64 `json:"plat_form_id"`
+	Tag         []byte `json:"tag"`
+	Module      string `json:"module"`
+	Code        string `json:"code"`
+	OperationId string `json:"operation_id"`
 }

@@ -1,16 +1,15 @@
-package mt
+package services
 
 import (
 	"context"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	pb "gitlab.bianjie.ai/avata/chains/api/pb/mt"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 	"time"
-
-	dto "gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/mt"
 )
 
 type IMT interface {
@@ -141,7 +140,7 @@ func (M MT) Show(params *dto.MTShowRequest) (*dto.MTShowResponse, error) {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
 	result := &dto.MTShowResponse{
-		MtId:        resp.Data.MtId,
+		MtId:        string(resp.Data.MtId),
 		MtClassId:   resp.Data.MtClassId,
 		MtClassName: resp.Data.MtClassName,
 		Data:        resp.Data.Data,

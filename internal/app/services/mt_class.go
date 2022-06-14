@@ -1,32 +1,71 @@
-package mt
+package services
 
 import (
 	"context"
 	"fmt"
+	"time"
+
 	log "github.com/sirupsen/logrus"
 	pb "gitlab.bianjie.ai/avata/chains/api/pb/mt_class"
-	dto "gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/mt"
+	errors2 "gitlab.bianjie.ai/avata/utils/errors"
+
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
-	errors2 "gitlab.bianjie.ai/avata/utils/errors"
-	"time"
+
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 )
 
 type IMTClass interface {
 	Show(params *dto.MTClassShowRequest) (*dto.MTClassShowResponse, error)
 	List(params *dto.MTClassListRequest) (*dto.MTClassListResponse, error)
-}
-type MTClass struct {
-	logger *log.Entry
+	CreateMTClass(params dto.CreateMTClass) (*dto.BatchTxRes, error) // 创建
 }
 
-func NewMTClass(logger *log.Logger) *MTClass {
-	return &MTClass{
-		logger: logger.WithField("service", "mt"),
+type mtClass struct {
+	logger *log.Logger
+}
+
+func NewMTClass(logger *log.Logger) *mtClass {
+	return &mtClass{logger: logger}
+}
+
+func (m *mtClass) CreateMTClass(params dto.CreateMTClass) (*dto.BatchTxRes, error) {
+	logFields := log.Fields{}
+	logFields["model"] = "mt_class"
+	logFields["func"] = "CreateMTClass"
+	logFields["module"] = params.Module
+	logFields["code"] = params.Code
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+	req := pb.MTClassCreateRequest{
+		Name:        params.Name,
+		Owner:       params.Owner,
+		Data:        params.Data,
+		ProjectId:   params.ProjectID,
+		Tag:         string(params.Tag),
+		OperationId: params.OperationId,
 	}
+
+	resp := &pb.MTClassCreateResponse{}
+	var err error
+	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+	grpcClient, ok := initialize.MTClassClientMap[mapKey]
+	if !ok {
+		log.WithFields(logFields).Error(errors2.ErrService)
+		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
+	}
+	resp, err = grpcClient.Create(ctx, &req)
+	if err != nil {
+		log.WithFields(logFields).Error("request err:", err.Error())
+		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+	}
+	return &dto.BatchTxRes{OperationId: resp.OperationId}, nil
 }
 
-func (M MTClass) Show(params *dto.MTClassShowRequest) (*dto.MTClassShowResponse, error) {
+func (m *mtClass) Show(params *dto.MTClassShowRequest) (*dto.MTClassShowResponse, error) {
 	logFields := log.Fields{}
 	logFields["model"] = "mt_class"
 	logFields["func"] = "Show"
@@ -74,7 +113,7 @@ func (M MTClass) Show(params *dto.MTClassShowRequest) (*dto.MTClassShowResponse,
 	return result, nil
 }
 
-func (M MTClass) List(params *dto.MTClassListRequest) (*dto.MTClassListResponse, error) {
+func (m *mtClass) List(params *dto.MTClassListRequest) (*dto.MTClassListResponse, error) {
 	logFields := log.Fields{}
 	logFields["model"] = "mt_class"
 	logFields["func"] = "List"
