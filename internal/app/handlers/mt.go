@@ -17,6 +17,8 @@ import (
 type IMT interface {
 	Issue(ctx context.Context, request interface{}) (response interface{}, err error)
 	Mint(ctx context.Context, request interface{}) (response interface{}, err error)
+	Show(ctx context.Context, request interface{}) (response interface{}, err error)
+	List(ctx context.Context, request interface{}) (response interface{}, err error)
 }
 type MT struct {
 	base
@@ -59,6 +61,66 @@ func (m MT) Issue(ctx context.Context, request interface{}) (response interface{
 }
 
 func (m MT) Mint(ctx context.Context, request interface{}) (response interface{}, err error) {
+	// 接收请求
+	req, ok := request.(*vo.MintRequest)
+	if !ok {
+		log.Debugf("failed to assert : %v", request)
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	}
+	// 转换tag
+	var tagBz []byte
+	if len(req.Tag) > 0 {
+		tagBz, _ = json.Marshal(req.Tag)
+	}
+	req.OperationID = strings.TrimSpace(req.OperationID)
+
+	// 获取账户基本信息
+	authData := m.AuthData(ctx)
+	param := dto.MintRequest{
+		Code:        authData.Code,
+		Module:      authData.Module,
+		ProjectID:   authData.ProjectId,
+		ClassID:     m.ClassID(ctx),
+		MTID:        m.MTID(ctx),
+		Recipients:  req.Recipients,
+		Tag:         string(tagBz),
+		OperationID: req.OperationID,
+	}
+
+	return m.svc.Mint(&param)
+}
+
+func (m MT) Show(ctx context.Context, request interface{}) (response interface{}, err error) {
+	// 接收请求
+	req, ok := request.(*vo.MintRequest)
+	if !ok {
+		log.Debugf("failed to assert : %v", request)
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	}
+	// 转换tag
+	var tagBz []byte
+	if len(req.Tag) > 0 {
+		tagBz, _ = json.Marshal(req.Tag)
+	}
+	req.OperationID = strings.TrimSpace(req.OperationID)
+
+	// 获取账户基本信息
+	authData := m.AuthData(ctx)
+	param := dto.MintRequest{
+		Code:        authData.Code,
+		Module:      authData.Module,
+		ProjectID:   authData.ProjectId,
+		ClassID:     m.ClassID(ctx),
+		MTID:        m.MTID(ctx),
+		Recipients:  req.Recipients,
+		Tag:         string(tagBz),
+		OperationID: req.OperationID,
+	}
+
+	return m.svc.Mint(&param)
+}
+
+func (m MT) List(ctx context.Context, request interface{}) (response interface{}, err error) {
 	// 接收请求
 	req, ok := request.(*vo.MintRequest)
 	if !ok {

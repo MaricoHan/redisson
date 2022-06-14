@@ -28,5 +28,15 @@ func (m MTController) GetEndpoints() []kit.Endpoint {
 			Method:  http.MethodPost,
 			Handler: m.makeHandler(m.handler.Mint, &vo.IssueRequest{}),
 		},
+		{
+			URI:     "/mt/mts",
+			Method:  http.MethodGet,
+			Handler: m.makeHandler(m.handler.List, nil),
+		},
+		{
+			URI:     "/mt/mts/{mt_class_id}/{mt_id}",
+			Method:  http.MethodGet,
+			Handler: m.makeHandler(m.handler.Show, nil),
+		},
 	}
 }

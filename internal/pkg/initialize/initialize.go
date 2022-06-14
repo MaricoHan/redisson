@@ -8,6 +8,7 @@ import (
 	pb_class "gitlab.bianjie.ai/avata/chains/api/pb/class"
 	pb_msgs "gitlab.bianjie.ai/avata/chains/api/pb/msgs"
 	pb_mt "gitlab.bianjie.ai/avata/chains/api/pb/mt"
+	pb_mt_class "gitlab.bianjie.ai/avata/chains/api/pb/mt_class"
 	pb_nft "gitlab.bianjie.ai/avata/chains/api/pb/nft"
 
 	pb_tx "gitlab.bianjie.ai/avata/chains/api/pb/tx"
@@ -31,6 +32,7 @@ var NftClientMap map[string]pb_nft.NFTClient
 var ClassClientMap map[string]pb_class.ClassClient
 var TxClientMap map[string]pb_tx.TxClient
 var MTClientMap map[string]pb_mt.MTClient
+var MTClassClientMap map[string]pb_mt_class.MTClassClient
 
 func Logger(cfg *configs.Config) *log.Logger {
 	if cfg.App.Env == constant.EnvPro {
@@ -119,6 +121,10 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	MTClientMap = make(map[string]pb_mt.MTClient)
 	MTClientMap[constant.WenchangDDC] = pb_mt.NewMTClient(GrpcConnMap[constant.WenchangDDC])
 	MTClientMap[constant.WenchangNative] = pb_mt.NewMTClient(GrpcConnMap[constant.WenchangNative])
+	// 初始化mt_class
+	MTClassClientMap = make(map[string]pb_mt_class.MTClassClient)
+	MTClassClientMap[constant.WenchangDDC] = pb_mt_class.NewMTClassClient(GrpcConnMap[constant.WenchangDDC])
+	MTClassClientMap[constant.WenchangNative] = pb_mt_class.NewMTClassClient(GrpcConnMap[constant.WenchangNative])
 }
 
 func InitRedisClient(cfg *configs.Config, logger *log.Logger) {
