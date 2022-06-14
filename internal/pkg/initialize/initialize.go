@@ -14,6 +14,7 @@ import (
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/redis"
 	"gitlab.bianjie.ai/avata/open-api/pkg/logs"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"time"
@@ -75,13 +76,18 @@ func InitMysqlDB(cfg *configs.Config, logger *log.Logger) {
 }
 
 func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
+	var kacp = keepalive.ClientParameters{
+		Time:                10 * time.Second, // send pings every 10 seconds if there is no activity
+		Timeout:             time.Second,      // wait 1 second for ping ack before considering the connection dead
+		PermitWithoutStream: true,             // send pings even without active streams
+	}
 	GrpcConnMap = make(map[string]*grpc.ClientConn)
-	wenNativeConn, err := grpc.Dial(cfg.GrpcClient.WenchangchainNativeAddr, grpc.WithInsecure())
+	wenNativeConn, err := grpc.Dial(cfg.GrpcClient.WenchangchainNativeAddr, grpc.WithInsecure(),grpc.WithKeepaliveParams(kacp))
 	if err != nil {
 		logger.Fatal("get wenchangchain-ddc grpc connect failed, err: ", err.Error())
 	}
 	GrpcConnMap[constant.WenchangNative] = wenNativeConn
-	wenDDcConn, err := grpc.Dial(cfg.GrpcClient.WenchangchainDDCAddr, grpc.WithInsecure())
+	wenDDcConn, err := grpc.Dial(cfg.GrpcClient.WenchangchainDDCAddr, grpc.WithInsecure(),grpc.WithKeepaliveParams(kacp))
 	if err != nil {
 		logger.Fatal("get wenchangchain-ddc grpc connect failed, err: ", err.Error())
 	}
