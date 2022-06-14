@@ -29,4 +29,4 @@ db = 11
 
 [grpc_client]
 wenchangchain_ddc_addr = "192.168.150.41:10000"
-wenchangchain_native_addr = "192.168.150.42:10000"
+wenchangchain_native_addr = "localhost:10000"
