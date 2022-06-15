@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	log "github.com/sirupsen/logrus"
+	"github.com/volatiletech/sqlboiler/types"
 	pb "gitlab.bianjie.ai/avata/chains/api/pb/tx"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
@@ -79,7 +80,20 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 		//根据 type 返回交易对象 id
 		result.BlockHeight = resp.Detail.BlockHeight
 		result.Timestamp = resp.Detail.Timestamp
-		switch resp.Detail.OperationType {
+		typeJsonNft := types.JSON{}
+		typeJsonMt := types.JSON{}
+		if resp.Detail.Nft != "" {
+			err = json.Unmarshal([]byte(resp.Detail.Nft), &typeJsonNft)
+		}
+		if resp.Detail.Mt != "" {
+			err = json.Unmarshal([]byte(resp.Detail.Mt), &typeJsonMt)
+		}
+		if err != nil {
+			return nil, err
+		}
+		result.Nft = typeJsonNft
+		result.Mt = typeJsonMt
+		//switch resp.Detail.OperationType {
 
 		//case pb.OperationType_name[0]:
 		//	result.ClassID = resp.Detail.ClassId
@@ -88,7 +102,7 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 		//default:
 		//	result.ClassID = resp.Detail.ClassId
 		//	result.NftID = resp.Detail.NftId
-		}
+		//}
 	}
 	return result, nil
 }

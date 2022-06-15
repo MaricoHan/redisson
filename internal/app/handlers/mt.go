@@ -92,63 +92,60 @@ func (m MT) Mint(ctx context.Context, request interface{}) (response interface{}
 }
 
 func (m MT) Show(ctx context.Context, request interface{}) (response interface{}, err error) {
-	// 接收请求
-	req, ok := request.(*vo.MintRequest)
-	if !ok {
-		log.Debugf("failed to assert : %v", request)
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
-	}
-	// 转换tag
-	var tagBz []byte
-	if len(req.Tag) > 0 {
-		tagBz, _ = json.Marshal(req.Tag)
-	}
-	req.OperationID = strings.TrimSpace(req.OperationID)
-
 	// 获取账户基本信息
 	authData := m.AuthData(ctx)
-	param := dto.MintRequest{
-		Code:        authData.Code,
-		Module:      authData.Module,
-		ProjectID:   authData.ProjectId,
-		ClassID:     m.ClassID(ctx),
-		MTID:        m.MTID(ctx),
-		Recipients:  req.Recipients,
-		Tag:         string(tagBz),
-		OperationID: req.OperationID,
+	param := dto.MTShowRequest{
+		ProjectID: authData.ProjectId,
+		ClassID:   m.ClassID(ctx),
+		MTID:      m.MTID(ctx),
+		Module:    authData.Module,
+		Code:      authData.Code,
 	}
 
-	return m.svc.Mint(&param)
+	return m.svc.Show(&param)
 }
 
 func (m MT) List(ctx context.Context, request interface{}) (response interface{}, err error) {
-	// 接收请求
-	req, ok := request.(*vo.MintRequest)
-	if !ok {
-		log.Debugf("failed to assert : %v", request)
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
-	}
-	// 转换tag
-	var tagBz []byte
-	if len(req.Tag) > 0 {
-		tagBz, _ = json.Marshal(req.Tag)
-	}
-	req.OperationID = strings.TrimSpace(req.OperationID)
-
 	// 获取账户基本信息
-	authData := m.AuthData(ctx)
-	param := dto.MintRequest{
-		Code:        authData.Code,
-		Module:      authData.Module,
-		ProjectID:   authData.ProjectId,
-		ClassID:     m.ClassID(ctx),
-		MTID:        m.MTID(ctx),
-		Recipients:  req.Recipients,
-		Tag:         string(tagBz),
-		OperationID: req.OperationID,
+	authData := h.AuthData(ctx)
+	params := dto.MTListRequest{
+		ProjectID: authData.ProjectId,
+		MtId:      h.MTID(ctx),
+		MtClassId: h.ClassID(ctx),
+		Issuer:    h.Issuer(ctx),
+		TxHash:    h.TxHash(ctx),
+		Module:    authData.Module,
+		Code:      authData.Code,
+	}
+	offset, err := h.Offset(ctx)
+	if err != nil {
+		return nil, err
+	}
+	params.Offset = offset
+
+	limit, err := h.Limit(ctx)
+	if err != nil {
+		return nil, err
+	}
+	params.Limit = limit
+
+	if params.Limit == 0 {
+		params.Limit = 10
 	}
 
-	return m.svc.Mint(&param)
+	startDateR := h.StartDate(ctx)
+	if startDateR != "" {
+		params.StartDate = startDateR
+	}
+
+	endDateR := h.EndDate(ctx)
+	if endDateR != "" {
+
+		params.EndDate = endDateR
+	}
+
+	params.SortBy = h.SortBy(ctx)
+	return h.svc.List(&params)
 }
 
 func (MT) ClassID(ctx context.Context) string {
@@ -166,4 +163,21 @@ func (MT) MTID(ctx context.Context) string {
 		return ""
 	}
 	return mtID.(string)
+}
+
+func (MT) Issuer(ctx context.Context) string {
+	val := ctx.Value("issuer")
+
+	if val == nil {
+		return ""
+	}
+	return val.(string)
+}
+func (MT) TxHash(ctx context.Context) string {
+	val := ctx.Value("tx_hash")
+
+	if val == nil {
+		return ""
+	}
+	return val.(string)
 }

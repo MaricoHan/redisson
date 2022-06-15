@@ -7,8 +7,6 @@ import (
 	pb_business "gitlab.bianjie.ai/avata/chains/api/pb/buy"
 	pb_class "gitlab.bianjie.ai/avata/chains/api/pb/class"
 	pb_msgs "gitlab.bianjie.ai/avata/chains/api/pb/msgs"
-	pb_mt "gitlab.bianjie.ai/avata/chains/api/pb/mt"
-	pb_mt_class "gitlab.bianjie.ai/avata/chains/api/pb/mt_class"
 	pb_nft "gitlab.bianjie.ai/avata/chains/api/pb/nft"
 
 	pb_mt_msgs "gitlab.bianjie.ai/avata/chains/api/pb/mt_msgs"

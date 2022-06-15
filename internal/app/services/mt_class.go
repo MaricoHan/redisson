@@ -95,20 +95,20 @@ func (m *mtClass) Show(params *dto.MTClassShowRequest) (*dto.MTClassShowResponse
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
 	result := &dto.MTClassShowResponse{
-		Id:          resp.Detail.Id,
+		//Id:          resp.Detail.Id,
 		MtClassId:   resp.Detail.MtClassId,
 		MtClassName: resp.Detail.MtClassName,
 		Owner:       resp.Detail.Owner,
 		Data:        resp.Detail.Data,
-		Status:      resp.Detail.Status,
-		LockedBy:    resp.Detail.LockedBy,
-		TxHash:      resp.Detail.TxHash,
-		Timestamp:   resp.Detail.Timestamp,
-		MtCount:     resp.Detail.MtCount,
-		Extra1:      resp.Detail.Extra1,
-		Extra2:      resp.Detail.Extra2,
-		CreatedAt:   resp.Detail.CreatedAt,
-		UpdatedAt:   resp.Detail.UpdatedAt,
+		//Status:      resp.Detail.Status,
+		//LockedBy:    resp.Detail.LockedBy,
+		TxHash:    resp.Detail.TxHash,
+		Timestamp: resp.Detail.Timestamp,
+		MtCount:   resp.Detail.MtCount,
+		//Extra1:      resp.Detail.Extra1,
+		//Extra2:      resp.Detail.Extra2,
+		//CreatedAt:   resp.Detail.CreatedAt,
+		//UpdatedAt:   resp.Detail.UpdatedAt,
 	}
 	return result, nil
 }
