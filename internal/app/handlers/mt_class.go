@@ -51,10 +51,6 @@ func (h MTClass) CreateMTClass(ctx context.Context, request interface{}) (interf
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrDataLen)
 	}
 
-	if owner == "" {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrOwner)
-	}
-
 	if len([]rune(owner)) > 128 {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOwnerLen)
 	}
