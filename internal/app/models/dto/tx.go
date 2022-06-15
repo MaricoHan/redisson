@@ -12,11 +12,12 @@ type TxResultByTxHash struct {
 }
 
 type TxResultByTxHashRes struct {
-	Type   string `json:"type"`
-	TxHash string `json:"tx_hash"`
-	Status int32  `json:"status"`
-	//ClassID     string                 `json:"class_id"`
-	//NftID       string                 `json:"nft_id"`
+	Module      string                 `json:"module"`
+	Type        string                 `json:"type"`
+	TxHash      string                 `json:"tx_hash"`
+	Status      int32                  `json:"status"`
+	ClassID     string                 `json:"class_id"`
+	NftID       string                 `json:"nft_id"`
 	Nft         types.JSON             `json:"nft"`
 	Mt          types.JSON             `json:"mt"`
 	Message     string                 `json:"message"`
