@@ -148,8 +148,8 @@ func (M MT) Show(params *dto.MTShowRequest) (*dto.MTShowResponse, error) {
 		Data:        resp.Data.Data,
 		OwnerCount:  resp.Data.OwnerCount,
 		IssueData:   resp.Data.IssueData,
-		MtTimes:     resp.Data.MtCount,
-		MintCount:   resp.Data.MintCount,
+		MtCount:     resp.Data.MtCount,
+		MintTimes:   resp.Data.MintCount,
 	}
 	return result, nil
 }
