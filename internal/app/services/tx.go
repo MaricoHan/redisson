@@ -56,7 +56,8 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 	}
 	result := &dto.TxResultByTxHashRes{}
 	status := pb.Status_value[resp.Detail.Status]
-	result.Type = resp.Detail.OperationType
+	result.Module = resp.Detail.Module
+	result.Type = resp.Detail.Operation
 	result.TxHash = ""
 	result.Status = status
 	if status == int32(pb.Status_success) || status == int32(pb.Status_failed) {
