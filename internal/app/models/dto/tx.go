@@ -16,8 +16,8 @@ type TxResultByTxHashRes struct {
 	Type        string                 `json:"type"`
 	TxHash      string                 `json:"tx_hash"`
 	Status      int32                  `json:"status"`
-	Nft         []*Json                `json:"nft"`
-	Mt          []*Json                `json:"mt"`
+	Nft         *types.JSON            `json:"nft"`
+	Mt          *types.JSON            `json:"mt"`
 	Message     string                 `json:"message"`
 	BlockHeight uint64                 `json:"block_height"`
 	Timestamp   string                 `json:"timestamp"`

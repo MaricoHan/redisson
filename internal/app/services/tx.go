@@ -83,23 +83,20 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 		result.Timestamp = resp.Detail.Timestamp
 		typeJsonNft := types.JSON{}
 		typeJsonMt := types.JSON{}
-		nfts := []*dto.Json{}
-		mts := []*dto.Json{}
+
 		if resp.Detail.Nft != "" {
 			err = json.Unmarshal([]byte(resp.Detail.Nft), &typeJsonNft)
 			if err != nil {
 				return nil, err
 			}
-			nfts = append(nfts, &dto.Json{typeJsonNft})
-			result.Nft = nfts
+			result.Nft = &typeJsonNft
 		}
 		if resp.Detail.Mt != "" {
 			err = json.Unmarshal([]byte(resp.Detail.Mt), &typeJsonMt)
 			if err != nil {
 				return nil, err
 			}
-			mts = append(mts, &dto.Json{typeJsonMt})
-			result.Mt = mts
+			result.Mt = &typeJsonMt
 		}
 	}
 	return result, nil
