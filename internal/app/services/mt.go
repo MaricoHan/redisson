@@ -149,7 +149,7 @@ func (M MT) Show(params *dto.MTShowRequest) (*dto.MTShowResponse, error) {
 		OwnerCount:  resp.Data.OwnerCount,
 		IssueData:   resp.Data.IssueData,
 		MtCount:     resp.Data.MtCount,
-		MintCount:   resp.Data.MintCount,
+		MintTimes:   resp.Data.MintCount,
 	}
 	return result, nil
 }
@@ -211,9 +211,9 @@ func (M MT) List(params *dto.MTListRequest) (*dto.MTListResponse, error) {
 			MtClassId:   item.MtClassId,
 			MtClassName: item.MtClassName,
 			Issuer:      item.Issuer,
-			MtCount:     item.MtCount,
-			OwnerCount:  item.OwnerCount,
-			Timestamp:   item.Timestamp,
+			//MtCount:     item.MtCount,
+			OwnerCount: item.OwnerCount,
+			Timestamp:  item.Timestamp,
 		}
 		mts = append(mts, mt)
 	}

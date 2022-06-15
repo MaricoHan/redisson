@@ -49,7 +49,7 @@ type MTShowResponse struct {
 	OwnerCount  uint64        `json:"owner_count"`   // MT 拥有者数量(AVATA平台内)
 	IssueData   *pb.IssueData `json:"issue_data"`
 	MtCount     uint64        `json:"mt_count"`   // mt 当前流通总量
-	MintCount   uint64        `json:"mint_count"` // 发行次数
+	MintTimes   uint64        `json:"mint_times"` // 发行次数
 }
 
 type MTListRequest struct {
@@ -73,9 +73,9 @@ type MT struct {
 	MtClassId   string `json:"mt_class_id"`   // MT 类别 ID
 	MtClassName string `json:"mt_class_name"` // MT 类别名称
 	Issuer      string `json:"issuer"`        // 发行者
-	MtCount     uint64 `json:"mt_count"`      // MT 流通总量
-	OwnerCount  uint64 `json:"owner_count"`   // MT 拥有者数量
-	Timestamp   string `json:"timestamp"`
+	//MtCount     uint64 `json:"mt_count"`      // MT 流通总量
+	OwnerCount uint64 `json:"owner_count"` // MT 拥有者数量
+	Timestamp  string `json:"timestamp"`
 }
 
 type CreateMTClass struct {
