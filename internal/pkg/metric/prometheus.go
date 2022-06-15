@@ -9,8 +9,8 @@ import (
 )
 
 type prometheusModel struct {
-	ApiMysqlException       *metricsprometheus.Gauge     // api_mysql_exception 监控mysql连接
-	ApiRedisException       *metricsprometheus.Gauge     // api_redis_exception 监控redis连接
+	ApiMysqlException *metricsprometheus.Gauge // api_mysql_exception 监控mysql连接
+	ApiRedisException *metricsprometheus.Gauge // api_redis_exception 监控redis连接
 	//ApiHttpRequestCount     *metricsprometheus.Counter   // api_http_request_total api调用次数
 	ApiHttpRequestRtSeconds *metricsprometheus.Histogram // api_http_request_rt_seconds api响应时间
 	ApiRootBalanceAmount    *metricsprometheus.Gauge     // api_root_balance_amount 系统root账户余额
