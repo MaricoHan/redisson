@@ -91,21 +91,21 @@ func (m MT) Mint(ctx context.Context, request interface{}) (response interface{}
 	return m.svc.Mint(&param)
 }
 
-func (m MT) Show(ctx context.Context, request interface{}) (response interface{}, err error) {
+func (h MT) Show(ctx context.Context, request interface{}) (response interface{}, err error) {
 	// 获取账户基本信息
-	authData := m.AuthData(ctx)
+	authData := h.AuthData(ctx)
 	param := dto.MTShowRequest{
 		ProjectID: authData.ProjectId,
-		ClassID:   m.ClassID(ctx),
-		MTID:      m.MTID(ctx),
+		ClassID:   h.ClassID(ctx),
+		MTID:      h.MTID(ctx),
 		Module:    authData.Module,
 		Code:      authData.Code,
 	}
 
-	return m.svc.Show(&param)
+	return h.svc.Show(&param)
 }
 
-func (m MT) List(ctx context.Context, request interface{}) (response interface{}, err error) {
+func (h MT) List(ctx context.Context, request interface{}) (response interface{}, err error) {
 	// 获取账户基本信息
 	authData := h.AuthData(ctx)
 	params := dto.MTListRequest{
