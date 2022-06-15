@@ -9,20 +9,20 @@ type MTClassShowRequest struct {
 }
 
 type MTClassShowResponse struct {
-	Id          uint64 `json:"id"`            // 主键ID
+	//Id          uint64 `json:"id"`            // 主键ID
 	MtClassId   string `json:"mt_class_id"`   // 类别ID
 	MtClassName string `json:"mt_class_name"` // 类别名称
 	Owner       string `json:"owner"`         // 类别所有者
 	Data        string `json:"data"`          // 类别拓展数据
-	Status      string `json:"status"`        // 状态
-	LockedBy    uint64 `json:"locked_by"`     // 被锁定的交易id
-	TxHash      string `json:"tx_hash"`       // 交易哈希
-	Timestamp   string `json:"timestamp"`     // 创建时间戳
-	MtCount     uint64 `json:"mt_count"`      // MT 类别包含的 MT 总量(AVATA平台内)
-	Extra1      string `json:"extra1"`        // 扩展字段1
-	Extra2      string `json:"extra2"`        // 扩展字段2
-	CreatedAt   string `json:"created_at"`    // 数据存入日期
-	UpdatedAt   string `json:"updated_at"`
+	//Status      string `json:"status"`        // 状态
+	//LockedBy    uint64 `json:"locked_by"`     // 被锁定的交易id
+	TxHash    string `json:"tx_hash"`   // 交易哈希
+	Timestamp string `json:"timestamp"` // 创建时间戳
+	MtCount   uint64 `json:"mt_count"`  // MT 类别包含的 MT 总量(AVATA平台内)
+	//Extra1      string `json:"extra1"`        // 扩展字段1
+	//Extra2      string `json:"extra2"`        // 扩展字段2
+	//CreatedAt   string `json:"created_at"`    // 数据存入日期
+	//UpdatedAt   string `json:"updated_at"`
 }
 
 type MTClassListRequest struct {
