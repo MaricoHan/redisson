@@ -16,12 +16,14 @@ type TxResultByTxHashRes struct {
 	Type        string                 `json:"type"`
 	TxHash      string                 `json:"tx_hash"`
 	Status      int32                  `json:"status"`
-	ClassID     string                 `json:"class_id"`
-	NftID       string                 `json:"nft_id"`
-	Nft         types.JSON             `json:"nft"`
-	Mt          types.JSON             `json:"mt"`
+	Nft         []*Json                `json:"nft"`
+	Mt          []*Json                `json:"mt"`
 	Message     string                 `json:"message"`
 	BlockHeight uint64                 `json:"block_height"`
 	Timestamp   string                 `json:"timestamp"`
 	Tag         map[string]interface{} `json:"tag"`
+}
+
+type Json struct {
+	types.JSON
 }
