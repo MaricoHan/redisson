@@ -43,10 +43,6 @@ func (h MTClass) CreateMTClass(ctx context.Context, request interface{}) (interf
 		return nil, err
 	}
 
-	if len([]rune(name)) < 1 || len([]rune(name)) > 64 {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrNameLen)
-	}
-
 	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
 	}
