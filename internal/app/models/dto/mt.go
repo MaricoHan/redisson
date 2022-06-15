@@ -48,8 +48,8 @@ type MTShowResponse struct {
 	Data        string        `json:"data"`          // 自定义链上元数据
 	OwnerCount  uint64        `json:"owner_count"`   // MT 拥有者数量(AVATA平台内)
 	IssueData   *pb.IssueData `json:"issue_data"`
-	MtTimes     uint64        `json:"mt_times"`   // mt 当前流通总量
-	MintCount   uint64        `json:"mint_count"` // 发行次数
+	MtCount     uint64        `json:"mt_count"`   // mt 当前流通总量
+	MintTimes   uint64        `json:"mint_times"` // 发行次数
 }
 
 type MTListRequest struct {
