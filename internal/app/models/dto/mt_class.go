@@ -45,7 +45,6 @@ type MTClassListResponse struct {
 }
 
 type MTClass struct {
-	Page
 	MtClassId   string `json:"mt_class_id"`
 	MtClassName string `json:"mt_class_name"`
 	Owner       string `json:"owner"`
