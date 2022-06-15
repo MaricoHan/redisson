@@ -67,6 +67,7 @@ type TxRes struct {
 	TaskId      string `json:"task_id"`
 	OperationId string `json:"operation_id"`
 }
+
 type BatchTxRes struct {
 	OperationId string `json:"operation_id"`
 }

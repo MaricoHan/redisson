@@ -81,13 +81,13 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 		result.Timestamp = resp.Detail.Timestamp
 		switch resp.Detail.OperationType {
 
-		case pb.OperationType_name[0]:
-			result.ClassID = resp.Detail.ClassId
-		case pb.OperationType_name[5]:
-			result.ClassID = resp.Detail.ClassId
-		default:
-			result.ClassID = resp.Detail.ClassId
-			result.NftID = resp.Detail.NftId
+		//case pb.OperationType_name[0]:
+		//	result.ClassID = resp.Detail.ClassId
+		//case pb.OperationType_name[5]:
+		//	result.ClassID = resp.Detail.ClassId
+		//default:
+		//	result.ClassID = resp.Detail.ClassId
+		//	result.NftID = resp.Detail.NftId
 		}
 	}
 	return result, nil

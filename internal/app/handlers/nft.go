@@ -307,7 +307,11 @@ func (h *NFT) BatchTransfer(ctx context.Context, request interface{}) (interface
 		log.Debugf("failed to assert : %v", request)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
 	}
-	tagBz, _ := json.Marshal(req.Tag)
+	// 转换tag
+	var tagBz []byte
+	if len(req.Tag) > 0 {
+		tagBz, _ = json.Marshal(req.Tag)
+	}
 	req.OperationID = strings.TrimSpace(req.OperationID)
 
 	// 获取账户基本信息
@@ -334,7 +338,11 @@ func (h *NFT) BatchEdit(ctx context.Context, request interface{}) (interface{}, 
 		log.Debugf("failed to assert : %v", request)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
 	}
-	tagBz, _ := json.Marshal(req.Tag)
+	// 转换tag
+	var tagBz []byte
+	if len(req.Tag) > 0 {
+		tagBz, _ = json.Marshal(req.Tag)
+	}
 	req.OperationID = strings.TrimSpace(req.OperationID)
 
 	// 获取账户基本信息
@@ -361,7 +369,11 @@ func (h *NFT) BatchDelete(ctx context.Context, request interface{}) (interface{}
 		log.Debugf("failed to assert : %v", request)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
 	}
-	tagBz, _ := json.Marshal(req.Tag)
+	// 转换tag
+	var tagBz []byte
+	if len(req.Tag) > 0 {
+		tagBz, _ = json.Marshal(req.Tag)
+	}
 	req.OperationID = strings.TrimSpace(req.OperationID)
 
 	// 获取账户基本信息
