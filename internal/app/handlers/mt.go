@@ -52,7 +52,8 @@ func (m MT) Issue(ctx context.Context, request interface{}) (response interface{
 		Code:        authData.Code,
 		ClassID:     m.ClassID(ctx),
 		Metadata:    req.Metadata,
-		Recipients:  req.Recipients,
+		Amount:      req.Amount,
+		Recipient:   req.Recipient,
 		Tag:         string(tagBz),
 		OperationID: req.OperationID,
 	}
@@ -104,7 +105,7 @@ func (m MT) Show(ctx context.Context, request interface{}) (response interface{}
 	return m.svc.Show(&param)
 }
 
-func (h MT) List(ctx context.Context, request interface{}) (response interface{}, err error) {
+func (m MT) List(ctx context.Context, request interface{}) (response interface{}, err error) {
 	// 获取账户基本信息
 	authData := h.AuthData(ctx)
 	params := dto.MTListRequest{

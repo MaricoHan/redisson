@@ -26,7 +26,7 @@ func (m MTController) GetEndpoints() []kit.Endpoint {
 		{
 			URI:     "/mt/mts-mint/{class_id}/{mt_id}",
 			Method:  http.MethodPost,
-			Handler: m.makeHandler(m.handler.Mint, &vo.IssueRequest{}),
+			Handler: m.makeHandler(m.handler.Mint, &vo.MintRequest{}),
 		},
 		{
 			URI:     "/mt/mts",

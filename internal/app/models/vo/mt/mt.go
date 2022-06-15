@@ -7,7 +7,8 @@ import (
 type IssueRequest struct {
 	Name        string                 `json:"name"`
 	Metadata    string                 `json:"data"`
-	Recipients  []*pb.Recipient        `json:"recipients"`
+	Amount      uint64                 `json:"amount"`
+	Recipient   string                 `json:"recipient"`
 	Tag         map[string]interface{} `json:"tag"`
 	OperationID string                 `json:"operation_id"`
 }

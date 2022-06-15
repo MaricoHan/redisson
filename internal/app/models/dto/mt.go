@@ -5,14 +5,15 @@ import (
 )
 
 type IssueRequest struct {
-	Code        string          `json:"code"`
-	Module      string          `json:"module"`
-	ProjectID   uint64          `json:"project_id"`
-	ClassID     string          `json:"class_id"`
-	Metadata    string          `json:"metadata"`
-	Recipients  []*pb.Recipient `json:"recipients"`
-	Tag         string          `json:"tag"`
-	OperationID string          `json:"operation_id" validate:"required"`
+	Code        string `json:"code"`
+	Module      string `json:"module"`
+	ProjectID   uint64 `json:"project_id"`
+	ClassID     string `json:"class_id"`
+	Metadata    string `json:"metadata"`
+	Amount      uint64 `json:"amount"`
+	Recipient   string `json:"recipient"`
+	Tag         string `json:"tag"`
+	OperationID string `json:"operation_id" validate:"required"`
 }
 type IssueResponse struct {
 	OperationID string `json:"operation_id"`
@@ -88,4 +89,32 @@ type CreateMTClass struct {
 	Module      string `json:"module"`
 	Code        string `json:"code"`
 	OperationId string `json:"operation_id"`
+}
+
+type MTOperationHistoryByMTId struct {
+	Page
+	ClassID    string `json:"class_id"`
+	MTId       string `json:"mt_id"`
+	Signer     string `json:"signer"`
+	Txhash     string `json:"tx_hash"`
+	Operation  string `json:"operation"`
+	ProjectID  uint64 `json:"project_id"`
+	ChainID    uint64 `json:"chain_id"`
+	PlatFormID uint64 `json:"plat_form_id"`
+	Module     string `json:"module"`
+	Code       string `json:"code"`
+}
+
+type MTOperationHistoryByMTIdRes struct {
+	PageRes
+	OperationRecords []*MTOperationRecord `json:"operation_records"`
+}
+
+type MTOperationRecord struct {
+	Txhash    string `json:"tx_hash"`
+	Operation string `json:"operation"`
+	Signer    string `json:"signer"`
+	Recipient string `json:"recipient"`
+	Amount    uint64 `json:"amount"`
+	Timestamp string `json:"timestamp"`
 }

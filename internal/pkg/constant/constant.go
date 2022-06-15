@@ -43,7 +43,7 @@ const (
 
 // redis key
 const (
-	RedisPrefix = "open-api"
+	RedisPrefix      = "open-api"
 	KeyProjectApikey = "project:apikey:"
-	KeyChain   = "chain:"
+	KeyChain         = "chain:"
 )

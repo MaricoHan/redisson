@@ -42,7 +42,6 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-
 	if len(req.OperationID) < 1 {
 		// 部分接口operation_id 不是必填
 		// 不存在operation_id请求，具体验证规则由目标微服务处理
