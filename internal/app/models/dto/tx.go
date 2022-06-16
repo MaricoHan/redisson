@@ -1,5 +1,7 @@
 package dto
 
+import "github.com/volatiletech/sqlboiler/types"
+
 type TxResultByTxHash struct {
 	TaskId     string `json:"task_id"`
 	ProjectID  uint64 `json:"project_id"`
@@ -10,13 +12,18 @@ type TxResultByTxHash struct {
 }
 
 type TxResultByTxHashRes struct {
+	Module      string                 `json:"module"`
 	Type        string                 `json:"type"`
 	TxHash      string                 `json:"tx_hash"`
 	Status      int32                  `json:"status"`
-	ClassID     string                 `json:"class_id"`
-	NftID       string                 `json:"nft_id"`
+	Nft         *types.JSON            `json:"nft"`
+	Mt          *types.JSON            `json:"mt"`
 	Message     string                 `json:"message"`
 	BlockHeight uint64                 `json:"block_height"`
 	Timestamp   string                 `json:"timestamp"`
 	Tag         map[string]interface{} `json:"tag"`
+}
+
+type Json struct {
+	types.JSON
 }

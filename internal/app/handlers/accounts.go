@@ -36,7 +36,7 @@ func (h *Account) BatchCreateAccount(ctx context.Context, request interface{}) (
 		return nil, errors.New(errors.ClientParams, errors.ErrOperationID)
 	}
 
-	if len(operationId) == 0 || len(operationId) >= 65 {
+	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
 		return nil, errors.New(errors.ClientParams, errors.ErrOperationIDLen)
 	}
 
@@ -79,7 +79,7 @@ func (h *Account) CreateAccount(ctx context.Context, request interface{}) (inter
 		return nil, errors.New(errors.ClientParams, errors.ErrNameFormat)
 	}
 
-	if len(operationId) == 0 || len(operationId) >= 65 {
+	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
 		return nil, errors.New(errors.ClientParams, errors.ErrOperationIDLen)
 	}
 	authData := h.AuthData(ctx)

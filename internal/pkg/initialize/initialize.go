@@ -7,6 +7,9 @@ import (
 	pb_business "gitlab.bianjie.ai/avata/chains/api/pb/buy"
 	pb_class "gitlab.bianjie.ai/avata/chains/api/pb/class"
 	pb_msgs "gitlab.bianjie.ai/avata/chains/api/pb/msgs"
+	pb_mt "gitlab.bianjie.ai/avata/chains/api/pb/mt"
+	pb_mt_class "gitlab.bianjie.ai/avata/chains/api/pb/mt_class"
+	pb_mt_msgs "gitlab.bianjie.ai/avata/chains/api/pb/mt_msgs"
 	pb_nft "gitlab.bianjie.ai/avata/chains/api/pb/nft"
 	pb_tx "gitlab.bianjie.ai/avata/chains/api/pb/tx"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
@@ -29,6 +32,9 @@ var MsgsClientMap map[string]pb_msgs.MSGSClient
 var NftClientMap map[string]pb_nft.NFTClient
 var ClassClientMap map[string]pb_class.ClassClient
 var TxClientMap map[string]pb_tx.TxClient
+var MTClientMap map[string]pb_mt.MTClient
+var MTClassClientMap map[string]pb_mt_class.MTClassClient
+var MTMsgsClientMap map[string]pb_mt_msgs.MTMSGSClient
 
 func Logger(cfg *configs.Config) *log.Logger {
 	if cfg.App.Env == constant.EnvPro {
@@ -82,12 +88,12 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 		PermitWithoutStream: true,             // send pings even without active streams
 	}
 	GrpcConnMap = make(map[string]*grpc.ClientConn)
-	wenNativeConn, err := grpc.Dial(cfg.GrpcClient.WenchangchainNativeAddr, grpc.WithInsecure(),grpc.WithKeepaliveParams(kacp))
+	wenNativeConn, err := grpc.Dial(cfg.GrpcClient.WenchangchainNativeAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp))
 	if err != nil {
 		logger.Fatal("get wenchangchain-ddc grpc connect failed, err: ", err.Error())
 	}
 	GrpcConnMap[constant.WenchangNative] = wenNativeConn
-	wenDDcConn, err := grpc.Dial(cfg.GrpcClient.WenchangchainDDCAddr, grpc.WithInsecure(),grpc.WithKeepaliveParams(kacp))
+	wenDDcConn, err := grpc.Dial(cfg.GrpcClient.WenchangchainDDCAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp))
 	if err != nil {
 		logger.Fatal("get wenchangchain-ddc grpc connect failed, err: ", err.Error())
 	}
@@ -117,6 +123,17 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	TxClientMap = make(map[string]pb_tx.TxClient)
 	TxClientMap[constant.WenchangDDC] = pb_tx.NewTxClient(GrpcConnMap[constant.WenchangDDC])
 	TxClientMap[constant.WenchangNative] = pb_tx.NewTxClient(GrpcConnMap[constant.WenchangNative])
+	// 初始化mt
+	MTClientMap = make(map[string]pb_mt.MTClient)
+	MTClientMap[constant.WenchangDDC] = pb_mt.NewMTClient(GrpcConnMap[constant.WenchangDDC])
+	MTClientMap[constant.WenchangNative] = pb_mt.NewMTClient(GrpcConnMap[constant.WenchangNative])
+	// 初始化mt_class
+	MTClassClientMap = make(map[string]pb_mt_class.MTClassClient)
+	MTClassClientMap[constant.WenchangDDC] = pb_mt_class.NewMTClassClient(GrpcConnMap[constant.WenchangDDC])
+	MTClassClientMap[constant.WenchangNative] = pb_mt_class.NewMTClassClient(GrpcConnMap[constant.WenchangNative])
+	// 初始化mt_msgs
+	MTMsgsClientMap = make(map[string]pb_mt_msgs.MTMSGSClient)
+	MTMsgsClientMap[constant.WenchangNative] = pb_mt_msgs.NewMTMSGSClient(GrpcConnMap[constant.WenchangNative])
 }
 
 func InitRedisClient(cfg *configs.Config, logger *log.Logger) {
