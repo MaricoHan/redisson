@@ -2,6 +2,14 @@ package initialize
 
 import (
 	"fmt"
+	"time"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/grpclog"
+	"google.golang.org/grpc/keepalive"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+
 	log "github.com/sirupsen/logrus"
 	pb_account "gitlab.bianjie.ai/avata/chains/api/pb/account"
 	pb_business "gitlab.bianjie.ai/avata/chains/api/pb/buy"
@@ -13,12 +21,6 @@ import (
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/redis"
 	"gitlab.bianjie.ai/avata/open-api/pkg/logs"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/grpclog"
-	"google.golang.org/grpc/keepalive"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-	"time"
 )
 
 var RedisClient *redis.RedisClient
@@ -85,10 +87,9 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	GrpcConnMap = make(map[string]*grpc.ClientConn)
 	myLogger := NewMyLoggerV2(99, logger)
 	grpclog.SetLoggerV2(&myLogger)
-	wenNativeConn, err := grpc.Dial(cfg.GrpcClient.WenchangchainNativeAddr,
-		grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp))
+	wenNativeConn, err := grpc.Dial(cfg.GrpcClient.WenchangchainNativeAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp))
 	if err != nil {
-		logger.Fatal("get wenchangchain-ddc grpc connect failed, err: ", err.Error())
+		logger.Fatal("get wenchangchain-native grpc connect failed, err: ", err.Error())
 	}
 	GrpcConnMap[constant.WenchangNative] = wenNativeConn
 	wenDDcConn, err := grpc.Dial(cfg.GrpcClient.WenchangchainDDCAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp))

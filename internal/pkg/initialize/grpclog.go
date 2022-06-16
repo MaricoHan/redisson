@@ -14,7 +14,7 @@ func (c *myLoggerV2) V(l int) bool {
 }
 
 func NewMyLoggerV2(v int, logger *log.Logger) myLoggerV2 {
-	return myLoggerV2{log: log.WithField("service", "grpc"), v: v}
+	return myLoggerV2{log: logger.WithField("service", "grpc"), v: v}
 }
 
 func (c *myLoggerV2) Info(args ...interface{}) {
