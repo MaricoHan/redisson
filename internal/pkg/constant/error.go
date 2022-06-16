@@ -42,7 +42,7 @@ var (
 	ErrIdempotent   = Register(RootCodeSpace, FrequentRequestsNotSupports, "frequent requests not supports")
 	ErrNftStatus    = Register(RootCodeSpace, NftStatusAbnormal, ErrNftStatusMsg)
 	ErrTimestamp    = Register(RootCodeSpace, TimestampTimeout, "timestamp is timeout")
-	ErrDuplicate   = Register(RootCodeSpace, DuplicateRequest, "duplicate request")
+	ErrDuplicate    = Register(RootCodeSpace, DuplicateRequest, "duplicate request")
 )
 
 var usedErrorCodes = map[string]*AppError{}
