@@ -14,6 +14,7 @@ import (
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/redis"
 	"gitlab.bianjie.ai/avata/open-api/pkg/logs"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/keepalive"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -82,12 +83,15 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 		PermitWithoutStream: true,             // send pings even without active streams
 	}
 	GrpcConnMap = make(map[string]*grpc.ClientConn)
-	wenNativeConn, err := grpc.Dial(cfg.GrpcClient.WenchangchainNativeAddr, grpc.WithInsecure(),grpc.WithKeepaliveParams(kacp))
+	myLogger := NewMyLoggerV2(99, logger)
+	grpclog.SetLoggerV2(&myLogger)
+	wenNativeConn, err := grpc.Dial(cfg.GrpcClient.WenchangchainNativeAddr,
+		grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp))
 	if err != nil {
 		logger.Fatal("get wenchangchain-ddc grpc connect failed, err: ", err.Error())
 	}
 	GrpcConnMap[constant.WenchangNative] = wenNativeConn
-	wenDDcConn, err := grpc.Dial(cfg.GrpcClient.WenchangchainDDCAddr, grpc.WithInsecure(),grpc.WithKeepaliveParams(kacp))
+	wenDDcConn, err := grpc.Dial(cfg.GrpcClient.WenchangchainDDCAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp))
 	if err != nil {
 		logger.Fatal("get wenchangchain-ddc grpc connect failed, err: ", err.Error())
 	}
