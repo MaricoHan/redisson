@@ -90,6 +90,8 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 				return nil, err
 			}
 			result.Nft = &typeJsonNft
+			result.NftID = resp.Detail.NftId
+			result.ClassID = resp.Detail.ClassId
 		}
 		if resp.Detail.Mt != "" {
 			err = json.Unmarshal([]byte(resp.Detail.Mt), &typeJsonMt)
