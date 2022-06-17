@@ -1,7 +1,9 @@
 package initialize
 
 import (
+	"context"
 	"fmt"
+	"google.golang.org/grpc/balancer/roundrobin"
 	"time"
 
 	"google.golang.org/grpc"
@@ -87,12 +89,12 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	GrpcConnMap = make(map[string]*grpc.ClientConn)
 	myLogger := NewMyLoggerV2(99, logger)
 	grpclog.SetLoggerV2(&myLogger)
-	wenNativeConn, err := grpc.Dial(cfg.GrpcClient.WenchangchainNativeAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp))
+	wenNativeConn, err := grpc.DialContext(context.Background(),cfg.GrpcClient.WenchangchainNativeAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp),grpc.WithBlock(),grpc.WithBalancerName(roundrobin.Name))
 	if err != nil {
 		logger.Fatal("get wenchangchain-native grpc connect failed, err: ", err.Error())
 	}
 	GrpcConnMap[constant.WenchangNative] = wenNativeConn
-	wenDDcConn, err := grpc.Dial(cfg.GrpcClient.WenchangchainDDCAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp))
+	wenDDcConn, err := grpc.DialContext(context.Background(),cfg.GrpcClient.WenchangchainDDCAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp),grpc.WithBlock(),grpc.WithBalancerName(roundrobin.Name))
 	if err != nil {
 		logger.Fatal("get wenchangchain-ddc grpc connect failed, err: ", err.Error())
 	}
