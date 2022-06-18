@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -307,12 +308,13 @@ func (h *NFT) BatchTransfer(ctx context.Context, request interface{}) (interface
 		log.Debugf("failed to assert : %v", request)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
 	}
+
 	var tagBytes []byte
 	if req.Tag != nil {
 		res, err := json.Marshal(req.Tag)
 		if err != nil {
 			log.WithError(err).Errorf("failed to marshal: %v, request: %v", req.Tag, request)
-			return nil, errors2.ErrInternal
+			return nil, errors2.New(errors2.ClientParams, fmt.Sprintf("invalid tag :%s", err.Error()))
 		}
 		tagBytes = res
 	}
@@ -347,7 +349,7 @@ func (h *NFT) BatchEdit(ctx context.Context, request interface{}) (interface{}, 
 		res, err := json.Marshal(req.Tag)
 		if err != nil {
 			log.WithError(err).Errorf("failed to marshal: %v, request: %v", req.Tag, request)
-			return nil, errors2.ErrInternal
+			return nil, errors2.New(errors2.ClientParams, fmt.Sprintf("invalid tag :%s", err.Error()))
 		}
 		tagBytes = res
 	}
@@ -382,7 +384,7 @@ func (h *NFT) BatchDelete(ctx context.Context, request interface{}) (interface{}
 		res, err := json.Marshal(req.Tag)
 		if err != nil {
 			log.WithError(err).Errorf("failed to marshal: %v, request: %v", req.Tag, request)
-			return nil, errors2.ErrInternal
+			return nil, errors2.New(errors2.ClientParams, fmt.Sprintf("invalid tag :%s", err.Error()))
 		}
 		tagBytes = res
 	}
