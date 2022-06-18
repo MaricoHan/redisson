@@ -307,7 +307,15 @@ func (h *NFT) BatchTransfer(ctx context.Context, request interface{}) (interface
 		log.Debugf("failed to assert : %v", request)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
 	}
-	tagBz, _ := json.Marshal(req.Tag)
+	var tagBytes []byte
+	if req.Tag != nil {
+		res, err := json.Marshal(req.Tag)
+		if err != nil {
+			log.WithError(err).Errorf("failed to marshal: %v, request: %v", req.Tag, request)
+			return nil, err
+		}
+		tagBytes = res
+	}
 	req.OperationID = strings.TrimSpace(req.OperationID)
 
 	// 获取账户基本信息
@@ -320,7 +328,7 @@ func (h *NFT) BatchTransfer(ctx context.Context, request interface{}) (interface
 		Code:        authData.Code,
 		Sender:      h.Owner(ctx),
 		Data:        req.Data,
-		Tag:         string(tagBz),
+		Tag:         string(tagBytes),
 		OperationID: req.OperationID,
 	}
 
@@ -334,7 +342,15 @@ func (h *NFT) BatchEdit(ctx context.Context, request interface{}) (interface{}, 
 		log.Debugf("failed to assert : %v", request)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
 	}
-	tagBz, _ := json.Marshal(req.Tag)
+	var tagBytes []byte
+	if req.Tag != nil {
+		res, err := json.Marshal(req.Tag)
+		if err != nil {
+			log.WithError(err).Errorf("failed to marshal: %v, request: %v", req.Tag, request)
+			return nil, err
+		}
+		tagBytes = res
+	}
 	req.OperationID = strings.TrimSpace(req.OperationID)
 
 	// 获取账户基本信息
@@ -347,7 +363,7 @@ func (h *NFT) BatchEdit(ctx context.Context, request interface{}) (interface{}, 
 		Code:        authData.Code,
 		Sender:      h.Owner(ctx),
 		Nfts:        req.Nfts,
-		Tag:         string(tagBz),
+		Tag:         string(tagBytes),
 		OperationID: req.OperationID,
 	}
 
@@ -361,7 +377,15 @@ func (h *NFT) BatchDelete(ctx context.Context, request interface{}) (interface{}
 		log.Debugf("failed to assert : %v", request)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
 	}
-	tagBz, _ := json.Marshal(req.Tag)
+	var tagBytes []byte
+	if req.Tag != nil {
+		res, err := json.Marshal(req.Tag)
+		if err != nil {
+			log.WithError(err).Errorf("failed to marshal: %v, request: %v", req.Tag, request)
+			return nil, err
+		}
+		tagBytes = res
+	}
 	req.OperationID = strings.TrimSpace(req.OperationID)
 
 	// 获取账户基本信息
@@ -374,7 +398,7 @@ func (h *NFT) BatchDelete(ctx context.Context, request interface{}) (interface{}
 		Code:        authData.Code,
 		Sender:      h.Owner(ctx),
 		Nfts:        req.Nfts,
-		Tag:         string(tagBz),
+		Tag:         string(tagBytes),
 		OperationID: req.OperationID,
 	}
 
