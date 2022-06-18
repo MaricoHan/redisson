@@ -312,7 +312,7 @@ func (h *NFT) BatchTransfer(ctx context.Context, request interface{}) (interface
 		res, err := json.Marshal(req.Tag)
 		if err != nil {
 			log.WithError(err).Errorf("failed to marshal: %v, request: %v", req.Tag, request)
-			return nil, err
+			return nil, errors2.ErrInternal
 		}
 		tagBytes = res
 	}
@@ -347,7 +347,7 @@ func (h *NFT) BatchEdit(ctx context.Context, request interface{}) (interface{}, 
 		res, err := json.Marshal(req.Tag)
 		if err != nil {
 			log.WithError(err).Errorf("failed to marshal: %v, request: %v", req.Tag, request)
-			return nil, err
+			return nil, errors2.ErrInternal
 		}
 		tagBytes = res
 	}
@@ -382,7 +382,7 @@ func (h *NFT) BatchDelete(ctx context.Context, request interface{}) (interface{}
 		res, err := json.Marshal(req.Tag)
 		if err != nil {
 			log.WithError(err).Errorf("failed to marshal: %v, request: %v", req.Tag, request)
-			return nil, err
+			return nil, errors2.ErrInternal
 		}
 		tagBytes = res
 	}
