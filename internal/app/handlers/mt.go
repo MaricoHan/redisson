@@ -149,7 +149,7 @@ func (h MT) List(ctx context.Context, request interface{}) (response interface{}
 }
 
 func (MT) ClassID(ctx context.Context) string {
-	classId := ctx.Value("class_id")
+	classId := ctx.Value("mt_class_id")
 
 	if classId == nil {
 		return ""
