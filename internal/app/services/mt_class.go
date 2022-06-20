@@ -18,8 +18,8 @@ import (
 type IMTClass interface {
 	Show(params *dto.MTClassShowRequest) (*dto.MTClassShowResponse, error)
 	List(params *dto.MTClassListRequest) (*dto.MTClassListResponse, error)
-	CreateMTClass(params dto.CreateMTClass) (*dto.BatchTxRes, error) // 创建
-	TransferMTClass(params dto.TransferMTClass)(*dto.BatchTxRes, error) // 转让
+	CreateMTClass(params dto.CreateMTClass) (*dto.BatchTxRes, error)     // 创建
+	TransferMTClass(params dto.TransferMTClass) (*dto.BatchTxRes, error) // 转让
 }
 
 type mtClass struct {
@@ -135,7 +135,7 @@ func (m *mtClass) List(params *dto.MTClassListRequest) (*dto.MTClassListResponse
 		EndDate:     params.EndDate,
 		SortBy:      pb.Sorts(sort),
 		MtClassId:   params.MtClassId,
-		MtClassName: params.MtClassId,
+		MtClassName: params.MtClassName,
 		Owner:       params.Owner,
 		TxHash:      params.TxHash,
 		Status:      pb.Status(pb.Status_value[params.Status]),
