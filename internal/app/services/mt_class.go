@@ -134,7 +134,7 @@ func (m *mtClass) List(params *dto.MTClassListRequest) (*dto.MTClassListResponse
 		EndDate:     params.EndDate,
 		SortBy:      pb.Sorts(sort),
 		MtClassId:   params.MtClassId,
-		MtClassName: params.MtClassId,
+		MtClassName: params.MtClassName,
 		Owner:       params.Owner,
 		TxHash:      params.TxHash,
 		Status:      pb.Status(pb.Status_value[params.Status]),
