@@ -12,6 +12,7 @@ import (
 
 type IMTClass interface {
 	CreateMTClass(ctx context.Context, _ interface{}) (interface{}, error)
+	TransferMTClass(ctx context.Context, _ interface{}) (interface{}, error)
 	List(ctx context.Context, _ interface{}) (interface{}, error)
 	Show(ctx context.Context, _ interface{}) (interface{}, error)
 }
@@ -69,6 +70,44 @@ func (h MTClass) CreateMTClass(ctx context.Context, request interface{}) (interf
 		OperationId: operationId,
 	}
 	return h.svc.CreateMTClass(params)
+}
+
+func (h MTClass) TransferMTClass(ctx context.Context, request interface{}) (interface{}, error) {
+	// 校验参数 start
+	req := request.(*vo.TransferMTClassRequest)
+	recipient := strings.TrimSpace(req.Recipient)
+	operationId := strings.TrimSpace(req.OperationID)
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
+	if recipient == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrRecipient)
+	}
+
+	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
+	}
+
+	tagBytes, err := h.ValidateTag(req.Tag)
+	if err != nil {
+		return nil, err
+	}
+
+	//校验参数 end
+	authData := h.AuthData(ctx)
+	params := dto.TransferMTClass{
+		ClassID:     h.ClassID(ctx),
+		Owner:       h.Owner(ctx),
+		Recipient:   recipient,
+		ChainID:     authData.ChainId,
+		ProjectID:   authData.ProjectId,
+		PlatFormID:  authData.PlatformId,
+		Module:      authData.Module,
+		Tag:         tagBytes,
+		Code:        authData.Code,
+		OperationId: operationId,
+	}
+	return h.svc.TransferMTClass(params)
 }
 
 // List return class list
@@ -188,4 +227,11 @@ func (h MTClass) MtCount(ctx context.Context) uint64 {
 		return 0
 	}
 	return val.(uint64)
+}
+func (h MTClass) ClassID(ctx context.Context) string {
+	classId := ctx.Value("mt_class_id")
+	if classId == nil {
+		return ""
+	}
+	return classId.(string)
 }
