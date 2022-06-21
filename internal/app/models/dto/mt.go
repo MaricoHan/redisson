@@ -73,9 +73,9 @@ type MT struct {
 	MtClassId   string `json:"mt_class_id"`   // MT 类别 ID
 	MtClassName string `json:"mt_class_name"` // MT 类别名称
 	Issuer      string `json:"issuer"`        // 发行者
-	//MtCount     uint64 `json:"mt_count"`      // MT 流通总量
-	OwnerCount uint64 `json:"owner_count"` // MT 拥有者数量
-	Timestamp  string `json:"timestamp"`
+	TxHash      string `json:"tx_hash"`       // MT hash
+	OwnerCount  uint64 `json:"owner_count"`   // MT 拥有者数量
+	Timestamp   string `json:"timestamp"`
 }
 
 type CreateMTClass struct {
