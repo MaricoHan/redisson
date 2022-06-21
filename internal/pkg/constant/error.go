@@ -21,6 +21,7 @@ const (
 	AccountFailed                  = "ACCOUNT_ERROR"
 	TimestampTimeout               = "TIMESTAMP_TIME"
 	DuplicateRequest               = "DUPLICATE_REQUEST"
+	UnSupported                    = "UNSUPPORTED_REQUEST"
 
 	// ErrOffset		error msg handle
 	ErrName         = "name is a required field"
@@ -43,6 +44,7 @@ var (
 	ErrNftStatus    = Register(RootCodeSpace, NftStatusAbnormal, ErrNftStatusMsg)
 	ErrTimestamp    = Register(RootCodeSpace, TimestampTimeout, "timestamp is timeout")
 	ErrDuplicate    = Register(RootCodeSpace, DuplicateRequest, "duplicate request")
+	ErrUnSupported  = Register(RootCodeSpace, UnSupported, "This feature is not currently supported")
 )
 
 var usedErrorCodes = map[string]*AppError{}

@@ -17,6 +17,7 @@ import (
 	"net/http"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -125,6 +126,13 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		PlatformId: projectInfo.UserID,
 		Module:     chainInfo.Module,
 		Code:       chainInfo.Code,
+	}
+
+	if fmt.Sprintf("%s-%s", chainInfo.Code, chainInfo.Module) == constant.WenchangDDC {
+		if strings.Contains(r.RequestURI, "/mt/") {
+			writeBadRequestResp(w, constant.ErrUnSupported)
+			return
+		}
 	}
 
 	authDataBytes, _ := json.Marshal(authData)
