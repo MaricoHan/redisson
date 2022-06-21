@@ -130,8 +130,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if fmt.Sprintf("%s-%s", chainInfo.Code, chainInfo.Module) == constant.WenchangDDC {
 		if strings.Contains(r.RequestURI, "/mt/") {
-			w.WriteHeader(404)
-			writeBadRequestResp(w, constant.ErrUnSupported)
+			writeNotFoundRequestResp(w, constant.ErrUnSupported)
 			return
 		}
 	}
