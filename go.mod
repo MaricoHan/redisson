@@ -19,13 +19,13 @@ require (
 	github.com/volatiletech/sqlboiler v3.7.1+incompatible
 	github.com/volatiletech/sqlboiler/v4 v4.8.6
 	google.golang.org/grpc v1.45.0
-	gorm.io/driver/mysql v1.3.2
-	gorm.io/gorm v1.23.3
+	gorm.io/gorm v1.23.4
 )
 
 require (
 	gitlab.bianjie.ai/avata/chains/api v0.1.1-0.20220527015904-0b2faa331977
 	gitlab.bianjie.ai/avata/utils/errors v0.0.0-00010101000000-000000000000
+	gorm.io/driver/mysql v1.3.4
 )
 
 require (
@@ -76,6 +76,8 @@ require (
 
 replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.4
-	gitlab.bianjie.ai/avata/chains/api => gitlab.bianjie.ai/avata/chains/api.git v0.0.0-20220530113249-cc7beb9d3af2
+
+	gitlab.bianjie.ai/avata/chains/api => gitlab.bianjie.ai/avata/chains/api.git v0.1.2-0.20220621031421-9105d1a4d4b8
+
 	gitlab.bianjie.ai/avata/utils/errors => gitlab.bianjie.ai/avata/utils/errors.git v0.1.1-0.20220530071014-8eb83bc3c976
 )

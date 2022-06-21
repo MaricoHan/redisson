@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -60,7 +59,7 @@ func (h *NFT) CreateNft(ctx context.Context, request interface{}) (interface{}, 
 		return nil, errors2.New(errors2.ClientParams, constant.ErrName)
 	}
 
-	if len(operationId) == 0 || len(operationId) >= 65 {
+	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
 	}
 
@@ -114,7 +113,7 @@ func (h *NFT) BatchCreateNft(ctx context.Context, request interface{}) (interfac
 		return nil, errors2.New(errors2.ClientParams, constant.ErrName)
 	}
 
-	if len(operationId) == 0 || len(operationId) >= 65 {
+	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
 	}
 
@@ -160,7 +159,7 @@ func (h *NFT) EditNftByNftId(ctx context.Context, request interface{}) (interfac
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
 	}
 
-	if len(operationId) == 0 || len(operationId) >= 65 {
+	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
 	}
 	//check start
@@ -209,7 +208,7 @@ func (h *NFT) DeleteNftByNftId(ctx context.Context, request interface{}) (interf
 	if operationId == "" {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
 	}
-	if len(operationId) == 0 || len(operationId) >= 65 {
+	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
 	}
 	authData := h.AuthData(ctx)
@@ -308,15 +307,10 @@ func (h *NFT) BatchTransfer(ctx context.Context, request interface{}) (interface
 		log.Debugf("failed to assert : %v", request)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
 	}
-
-	var tagBytes []byte
-	if req.Tag != nil {
-		res, err := json.Marshal(req.Tag)
-		if err != nil {
-			log.WithError(err).Errorf("failed to marshal: %v, request: %v", req.Tag, request)
-			return nil, errors2.New(errors2.ClientParams, fmt.Sprintf("invalid tag :%s", err.Error()))
-		}
-		tagBytes = res
+	// 转换tag
+	var tagBz []byte
+	if len(req.Tag) > 0 {
+		tagBz, _ = json.Marshal(req.Tag)
 	}
 	req.OperationID = strings.TrimSpace(req.OperationID)
 
@@ -330,7 +324,7 @@ func (h *NFT) BatchTransfer(ctx context.Context, request interface{}) (interface
 		Code:        authData.Code,
 		Sender:      h.Owner(ctx),
 		Data:        req.Data,
-		Tag:         string(tagBytes),
+		Tag:         string(tagBz),
 		OperationID: req.OperationID,
 	}
 
@@ -344,14 +338,10 @@ func (h *NFT) BatchEdit(ctx context.Context, request interface{}) (interface{}, 
 		log.Debugf("failed to assert : %v", request)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
 	}
-	var tagBytes []byte
-	if req.Tag != nil {
-		res, err := json.Marshal(req.Tag)
-		if err != nil {
-			log.WithError(err).Errorf("failed to marshal: %v, request: %v", req.Tag, request)
-			return nil, errors2.New(errors2.ClientParams, fmt.Sprintf("invalid tag :%s", err.Error()))
-		}
-		tagBytes = res
+	// 转换tag
+	var tagBz []byte
+	if len(req.Tag) > 0 {
+		tagBz, _ = json.Marshal(req.Tag)
 	}
 	req.OperationID = strings.TrimSpace(req.OperationID)
 
@@ -365,7 +355,7 @@ func (h *NFT) BatchEdit(ctx context.Context, request interface{}) (interface{}, 
 		Code:        authData.Code,
 		Sender:      h.Owner(ctx),
 		Nfts:        req.Nfts,
-		Tag:         string(tagBytes),
+		Tag:         string(tagBz),
 		OperationID: req.OperationID,
 	}
 
@@ -379,14 +369,10 @@ func (h *NFT) BatchDelete(ctx context.Context, request interface{}) (interface{}
 		log.Debugf("failed to assert : %v", request)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
 	}
-	var tagBytes []byte
-	if req.Tag != nil {
-		res, err := json.Marshal(req.Tag)
-		if err != nil {
-			log.WithError(err).Errorf("failed to marshal: %v, request: %v", req.Tag, request)
-			return nil, errors2.New(errors2.ClientParams, fmt.Sprintf("invalid tag :%s", err.Error()))
-		}
-		tagBytes = res
+	// 转换tag
+	var tagBz []byte
+	if len(req.Tag) > 0 {
+		tagBz, _ = json.Marshal(req.Tag)
 	}
 	req.OperationID = strings.TrimSpace(req.OperationID)
 
@@ -400,7 +386,7 @@ func (h *NFT) BatchDelete(ctx context.Context, request interface{}) (interface{}
 		Code:        authData.Code,
 		Sender:      h.Owner(ctx),
 		Nfts:        req.Nfts,
-		Tag:         string(tagBytes),
+		Tag:         string(tagBz),
 		OperationID: req.OperationID,
 	}
 

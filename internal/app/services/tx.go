@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	log "github.com/sirupsen/logrus"
+	"github.com/volatiletech/sqlboiler/types"
 	pb "gitlab.bianjie.ai/avata/chains/api/pb/tx"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
@@ -55,7 +56,8 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 	}
 	result := &dto.TxResultByTxHashRes{}
 	status := pb.Status_value[resp.Detail.Status]
-	result.Type = resp.Detail.OperationType
+	result.Module = resp.Detail.Module
+	result.Type = resp.Detail.Operation
 	result.TxHash = ""
 	result.Status = status
 	if status == int32(pb.Status_success) || status == int32(pb.Status_failed) {
@@ -75,19 +77,29 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 
 	result.Message = resp.Detail.ErrMsg
 
-	if result.Status == pb.Status_value["success"] { //交易成功
+	//交易成功或根账户转让类别交易失败
+	if result.Status == int32(pb.Status_success) || (result.Status == int32(pb.Status_failed) && result.Type == pb.Operation_name[int32(pb.Operation_transfer_class_mt)]) {
 		//根据 type 返回交易对象 id
 		result.BlockHeight = resp.Detail.BlockHeight
 		result.Timestamp = resp.Detail.Timestamp
-		switch resp.Detail.OperationType {
+		typeJsonNft := types.JSON{}
+		typeJsonMt := types.JSON{}
 
-		case pb.OperationType_name[0]:
-			result.ClassID = resp.Detail.ClassId
-		case pb.OperationType_name[5]:
-			result.ClassID = resp.Detail.ClassId
-		default:
-			result.ClassID = resp.Detail.ClassId
+		if resp.Detail.Nft != "" {
+			err = json.Unmarshal([]byte(resp.Detail.Nft), &typeJsonNft)
+			if err != nil {
+				return nil, err
+			}
+			result.Nft = &typeJsonNft
 			result.NftID = resp.Detail.NftId
+			result.ClassID = resp.Detail.ClassId
+		}
+		if resp.Detail.Mt != "" {
+			err = json.Unmarshal([]byte(resp.Detail.Mt), &typeJsonMt)
+			if err != nil {
+				return nil, err
+			}
+			result.Mt = &typeJsonMt
 		}
 	}
 	return result, nil
