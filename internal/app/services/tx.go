@@ -77,7 +77,8 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 
 	result.Message = resp.Detail.ErrMsg
 
-	if result.Status == pb.Status_value["success"] { //交易成功
+	//交易成功或根账户转让类别交易失败
+	if result.Status == int32(pb.Status_success) || (result.Status == int32(pb.Status_failed) && result.Type == pb.Operation_name[int32(pb.Operation_transfer_class_mt)]) {
 		//根据 type 返回交易对象 id
 		result.BlockHeight = resp.Detail.BlockHeight
 		result.Timestamp = resp.Detail.Timestamp

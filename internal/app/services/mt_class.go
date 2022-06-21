@@ -19,6 +19,7 @@ type IMTClass interface {
 	Show(params *dto.MTClassShowRequest) (*dto.MTClassShowResponse, error)
 	List(params *dto.MTClassListRequest) (*dto.MTClassListResponse, error)
 	CreateMTClass(params dto.CreateMTClass) (*dto.BatchTxRes, error) // 创建
+	TransferMTClass(params dto.TransferMTClass)(*dto.BatchTxRes, error) // 转让
 }
 
 type mtClass struct {
@@ -181,4 +182,40 @@ func (m *mtClass) List(params *dto.MTClassListRequest) (*dto.MTClassListResponse
 	}
 
 	return result, nil
+}
+
+func (m *mtClass) TransferMTClass(params dto.TransferMTClass) (*dto.BatchTxRes, error) {
+	logFields := log.Fields{}
+	logFields["model"] = "mt_class"
+	logFields["func"] = "TransferMTClass"
+	logFields["module"] = params.Module
+	logFields["code"] = params.Code
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+
+	req := pb.MTClassTransferRequest{
+		ClassId:     params.ClassID,
+		Owner:       params.Owner,
+		Recipient:   params.Recipient,
+		ProjectId:   params.ProjectID,
+		Tag:         string(params.Tag),
+		OperationId: params.OperationId,
+	}
+	resp := &pb.MTClassTransferResponse{}
+	var err error
+	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+	grpcClient, ok := initialize.MTClassClientMap[mapKey]
+	if !ok {
+		log.WithFields(logFields).Error(errors2.ErrService)
+		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
+	}
+	resp, err = grpcClient.Transfer(ctx, &req)
+	if err != nil {
+		log.WithFields(logFields).Error("request err:", err.Error())
+		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+	}
+	return &dto.BatchTxRes{OperationId: resp.OperationId}, nil
 }
