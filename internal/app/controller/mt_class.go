@@ -37,6 +37,11 @@ func (m MTClassController) GetEndpoints() []kit.Endpoint {
 			Method:  http.MethodGet,
 			Handler: m.makeHandler(m.handler.Show, nil),
 		},
+		kit.Endpoint{
+			URI:     "/mt/class-transfers/{mt_class_id}/{owner}",
+			Method:  http.MethodPost,
+			Handler: m.makeHandler(m.handler.TransferMTClass, &vo.TransferMTClassRequest{}),
+		},
 	)
 	return ends
 }
