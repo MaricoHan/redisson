@@ -211,9 +211,9 @@ func (M MT) List(params *dto.MTListRequest) (*dto.MTListResponse, error) {
 			MtClassId:   item.MtClassId,
 			MtClassName: item.MtClassName,
 			Issuer:      item.Issuer,
-			//MtCount:     item.MtCount,
-			OwnerCount: item.OwnerCount,
-			Timestamp:  item.Timestamp,
+			TxHash:      item.TxHash,
+			OwnerCount:  item.OwnerCount,
+			Timestamp:   item.Timestamp,
 		}
 		mts = append(mts, mt)
 	}

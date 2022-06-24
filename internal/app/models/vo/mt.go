@@ -8,3 +8,10 @@ type CreateMTClassRequest struct {
 	Tag         map[string]interface{} `json:"tag"`
 	OperationID string                 `json:"operation_id"`
 }
+
+type TransferMTClassRequest struct {
+	//Base
+	OperationID string                 `json:"operation_id"`
+	Recipient   string                 `json:"recipient"`
+	Tag         map[string]interface{} `json:"tag"`
+}
