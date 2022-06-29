@@ -38,5 +38,10 @@ func (m MTController) GetEndpoints() []kit.Endpoint {
 			Method:  http.MethodGet,
 			Handler: m.makeHandler(m.handler.Show, nil),
 		},
+		{
+			URI:     "/mt/mts/{mt_class_id}/{account}/balances",
+			Method:  http.MethodGet,
+			Handler: m.makeHandler(m.handler.Balances, nil),
+		},
 	}
 }

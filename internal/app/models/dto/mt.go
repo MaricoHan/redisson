@@ -118,3 +118,23 @@ type MTOperationRecord struct {
 	Amount    uint64 `json:"amount"`
 	Timestamp string `json:"timestamp"`
 }
+
+type MTBalancesRequest struct {
+	Page
+	ProjectID uint64 `json:"project_id"`
+	MtId      string `json:"mt_id"`    // MT ID
+	ClassId   string `json:"class_id"` // 类别ID
+	Account   string `json:"account"`
+	Module    string `json:"module"`
+	Code      string `json:"code"`
+}
+
+type MTBalances struct {
+	MtId   string `json:"mt_id"` // MT ID
+	Amount uint64 `json:"amount"`
+}
+
+type MTBalancesResponse struct {
+	PageRes
+	Mts []*MTBalances `json:"mts"`
+}
