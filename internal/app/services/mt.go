@@ -121,7 +121,7 @@ func (M MT) Show(params *dto.MTShowRequest) (*dto.MTShowResponse, error) {
 	logFields["code"] = params.Code
 	req := pb.MTShowRequest{
 		ProjectId: params.ProjectID,
-		MtClassId: params.ClassID,
+		ClassId:   params.ClassID,
 		MtId:      params.MTID,
 	}
 	resp := &pb.MTShowResponse{}
@@ -143,14 +143,14 @@ func (M MT) Show(params *dto.MTShowRequest) (*dto.MTShowResponse, error) {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
 	result := &dto.MTShowResponse{
-		MtId:        string(resp.Data.MtId),
-		MtClassId:   resp.Data.MtClassId,
-		MtClassName: resp.Data.MtClassName,
-		Data:        resp.Data.Data,
-		OwnerCount:  resp.Data.OwnerCount,
-		IssueData:   resp.Data.IssueData,
-		MtCount:     resp.Data.MtCount,
-		MintTimes:   resp.Data.MintCount,
+		MtId:       string(resp.Data.MtId),
+		ClassId:    resp.Data.ClassId,
+		ClassName:  resp.Data.ClassName,
+		Data:       resp.Data.Data,
+		OwnerCount: resp.Data.OwnerCount,
+		IssueData:  resp.Data.IssueData,
+		MtCount:    resp.Data.MtCount,
+		MintTimes:  resp.Data.MintCount,
 	}
 	return result, nil
 }
@@ -176,7 +176,7 @@ func (M MT) List(params *dto.MTListRequest) (*dto.MTListResponse, error) {
 		EndDate:   params.EndDate,
 		SortBy:    pb.Sorts(sort),
 		MtId:      params.MtId,
-		MtClassId: params.MtClassId,
+		ClassId:   params.ClassId,
 		Issuer:    params.Issuer,
 		TxHash:    params.TxHash,
 	}
@@ -208,13 +208,13 @@ func (M MT) List(params *dto.MTListRequest) (*dto.MTListResponse, error) {
 	var mts []*dto.MT
 	for _, item := range resp.Data {
 		mt := &dto.MT{
-			MtId:        item.MtId,
-			MtClassId:   item.MtClassId,
-			MtClassName: item.MtClassName,
-			Issuer:      item.Issuer,
-			TxHash:      item.TxHash,
-			OwnerCount:  item.OwnerCount,
-			Timestamp:   item.Timestamp,
+			MtId:       item.MtId,
+			ClassId:    item.ClassId,
+			ClassName:  item.ClassName,
+			Issuer:     item.Issuer,
+			TxHash:     item.TxHash,
+			OwnerCount: item.OwnerCount,
+			Timestamp:  item.Timestamp,
 		}
 		mts = append(mts, mt)
 	}

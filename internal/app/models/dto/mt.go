@@ -42,23 +42,23 @@ type MTShowRequest struct {
 }
 
 type MTShowResponse struct {
-	MtId        string        `json:"mt_id"`         // MT名称
-	MtClassId   string        `json:"mt_class_id"`   // 类别ID
-	MtClassName string        `json:"mt_class_name"` // 类别名称
-	Data        string        `json:"data"`          // 自定义链上元数据
-	OwnerCount  uint64        `json:"owner_count"`   // MT 拥有者数量(AVATA平台内)
-	IssueData   *pb.IssueData `json:"issue_data"`
-	MtCount     uint64        `json:"mt_count"`   // mt 当前流通总量
-	MintTimes   uint64        `json:"mint_times"` // 发行次数
+	MtId       string        `json:"mt_id"`       // MT名称
+	ClassId    string        `json:"class_id"`    // 类别ID
+	ClassName  string        `json:"class_name"`  // 类别名称
+	Data       string        `json:"data"`        // 自定义链上元数据
+	OwnerCount uint64        `json:"owner_count"` // MT 拥有者数量(AVATA平台内)
+	IssueData  *pb.IssueData `json:"issue_data"`
+	MtCount    uint64        `json:"mt_count"`   // mt 当前流通总量
+	MintTimes  uint64        `json:"mint_times"` // 发行次数
 }
 
 type MTListRequest struct {
 	Page
 	ProjectID uint64 `json:"project_id"`
-	MtId      string `json:"mt_id"`       // MT ID
-	MtClassId string `json:"mt_class_id"` // 类别ID
-	Issuer    string `json:"issuer"`      // 发行者
-	TxHash    string `json:"tx_hash"`     // 交易hash
+	MtId      string `json:"mt_id"`     // MT ID
+	ClassId   string `json:"mclass_id"` // 类别ID
+	Issuer    string `json:"issuer"`    // 发行者
+	TxHash    string `json:"tx_hash"`   // 交易hash
 	Module    string `json:"module"`
 	Code      string `json:"code"`
 }
@@ -69,13 +69,13 @@ type MTListResponse struct {
 }
 
 type MT struct {
-	MtId        string `json:"mt_id"`         // MT ID
-	MtClassId   string `json:"mt_class_id"`   // MT 类别 ID
-	MtClassName string `json:"mt_class_name"` // MT 类别名称
-	Issuer      string `json:"issuer"`        // 发行者
-	TxHash      string `json:"tx_hash"`       // MT hash
-	OwnerCount  uint64 `json:"owner_count"`   // MT 拥有者数量
-	Timestamp   string `json:"timestamp"`
+	MtId       string `json:"mt_id"`       // MT ID
+	ClassId    string `json:"class_id"`    // MT 类别 ID
+	ClassName  string `json:"class_name"`  // MT 类别名称
+	Issuer     string `json:"issuer"`      // 发行者
+	TxHash     string `json:"tx_hash"`     // MT hash
+	OwnerCount uint64 `json:"owner_count"` // MT 拥有者数量
+	Timestamp  string `json:"timestamp"`
 }
 
 type CreateMTClass struct {

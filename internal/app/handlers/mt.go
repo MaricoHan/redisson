@@ -92,39 +92,39 @@ func (m MT) Mint(ctx context.Context, request interface{}) (response interface{}
 	return m.svc.Mint(&param)
 }
 
-func (h MT) Show(ctx context.Context, request interface{}) (response interface{}, err error) {
+func (m MT) Show(ctx context.Context, request interface{}) (response interface{}, err error) {
 	// 获取账户基本信息
-	authData := h.AuthData(ctx)
+	authData := m.AuthData(ctx)
 	param := dto.MTShowRequest{
 		ProjectID: authData.ProjectId,
 		Module:    authData.Module,
 		Code:      authData.Code,
-		ClassID:   h.ClassID(ctx),
-		MTID:      h.MTID(ctx),
+		ClassID:   m.ClassID(ctx),
+		MTID:      m.MTID(ctx),
 	}
 
-	return h.svc.Show(&param)
+	return m.svc.Show(&param)
 }
 
-func (h MT) List(ctx context.Context, request interface{}) (response interface{}, err error) {
+func (m MT) List(ctx context.Context, request interface{}) (response interface{}, err error) {
 	// 获取账户基本信息
-	authData := h.AuthData(ctx)
+	authData := m.AuthData(ctx)
 	params := dto.MTListRequest{
 		ProjectID: authData.ProjectId,
-		MtId:      h.MTID(ctx),
-		MtClassId: h.ClassID(ctx),
-		Issuer:    h.Issuer(ctx),
-		TxHash:    h.TxHash(ctx),
+		MtId:      m.MTID(ctx),
+		ClassId:   m.ClassID(ctx),
+		Issuer:    m.Issuer(ctx),
+		TxHash:    m.TxHash(ctx),
 		Module:    authData.Module,
 		Code:      authData.Code,
 	}
-	offset, err := h.Offset(ctx)
+	offset, err := m.Offset(ctx)
 	if err != nil {
 		return nil, err
 	}
 	params.Offset = offset
 
-	limit, err := h.Limit(ctx)
+	limit, err := m.Limit(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -134,39 +134,39 @@ func (h MT) List(ctx context.Context, request interface{}) (response interface{}
 		params.Limit = 10
 	}
 
-	startDateR := h.StartDate(ctx)
+	startDateR := m.StartDate(ctx)
 	if startDateR != "" {
 		params.StartDate = startDateR
 	}
 
-	endDateR := h.EndDate(ctx)
+	endDateR := m.EndDate(ctx)
 	if endDateR != "" {
 
 		params.EndDate = endDateR
 	}
 
-	params.SortBy = h.SortBy(ctx)
-	return h.svc.List(&params)
+	params.SortBy = m.SortBy(ctx)
+	return m.svc.List(&params)
 }
 
-func (h MT) Balances(ctx context.Context, request interface{}) (response interface{}, err error) {
+func (m MT) Balances(ctx context.Context, request interface{}) (response interface{}, err error) {
 	// 获取账户基本信息
-	authData := h.AuthData(ctx)
+	authData := m.AuthData(ctx)
 	params := dto.MTBalancesRequest{
 		ProjectID: authData.ProjectId,
 		Module:    authData.Module,
 		Code:      authData.Code,
-		MtId:      h.MTID(ctx),
-		ClassId:   h.ClassID(ctx),
-		Account:   h.Account(ctx),
+		MtId:      m.MTID(ctx),
+		ClassId:   m.ClassID(ctx),
+		Account:   m.Account(ctx),
 	}
-	offset, err := h.Offset(ctx)
+	offset, err := m.Offset(ctx)
 	if err != nil {
 		return nil, err
 	}
 	params.Offset = offset
 
-	limit, err := h.Limit(ctx)
+	limit, err := m.Limit(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -176,11 +176,11 @@ func (h MT) Balances(ctx context.Context, request interface{}) (response interfa
 		params.Limit = 10
 	}
 
-	return h.svc.Balances(&params)
+	return m.svc.Balances(&params)
 }
 
 func (MT) ClassID(ctx context.Context) string {
-	classId := ctx.Value("mt_class_id")
+	classId := ctx.Value("class_id")
 
 	if classId == nil {
 		return ""
