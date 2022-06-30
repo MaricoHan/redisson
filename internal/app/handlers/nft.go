@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"encoding/json"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -307,10 +306,14 @@ func (h *NFT) BatchTransfer(ctx context.Context, request interface{}) (interface
 		log.Debugf("failed to assert : %v", request)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
 	}
-	// 转换tag
 	var tagBz []byte
-	if len(req.Tag) > 0 {
-		tagBz, _ = json.Marshal(req.Tag)
+	// 转换tag
+	if req.Tag != nil {
+		res, err := h.ValidateTag(req.Tag)
+		if err != nil {
+			return nil, err
+		}
+		tagBz = res
 	}
 	req.OperationID = strings.TrimSpace(req.OperationID)
 
@@ -338,10 +341,14 @@ func (h *NFT) BatchEdit(ctx context.Context, request interface{}) (interface{}, 
 		log.Debugf("failed to assert : %v", request)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
 	}
-	// 转换tag
 	var tagBz []byte
-	if len(req.Tag) > 0 {
-		tagBz, _ = json.Marshal(req.Tag)
+	// 转换tag
+	if req.Tag != nil {
+		res, err := h.ValidateTag(req.Tag)
+		if err != nil {
+			return nil, err
+		}
+		tagBz = res
 	}
 	req.OperationID = strings.TrimSpace(req.OperationID)
 
@@ -369,10 +376,14 @@ func (h *NFT) BatchDelete(ctx context.Context, request interface{}) (interface{}
 		log.Debugf("failed to assert : %v", request)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
 	}
-	// 转换tag
 	var tagBz []byte
-	if len(req.Tag) > 0 {
-		tagBz, _ = json.Marshal(req.Tag)
+	// 转换tag
+	if req.Tag != nil {
+		res, err := h.ValidateTag(req.Tag)
+		if err != nil {
+			return nil, err
+		}
+		tagBz = res
 	}
 	req.OperationID = strings.TrimSpace(req.OperationID)
 

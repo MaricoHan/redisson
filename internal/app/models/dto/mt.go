@@ -73,9 +73,9 @@ type MT struct {
 	MtClassId   string `json:"mt_class_id"`   // MT 类别 ID
 	MtClassName string `json:"mt_class_name"` // MT 类别名称
 	Issuer      string `json:"issuer"`        // 发行者
-	//MtCount     uint64 `json:"mt_count"`      // MT 流通总量
-	OwnerCount uint64 `json:"owner_count"` // MT 拥有者数量
-	Timestamp  string `json:"timestamp"`
+	TxHash      string `json:"tx_hash"`       // MT hash
+	OwnerCount  uint64 `json:"owner_count"`   // MT 拥有者数量
+	Timestamp   string `json:"timestamp"`
 }
 
 type CreateMTClass struct {
@@ -117,4 +117,24 @@ type MTOperationRecord struct {
 	Recipient string `json:"recipient"`
 	Amount    uint64 `json:"amount"`
 	Timestamp string `json:"timestamp"`
+}
+
+type MTBalancesRequest struct {
+	Page
+	ProjectID uint64 `json:"project_id"`
+	MtId      string `json:"mt_id"`    // MT ID
+	ClassId   string `json:"class_id"` // 类别ID
+	Account   string `json:"account"`
+	Module    string `json:"module"`
+	Code      string `json:"code"`
+}
+
+type MTBalances struct {
+	MtId   string `json:"mt_id"` // MT ID
+	Amount uint64 `json:"amount"`
+}
+
+type MTBalancesResponse struct {
+	PageRes
+	Mts []*MTBalances `json:"mts"`
 }

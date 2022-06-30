@@ -19,6 +19,7 @@ type IMT interface {
 	Mint(ctx context.Context, request interface{}) (response interface{}, err error)
 	Show(ctx context.Context, request interface{}) (response interface{}, err error)
 	List(ctx context.Context, request interface{}) (response interface{}, err error)
+	Balances(ctx context.Context, request interface{}) (response interface{}, err error)
 }
 type MT struct {
 	base
@@ -96,10 +97,10 @@ func (h MT) Show(ctx context.Context, request interface{}) (response interface{}
 	authData := h.AuthData(ctx)
 	param := dto.MTShowRequest{
 		ProjectID: authData.ProjectId,
-		ClassID:   h.ClassID(ctx),
-		MTID:      h.MTID(ctx),
 		Module:    authData.Module,
 		Code:      authData.Code,
+		ClassID:   h.ClassID(ctx),
+		MTID:      h.MTID(ctx),
 	}
 
 	return h.svc.Show(&param)
@@ -148,6 +149,36 @@ func (h MT) List(ctx context.Context, request interface{}) (response interface{}
 	return h.svc.List(&params)
 }
 
+func (h MT) Balances(ctx context.Context, request interface{}) (response interface{}, err error) {
+	// 获取账户基本信息
+	authData := h.AuthData(ctx)
+	params := dto.MTBalancesRequest{
+		ProjectID: authData.ProjectId,
+		Module:    authData.Module,
+		Code:      authData.Code,
+		MtId:      h.MTID(ctx),
+		ClassId:   h.ClassID(ctx),
+		Account:   h.Account(ctx),
+	}
+	offset, err := h.Offset(ctx)
+	if err != nil {
+		return nil, err
+	}
+	params.Offset = offset
+
+	limit, err := h.Limit(ctx)
+	if err != nil {
+		return nil, err
+	}
+	params.Limit = limit
+
+	if params.Limit == 0 {
+		params.Limit = 10
+	}
+
+	return h.svc.Balances(&params)
+}
+
 func (MT) ClassID(ctx context.Context) string {
 	classId := ctx.Value("mt_class_id")
 
@@ -163,6 +194,15 @@ func (MT) MTID(ctx context.Context) string {
 		return ""
 	}
 	return mtID.(string)
+}
+
+func (MT) Account(ctx context.Context) string {
+	account := ctx.Value("account")
+
+	if account == nil {
+		return ""
+	}
+	return account.(string)
 }
 
 func (MT) Issuer(ctx context.Context) string {

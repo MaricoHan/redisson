@@ -21,6 +21,21 @@ func writeBadRequestResp(w http.ResponseWriter, err constant.IError) {
 	return
 }
 
+func writeNotFoundRequestResp(w http.ResponseWriter, err constant.IError) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(http.StatusNotFound)
+	response := constant.Response{
+		ErrorResp: &constant.ErrorResp{
+			CodeSpace: err.CodeSpace(),
+			Code:      err.Code(),
+			Message:   err.Error(),
+		},
+	}
+	bz, _ := json.Marshal(response)
+	_, _ = w.Write(bz)
+	return
+}
+
 func writeForbiddenResp(w http.ResponseWriter, errMsg string) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(http.StatusForbidden)
