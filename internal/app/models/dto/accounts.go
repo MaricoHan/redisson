@@ -72,12 +72,14 @@ type AccountOperationRecordRes struct {
 }
 
 type AccountOperationRecords struct {
-	TxHash      string     `json:"tx_hash"`
-	Module      string     `json:"module"`
-	Operation   string     `json:"operation"`
-	Signer      string     `json:"signer"`
-	Timestamp   string     `json:"timestamp"`
-	GasFee      uint64     `json:"gas_fee"`
-	BusinessFee uint64     `json:"business_fee"`
-	Message     types.JSON `json:"message"`
+	TxHash      string      `json:"tx_hash"`
+	Module      string      `json:"module"`
+	Operation   string      `json:"operation"`
+	Signer      string      `json:"signer"`
+	Timestamp   string      `json:"timestamp"`
+	GasFee      uint64      `json:"gas_fee"`
+	BusinessFee uint64      `json:"business_fee"`
+	Message     *types.JSON `json:"message"`
+	NftMsg      *types.JSON `json:"nft_msg"`
+	MtMsg       *types.JSON `json:"mt_msg"`
 }
