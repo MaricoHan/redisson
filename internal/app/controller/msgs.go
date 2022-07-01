@@ -30,7 +30,7 @@ func (c MsgsController) GetEndpoints() []kit.Endpoint {
 			Handler: c.makeHandler(c.handler.GetAccountHistory, nil),
 		},
 		kit.Endpoint{
-			URI:     "/mt/mts/{mt_class_id}/{mt_id}/history",
+			URI:     "/mt/mts/{class_id}/{mt_id}/history",
 			Method:  http.MethodGet,
 			Handler: c.makeHandler(c.handler.GetMTHistory, nil),
 		},
