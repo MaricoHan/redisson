@@ -18,3 +18,18 @@ type MintRequest struct {
 	Tag         map[string]interface{} `json:"tag"`
 	OperationID string                 `json:"operation_id"`
 }
+type EditRequest struct {
+	Mts         []*pb.EditMetadata     `json:"mts"`
+	Tag         map[string]interface{} `json:"tag"`
+	OperationID string                 `json:"operation_id"`
+}
+type BurnRequest struct {
+	Mts         []*pb.BurnMT           `json:"mts"`
+	Tag         map[string]interface{} `json:"tag"`
+	OperationID string                 `json:"operation_id"`
+}
+type TransferRequest struct {
+	Mts         []*pb.Transfer         `json:"mts"`
+	Tag         map[string]interface{} `json:"tag"`
+	OperationID string                 `json:"operation_id"`
+}

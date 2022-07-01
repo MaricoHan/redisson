@@ -32,6 +32,42 @@ type MintRequest struct {
 type MintResponse struct {
 	OperationID string `json:"operation_id"`
 }
+type EditRequest struct {
+	Code        string             `json:"code"`
+	Module      string             `json:"module"`
+	ProjectID   uint64             `json:"project_id"`
+	Owner       string             `json:"owner"`
+	Mts         []*pb.EditMetadata `json:"mts"`
+	Tag         string             `json:"tag"`
+	OperationID string             `json:"operation_id" validate:"required"`
+}
+type EditResponse struct {
+	OperationID string `json:"operation_id"`
+}
+type BurnRequest struct {
+	Code        string       `json:"code"`
+	Module      string       `json:"module"`
+	ProjectID   uint64       `json:"project_id"`
+	Owner       string       `json:"owner"`
+	Mts         []*pb.BurnMT `json:"mts"`
+	Tag         string       `json:"tag"`
+	OperationID string       `json:"operation_id" validate:"required"`
+}
+type BurnResponse struct {
+	OperationID string `json:"operation_id"`
+}
+type TransferRequest struct {
+	Code        string         `json:"code"`
+	Module      string         `json:"module"`
+	ProjectID   uint64         `json:"project_id"`
+	Owner       string         `json:"owner"`
+	Mts         []*pb.Transfer `json:"mts"`
+	Tag         string         `json:"tag"`
+	OperationID string         `json:"operation_id" validate:"required"`
+}
+type TransferResponse struct {
+	OperationID string `json:"operation_id"`
+}
 
 type MTShowRequest struct {
 	ProjectID uint64 `json:"project_id"`

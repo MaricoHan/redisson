@@ -17,6 +17,10 @@ import (
 type IMT interface {
 	Issue(ctx context.Context, request interface{}) (response interface{}, err error)
 	Mint(ctx context.Context, request interface{}) (response interface{}, err error)
+	Edit(ctx context.Context, request interface{}) (response interface{}, err error)
+	Burn(ctx context.Context, request interface{}) (response interface{}, err error)
+	Transfer(ctx context.Context, request interface{}) (response interface{}, err error)
+
 	Show(ctx context.Context, request interface{}) (response interface{}, err error)
 	List(ctx context.Context, request interface{}) (response interface{}, err error)
 }
@@ -30,7 +34,7 @@ func NewMT(svc service.IMT) *MT {
 	return &MT{svc: svc}
 }
 
-func (m MT) Issue(ctx context.Context, request interface{}) (response interface{}, err error) {
+func (h MT) Issue(ctx context.Context, request interface{}) (response interface{}, err error) {
 	// 接收请求
 	req, ok := request.(*vo.IssueRequest)
 	if !ok {
@@ -45,12 +49,12 @@ func (m MT) Issue(ctx context.Context, request interface{}) (response interface{
 	req.OperationID = strings.TrimSpace(req.OperationID)
 
 	// 获取账户基本信息
-	authData := m.AuthData(ctx)
+	authData := h.AuthData(ctx)
 	param := dto.IssueRequest{
 		ProjectID:   authData.ProjectId,
 		Module:      authData.Module,
 		Code:        authData.Code,
-		ClassID:     m.ClassID(ctx),
+		ClassID:     h.ClassID(ctx),
 		Metadata:    req.Metadata,
 		Amount:      req.Amount,
 		Recipient:   req.Recipient,
@@ -58,10 +62,10 @@ func (m MT) Issue(ctx context.Context, request interface{}) (response interface{
 		OperationID: req.OperationID,
 	}
 
-	return m.svc.Issue(&param)
+	return h.svc.Issue(&param)
 }
 
-func (m MT) Mint(ctx context.Context, request interface{}) (response interface{}, err error) {
+func (h MT) Mint(ctx context.Context, request interface{}) (response interface{}, err error) {
 	// 接收请求
 	req, ok := request.(*vo.MintRequest)
 	if !ok {
@@ -76,19 +80,106 @@ func (m MT) Mint(ctx context.Context, request interface{}) (response interface{}
 	req.OperationID = strings.TrimSpace(req.OperationID)
 
 	// 获取账户基本信息
-	authData := m.AuthData(ctx)
+	authData := h.AuthData(ctx)
 	param := dto.MintRequest{
 		Code:        authData.Code,
 		Module:      authData.Module,
 		ProjectID:   authData.ProjectId,
-		ClassID:     m.ClassID(ctx),
-		MTID:        m.MTID(ctx),
+		ClassID:     h.ClassID(ctx),
+		MTID:        h.MTID(ctx),
 		Recipients:  req.Recipients,
 		Tag:         string(tagBz),
 		OperationID: req.OperationID,
 	}
 
-	return m.svc.Mint(&param)
+	return h.svc.Mint(&param)
+}
+
+func (h MT) Edit(ctx context.Context, request interface{}) (response interface{}, err error) {
+	// 接收请求
+	req, ok := request.(*vo.EditRequest)
+	if !ok {
+		log.Debugf("failed to assert : %v", request)
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	}
+	// 转换tag
+	var tagBz []byte
+	if len(req.Tag) > 0 {
+		tagBz, _ = json.Marshal(req.Tag)
+	}
+	req.OperationID = strings.TrimSpace(req.OperationID)
+
+	// 获取账户基本信息
+	authData := h.AuthData(ctx)
+	param := dto.EditRequest{
+		Code:        authData.Code,
+		Module:      authData.Module,
+		ProjectID:   authData.ProjectId,
+		Owner:       h.Owner(ctx),
+		Mts:         req.Mts,
+		Tag:         string(tagBz),
+		OperationID: req.OperationID,
+	}
+
+	return h.svc.Edit(&param)
+}
+
+func (h MT) Burn(ctx context.Context, request interface{}) (response interface{}, err error) {
+	// 接收请求
+	req, ok := request.(*vo.BurnRequest)
+	if !ok {
+		log.Debugf("failed to assert : %v", request)
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	}
+	// 转换tag
+	var tagBz []byte
+	if len(req.Tag) > 0 {
+		tagBz, _ = json.Marshal(req.Tag)
+	}
+	req.OperationID = strings.TrimSpace(req.OperationID)
+
+	// 获取账户基本信息
+	authData := h.AuthData(ctx)
+	param := dto.BurnRequest{
+		Code:        authData.Code,
+		Module:      authData.Module,
+		ProjectID:   authData.ProjectId,
+		Owner:       h.Owner(ctx),
+		Mts:         req.Mts,
+		Tag:         string(tagBz),
+		OperationID: req.OperationID,
+	}
+
+	return h.svc.Burn(&param)
+}
+
+func (h MT) Transfer(ctx context.Context, request interface{}) (response interface{}, err error) {
+	// 接收请求
+	req, ok := request.(*vo.TransferRequest)
+	if !ok {
+		log.Debugf("failed to assert : %v", request)
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	}
+	// 转换tag
+	var tagBz []byte
+	if len(req.Tag) > 0 {
+		tagBz, _ = json.Marshal(req.Tag)
+	}
+	req.OperationID = strings.TrimSpace(req.OperationID)
+
+	// 获取账户基本信息
+	authData := h.AuthData(ctx)
+	param := dto.TransferRequest{
+		Code:        authData.Code,
+		Module:      authData.Module,
+		ProjectID:   authData.ProjectId,
+		Owner:       h.Owner(ctx),
+		Mts:         req.Mts,
+		Tag:         string(tagBz),
+		OperationID: req.OperationID,
+	}
+
+	return h.svc.Transfer(&param)
 }
 
 func (h MT) Show(ctx context.Context, request interface{}) (response interface{}, err error) {
@@ -163,6 +254,15 @@ func (MT) MTID(ctx context.Context) string {
 		return ""
 	}
 	return mtID.(string)
+}
+
+func (MT) Owner(ctx context.Context) string {
+	val := ctx.Value("owner")
+
+	if val == nil {
+		return ""
+	}
+	return val.(string)
 }
 
 func (MT) Issuer(ctx context.Context) string {

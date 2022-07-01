@@ -16,6 +16,9 @@ import (
 type IMT interface {
 	Issue(params *dto.IssueRequest) (*dto.IssueResponse, error)
 	Mint(params *dto.MintRequest) (*dto.MintResponse, error)
+	Edit(params *dto.EditRequest) (*dto.EditResponse, error)
+	Burn(params *dto.BurnRequest) (*dto.BurnResponse, error)
+	Transfer(params *dto.TransferRequest) (*dto.TransferResponse, error)
 	Show(params *dto.MTShowRequest) (*dto.MTShowResponse, error)
 	List(params *dto.MTListRequest) (*dto.MTListResponse, error)
 }
@@ -29,13 +32,13 @@ func NewMT(logger *log.Logger) *MT {
 	}
 }
 
-func (M MT) Issue(params *dto.IssueRequest) (*dto.IssueResponse, error) {
+func (m MT) Issue(params *dto.IssueRequest) (*dto.IssueResponse, error) {
 	logFields := log.Fields{}
 	logFields["model"] = "mt"
 	logFields["func"] = "Issue"
 	logFields["module"] = params.Module
 	logFields["code"] = params.Code
-	log := M.logger.WithFields(logFields)
+	log := m.logger.WithFields(logFields)
 
 	req := pb.MTIssueRequest{
 		ProjectId:   params.ProjectID,
@@ -71,13 +74,13 @@ func (M MT) Issue(params *dto.IssueRequest) (*dto.IssueResponse, error) {
 	return &dto.IssueResponse{OperationID: params.OperationID}, nil
 }
 
-func (M MT) Mint(params *dto.MintRequest) (*dto.MintResponse, error) {
+func (m MT) Mint(params *dto.MintRequest) (*dto.MintResponse, error) {
 	logFields := log.Fields{}
 	logFields["model"] = "mt"
 	logFields["func"] = "Issue"
 	logFields["module"] = params.Module
 	logFields["code"] = params.Code
-	log := M.logger.WithFields(logFields)
+	log := m.logger.WithFields(logFields)
 
 	req := pb.MTMintRequest{
 		ProjectId:   params.ProjectID,
@@ -112,7 +115,7 @@ func (M MT) Mint(params *dto.MintRequest) (*dto.MintResponse, error) {
 	return &dto.MintResponse{OperationID: params.OperationID}, nil
 }
 
-func (M MT) Show(params *dto.MTShowRequest) (*dto.MTShowResponse, error) {
+func (m MT) Show(params *dto.MTShowRequest) (*dto.MTShowResponse, error) {
 	logFields := log.Fields{}
 	logFields["model"] = "mt"
 	logFields["func"] = "Show"
@@ -153,8 +156,126 @@ func (M MT) Show(params *dto.MTShowRequest) (*dto.MTShowResponse, error) {
 	}
 	return result, nil
 }
+func (m MT) Edit(params *dto.EditRequest) (*dto.EditResponse, error) {
+	logFields := log.Fields{}
+	logFields["model"] = "mt"
+	logFields["func"] = "Edit"
+	logFields["module"] = params.Module
+	logFields["code"] = params.Code
+	log := m.logger.WithFields(logFields)
 
-func (M MT) List(params *dto.MTListRequest) (*dto.MTListResponse, error) {
+	req := pb.MTEditRequest{
+		ProjectId:   params.ProjectID,
+		Owner:       params.Owner,
+		Mts:         params.Mts,
+		Tag:         params.Tag,
+		OperationId: params.OperationID,
+	}
+
+	resp := new(pb.MTEditResponse)
+
+	var err error
+	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+	grpcClient, ok := initialize.MTClientMap[mapKey]
+	if !ok {
+		log.Error(errors2.ErrService)
+		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
+	}
+
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+	resp, err = grpcClient.Edit(ctx, &req)
+	if err != nil {
+		log.Error("request err:", err.Error())
+		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+	}
+
+	return &dto.EditResponse{OperationID: params.OperationID}, nil
+}
+
+func (m MT) Burn(params *dto.BurnRequest) (*dto.BurnResponse, error) {
+	logFields := log.Fields{}
+	logFields["model"] = "mt"
+	logFields["func"] = "Burn"
+	logFields["module"] = params.Module
+	logFields["code"] = params.Code
+	log := m.logger.WithFields(logFields)
+
+	req := pb.MTDeleteRequest{
+		ProjectId:   params.ProjectID,
+		Owner:       params.Owner,
+		Mts:         params.Mts,
+		Tag:         params.Tag,
+		OperationId: params.OperationID,
+	}
+
+	resp := new(pb.MTDeleteResponse)
+
+	var err error
+	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+	grpcClient, ok := initialize.MTClientMap[mapKey]
+	if !ok {
+		log.Error(errors2.ErrService)
+		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
+	}
+
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+	resp, err = grpcClient.Delete(ctx, &req)
+	if err != nil {
+		log.Error("request err:", err.Error())
+		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+	}
+
+	return &dto.BurnResponse{OperationID: params.OperationID}, nil
+}
+
+func (m MT) Transfer(params *dto.TransferRequest) (*dto.TransferResponse, error) {
+	logFields := log.Fields{}
+	logFields["model"] = "mt"
+	logFields["func"] = "Transfer"
+	logFields["module"] = params.Module
+	logFields["code"] = params.Code
+	log := m.logger.WithFields(logFields)
+
+	req := pb.MTTransferRequest{
+		ProjectId:   params.ProjectID,
+		Owner:       params.Owner,
+		Mts:         params.Mts,
+		Tag:         params.Tag,
+		OperationId: params.OperationID,
+	}
+
+	resp := new(pb.MTTransferResponse)
+
+	var err error
+	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+	grpcClient, ok := initialize.MTClientMap[mapKey]
+	if !ok {
+		log.Error(errors2.ErrService)
+		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
+	}
+
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+	resp, err = grpcClient.Transfer(ctx, &req)
+	if err != nil {
+		log.Error("request err:", err.Error())
+		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+	}
+
+	return &dto.TransferResponse{OperationID: params.OperationID}, nil
+}
+func (m MT) List(params *dto.MTListRequest) (*dto.MTListResponse, error) {
 	logFields := log.Fields{}
 	logFields["model"] = "mt"
 	logFields["func"] = "List"
