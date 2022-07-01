@@ -23,7 +23,7 @@ require (
 )
 
 require (
-	gitlab.bianjie.ai/avata/chains/api v0.1.1-0.20220527015904-0b2faa331977
+	gitlab.bianjie.ai/avata/chains/api v0.1.2-0.20220701075346-54629d31231c
 	gitlab.bianjie.ai/avata/utils/errors v0.0.0-00010101000000-000000000000
 	gorm.io/driver/mysql v1.3.4
 )
@@ -77,7 +77,7 @@ require (
 replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.4
 
-	gitlab.bianjie.ai/avata/chains/api => ../api
+	gitlab.bianjie.ai/avata/chains/api => gitlab.bianjie.ai/avata/chains/api.git v0.1.2-0.20220701075346-54629d31231c
 
 	gitlab.bianjie.ai/avata/utils/errors => gitlab.bianjie.ai/avata/utils/errors.git v0.1.2
 )
