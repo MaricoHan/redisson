@@ -41,6 +41,7 @@ func (M MT) Issue(params *dto.IssueRequest) (*dto.IssueResponse, error) {
 	req := pb.MTIssueRequest{
 		ProjectId:   params.ProjectID,
 		ClassId:     params.ClassID,
+		Owner:       params.Owner,
 		Metadata:    params.Metadata,
 		Amount:      params.Amount,
 		Recipient:   params.Recipient,
@@ -83,6 +84,7 @@ func (M MT) Mint(params *dto.MintRequest) (*dto.MintResponse, error) {
 	req := pb.MTMintRequest{
 		ProjectId:   params.ProjectID,
 		ClassId:     params.ClassID,
+		Owner:       params.Owner,
 		MtId:        params.MTID,
 		Recipients:  params.Recipients,
 		Tag:         params.Tag,

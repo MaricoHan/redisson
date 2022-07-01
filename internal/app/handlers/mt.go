@@ -52,6 +52,7 @@ func (m MT) Issue(ctx context.Context, request interface{}) (response interface{
 		Module:      authData.Module,
 		Code:        authData.Code,
 		ClassID:     m.ClassID(ctx),
+		Owner:       m.Owner(ctx),
 		Metadata:    req.Metadata,
 		Amount:      req.Amount,
 		Recipient:   req.Recipient,
@@ -83,6 +84,7 @@ func (m MT) Mint(ctx context.Context, request interface{}) (response interface{}
 		Module:      authData.Module,
 		ProjectID:   authData.ProjectId,
 		ClassID:     m.ClassID(ctx),
+		Owner:       m.Owner(ctx),
 		MTID:        m.MTID(ctx),
 		Recipients:  req.Recipients,
 		Tag:         string(tagBz),
@@ -203,6 +205,15 @@ func (MT) Account(ctx context.Context) string {
 		return ""
 	}
 	return account.(string)
+}
+
+func (MT) Owner(ctx context.Context) string {
+	val := ctx.Value("owner")
+
+	if val == nil {
+		return ""
+	}
+	return val.(string)
 }
 
 func (MT) Issuer(ctx context.Context) string {
