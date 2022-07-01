@@ -35,7 +35,7 @@ func NewMT(svc service.IMT) *MT {
 	return &MT{svc: svc}
 }
 
-func (h MT) Issue(ctx context.Context, request interface{}) (response interface{}, err error) {
+func (m MT) Issue(ctx context.Context, request interface{}) (response interface{}, err error) {
 	// 接收请求
 	req, ok := request.(*vo.IssueRequest)
 	if !ok {
@@ -50,12 +50,13 @@ func (h MT) Issue(ctx context.Context, request interface{}) (response interface{
 	req.OperationID = strings.TrimSpace(req.OperationID)
 
 	// 获取账户基本信息
-	authData := h.AuthData(ctx)
+	authData := m.AuthData(ctx)
 	param := dto.IssueRequest{
 		ProjectID:   authData.ProjectId,
 		Module:      authData.Module,
 		Code:        authData.Code,
-		ClassID:     h.ClassID(ctx),
+		ClassID:     m.ClassID(ctx),
+		Owner:       m.Owner(ctx),
 		Metadata:    req.Metadata,
 		Amount:      req.Amount,
 		Recipient:   req.Recipient,
@@ -63,7 +64,7 @@ func (h MT) Issue(ctx context.Context, request interface{}) (response interface{
 		OperationID: req.OperationID,
 	}
 
-	return h.svc.Issue(&param)
+	return m.svc.Issue(&param)
 }
 
 func (h MT) Mint(ctx context.Context, request interface{}) (response interface{}, err error) {
@@ -87,6 +88,7 @@ func (h MT) Mint(ctx context.Context, request interface{}) (response interface{}
 		Module:      authData.Module,
 		ProjectID:   authData.ProjectId,
 		ClassID:     h.ClassID(ctx),
+		Owner:       h.Owner(ctx),
 		MTID:        h.MTID(ctx),
 		Recipients:  req.Recipients,
 		Tag:         string(tagBz),
@@ -287,15 +289,6 @@ func (MT) MTID(ctx context.Context) string {
 	return mtID.(string)
 }
 
-func (MT) Owner(ctx context.Context) string {
-	val := ctx.Value("owner")
-
-	if val == nil {
-		return ""
-	}
-	return val.(string)
-}
-
 func (MT) Account(ctx context.Context) string {
 	account := ctx.Value("account")
 
@@ -303,6 +296,15 @@ func (MT) Account(ctx context.Context) string {
 		return ""
 	}
 	return account.(string)
+}
+
+func (MT) Owner(ctx context.Context) string {
+	val := ctx.Value("owner")
+
+	if val == nil {
+		return ""
+	}
+	return val.(string)
 }
 
 func (MT) Issuer(ctx context.Context) string {

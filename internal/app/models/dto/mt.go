@@ -9,6 +9,7 @@ type IssueRequest struct {
 	Module      string `json:"module"`
 	ProjectID   uint64 `json:"project_id"`
 	ClassID     string `json:"class_id"`
+	Owner       string `json:"owner"`
 	Metadata    string `json:"metadata"`
 	Amount      uint64 `json:"amount"`
 	Recipient   string `json:"recipient"`
@@ -24,6 +25,7 @@ type MintRequest struct {
 	Module      string          `json:"module"`
 	ProjectID   uint64          `json:"project_id"`
 	ClassID     string          `json:"class_id"`
+	Owner       string          `json:"owner"`
 	MTID        string          `json:"mt_id"`
 	Recipients  []*pb.Recipient `json:"recipients"`
 	Tag         string          `json:"tag"`
