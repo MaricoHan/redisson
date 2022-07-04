@@ -199,9 +199,23 @@ func (s *msgs) GetAccountHistory(params dto.AccountsInfo) (*dto.AccountOperation
 			Operation:   item.Operation,
 			Signer:      item.Signer,
 			Timestamp:   item.Timestamp,
-			Message:     typeJson,
+			Message:     &typeJson,
 			GasFee:      item.GasFee,
 			BusinessFee: item.BusinessFee,
+		}
+		if item.NftMsg != "" {
+			typeJsonNft := types.JSON{}
+			if err := json.Unmarshal([]byte(item.NftMsg), &typeJsonNft); err != nil {
+				return nil, err
+			}
+			accountOperationRecord.NftMsg = &typeJsonNft
+		}
+		if item.MtMsg != "" {
+			typeJsonMt := types.JSON{}
+			if err := json.Unmarshal([]byte(item.MtMsg), &typeJsonMt); err != nil {
+				return nil, err
+			}
+			accountOperationRecord.MtMsg = &typeJsonMt
 		}
 		accountOperationRecords = append(accountOperationRecords, accountOperationRecord)
 	}
