@@ -2,7 +2,7 @@ package vo
 
 type CreateMTClassRequest struct {
 	//Base
-	Name        string                 `json:"mt_class_name"`
+	Name        string                 `json:"name"`
 	Data        string                 `json:"data"`
 	Owner       string                 `json:"owner"`
 	Tag         map[string]interface{} `json:"tag"`
