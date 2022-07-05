@@ -204,7 +204,7 @@ func (m MT) List(ctx context.Context, request interface{}) (response interface{}
 	authData := m.AuthData(ctx)
 	params := dto.MTListRequest{
 		ProjectID: authData.ProjectId,
-		MtId:      m.MTID(ctx),
+		MtId:      m.ID(ctx),
 		ClassId:   m.ClassID(ctx),
 		Issuer:    m.Issuer(ctx),
 		TxHash:    m.TxHash(ctx),
@@ -249,7 +249,7 @@ func (m MT) Balances(ctx context.Context, request interface{}) (response interfa
 		ProjectID: authData.ProjectId,
 		Module:    authData.Module,
 		Code:      authData.Code,
-		MtId:      m.MTID(ctx),
+		MtId:      m.ID(ctx),
 		ClassId:   m.ClassID(ctx),
 		Account:   m.Account(ctx),
 	}
@@ -288,7 +288,14 @@ func (MT) MTID(ctx context.Context) string {
 	}
 	return mtID.(string)
 }
+func (MT) ID(ctx context.Context) string {
+	mtID := ctx.Value("id")
 
+	if mtID == nil {
+		return ""
+	}
+	return mtID.(string)
+}
 func (MT) Account(ctx context.Context) string {
 	account := ctx.Value("account")
 
