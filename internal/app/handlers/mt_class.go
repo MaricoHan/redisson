@@ -96,7 +96,7 @@ func (h MTClass) TransferMTClass(ctx context.Context, request interface{}) (inte
 	//校验参数 end
 	authData := h.AuthData(ctx)
 	params := dto.TransferMTClass{
-		ClassID:     h.ClassId(ctx),
+		ClassID:     h.Id(ctx),
 		Owner:       h.Owner(ctx),
 		Recipient:   recipient,
 		ChainID:     authData.ChainId,
@@ -115,8 +115,8 @@ func (h MTClass) List(ctx context.Context, _ interface{}) (interface{}, error) {
 	// 校验参数 start
 	authData := h.AuthData(ctx)
 	params := dto.MTClassListRequest{
-		ClassId:    h.ClassId(ctx),
-		ClassName:  h.ClassName(ctx),
+		ClassId:    h.Id(ctx),
+		ClassName:  h.Name(ctx),
 		Owner:      h.Owner(ctx),
 		TxHash:     h.TxHash(ctx),
 		ProjectID:  authData.ProjectId,
@@ -168,7 +168,7 @@ func (h MTClass) Show(ctx context.Context, _ interface{}) (interface{}, error) {
 	authData := h.AuthData(ctx)
 	params := dto.MTClassShowRequest{
 		ProjectID: authData.ProjectId,
-		ClassID:   h.ClassId(ctx),
+		ClassID:   h.Id(ctx),
 		Status:    h.Status(ctx),
 		Module:    authData.Module,
 		Code:      authData.Code,
@@ -179,15 +179,15 @@ func (h MTClass) Show(ctx context.Context, _ interface{}) (interface{}, error) {
 	return h.svc.Show(&params)
 }
 
-func (h MTClass) ClassId(ctx context.Context) string {
-	val := ctx.Value("class_id")
+func (h MTClass) Id(ctx context.Context) string {
+	val := ctx.Value("id")
 	if val == nil {
 		return ""
 	}
 	return val.(string)
 }
-func (h MTClass) ClassName(ctx context.Context) string {
-	val := ctx.Value("class_name")
+func (h MTClass) Name(ctx context.Context) string {
+	val := ctx.Value("name")
 	if val == nil {
 		return ""
 	}
