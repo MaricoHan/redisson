@@ -80,7 +80,7 @@ type MTShowRequest struct {
 }
 
 type MTShowResponse struct {
-	MtId       string        `json:"mt_id"`       // MT名称
+	MtId       string        `json:"id"`
 	ClassId    string        `json:"class_id"`    // 类别ID
 	ClassName  string        `json:"class_name"`  // 类别名称
 	Data       string        `json:"data"`        // 自定义链上元数据
@@ -93,10 +93,10 @@ type MTShowResponse struct {
 type MTListRequest struct {
 	Page
 	ProjectID uint64 `json:"project_id"`
-	MtId      string `json:"mt_id"`     // MT ID
-	ClassId   string `json:"mclass_id"` // 类别ID
-	Issuer    string `json:"issuer"`    // 发行者
-	TxHash    string `json:"tx_hash"`   // 交易hash
+	MtId      string `json:"mt_id"`    // MT ID
+	ClassId   string `json:"class_id"` // 类别ID
+	Issuer    string `json:"issuer"`   // 发行者
+	TxHash    string `json:"tx_hash"`  // 交易hash
 	Module    string `json:"module"`
 	Code      string `json:"code"`
 }
@@ -107,7 +107,7 @@ type MTListResponse struct {
 }
 
 type MT struct {
-	MtId       string `json:"mt_id"`       // MT ID
+	MtId       string `json:"id"`          // MT ID
 	ClassId    string `json:"class_id"`    // MT 类别 ID
 	ClassName  string `json:"class_name"`  // MT 类别名称
 	Issuer     string `json:"issuer"`      // 发行者
@@ -168,7 +168,7 @@ type MTBalancesRequest struct {
 }
 
 type MTBalances struct {
-	MtId   string `json:"mt_id"` // MT ID
+	MtId   string `json:"id"` // MT ID
 	Amount uint64 `json:"amount"`
 }
 

@@ -148,7 +148,7 @@ func (m MT) Show(params *dto.MTShowRequest) (*dto.MTShowResponse, error) {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
 	result := &dto.MTShowResponse{
-		MtId:       string(resp.Data.MtId),
+		MtId:       resp.Data.MtId,
 		ClassId:    resp.Data.ClassId,
 		ClassName:  resp.Data.ClassName,
 		Data:       resp.Data.Data,
