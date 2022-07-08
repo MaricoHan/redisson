@@ -90,12 +90,12 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 		PermitWithoutStream: true,             // send pings even without active streams
 	}
 	GrpcConnMap = make(map[string]*grpc.ClientConn)
-	wenNativeConn, err := grpc.DialContext(context.Background(),cfg.GrpcClient.WenchangchainNativeAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp),grpc.WithBlock(),grpc.WithBalancerName(roundrobin.Name))
+	wenNativeConn, err := grpc.DialContext(context.Background(), cfg.GrpcClient.WenchangchainNativeAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp), grpc.WithBlock(), grpc.WithBalancerName(roundrobin.Name))
 	if err != nil {
 		logger.Fatal("get wenchangchain-ddc grpc connect failed, err: ", err.Error())
 	}
 	GrpcConnMap[constant.WenchangNative] = wenNativeConn
-	wenDDcConn, err := grpc.DialContext(context.Background(),cfg.GrpcClient.WenchangchainDDCAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp),grpc.WithBlock(),grpc.WithBalancerName(roundrobin.Name))
+	wenDDcConn, err := grpc.DialContext(context.Background(), cfg.GrpcClient.WenchangchainDDCAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp), grpc.WithBlock(), grpc.WithBalancerName(roundrobin.Name))
 	if err != nil {
 		logger.Fatal("get wenchangchain-ddc grpc connect failed, err: ", err.Error())
 	}

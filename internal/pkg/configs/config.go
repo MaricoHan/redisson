@@ -8,6 +8,7 @@ type (
 		Mysql      Mysql      `mapstructure:"mysql"`
 		Redis      Redis      `mapstructure:"redis"`
 		GrpcClient GrpcClient `mapstructure:"grpc_client"`
+		Project    Project    `mapstructure:"project"`
 	}
 
 	App struct {
@@ -45,5 +46,9 @@ type (
 	GrpcClient struct {
 		WenchangchainDDCAddr    string `mapstructure:"wenchangchain_ddc_addr"`
 		WenchangchainNativeAddr string `mapstructure:"wenchangchain_native_addr"`
+	}
+
+	Project struct {
+		SecretPwd string `mapstructure:"secret_pwd"`
 	}
 )

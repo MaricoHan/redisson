@@ -18,8 +18,8 @@ import (
 type IMTClass interface {
 	Show(params *dto.MTClassShowRequest) (*dto.MTClassShowResponse, error)
 	List(params *dto.MTClassListRequest) (*dto.MTClassListResponse, error)
-	CreateMTClass(params dto.CreateMTClass) (*dto.BatchTxRes, error) // 创建
-	TransferMTClass(params dto.TransferMTClass)(*dto.BatchTxRes, error) // 转让
+	CreateMTClass(params dto.CreateMTClass) (*dto.BatchTxRes, error)     // 创建
+	TransferMTClass(params dto.TransferMTClass) (*dto.BatchTxRes, error) // 转让
 }
 
 type mtClass struct {
