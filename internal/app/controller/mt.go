@@ -19,12 +19,12 @@ func NewMTController(bc BaseController, handler handlers.IMT) kit.IController {
 func (m MTController) GetEndpoints() []kit.Endpoint {
 	return []kit.Endpoint{
 		{
-			URI:     "/mt/mt-issues/{class_id}/{owner}",
+			URI:     "/mt/mt-issues/{class_id}",
 			Method:  http.MethodPost,
 			Handler: m.makeHandler(m.handler.Issue, &vo.IssueRequest{}),
 		},
 		{
-			URI:     "/mt/mt-mints/{class_id}/{owner}/{mt_id}",
+			URI:     "/mt/mt-mints/{class_id}/{mt_id}",
 			Method:  http.MethodPost,
 			Handler: m.makeHandler(m.handler.Mint, &vo.MintRequest{}),
 		},
