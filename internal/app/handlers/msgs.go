@@ -9,6 +9,7 @@ import (
 type IMsgs interface {
 	GetNFTHistory(ctx context.Context, _ interface{}) (interface{}, error)
 	GetAccountHistory(ctx context.Context, _ interface{}) (interface{}, error)
+	GetMTHistory(ctx context.Context, _ interface{}) (interface{}, error)
 }
 
 type Msgs struct {
@@ -114,6 +115,60 @@ func (h *Msgs) GetAccountHistory(ctx context.Context, _ interface{}) (interface{
 	params.TxHash = h.Txhash(ctx)
 
 	return h.svc.GetAccountHistory(params)
+}
+
+func (h *Msgs) GetMTHistory(ctx context.Context, _ interface{}) (interface{}, error) {
+	authData := h.AuthData(ctx)
+	params := dto.MTOperationHistoryByMTId{
+		ClassID:    h.ClassId(ctx),
+		MTId:       h.MTId(ctx),
+		ChainID:    authData.ChainId,
+		ProjectID:  authData.ProjectId,
+		PlatFormID: authData.PlatformId,
+		Module:     authData.Module,
+		Code:       authData.Code,
+	}
+
+	offset, err := h.Offset(ctx)
+	if err != nil {
+		return nil, err
+	}
+	params.Offset = offset
+
+	limit, err := h.Limit(ctx)
+	if err != nil {
+		return nil, err
+	}
+	params.Limit = limit
+
+	if params.Limit == 0 {
+		params.Limit = 10
+	}
+
+	startDateR := h.StartDate(ctx)
+	if startDateR != "" {
+		params.StartDate = startDateR
+	}
+
+	endDateR := h.EndDate(ctx)
+	if endDateR != "" {
+		params.EndDate = endDateR
+	}
+
+	params.SortBy = h.SortBy(ctx)
+	params.Signer = h.Signer(ctx)
+	params.Txhash = h.Txhash(ctx)
+	params.Operation = h.Operation(ctx)
+
+	return h.svc.GetMTHistory(params)
+}
+
+func (h *Msgs) MTId(ctx context.Context) string {
+	nftId := ctx.Value("mt_id")
+	if nftId == nil {
+		return ""
+	}
+	return nftId.(string)
 }
 
 func (h *Msgs) ClassId(ctx context.Context) string {

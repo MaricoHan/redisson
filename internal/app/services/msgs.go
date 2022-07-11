@@ -17,6 +17,7 @@ import (
 type IMsgs interface {
 	GetNFTHistory(params dto.NftOperationHistoryByNftId) (*dto.NftOperationHistoryByNftIdRes, error)
 	GetAccountHistory(params dto.AccountsInfo) (*dto.AccountOperationRecordRes, error)
+	GetMTHistory(params dto.MTOperationHistoryByMTId) (*dto.MTOperationHistoryByMTIdRes, error)
 }
 
 type msgs struct {
@@ -198,14 +199,108 @@ func (s *msgs) GetAccountHistory(params dto.AccountsInfo) (*dto.AccountOperation
 			Operation:   item.Operation,
 			Signer:      item.Signer,
 			Timestamp:   item.Timestamp,
-			Message:     typeJson,
+			Message:     &typeJson,
 			GasFee:      item.GasFee,
 			BusinessFee: item.BusinessFee,
+		}
+		if item.NftMsg != "" {
+			typeJsonNft := types.JSON{}
+			if err := json.Unmarshal([]byte(item.NftMsg), &typeJsonNft); err != nil {
+				return nil, err
+			}
+			accountOperationRecord.NftMsg = &typeJsonNft
+		}
+		if item.MtMsg != "" {
+			typeJsonMt := types.JSON{}
+			if err := json.Unmarshal([]byte(item.MtMsg), &typeJsonMt); err != nil {
+				return nil, err
+			}
+			accountOperationRecord.MtMsg = &typeJsonMt
 		}
 		accountOperationRecords = append(accountOperationRecords, accountOperationRecord)
 	}
 	if accountOperationRecords != nil {
 		result.OperationRecords = accountOperationRecords
+	}
+
+	return result, nil
+}
+
+func (m *msgs) GetMTHistory(params dto.MTOperationHistoryByMTId) (*dto.MTOperationHistoryByMTIdRes, error) {
+	logFields := log.Fields{}
+	logFields["model"] = "msgs"
+	logFields["func"] = "GetMTHistory"
+	logFields["module"] = params.Module
+	logFields["code"] = params.Code
+
+	sort, ok := pb.Sorts_value[params.SortBy]
+	if !ok {
+		log.WithFields(logFields).Error(errors2.ErrSortBy)
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrSortBy)
+	}
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+	req := pb.MTHistoryRequest{
+		ProjectId: params.ProjectID,
+		Offset:    params.Offset,
+		Limit:     params.Limit,
+		StartDate: params.StartDate,
+		EndDate:   params.EndDate,
+		SortBy:    pb.Sorts(sort),
+		Signer:    params.Signer,
+		TxHash:    params.Txhash,
+		MtId:      params.MTId,
+		ClassId:   params.ClassID,
+	}
+	if params.Operation != "" {
+		operation, ok := pb.Operation_value[params.Operation]
+		if !ok {
+			if !ok {
+				log.WithFields(logFields).Error(errors2.ErrOperation)
+				return nil, errors2.New(errors2.ClientParams, errors2.ErrOperation)
+			}
+		}
+		req.Operation = pb.Operation(operation)
+	}
+
+	resp := &pb.MTHistoryResponse{}
+	var err error
+	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+	grpcClient, ok := initialize.MsgsClientMap[mapKey]
+	if !ok {
+		log.WithFields(logFields).Error(errors2.ErrService)
+		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
+	}
+	resp, err = grpcClient.MTHistory(ctx, &req)
+	if err != nil {
+		log.WithFields(logFields).Error("request err:", err.Error())
+		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+	}
+	result := &dto.MTOperationHistoryByMTIdRes{
+		PageRes: dto.PageRes{
+			Offset: resp.Offset,
+			Limit:  resp.Limit,
+		},
+		OperationRecords: []*dto.MTOperationRecord{},
+	}
+	result.TotalCount = resp.TotalCount
+	var operationRecords []*dto.MTOperationRecord
+	for _, item := range resp.Data {
+		var operationRecord = &dto.MTOperationRecord{
+			Txhash:    item.TxHash,
+			Operation: item.Operation,
+			Signer:    item.Signer,
+			Recipient: item.Recipient,
+			Amount:    item.Amount,
+			Timestamp: item.Timestamp,
+		}
+		operationRecords = append(operationRecords, operationRecord)
+	}
+	if operationRecords != nil {
+		result.OperationRecords = operationRecords
 	}
 
 	return result, nil

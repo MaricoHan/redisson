@@ -128,6 +128,13 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Code:       chainInfo.Code,
 	}
 
+	if fmt.Sprintf("%s-%s", chainInfo.Code, chainInfo.Module) == constant.WenchangDDC {
+		if strings.Contains(r.RequestURI, "/mt/") {
+			writeNotFoundRequestResp(w, constant.ErrUnSupported)
+			return
+		}
+	}
+
 	authDataBytes, _ := json.Marshal(authData)
 	// 1. 判断时间误差
 	if configs.Cfg.App.TimestampAuth {

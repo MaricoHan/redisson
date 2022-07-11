@@ -4,6 +4,7 @@ import "fmt"
 
 const (
 	RootCodeSpace = "NFTP-OPEN-API"
+	MtCodeSpace   = "MT"
 )
 
 const (
@@ -21,6 +22,7 @@ const (
 	AccountFailed                  = "ACCOUNT_ERROR"
 	TimestampTimeout               = "TIMESTAMP_TIME"
 	DuplicateRequest               = "DUPLICATE_REQUEST"
+	UnSupported                    = "NOT_FOUND"
 
 	// ErrOffset		error msg handle
 	ErrName         = "name is a required field"
@@ -42,7 +44,8 @@ var (
 	ErrIdempotent   = Register(RootCodeSpace, FrequentRequestsNotSupports, "frequent requests not supports")
 	ErrNftStatus    = Register(RootCodeSpace, NftStatusAbnormal, ErrNftStatusMsg)
 	ErrTimestamp    = Register(RootCodeSpace, TimestampTimeout, "timestamp is timeout")
-	ErrDuplicate   = Register(RootCodeSpace, DuplicateRequest, "duplicate request")
+	ErrDuplicate    = Register(RootCodeSpace, DuplicateRequest, "duplicate request")
+	ErrUnSupported  = Register(MtCodeSpace, UnSupported, "not implemented")
 )
 
 var usedErrorCodes = map[string]*AppError{}

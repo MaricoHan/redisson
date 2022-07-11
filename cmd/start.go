@@ -10,6 +10,7 @@ import (
 
 var (
 	localConfig string
+	serverPort  string
 	startCmd    = &cobra.Command{
 		Use:     "start",
 		Example: "start order server",
@@ -21,6 +22,7 @@ var (
 
 func init() {
 	startCmd.Flags().StringVarP(&localConfig, "config", "c", "", "config path: /opt/local.toml")
+	startCmd.Flags().StringVarP(&serverPort, "port", "p", "", "config path: /opt/local.toml")
 	rootCmd.AddCommand(startCmd)
 }
 
@@ -40,6 +42,9 @@ func run() {
 	if err := v.Unmarshal(&config); err != nil {
 		log.Errorf("unmarshal config err:%s", err.Error())
 		return
+	}
+	if serverPort != "" {
+		config.App.Addr = ":" + serverPort
 	}
 	configs.Cfg = config
 	app.Start(&configs.Context{
