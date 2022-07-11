@@ -120,7 +120,7 @@ func (h *Msgs) GetAccountHistory(ctx context.Context, _ interface{}) (interface{
 func (h *Msgs) GetMTHistory(ctx context.Context, _ interface{}) (interface{}, error) {
 	authData := h.AuthData(ctx)
 	params := dto.MTOperationHistoryByMTId{
-		ClassID:    h.MTClassId(ctx),
+		ClassID:    h.ClassId(ctx),
 		MTId:       h.MTId(ctx),
 		ChainID:    authData.ChainId,
 		ProjectID:  authData.ProjectId,
@@ -161,16 +161,6 @@ func (h *Msgs) GetMTHistory(ctx context.Context, _ interface{}) (interface{}, er
 	params.Operation = h.Operation(ctx)
 
 	return h.svc.GetMTHistory(params)
-}
-
-func (h *Msgs) MTClassId(ctx context.Context) string {
-	classId := ctx.Value("mt_class_id")
-
-	if classId == nil {
-		return ""
-	}
-	return classId.(string)
-
 }
 
 func (h *Msgs) MTId(ctx context.Context) string {

@@ -4,7 +4,7 @@ version = "v0.4.0"
 env = "dev"
 log_level = "debug"
 log_format = "text"
-addr = ":8080"
+addr = ":8096"
 prometheus_addr = "0.0.0.0:9090"
 signature_auth = false
 timestamp_auth = false
@@ -12,8 +12,8 @@ router_prefix = "v1beta1"
 grpc_timeout = 1000000
 
 [mysql]
-host = "192.168.150.40"
-port = 23306
+host = "192.168.0.114"
+port = 32401
 db = "core"
 username = "core"
 password = "corePassword"
@@ -33,3 +33,4 @@ wenchangchain_native_addr = "127.0.0.1:10000"
 
 [project]
 secret_pwd = "Console_Projects_Secrets"
+

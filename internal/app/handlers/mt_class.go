@@ -96,7 +96,7 @@ func (h MTClass) TransferMTClass(ctx context.Context, request interface{}) (inte
 	//校验参数 end
 	authData := h.AuthData(ctx)
 	params := dto.TransferMTClass{
-		ClassID:     h.ClassID(ctx),
+		ClassID:     h.Id(ctx),
 		Owner:       h.Owner(ctx),
 		Recipient:   recipient,
 		ChainID:     authData.ChainId,
@@ -115,15 +115,15 @@ func (h MTClass) List(ctx context.Context, _ interface{}) (interface{}, error) {
 	// 校验参数 start
 	authData := h.AuthData(ctx)
 	params := dto.MTClassListRequest{
-		MtClassId:   h.MtClassId(ctx),
-		MtClassName: h.MtClassName(ctx),
-		Owner:       h.Owner(ctx),
-		TxHash:      h.TxHash(ctx),
-		ProjectID:   authData.ProjectId,
-		ChainID:     authData.ChainId,
-		PlatFormID:  authData.PlatformId,
-		Module:      authData.Module,
-		Code:        authData.Code,
+		ClassId:    h.Id(ctx),
+		ClassName:  h.Name(ctx),
+		Owner:      h.Owner(ctx),
+		TxHash:     h.TxHash(ctx),
+		ProjectID:  authData.ProjectId,
+		ChainID:    authData.ChainId,
+		PlatFormID: authData.PlatformId,
+		Module:     authData.Module,
+		Code:       authData.Code,
 	}
 	offset, err := h.Offset(ctx)
 	if err != nil {
@@ -168,7 +168,7 @@ func (h MTClass) Show(ctx context.Context, _ interface{}) (interface{}, error) {
 	authData := h.AuthData(ctx)
 	params := dto.MTClassShowRequest{
 		ProjectID: authData.ProjectId,
-		ClassID:   h.MtClassId(ctx),
+		ClassID:   h.Id(ctx),
 		Status:    h.Status(ctx),
 		Module:    authData.Module,
 		Code:      authData.Code,
@@ -179,15 +179,15 @@ func (h MTClass) Show(ctx context.Context, _ interface{}) (interface{}, error) {
 	return h.svc.Show(&params)
 }
 
-func (h MTClass) MtClassId(ctx context.Context) string {
-	val := ctx.Value("mt_class_id")
+func (h MTClass) Id(ctx context.Context) string {
+	val := ctx.Value("id")
 	if val == nil {
 		return ""
 	}
 	return val.(string)
 }
-func (h MTClass) MtClassName(ctx context.Context) string {
-	val := ctx.Value("mt_class_name")
+func (h MTClass) Name(ctx context.Context) string {
+	val := ctx.Value("name")
 	if val == nil {
 		return ""
 	}
@@ -228,6 +228,7 @@ func (h MTClass) MtCount(ctx context.Context) uint64 {
 	}
 	return val.(uint64)
 }
+
 func (h MTClass) ClassID(ctx context.Context) string {
 	classId := ctx.Value("mt_class_id")
 	if classId == nil {

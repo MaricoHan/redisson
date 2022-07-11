@@ -74,7 +74,7 @@ func (m *mtClass) Show(params *dto.MTClassShowRequest) (*dto.MTClassShowResponse
 	logFields["code"] = params.Code
 	req := pb.MTClassShowRequest{
 		ProjectId: params.ProjectID,
-		MtClassId: params.ClassID,
+		ClassId:   params.ClassID,
 		Status:    pb.Status(pb.Status_value[params.Status]),
 	}
 	resp := &pb.MTClassShowResponse{}
@@ -97,10 +97,10 @@ func (m *mtClass) Show(params *dto.MTClassShowRequest) (*dto.MTClassShowResponse
 	}
 	result := &dto.MTClassShowResponse{
 		//Id:          resp.Detail.Id,
-		MtClassId:   resp.Detail.MtClassId,
-		MtClassName: resp.Detail.MtClassName,
-		Owner:       resp.Detail.Owner,
-		Data:        resp.Detail.Data,
+		ClassId:   resp.Detail.ClassId,
+		ClassName: resp.Detail.ClassName,
+		Owner:     resp.Detail.Owner,
+		Data:      resp.Detail.Data,
 		//Status:      resp.Detail.Status,
 		//LockedBy:    resp.Detail.LockedBy,
 		TxHash:    resp.Detail.TxHash,
@@ -128,17 +128,17 @@ func (m *mtClass) List(params *dto.MTClassListRequest) (*dto.MTClassListResponse
 	}
 
 	req := pb.MTClassListRequest{
-		ProjectId:   params.ProjectID,
-		Offset:      params.Offset,
-		Limit:       params.Limit,
-		StartDate:   params.StartDate,
-		EndDate:     params.EndDate,
-		SortBy:      pb.Sorts(sort),
-		MtClassId:   params.MtClassId,
-		MtClassName: params.MtClassName,
-		Owner:       params.Owner,
-		TxHash:      params.TxHash,
-		Status:      pb.Status(pb.Status_value[params.Status]),
+		ProjectId: params.ProjectID,
+		Offset:    params.Offset,
+		Limit:     params.Limit,
+		StartDate: params.StartDate,
+		EndDate:   params.EndDate,
+		SortBy:    pb.Sorts(sort),
+		ClassId:   params.ClassId,
+		ClassName: params.ClassName,
+		Owner:     params.Owner,
+		TxHash:    params.TxHash,
+		Status:    pb.Status(pb.Status_value[params.Status]),
 	}
 
 	resp := &pb.MTClassListResponse{}
@@ -168,12 +168,12 @@ func (m *mtClass) List(params *dto.MTClassListRequest) (*dto.MTClassListResponse
 	var mtClasses []*dto.MTClass
 	for _, item := range resp.Data {
 		mtClass := &dto.MTClass{
-			MtClassId:   item.MtClassId,
-			MtClassName: item.MtClassName,
-			Owner:       item.Owner,
-			MtCount:     item.MtCount,
-			TxHash:      item.TxHash,
-			Timestamp:   item.Timestamp,
+			ClassId:   item.ClassId,
+			ClassName: item.ClassName,
+			Owner:     item.Owner,
+			MtCount:   item.MtCount,
+			TxHash:    item.TxHash,
+			Timestamp: item.Timestamp,
 		}
 		mtClasses = append(mtClasses, mtClass)
 	}
