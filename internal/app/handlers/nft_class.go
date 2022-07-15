@@ -52,33 +52,11 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 	if name == "" {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrName)
 	}
-
-	if len([]rune(name)) < 1 || len([]rune(name)) > 64 {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrNameLen)
-	}
-
-	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
+	if len(operationId) == 0 || len(operationId) >= 65 {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
 	}
-
-	if (symbol != "" && len([]rune(symbol)) < 3) || len([]rune(symbol)) > 64 {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrSymbolLen)
-	}
-
-	if len([]rune(description)) > 2048 {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrDescriptionLen)
-	}
-
 	if err := h.base.UriCheck(uri); err != nil {
 		return nil, err
-	}
-
-	if len([]rune(uriHash)) > 512 {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrURIHashLen)
-	}
-
-	if len([]rune(data)) > 4096 {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrDataLen)
 	}
 
 	if owner == "" {

@@ -2,11 +2,12 @@ package handlers
 
 import (
 	"context"
+	"strings"
+
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
-	"strings"
 )
 
 type INFTTransfer interface {
