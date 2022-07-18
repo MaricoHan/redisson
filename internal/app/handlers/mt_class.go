@@ -48,10 +48,6 @@ func (h MTClass) CreateMTClass(ctx context.Context, request interface{}) (interf
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
 	}
 
-	if len([]rune(data)) > 4096 {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrDataLen)
-	}
-
 	if len([]rune(owner)) > 128 {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOwnerLen)
 	}
@@ -148,14 +144,6 @@ func (h MTClass) List(ctx context.Context, _ interface{}) (interface{}, error) {
 	}
 
 	params.SortBy = h.SortBy(ctx)
-	//switch h.SortBy(ctx) {
-	//case "DATE_ASC":
-	//	params.SortBy = "DATE_ASC"
-	//case "DATE_DESC":
-	//	params.SortBy = "DATE_DESC"
-	//default:
-	//	return nil, constant.NewAppError(constant.RootCodeSpace, constant.ClientParamsError, constant.ErrSortBy)
-	//}
 
 	// 校验参数 end
 	// 业务数据入库的地方
