@@ -35,8 +35,8 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	req := pb.TxShowRequest{
-		ProjectId: params.ProjectID,
-		TaskId:    params.TaskId,
+		ProjectId:   params.ProjectID,
+		OperationId: params.TaskId,
 	}
 	resp := &pb.TxShowResponse{}
 	var err error
@@ -55,12 +55,12 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
 	result := &dto.TxResultByTxHashRes{}
-	status := pb.Status_value[resp.Detail.Status]
-	result.Module = resp.Detail.Module
-	result.Type = resp.Detail.Operation
+	status := int32(resp.Detail.Status)
+	result.Module = resp.Detail.Module.String()
+	result.Type = resp.Detail.Operation.String()
 	result.TxHash = ""
 	result.Status = status
-	if status == int32(pb.Status_success) || status == int32(pb.Status_failed) {
+	if status == int32(pb.STATUS_success) || status == int32(pb.STATUS_failed) {
 		result.TxHash = resp.Detail.Hash
 	}
 	if resp.Detail.Tag != "" {
@@ -80,7 +80,7 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 	result.Timestamp = resp.Detail.Timestamp
 
 	//交易成功或根账户转让类别交易失败
-	if result.Status == int32(pb.Status_success) || (result.Status == int32(pb.Status_failed) && result.Type == pb.Operation_name[int32(pb.Operation_transfer_class_mt)]) {
+	if result.Status == int32(pb.STATUS_success) || (result.Status == int32(pb.STATUS_failed) && result.Type == pb.OPERATION_name[int32(pb.OPERATION_transfer_class)]) {
 		//根据 type 返回交易对象 id
 		typeJsonNft := types.JSON{}
 		typeJsonMt := types.JSON{}

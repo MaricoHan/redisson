@@ -56,6 +56,7 @@ func Logger(cfg *configs.Config) *log.Logger {
 }
 
 func InitMysqlDB(cfg *configs.Config, logger *log.Logger) {
+	logger.Info("init mysql ...")
 	gormLogger := logs.NewGormLogger(logger)
 	dsn := fmt.Sprintf(
 		"%s:%s@tcp(%s:%d)/%s?charset=utf8&parseTime=True&loc=Local",
@@ -84,18 +85,19 @@ func InitMysqlDB(cfg *configs.Config, logger *log.Logger) {
 }
 
 func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
+	logger.Info("init grpc ...")
 	var kacp = keepalive.ClientParameters{
 		Time:                10 * time.Second, // send pings every 10 seconds if there is no activity
 		Timeout:             time.Second,      // wait 1 second for ping ack before considering the connection dead
 		PermitWithoutStream: true,             // send pings even without active streams
 	}
 	GrpcConnMap = make(map[string]*grpc.ClientConn)
-	wenNativeConn, err := grpc.DialContext(context.Background(),cfg.GrpcClient.WenchangchainNativeAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp),grpc.WithBlock(),grpc.WithBalancerName(roundrobin.Name))
+	wenNativeConn, err := grpc.DialContext(context.Background(), cfg.GrpcClient.WenchangchainNativeAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp), grpc.WithBlock(), grpc.WithBalancerName(roundrobin.Name))
 	if err != nil {
 		logger.Fatal("get wenchangchain-ddc grpc connect failed, err: ", err.Error())
 	}
 	GrpcConnMap[constant.WenchangNative] = wenNativeConn
-	wenDDcConn, err := grpc.DialContext(context.Background(),cfg.GrpcClient.WenchangchainDDCAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp),grpc.WithBlock(),grpc.WithBalancerName(roundrobin.Name))
+	wenDDcConn, err := grpc.DialContext(context.Background(), cfg.GrpcClient.WenchangchainDDCAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp), grpc.WithBlock(), grpc.WithBalancerName(roundrobin.Name))
 	if err != nil {
 		logger.Fatal("get wenchangchain-ddc grpc connect failed, err: ", err.Error())
 	}
@@ -139,5 +141,6 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 }
 
 func InitRedisClient(cfg *configs.Config, logger *log.Logger) {
+	logger.Info("init redis ...")
 	RedisClient = redis.NewRedisClient(cfg.Redis.Host, cfg.Redis.Password, cfg.Redis.DB, logger)
 }
