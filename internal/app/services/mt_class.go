@@ -75,7 +75,7 @@ func (m *mtClass) Show(params *dto.MTClassShowRequest) (*dto.MTClassShowResponse
 	req := pb.MTClassShowRequest{
 		ProjectId: params.ProjectID,
 		ClassId:   params.ClassID,
-		Status:    pb.Status(pb.Status_value[params.Status]),
+		Status:    pb.STATUS(pb.STATUS_value[params.Status]),
 	}
 	resp := &pb.MTClassShowResponse{}
 	var err error
@@ -138,7 +138,7 @@ func (m *mtClass) List(params *dto.MTClassListRequest) (*dto.MTClassListResponse
 		ClassName: params.ClassName,
 		Owner:     params.Owner,
 		TxHash:    params.TxHash,
-		Status:    pb.Status(pb.Status_value[params.Status]),
+		Status:    pb.STATUS(pb.STATUS_value[params.Status]),
 	}
 
 	resp := &pb.MTClassListResponse{}
