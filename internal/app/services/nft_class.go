@@ -34,7 +34,7 @@ func (n *nftClass) GetAllNFTClasses(params dto.NftClasses) (*dto.NftClassesRes, 
 	logFields["code"] = params.Code
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
-	sort, ok := pb.Sorts_value[params.SortBy]
+	sort, ok := pb.SORTS_value[params.SortBy]
 	if !ok {
 		log.WithFields(logFields).Error("sort_by is illegal")
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrSortBy)
@@ -46,12 +46,12 @@ func (n *nftClass) GetAllNFTClasses(params dto.NftClasses) (*dto.NftClassesRes, 
 		Limit:     params.Limit,
 		StartDate: params.StartDate,
 		EndDate:   params.EndDate,
-		SortBy:    pb.Sorts(sort),
+		SortBy:    pb.SORTS(sort),
 		Id:        params.Id,
 		Name:      params.Name,
 		Owner:     params.Owner,
 		TxHash:    params.TxHash,
-		Status:    pb.Status_active,
+		Status:    pb.STATUS_Active,
 	}
 	resp := &pb.ClassListResponse{}
 	var err error
@@ -109,7 +109,7 @@ func (n *nftClass) GetNFTClass(params dto.NftClasses) (*dto.NftClassRes, error) 
 	req := pb.ClassShowRequest{
 		ProjectId: params.ProjectID,
 		Id:        params.Id,
-		Status:    pb.Status_active, //todo
+		Status:    pb.STATUS_Active, //todo
 	}
 	resp := &pb.ClassShowResponse{}
 	var err error

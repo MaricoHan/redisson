@@ -112,7 +112,7 @@ func (a *account) GetAccounts(params dto.AccountsInfo) (*dto.AccountsRes, error)
 	logFields["module"] = params.Module
 	logFields["code"] = params.Code
 
-	sort, ok := pb.Sorts_value[params.SortBy]
+	sort, ok := pb.SORT_value[params.SortBy]
 	if !ok {
 		log.WithFields(logFields).Error(errors2.ErrSortBy)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrSortBy)
@@ -122,7 +122,7 @@ func (a *account) GetAccounts(params dto.AccountsInfo) (*dto.AccountsRes, error)
 		ProjectId:   params.ProjectID,
 		Offset:      params.Offset,
 		Limit:       params.Limit,
-		SortBy:      pb.Sorts(sort),
+		SortBy:      pb.SORT(sort),
 		Address:     params.Account,
 		StartDate:   params.StartDate,
 		EndDate:     params.EndDate,

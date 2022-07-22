@@ -13,6 +13,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 
+	pb "gitlab.bianjie.ai/avata/chains/api/pb/account"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 )
 
@@ -155,7 +156,7 @@ func (h pageBasic) EndDate(ctx context.Context) string {
 func (h pageBasic) SortBy(ctx context.Context) string {
 	sortBy := ctx.Value("sort_by")
 	if sortBy == "" || sortBy == nil {
-		return "DATE_DESC"
+		return pb.SORT_name[0]
 	}
 	return sortBy.(string)
 }
