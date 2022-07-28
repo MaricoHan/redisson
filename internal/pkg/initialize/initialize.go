@@ -22,6 +22,7 @@ import (
 	"google.golang.org/grpc/keepalive"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 	"time"
 )
 
@@ -66,7 +67,10 @@ func InitMysqlDB(cfg *configs.Config, logger *log.Logger) {
 		cfg.Mysql.Port,
 		cfg.Mysql.DB)
 
-	mysqlDB, err := gorm.Open(mysql.Open(dsn), &gorm.Config{Logger: gormLogger})
+	mysqlDB, err := gorm.Open(mysql.Open(dsn), &gorm.Config{Logger: gormLogger, NamingStrategy: schema.NamingStrategy{
+		TablePrefix:   "t_",  // 表前缀
+		SingularTable: false, // 复数形式
+	}})
 	if err != nil {
 		log.Fatal("init mysqlDB failed: ", err.Error())
 	}
