@@ -12,8 +12,8 @@ router_prefix = "v1beta1"
 grpc_timeout = 1000000
 
 [mysql]
-host = "192.168.0.114"
-port = 32401
+host = "192.168.150.40"
+port = 23306
 db = "core"
 username = "core"
 password = "corePassword"

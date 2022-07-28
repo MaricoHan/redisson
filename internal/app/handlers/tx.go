@@ -23,12 +23,12 @@ func (h *Tx) TxResultByTxHash(ctx context.Context, _ interface{}) (interface{}, 
 	// 校验参数 start
 	authData := h.AuthData(ctx)
 	params := dto.TxResultByTxHash{
-		TaskId:     h.TaskId(ctx),
-		ChainID:    authData.ChainId,
-		ProjectID:  authData.ProjectId,
-		PlatFormID: authData.PlatformId,
-		Module:     authData.Module,
-		Code:       authData.Code,
+		OperationId: h.TaskId(ctx),
+		ChainID:     authData.ChainId,
+		ProjectID:   authData.ProjectId,
+		PlatFormID:  authData.PlatformId,
+		Module:      authData.Module,
+		Code:        authData.Code,
 	}
 	// 校验参数 end
 	// 业务数据入库的地方

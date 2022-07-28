@@ -3,12 +3,12 @@ package dto
 import "github.com/volatiletech/sqlboiler/types"
 
 type TxResultByTxHash struct {
-	TaskId     string `json:"task_id"`
-	ProjectID  uint64 `json:"project_id"`
-	ChainID    uint64 `json:"chain_id"`
-	PlatFormID uint64 `json:"plat_form_id"`
-	Module     string `json:"module"`
-	Code       string `json:"code"`
+	OperationId string `json:"operation_id"`
+	ProjectID   uint64 `json:"project_id"`
+	ChainID     uint64 `json:"chain_id"`
+	PlatFormID  uint64 `json:"plat_form_id"`
+	Module      string `json:"module"`
+	Code        string `json:"code"`
 }
 
 type TxResultByTxHashRes struct {

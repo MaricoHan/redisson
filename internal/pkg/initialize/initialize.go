@@ -56,6 +56,7 @@ func Logger(cfg *configs.Config) *log.Logger {
 }
 
 func InitMysqlDB(cfg *configs.Config, logger *log.Logger) {
+	logger.Info("init mysql ...")
 	gormLogger := logs.NewGormLogger(logger)
 	dsn := fmt.Sprintf(
 		"%s:%s@tcp(%s:%d)/%s?charset=utf8&parseTime=True&loc=Local",
@@ -84,6 +85,7 @@ func InitMysqlDB(cfg *configs.Config, logger *log.Logger) {
 }
 
 func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
+	logger.Info("init grpc ...")
 	var kacp = keepalive.ClientParameters{
 		Time:                10 * time.Second, // send pings every 10 seconds if there is no activity
 		Timeout:             time.Second,      // wait 1 second for ping ack before considering the connection dead
@@ -139,5 +141,6 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 }
 
 func InitRedisClient(cfg *configs.Config, logger *log.Logger) {
+	logger.Info("init redis ...")
 	RedisClient = redis.NewRedisClient(cfg.Redis.Host, cfg.Redis.Password, cfg.Redis.DB, logger)
 }
