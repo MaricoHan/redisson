@@ -216,3 +216,11 @@ func (h MTClass) MtCount(ctx context.Context) uint64 {
 	}
 	return val.(uint64)
 }
+
+func (h MTClass) ClassID(ctx context.Context) string {
+	classId := ctx.Value("mt_class_id")
+	if classId == nil {
+		return ""
+	}
+	return classId.(string)
+}
