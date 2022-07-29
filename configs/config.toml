@@ -28,5 +28,9 @@ password = "redisPassword"
 db = 11
 
 [grpc_client]
-wenchangchain_ddc_addr = "192.168.150.41:10000"
+wenchangchain_ddc_addr = "127.0.0.1:10000"
 wenchangchain_native_addr = "127.0.0.1:10000"
+
+[project]
+secret_pwd = "Console_Projects_Secrets"
+

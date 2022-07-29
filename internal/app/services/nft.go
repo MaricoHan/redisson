@@ -41,7 +41,7 @@ func (s *nft) List(params dto.Nfts) (*dto.NftsRes, error) {
 	logFields["module"] = params.Module
 	logFields["code"] = params.Code
 
-	sort, ok := pb.Sorts_value[params.SortBy]
+	sort, ok := pb.SORTS_value[params.SortBy]
 	if !ok {
 		log.WithFields(logFields).Error(errors2.ErrSortBy)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrSortBy)
@@ -57,8 +57,8 @@ func (s *nft) List(params dto.Nfts) (*dto.NftsRes, error) {
 		ClassId:   params.ClassId,
 		Owner:     params.Owner,
 		TxHash:    params.TxHash,
-		Status:    pb.Status(pb.Status_value[params.Status]),
-		SortBy:    pb.Sorts(sort),
+		Status:    pb.STATUS(pb.STATUS_value[params.Status]),
+		SortBy:    pb.SORTS(sort),
 		Name:      params.Name,
 	}
 
@@ -94,7 +94,7 @@ func (s *nft) List(params dto.Nfts) (*dto.NftsRes, error) {
 			ClassId:     item.ClassId,
 			Uri:         item.Uri,
 			Owner:       item.Owner,
-			Status:      item.Status,
+			Status:      item.Status.String(),
 			TxHash:      item.TxHash,
 			Timestamp:   item.Timestamp,
 			ClassName:   item.ClassName,
@@ -228,7 +228,7 @@ func (s *nft) Show(params dto.NftByNftId) (*dto.NftReq, error) {
 		UriHash:     resp.Detail.UriHash,
 		Data:        resp.Detail.Metadata,
 		Owner:       resp.Detail.Owner,
-		Status:      resp.Detail.Status,
+		Status:      resp.Detail.Status.String(),
 		TxHash:      resp.Detail.TxHash,
 		Timestamp:   resp.Detail.Timestamp,
 	}

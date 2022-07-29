@@ -19,6 +19,7 @@ type Server struct {
 }
 
 func NewServer(ctx *configs.Context) Server {
+	ctx.Logger.Info("init server router ...")
 	middlewares := []func(http.Handler) http.Handler{
 		//should be last one
 		middlewares.RecoverMiddleware,
