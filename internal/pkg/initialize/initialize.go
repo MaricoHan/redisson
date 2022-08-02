@@ -38,6 +38,7 @@ var TxClientMap map[string]pb_tx.TxClient
 var MTClientMap map[string]pb_mt.MTClient
 var MTClassClientMap map[string]pb_mt_class.MTClassClient
 var MTMsgsClientMap map[string]pb_mt_msgs.MTMSGSClient
+var Log = new(log.Logger)
 
 func Logger(cfg *configs.Config) *log.Logger {
 	if cfg.App.Env == constant.EnvPro {
@@ -53,7 +54,8 @@ func Logger(cfg *configs.Config) *log.Logger {
 	default:
 		log.SetLevel(log.InfoLevel)
 	}
-	return log.StandardLogger()
+	Log = log.StandardLogger()
+	return Log
 }
 
 func InitMysqlDB(cfg *configs.Config, logger *log.Logger) {
