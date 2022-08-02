@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-
 	"net/http"
 	"reflect"
 	"strconv"
@@ -19,10 +18,10 @@ import (
 	entranslations "github.com/go-playground/validator/v10/translations/en"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	errors2 "gitlab.bianjie.ai/avata/utils/errors"
+
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
-	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 )
 
 type (
@@ -55,6 +54,7 @@ type (
 )
 
 var trans ut.Translator
+var log = initialize.Log
 
 func NewController() Controller {
 	validate := validator.New()

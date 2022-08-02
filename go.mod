@@ -76,7 +76,7 @@ replace (
 
 	gitlab.bianjie.ai/avata/chains/api => gitlab.bianjie.ai/avata/chains/api.git v0.7.1-0.20220729032204-e38271437fdd
 
-	gitlab.bianjie.ai/avata/utils/commons => gitlab.bianjie.ai/avata/utils/commons.git v0.0.0-20220707060929-9028c5a55f14
+	gitlab.bianjie.ai/avata/utils/commons => gitlab.bianjie.ai/avata/utils/commons.git v0.0.0-20220801043923-fecef71933d2
 
 	gitlab.bianjie.ai/avata/utils/errors => gitlab.bianjie.ai/avata/utils/errors.git v0.1.4-0.20220728082731-2ab4cd228ddf
 )
