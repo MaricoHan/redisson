@@ -5,7 +5,6 @@ import (
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
-	"gitlab.bianjie.ai/avata/open-api/utils"
 	"gitlab.bianjie.ai/avata/utils/errors"
 	"strings"
 )
@@ -74,9 +73,6 @@ func (h *Account) CreateAccount(ctx context.Context, request interface{}) (inter
 
 	if len([]rune(name)) < 1 || len([]rune(name)) > 20 {
 		return nil, errors.New(errors.ClientParams, errors.ErrAccountNameLen)
-	}
-	if !utils.StrNameCheck(name) {
-		return nil, errors.New(errors.ClientParams, errors.ErrNameFormat)
 	}
 
 	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
