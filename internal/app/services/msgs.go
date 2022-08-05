@@ -114,33 +114,27 @@ func (s *msgs) GetAccountHistory(params dto.AccountsInfo) (*dto.AccountOperation
 	logFields["func"] = "GetAccountHistory"
 	logFields["module"] = params.Module
 	logFields["code"] = params.Code
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
 
 	var operation, module int32
 	var ok bool
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
-	defer cancel()
 	if params.OperationModule == "" {
 		operation = 0
 		module = 0
-	}
-
-	if params.OperationModule != "" {
+	} else {
 		module, ok = pb.Module_value[params.OperationModule]
 		if !ok {
 			log.WithFields(logFields).Error(errors2.ErrModule)
 			return nil, errors2.New(errors2.ClientParams, errors2.ErrModule)
 		}
+
 		if params.Operation == "" {
-
 			operation = 0
-		} else {
-			operation, ok = pb.OPERATION_value[params.Operation]
-			if !ok {
-				log.WithFields(logFields).Error(errors2.ErrOperation)
-				return nil, errors2.New(errors2.ClientParams, errors2.ErrOperation)
-			}
+		} else if operation, ok = pb.OPERATION_value[params.Operation]; !ok {
+			log.WithFields(logFields).Error(errors2.ErrOperation)
+			return nil, errors2.New(errors2.ClientParams, errors2.ErrOperation)
 		}
-
 	}
 
 	sort, ok := pb.SORTS_value[params.SortBy]
