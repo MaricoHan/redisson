@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	log "github.com/sirupsen/logrus"
-	"github.com/volatiletech/sqlboiler/types"
 	pb "gitlab.bianjie.ai/avata/chains/api/pb/tx"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
@@ -54,7 +53,7 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 	if resp == nil || resp.Detail == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
-	result := &dto.TxResultByTxHashRes{}
+	result := new(dto.TxResultByTxHashRes)
 	status := resp.Detail.Status
 	result.Module = pb.MODULE_name[int32(resp.Detail.Module)]
 	result.Type = pb.OPERATION_name[int32(resp.Detail.Operation)]
@@ -79,28 +78,20 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 	result.BlockHeight = resp.Detail.BlockHeight
 	result.Timestamp = resp.Detail.Timestamp
 
-	//交易成功或根账户转让类别交易失败
-	if result.Status == int32(pb.STATUS_success) || (result.Status == int32(pb.STATUS_failed) && result.Module == pb.MODULE_name[int32(pb.MODULE_mt)] && result.Type == pb.OPERATION_name[int32(pb.OPERATION_transfer_class)]) {
-		//根据 type 返回交易对象 id
-		typeJsonNft := types.JSON{}
-		typeJsonMt := types.JSON{}
-
-		if resp.Detail.Nft != "" {
-			err = json.Unmarshal([]byte(resp.Detail.Nft), &typeJsonNft)
-			if err != nil {
-				return nil, err
-			}
-			result.Nft = &typeJsonNft
-			result.NftID = resp.Detail.NftId
-			result.ClassID = resp.Detail.ClassId
+	if resp.Detail.Nft != "" {
+		err = json.Unmarshal([]byte(resp.Detail.Nft), &result.Nft)
+		if err != nil {
+			return nil, err
 		}
-		if resp.Detail.Mt != "" {
-			err = json.Unmarshal([]byte(resp.Detail.Mt), &typeJsonMt)
-			if err != nil {
-				return nil, err
-			}
-			result.Mt = &typeJsonMt
+		result.NftID = resp.Detail.NftId
+		result.ClassID = resp.Detail.ClassId
+	}
+	if resp.Detail.Mt != "" {
+		err = json.Unmarshal([]byte(resp.Detail.Mt), result.Mt)
+		if err != nil {
+			return nil, err
 		}
 	}
+
 	return result, nil
 }
