@@ -18,19 +18,20 @@ type ITx interface {
 }
 
 type tx struct {
-	logger *log.Logger
+	logger *log.Entry
 }
 
 func NewTx(logger *log.Logger) *tx {
-	return &tx{logger: logger}
+	return &tx{logger: logger.WithField("model", "tx")}
 }
 
 func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHashRes, error) {
-	logFields := log.Fields{}
-	logFields["model"] = "tx"
-	logFields["func"] = "TxResultByTxHash"
-	logFields["module"] = params.Module
-	logFields["code"] = params.Code
+	log := t.logger.WithFields(map[string]interface{}{
+		"func":   "TxResultByTxHash",
+		"module": params.Module,
+		"code":   params.Code,
+	})
+
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	req := pb.TxShowRequest{
@@ -42,12 +43,12 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.TxClientMap[mapKey]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrService)
+		log.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	resp, err = grpcClient.Show(ctx, &req)
 	if err != nil {
-		log.WithFields(logFields).Error("request err:", err.Error())
+		log.WithError(err).Error("request err")
 		return nil, err
 	}
 	if resp == nil || resp.Detail == nil {
@@ -66,12 +67,10 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 		var tagInterface interface{}
 		err = json.Unmarshal([]byte(resp.Detail.Tag), &tagInterface)
 		if err != nil {
-			return nil, err
+			log.WithError(err).Error("Unmarshal failed")
+			return nil, errors2.ErrInternal
 		}
 		result.Tag = tagInterface.(map[string]interface{})
-		if len(result.Tag) > 3 {
-			return nil, constant.ErrInternal
-		}
 	}
 
 	result.Message = resp.Detail.ErrMsg
@@ -81,7 +80,8 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 	if resp.Detail.Nft != "" {
 		err = json.Unmarshal([]byte(resp.Detail.Nft), &result.Nft)
 		if err != nil {
-			return nil, err
+			log.WithError(err).Error("Unmarshal failed")
+			return nil, errors2.ErrInternal
 		}
 		result.NftID = resp.Detail.NftId
 		result.ClassID = resp.Detail.ClassId
@@ -89,7 +89,8 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 	if resp.Detail.Mt != "" {
 		err = json.Unmarshal([]byte(resp.Detail.Mt), result.Mt)
 		if err != nil {
-			return nil, err
+			log.WithError(err).Error("Unmarshal failed")
+			return nil, errors2.ErrInternal
 		}
 	}
 
