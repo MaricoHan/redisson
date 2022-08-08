@@ -55,16 +55,7 @@ func (s *msgs) GetNFTHistory(params dto.NftOperationHistoryByNftId) (*dto.NftOpe
 		ClassId:   params.ClassID,
 		SortBy:    pb.SORTS(sort),
 	}
-	if params.Operation != "" {
-		operation, ok := pb.OPERATION_value[params.Operation]
-		if !ok {
-			if !ok {
-				log.WithFields(logFields).Error(errors2.ErrOperation)
-				return nil, errors2.New(errors2.ClientParams, errors2.ErrOperation)
-			}
-		}
-		req.Operation = pb.OPERATION(operation)
-	}
+	req.Operation = params.Operation
 
 	resp := &pb.NFTHistoryResponse{}
 	var err error
@@ -94,7 +85,7 @@ func (s *msgs) GetNFTHistory(params dto.NftOperationHistoryByNftId) (*dto.NftOpe
 	for _, item := range resp.Data {
 		var operationRecord = &dto.OperationRecord{
 			Txhash:    item.TxHash,
-			Operation: item.Operation.String(),
+			Operation: item.Operation,
 			Signer:    item.Signer,
 			Recipient: item.Recipient,
 			Timestamp: item.Timestamp,
@@ -117,26 +108,6 @@ func (s *msgs) GetAccountHistory(params dto.AccountsInfo) (*dto.AccountOperation
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 
-	var operation, module int32
-	var ok bool
-	if params.OperationModule == "" {
-		operation = 0
-		module = 0
-	} else {
-		module, ok = pb.Module_value[params.OperationModule]
-		if !ok {
-			log.WithFields(logFields).Error(errors2.ErrModule)
-			return nil, errors2.New(errors2.ClientParams, errors2.ErrModule)
-		}
-
-		if params.Operation == "" {
-			operation = 0
-		} else if operation, ok = pb.OPERATION_value[params.Operation]; !ok {
-			log.WithFields(logFields).Error(errors2.ErrOperation)
-			return nil, errors2.New(errors2.ClientParams, errors2.ErrOperation)
-		}
-	}
-
 	sort, ok := pb.SORTS_value[params.SortBy]
 	if !ok {
 		log.WithFields(logFields).Error(errors2.ErrSortBy)
@@ -151,8 +122,8 @@ func (s *msgs) GetAccountHistory(params dto.AccountsInfo) (*dto.AccountOperation
 		EndDate:   params.EndDate,
 		SortBy:    pb.SORTS(sort),
 		Address:   params.Account,
-		Module:    pb.Module(module),
-		Operation: pb.OPERATION(operation),
+		Module:    params.OperationModule,
+		Operation: params.Operation,
 		TxHash:    params.TxHash,
 	}
 
@@ -189,8 +160,8 @@ func (s *msgs) GetAccountHistory(params dto.AccountsInfo) (*dto.AccountOperation
 		}
 		accountOperationRecord := &dto.AccountOperationRecords{
 			TxHash:      item.TxHash,
-			Module:      item.Module.String(),
-			Operation:   item.Operation.String(),
+			Module:      item.Module,
+			Operation:   item.Operation,
 			Signer:      item.Signer,
 			Timestamp:   item.Timestamp,
 			Message:     &typeJson,
@@ -246,16 +217,8 @@ func (m *msgs) GetMTHistory(params dto.MTOperationHistoryByMTId) (*dto.MTOperati
 		MtId:      params.MTId,
 		ClassId:   params.ClassID,
 	}
-	if params.Operation != "" {
-		operation, ok := pb.OPERATION_value[params.Operation]
-		if !ok {
-			if !ok {
-				log.WithFields(logFields).Error(errors2.ErrOperation)
-				return nil, errors2.New(errors2.ClientParams, errors2.ErrOperation)
-			}
-		}
-		req.Operation = pb.OPERATION(operation)
-	}
+
+	req.Operation = params.Operation
 
 	resp := &pb.MTHistoryResponse{}
 	var err error
@@ -285,7 +248,7 @@ func (m *msgs) GetMTHistory(params dto.MTOperationHistoryByMTId) (*dto.MTOperati
 	for _, item := range resp.Data {
 		var operationRecord = &dto.MTOperationRecord{
 			Txhash:    item.TxHash,
-			Operation: item.Operation.String(),
+			Operation: item.Operation,
 			Signer:    item.Signer,
 			Recipient: item.Recipient,
 			Amount:    item.Amount,
