@@ -4,13 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
+
 	log "github.com/sirupsen/logrus"
 	pb "gitlab.bianjie.ai/avata/chains/api/pb/tx"
+	errors2 "gitlab.bianjie.ai/avata/utils/errors"
+
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
-	errors2 "gitlab.bianjie.ai/avata/utils/errors"
-	"time"
 )
 
 type ITx interface {
@@ -56,8 +58,8 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 	}
 	result := new(dto.TxResultByTxHashRes)
 	status := resp.Detail.Status
-	result.Module = pb.MODULE_name[int32(resp.Detail.Module)]
-	result.Type = pb.OPERATION_name[int32(resp.Detail.Operation)]
+	result.Module = resp.Detail.Module
+	result.Type = resp.Detail.Operation
 	result.TxHash = ""
 	result.Status = int32(status)
 	if status == pb.STATUS_success || status == pb.STATUS_failed {
