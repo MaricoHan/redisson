@@ -30,8 +30,6 @@ type BurnRequest struct {
 }
 
 type TransferRequest struct {
-	ClassId     string                 `json:"class_id"`
-	MtId        string                 `json:"mt_id"`
 	Amount      uint64                 `json:"amount"`
 	Recipient   string                 `json:"recipient"`
 	Tag         map[string]interface{} `json:"tag"`

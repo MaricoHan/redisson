@@ -54,7 +54,7 @@ func (m MTController) GetEndpoints() []kit.Endpoint {
 		//	Handler: m.makeHandler(m.handler.Burn, &vo.BurnRequest{}),
 		//},
 		{
-			URI:     "/mt/mt-transfers/{owner}",
+			URI:     "/mt/mt-transfers/{class_id}/{owner}/{mt_id}",
 			Method:  http.MethodPost,
 			Handler: m.makeHandler(m.handler.Transfer, &vo.TransferRequest{}),
 		},
