@@ -7,6 +7,7 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/volatiletech/sqlboiler/types"
 	pb "gitlab.bianjie.ai/avata/chains/api/pb/tx"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 
@@ -80,6 +81,7 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 	result.Timestamp = resp.Detail.Timestamp
 
 	if resp.Detail.Nft != "" {
+		result.Nft = new(types.JSON)
 		err = json.Unmarshal([]byte(resp.Detail.Nft), &result.Nft)
 		if err != nil {
 			log.WithError(err).Error("Unmarshal failed")
@@ -88,7 +90,9 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 		result.NftID = resp.Detail.NftId
 		result.ClassID = resp.Detail.ClassId
 	}
+
 	if resp.Detail.Mt != "" {
+		result.Mt = new(types.JSON)
 		err = json.Unmarshal([]byte(resp.Detail.Mt), result.Mt)
 		if err != nil {
 			log.WithError(err).Error("Unmarshal failed")
