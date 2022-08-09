@@ -74,7 +74,8 @@ require (
 replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.4
 
-	gitlab.bianjie.ai/avata/chains/api => gitlab.bianjie.ai/avata/chains/api.git v0.7.1-0.20220808095222-b44a750311c5
+	//gitlab.bianjie.ai/avata/chains/api => gitlab.bianjie.ai/avata/chains/api.git v0.7.1-0.20220808095222-b44a750311c5
+	gitlab.bianjie.ai/avata/chains/api => ../api
 
 	gitlab.bianjie.ai/avata/utils/commons => gitlab.bianjie.ai/avata/utils/commons.git v0.0.0-20220801043923-fecef71933d2
 

@@ -56,7 +56,7 @@ type BurnRequest struct {
 type BurnResponse struct {
 	OperationID string `json:"operation_id"`
 }
-type TransferRequest struct {
+type MTBatchTransferRequest struct {
 	Code        string         `json:"code"`
 	Module      string         `json:"module"`
 	ProjectID   uint64         `json:"project_id"`
@@ -65,7 +65,24 @@ type TransferRequest struct {
 	Tag         string         `json:"tag"`
 	OperationID string         `json:"operation_id" validate:"required"`
 }
-type TransferResponse struct {
+type MTBatchTransferResponse struct {
+	OperationID string `json:"operation_id"`
+}
+
+type MTTransferRequest struct {
+	Code        string `json:"code"`
+	Module      string `json:"module"`
+	ProjectID   uint64 `json:"project_id"`
+	Owner       string `json:"owner"`
+	ClassId     string `json:"class_id"`
+	MtId        string `json:"mt_id"`
+	Amount      uint64 `json:"amount"`
+	Recipient   string `json:"recipient"`
+	Tag         string `json:"tag"`
+	OperationID string `json:"operation_id" validate:"required"`
+}
+
+type MTTransferResponse struct {
 	OperationID string `json:"operation_id"`
 }
 
