@@ -36,7 +36,7 @@ func (s *msgs) GetNFTHistory(params dto.NftOperationHistoryByNftId) (*dto.NftOpe
 	logFields["module"] = params.Module
 	logFields["code"] = params.Code
 
-	sort, ok := pb.Sorts_value[params.SortBy]
+	sort, ok := pb.SORTS_value[params.SortBy]
 	if !ok {
 		log.WithFields(logFields).Error(errors2.ErrSortBy)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrSortBy)
@@ -53,18 +53,9 @@ func (s *msgs) GetNFTHistory(params dto.NftOperationHistoryByNftId) (*dto.NftOpe
 		StartDate: params.StartDate,
 		EndDate:   params.EndDate,
 		ClassId:   params.ClassID,
-		SortBy:    pb.Sorts(sort),
+		SortBy:    pb.SORTS(sort),
 	}
-	if params.Operation != "" {
-		operation, ok := pb.Operation_value[params.Operation]
-		if !ok {
-			if !ok {
-				log.WithFields(logFields).Error(errors2.ErrOperation)
-				return nil, errors2.New(errors2.ClientParams, errors2.ErrOperation)
-			}
-		}
-		req.Operation = pb.Operation(operation)
-	}
+	req.Operation = params.Operation
 
 	resp := &pb.NFTHistoryResponse{}
 	var err error
@@ -114,36 +105,10 @@ func (s *msgs) GetAccountHistory(params dto.AccountsInfo) (*dto.AccountOperation
 	logFields["func"] = "GetAccountHistory"
 	logFields["module"] = params.Module
 	logFields["code"] = params.Code
-
-	var operation, module int32
-	var ok bool
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
-	if params.OperationModule == "" {
-		operation = 0
-		module = 0
-	}
 
-	if params.OperationModule != "" {
-		module, ok = pb.Module_value[params.OperationModule]
-		if !ok {
-			log.WithFields(logFields).Error(errors2.ErrModule)
-			return nil, errors2.New(errors2.ClientParams, errors2.ErrModule)
-		}
-		if params.Operation == "" {
-
-			operation = 0
-		} else {
-			operation, ok = pb.Operation_value[params.Operation]
-			if !ok {
-				log.WithFields(logFields).Error(errors2.ErrOperation)
-				return nil, errors2.New(errors2.ClientParams, errors2.ErrOperation)
-			}
-		}
-
-	}
-
-	sort, ok := pb.Sorts_value[params.SortBy]
+	sort, ok := pb.SORTS_value[params.SortBy]
 	if !ok {
 		log.WithFields(logFields).Error(errors2.ErrSortBy)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrSortBy)
@@ -155,10 +120,10 @@ func (s *msgs) GetAccountHistory(params dto.AccountsInfo) (*dto.AccountOperation
 		Limit:     params.Limit,
 		StartDate: params.StartDate,
 		EndDate:   params.EndDate,
-		SortBy:    pb.Sorts(sort),
+		SortBy:    pb.SORTS(sort),
 		Address:   params.Account,
-		Module:    pb.Module(module),
-		Operation: pb.Operation(operation),
+		Module:    params.OperationModule,
+		Operation: params.Operation,
 		TxHash:    params.TxHash,
 	}
 
@@ -233,7 +198,7 @@ func (m *msgs) GetMTHistory(params dto.MTOperationHistoryByMTId) (*dto.MTOperati
 	logFields["module"] = params.Module
 	logFields["code"] = params.Code
 
-	sort, ok := pb.Sorts_value[params.SortBy]
+	sort, ok := pb.SORTS_value[params.SortBy]
 	if !ok {
 		log.WithFields(logFields).Error(errors2.ErrSortBy)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrSortBy)
@@ -246,22 +211,14 @@ func (m *msgs) GetMTHistory(params dto.MTOperationHistoryByMTId) (*dto.MTOperati
 		Limit:     params.Limit,
 		StartDate: params.StartDate,
 		EndDate:   params.EndDate,
-		SortBy:    pb.Sorts(sort),
+		SortBy:    pb.SORTS(sort),
 		Signer:    params.Signer,
 		TxHash:    params.Txhash,
 		MtId:      params.MTId,
 		ClassId:   params.ClassID,
 	}
-	if params.Operation != "" {
-		operation, ok := pb.Operation_value[params.Operation]
-		if !ok {
-			if !ok {
-				log.WithFields(logFields).Error(errors2.ErrOperation)
-				return nil, errors2.New(errors2.ClientParams, errors2.ErrOperation)
-			}
-		}
-		req.Operation = pb.Operation(operation)
-	}
+
+	req.Operation = params.Operation
 
 	resp := &pb.MTHistoryResponse{}
 	var err error

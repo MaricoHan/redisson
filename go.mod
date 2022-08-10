@@ -17,13 +17,13 @@ require (
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/viper v1.10.1
 	github.com/volatiletech/sqlboiler v3.7.1+incompatible
-	github.com/volatiletech/sqlboiler/v4 v4.8.6
 	google.golang.org/grpc v1.45.0
 	gorm.io/gorm v1.23.4
 )
 
 require (
 	gitlab.bianjie.ai/avata/chains/api v0.1.2-0.20220701075346-54629d31231c
+	gitlab.bianjie.ai/avata/utils/commons v0.0.0-00010101000000-000000000000
 	gitlab.bianjie.ai/avata/utils/errors v0.0.0-00010101000000-000000000000
 	gorm.io/driver/mysql v1.3.4
 )
@@ -60,9 +60,6 @@ require (
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/volatiletech/inflect v0.0.1 // indirect
 	github.com/volatiletech/null v8.0.0+incompatible // indirect
-	github.com/volatiletech/null/v8 v8.1.2 // indirect
-	github.com/volatiletech/randomize v0.0.1 // indirect
-	github.com/volatiletech/strmangle v0.0.1 // indirect
 	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3 // indirect
 	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 // indirect
 	golang.org/x/sys v0.0.0-20211210111614-af8b64212486 // indirect
@@ -77,7 +74,9 @@ require (
 replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.4
 
-	gitlab.bianjie.ai/avata/chains/api => gitlab.bianjie.ai/avata/chains/api.git v0.7.1
+	gitlab.bianjie.ai/avata/chains/api => gitlab.bianjie.ai/avata/chains/api.git v0.8.0
 
-	gitlab.bianjie.ai/avata/utils/errors => gitlab.bianjie.ai/avata/utils/errors.git v0.1.3
+	gitlab.bianjie.ai/avata/utils/commons => gitlab.bianjie.ai/avata/utils/commons.git v0.1.0
+
+	gitlab.bianjie.ai/avata/utils/errors => gitlab.bianjie.ai/avata/utils/errors.git v0.1.6
 )

@@ -22,6 +22,7 @@ import (
 	"google.golang.org/grpc/keepalive"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 	"time"
 )
 
@@ -37,6 +38,7 @@ var TxClientMap map[string]pb_tx.TxClient
 var MTClientMap map[string]pb_mt.MTClient
 var MTClassClientMap map[string]pb_mt_class.MTClassClient
 var MTMsgsClientMap map[string]pb_mt_msgs.MTMSGSClient
+var Log = new(log.Logger)
 
 func Logger(cfg *configs.Config) *log.Logger {
 	if cfg.App.Env == constant.EnvPro {
@@ -52,10 +54,12 @@ func Logger(cfg *configs.Config) *log.Logger {
 	default:
 		log.SetLevel(log.InfoLevel)
 	}
-	return log.StandardLogger()
+	Log = log.StandardLogger()
+	return Log
 }
 
 func InitMysqlDB(cfg *configs.Config, logger *log.Logger) {
+	logger.Info("connecting mysql ...")
 	gormLogger := logs.NewGormLogger(logger)
 	dsn := fmt.Sprintf(
 		"%s:%s@tcp(%s:%d)/%s?charset=utf8&parseTime=True&loc=Local",
@@ -65,7 +69,10 @@ func InitMysqlDB(cfg *configs.Config, logger *log.Logger) {
 		cfg.Mysql.Port,
 		cfg.Mysql.DB)
 
-	mysqlDB, err := gorm.Open(mysql.Open(dsn), &gorm.Config{Logger: gormLogger})
+	mysqlDB, err := gorm.Open(mysql.Open(dsn), &gorm.Config{Logger: gormLogger, NamingStrategy: schema.NamingStrategy{
+		TablePrefix:   "t_",  // 表前缀
+		SingularTable: false, // 复数形式
+	}})
 	if err != nil {
 		log.Fatal("init mysqlDB failed: ", err.Error())
 	}
@@ -90,12 +97,15 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 		PermitWithoutStream: true,             // send pings even without active streams
 	}
 	GrpcConnMap = make(map[string]*grpc.ClientConn)
-	wenNativeConn, err := grpc.DialContext(context.Background(),cfg.GrpcClient.WenchangchainNativeAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp),grpc.WithBlock(),grpc.WithBalancerName(roundrobin.Name))
+	logger.Info("connecting wenchangchain-native ...")
+	wenNativeConn, err := grpc.DialContext(context.Background(), cfg.GrpcClient.WenchangchainNativeAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp), grpc.WithBlock(), grpc.WithBalancerName(roundrobin.Name))
 	if err != nil {
-		logger.Fatal("get wenchangchain-ddc grpc connect failed, err: ", err.Error())
+		logger.Fatal("get wenchangchain-native grpc connect failed, err: ", err.Error())
 	}
 	GrpcConnMap[constant.WenchangNative] = wenNativeConn
-	wenDDcConn, err := grpc.DialContext(context.Background(),cfg.GrpcClient.WenchangchainDDCAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp),grpc.WithBlock(),grpc.WithBalancerName(roundrobin.Name))
+
+	logger.Info("connecting wenchangchain-ddc ...")
+	wenDDcConn, err := grpc.DialContext(context.Background(), cfg.GrpcClient.WenchangchainDDCAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp), grpc.WithBlock(), grpc.WithBalancerName(roundrobin.Name))
 	if err != nil {
 		logger.Fatal("get wenchangchain-ddc grpc connect failed, err: ", err.Error())
 	}
@@ -139,5 +149,6 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 }
 
 func InitRedisClient(cfg *configs.Config, logger *log.Logger) {
+	logger.Info("connecting redis ...")
 	RedisClient = redis.NewRedisClient(cfg.Redis.Host, cfg.Redis.Password, cfg.Redis.DB, logger)
 }

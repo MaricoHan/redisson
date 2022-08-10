@@ -153,7 +153,6 @@ func (h MT) Burn(ctx context.Context, request interface{}) (response interface{}
 
 	return h.svc.Burn(&param)
 }
-
 func (h MT) Transfer(ctx context.Context, request interface{}) (response interface{}, err error) {
 	// 接收请求
 	req, ok := request.(*vo.TransferRequest)
@@ -170,7 +169,39 @@ func (h MT) Transfer(ctx context.Context, request interface{}) (response interfa
 
 	// 获取账户基本信息
 	authData := h.AuthData(ctx)
-	param := dto.TransferRequest{
+	param := dto.MTTransferRequest{
+		Code:        authData.Code,
+		Module:      authData.Module,
+		ProjectID:   authData.ProjectId,
+		Owner:       h.Owner(ctx),
+		ClassId:     h.ClassID(ctx),
+		MtId:        h.MTID(ctx),
+		Amount:      req.Amount,
+		Recipient:   req.Recipient,
+		Tag:         string(tagBz),
+		OperationID: req.OperationID,
+	}
+
+	return h.svc.Transfer(&param)
+}
+
+func (h MT) BatchTransfer(ctx context.Context, request interface{}) (response interface{}, err error) {
+	// 接收请求
+	req, ok := request.(*vo.BatchTransferRequest)
+	if !ok {
+		log.Debugf("failed to assert : %v", request)
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	}
+	// 转换tag
+	var tagBz []byte
+	if len(req.Tag) > 0 {
+		tagBz, _ = json.Marshal(req.Tag)
+	}
+	req.OperationID = strings.TrimSpace(req.OperationID)
+
+	// 获取账户基本信息
+	authData := h.AuthData(ctx)
+	param := dto.MTBatchTransferRequest{
 		Code:        authData.Code,
 		Module:      authData.Module,
 		ProjectID:   authData.ProjectId,
@@ -180,7 +211,7 @@ func (h MT) Transfer(ctx context.Context, request interface{}) (response interfa
 		OperationID: req.OperationID,
 	}
 
-	return h.svc.Transfer(&param)
+	return h.svc.BatchTransfer(&param)
 }
 
 func (m MT) Show(ctx context.Context, request interface{}) (response interface{}, err error) {

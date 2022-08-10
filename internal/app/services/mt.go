@@ -18,7 +18,9 @@ type IMT interface {
 	Mint(params *dto.MintRequest) (*dto.MintResponse, error)
 	Edit(params *dto.EditRequest) (*dto.EditResponse, error)
 	Burn(params *dto.BurnRequest) (*dto.BurnResponse, error)
-	Transfer(params *dto.TransferRequest) (*dto.TransferResponse, error)
+	Transfer(params *dto.MTTransferRequest) (*dto.MTTransferResponse, error)
+
+	BatchTransfer(params *dto.MTBatchTransferRequest) (*dto.MTBatchTransferResponse, error)
 	Show(params *dto.MTShowRequest) (*dto.MTShowResponse, error)
 	List(params *dto.MTListRequest) (*dto.MTListResponse, error)
 	Balances(params *dto.MTBalancesRequest) (*dto.MTBalancesResponse, error)
@@ -236,8 +238,7 @@ func (m MT) Burn(params *dto.BurnRequest) (*dto.BurnResponse, error) {
 
 	return &dto.BurnResponse{OperationID: params.OperationID}, nil
 }
-
-func (m MT) Transfer(params *dto.TransferRequest) (*dto.TransferResponse, error) {
+func (m MT) Transfer(params *dto.MTTransferRequest) (*dto.MTTransferResponse, error) {
 	logFields := log.Fields{}
 	logFields["model"] = "mt"
 	logFields["func"] = "Transfer"
@@ -248,7 +249,10 @@ func (m MT) Transfer(params *dto.TransferRequest) (*dto.TransferResponse, error)
 	req := pb.MTTransferRequest{
 		ProjectId:   params.ProjectID,
 		Owner:       params.Owner,
-		Mts:         params.Mts,
+		ClassId:     params.ClassId,
+		MtId:        params.MtId,
+		Amount:      params.Amount,
+		Recipient:   params.Recipient,
 		Tag:         params.Tag,
 		OperationId: params.OperationID,
 	}
@@ -273,8 +277,47 @@ func (m MT) Transfer(params *dto.TransferRequest) (*dto.TransferResponse, error)
 	if resp == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
+	return &dto.MTTransferResponse{OperationID: params.OperationID}, nil
+}
 
-	return &dto.TransferResponse{OperationID: params.OperationID}, nil
+func (m MT) BatchTransfer(params *dto.MTBatchTransferRequest) (*dto.MTBatchTransferResponse, error) {
+	logFields := log.Fields{}
+	logFields["model"] = "mt"
+	logFields["func"] = "BatchTransfer"
+	logFields["module"] = params.Module
+	logFields["code"] = params.Code
+	log := m.logger.WithFields(logFields)
+
+	req := pb.MTBatchTransferRequest{
+		ProjectId:   params.ProjectID,
+		Owner:       params.Owner,
+		Mts:         params.Mts,
+		Tag:         params.Tag,
+		OperationId: params.OperationID,
+	}
+
+	resp := new(pb.MTBatchTransferResponse)
+
+	var err error
+	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+	grpcClient, ok := initialize.MTClientMap[mapKey]
+	if !ok {
+		log.Error(errors2.ErrService)
+		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
+	}
+
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+	resp, err = grpcClient.BatchTransfer(ctx, &req)
+	if err != nil {
+		log.Error("request err:", err.Error())
+		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+	}
+
+	return &dto.MTBatchTransferResponse{OperationID: params.OperationID}, nil
 }
 func (m MT) List(params *dto.MTListRequest) (*dto.MTListResponse, error) {
 	logFields := log.Fields{}

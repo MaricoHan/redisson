@@ -28,7 +28,15 @@ type BurnRequest struct {
 	Tag         map[string]interface{} `json:"tag"`
 	OperationID string                 `json:"operation_id"`
 }
+
 type TransferRequest struct {
+	Amount      uint64                 `json:"amount"`
+	Recipient   string                 `json:"recipient"`
+	Tag         map[string]interface{} `json:"tag"`
+	OperationID string                 `json:"operation_id"`
+}
+
+type BatchTransferRequest struct {
 	Mts         []*pb.Transfer         `json:"mts"`
 	Tag         map[string]interface{} `json:"tag"`
 	OperationID string                 `json:"operation_id"`

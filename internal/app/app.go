@@ -1,6 +1,13 @@
 package app
 
 import (
+		"net"
+	"net/http"
+	_ "net/http/pprof"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/middlewares"
@@ -10,11 +17,6 @@ import (
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/metric"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/safe"
-	"net"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 //Start a instance of the http server
