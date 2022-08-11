@@ -161,6 +161,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		secret, err := aes.Decode(projectInfo.ApiSecret, configs.Cfg.Project.SecretPwd)
 		if err != nil {
 			writeInternalResp(w)
+			return
 		}
 		if !h.Signature(r, secret, reqTimestampStr, reqSignature) {
 
