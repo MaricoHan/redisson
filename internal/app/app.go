@@ -79,6 +79,7 @@ func Start(ctx *configs.Context) {
 	//释放所有资源
 	initialize.GrpcConnMap[constant.WenchangNative].Close()
 	initialize.GrpcConnMap[constant.WenchangDDC].Close()
+	initialize.GrpcConnMap[constant.IritaOPBNative].Close()
 
 	log.WithFields(log.Fields{
 		"transport": "http",

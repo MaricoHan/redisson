@@ -46,6 +46,7 @@ type (
 	GrpcClient struct {
 		WenchangchainDDCAddr    string `mapstructure:"wenchangchain_ddc_addr"`
 		WenchangchainNativeAddr string `mapstructure:"wenchangchain_native_addr"`
+		IritaOPBNativeAddr      string `mapstructure:"irita_opb_native_addr"`
 	}
 
 	Project struct {
