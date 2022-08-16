@@ -35,15 +35,11 @@ func NewNFT(logger *log.Logger) *nft {
 }
 
 func (s *nft) List(params dto.Nfts) (*dto.NftsRes, error) {
-	logFields := log.Fields{}
-	logFields["model"] = "nft"
-	logFields["func"] = "List"
-	logFields["module"] = params.Module
-	logFields["code"] = params.Code
+	logger := s.logger.WithField("params",params).WithField("func","NFTList")
 
 	sort, ok := pb.SORTS_value[params.SortBy]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrSortBy)
+		logger.Error(errors2.ErrSortBy)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrSortBy)
 	}
 
@@ -67,14 +63,14 @@ func (s *nft) List(params dto.Nfts) (*dto.NftsRes, error) {
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.NftClientMap[mapKey]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrService)
+		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.List(ctx, &req)
 	if err != nil {
-		log.WithFields(logFields).Error("request err:", err.Error())
+		logger.Error("request err:", err.Error())
 		return nil, err
 	}
 	if resp == nil {
@@ -111,11 +107,7 @@ func (s *nft) List(params dto.Nfts) (*dto.NftsRes, error) {
 }
 
 func (s *nft) Create(params dto.CreateNfts) (*dto.TxRes, error) {
-	logFields := log.Fields{}
-	logFields["model"] = "nft"
-	logFields["func"] = "Create"
-	logFields["module"] = params.Module
-	logFields["code"] = params.Code
+	logger := s.logger.WithField("params",params).WithField("func","CreateNFT")
 
 	req := pb.NFTCreateRequest{
 		ProjectId:   params.ProjectID,
@@ -133,14 +125,14 @@ func (s *nft) Create(params dto.CreateNfts) (*dto.TxRes, error) {
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.NftClientMap[mapKey]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrService)
+		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.Create(ctx, &req)
 	if err != nil {
-		log.WithFields(logFields).Error("request err:", err.Error())
+		logger.Error("request err:", err.Error())
 		return nil, err
 	}
 	if resp == nil {
@@ -151,11 +143,7 @@ func (s *nft) Create(params dto.CreateNfts) (*dto.TxRes, error) {
 }
 
 func (s *nft) BatchCreate(params dto.BatchCreateNfts) (*dto.BatchTxRes, error) {
-	logFields := log.Fields{}
-	logFields["model"] = "nft"
-	logFields["func"] = "BatchCreate"
-	logFields["module"] = params.Module
-	logFields["code"] = params.Code
+	logger := s.logger.WithField("params",params).WithField("func","BatchCreateNFT")
 
 	req := pb.NFTBatchCreateRequest{
 		ProjectId:   params.ProjectID,
@@ -173,14 +161,14 @@ func (s *nft) BatchCreate(params dto.BatchCreateNfts) (*dto.BatchTxRes, error) {
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.NftClientMap[mapKey]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrService)
+		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.BatchCreate(ctx, &req)
 	if err != nil {
-		log.WithFields(logFields).Error("request err:", err.Error())
+		logger.Error("request err:", err.Error())
 		return nil, err
 	}
 	if resp == nil {
@@ -190,11 +178,8 @@ func (s *nft) BatchCreate(params dto.BatchCreateNfts) (*dto.BatchTxRes, error) {
 }
 
 func (s *nft) Show(params dto.NftByNftId) (*dto.NftReq, error) {
-	logFields := log.Fields{}
-	logFields["model"] = "nft"
-	logFields["func"] = "Update"
-	logFields["module"] = params.Module
-	logFields["code"] = params.Code
+	logger := s.logger.WithField("params",params).WithField("func","ShowNFT")
+
 	req := pb.NFTShowRequest{
 		ProjectId: params.ProjectID,
 		ClassId:   params.ClassId,
@@ -205,14 +190,14 @@ func (s *nft) Show(params dto.NftByNftId) (*dto.NftReq, error) {
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.NftClientMap[mapKey]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrService)
+		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.Show(ctx, &req)
 	if err != nil {
-		log.WithFields(logFields).Error("request err:", err.Error())
+		logger.Error("request err:", err.Error())
 		return nil, err
 	}
 	if resp == nil {
@@ -238,11 +223,7 @@ func (s *nft) Show(params dto.NftByNftId) (*dto.NftReq, error) {
 }
 
 func (s *nft) Update(params dto.EditNftByNftId) (*dto.TxRes, error) {
-	logFields := log.Fields{}
-	logFields["model"] = "nft"
-	logFields["func"] = "Update"
-	logFields["module"] = params.Module
-	logFields["code"] = params.Code
+	logger := s.logger.WithField("params",params).WithField("func","UpdateNFT")
 
 	req := pb.NFTUpdateRequest{
 		ProjectId:   params.ProjectID,
@@ -260,14 +241,14 @@ func (s *nft) Update(params dto.EditNftByNftId) (*dto.TxRes, error) {
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.NftClientMap[mapKey]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrService)
+		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.Update(ctx, &req)
 	if err != nil {
-		log.WithFields(logFields).Error("request err:", err.Error())
+		logger.Error("request err:", err.Error())
 		return nil, err
 	}
 	if resp == nil {
@@ -277,11 +258,7 @@ func (s *nft) Update(params dto.EditNftByNftId) (*dto.TxRes, error) {
 }
 
 func (s *nft) Delete(params dto.DeleteNftByNftId) (*dto.TxRes, error) {
-	logFields := log.Fields{}
-	logFields["model"] = "nft"
-	logFields["func"] = "Delete"
-	logFields["module"] = params.Module
-	logFields["code"] = params.Code
+	logger := s.logger.WithField("params",params).WithField("func","DeleteNFT")
 
 	req := pb.NFTDeleteRequest{
 		ProjectId:   params.ProjectID,
@@ -296,14 +273,14 @@ func (s *nft) Delete(params dto.DeleteNftByNftId) (*dto.TxRes, error) {
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.NftClientMap[mapKey]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrService)
+		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.Delete(ctx, &req)
 	if err != nil {
-		log.WithFields(logFields).Error("request err:", err.Error())
+		logger.Error("request err:", err.Error())
 		return nil, err
 	}
 	if resp == nil {
@@ -312,11 +289,7 @@ func (s *nft) Delete(params dto.DeleteNftByNftId) (*dto.TxRes, error) {
 	return &dto.TxRes{TaskId: resp.TaskId, OperationId: resp.OperationId}, nil
 }
 func (s *nft) BatchTransfer(params *dto.BatchTransferRequest) (*dto.BatchTxRes, error) {
-	logFields := log.Fields{}
-	logFields["model"] = "nft"
-	logFields["func"] = "BatchTransfer"
-	logFields["module"] = params.Module
-	logFields["code"] = params.Code
+	logger := s.logger.WithField("params",params).WithField("func","BatchTransferNFT")
 
 	req := pb.NFTBatchTransferRequest{
 		ProjectId:   params.ProjectID,
@@ -331,14 +304,14 @@ func (s *nft) BatchTransfer(params *dto.BatchTransferRequest) (*dto.BatchTxRes, 
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.NftClientMap[mapKey]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrService)
+		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.BatchTransfer(ctx, &req)
 	if err != nil {
-		log.WithFields(logFields).Error("request err:", err.Error())
+		logger.Error("request err:", err.Error())
 		return nil, err
 	}
 	if resp == nil {
@@ -347,11 +320,7 @@ func (s *nft) BatchTransfer(params *dto.BatchTransferRequest) (*dto.BatchTxRes, 
 	return &dto.BatchTxRes{OperationId: resp.OperationId}, nil
 }
 func (s *nft) BatchEdit(params *dto.BatchEditRequest) (*dto.BatchTxRes, error) {
-	logFields := log.Fields{}
-	logFields["model"] = "nft"
-	logFields["func"] = "BatchEdit"
-	logFields["module"] = params.Module
-	logFields["code"] = params.Code
+	logger := s.logger.WithField("params",params).WithField("func","BatchEditNFT")
 
 	req := pb.NFTBatchEditRequest{
 		ProjectId:   params.ProjectID,
@@ -366,14 +335,14 @@ func (s *nft) BatchEdit(params *dto.BatchEditRequest) (*dto.BatchTxRes, error) {
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.NftClientMap[mapKey]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrService)
+		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.BatchEdit(ctx, &req)
 	if err != nil {
-		log.WithFields(logFields).Error("request err:", err.Error())
+		logger.Error("request err:", err.Error())
 		return nil, err
 	}
 	if resp == nil {
@@ -383,11 +352,7 @@ func (s *nft) BatchEdit(params *dto.BatchEditRequest) (*dto.BatchTxRes, error) {
 }
 
 func (s *nft) BatchDelete(params *dto.BatchDeleteRequest) (*dto.BatchTxRes, error) {
-	logFields := log.Fields{}
-	logFields["model"] = "nft"
-	logFields["func"] = "BatchDelete"
-	logFields["module"] = params.Module
-	logFields["code"] = params.Code
+	logger := s.logger.WithField("params",params).WithField("func","BatchDeleteNFT")
 
 	req := pb.NFTBatchDeleteRequest{
 		ProjectId:   params.ProjectID,
@@ -402,14 +367,14 @@ func (s *nft) BatchDelete(params *dto.BatchDeleteRequest) (*dto.BatchTxRes, erro
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.NftClientMap[mapKey]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrService)
+		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.BatchDelete(ctx, &req)
 	if err != nil {
-		log.WithFields(logFields).Error("request err:", err.Error())
+		logger.Error("request err:", err.Error())
 		return nil, err
 	}
 	if resp == nil {

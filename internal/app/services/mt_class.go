@@ -31,11 +31,8 @@ func NewMTClass(logger *log.Logger) *mtClass {
 }
 
 func (m *mtClass) CreateMTClass(params dto.CreateMTClass) (*dto.BatchTxRes, error) {
-	logFields := log.Fields{}
-	logFields["model"] = "mt_class"
-	logFields["func"] = "CreateMTClass"
-	logFields["module"] = params.Module
-	logFields["code"] = params.Code
+	logger := m.logger.WithField("params",params).WithField("func","CreateMTClass")
+
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	req := pb.MTClassCreateRequest{
@@ -52,12 +49,12 @@ func (m *mtClass) CreateMTClass(params dto.CreateMTClass) (*dto.BatchTxRes, erro
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.MTClassClientMap[mapKey]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrService)
+		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	resp, err = grpcClient.Create(ctx, &req)
 	if err != nil {
-		log.WithFields(logFields).Error("request err:", err.Error())
+		logger.Error("request err:", err.Error())
 		return nil, err
 	}
 	if resp == nil {
@@ -67,11 +64,8 @@ func (m *mtClass) CreateMTClass(params dto.CreateMTClass) (*dto.BatchTxRes, erro
 }
 
 func (m *mtClass) Show(params *dto.MTClassShowRequest) (*dto.MTClassShowResponse, error) {
-	logFields := log.Fields{}
-	logFields["model"] = "mt_class"
-	logFields["func"] = "Show"
-	logFields["module"] = params.Module
-	logFields["code"] = params.Code
+	logger := m.logger.WithField("params",params).WithField("func","ShowMTClass")
+
 	req := pb.MTClassShowRequest{
 		ProjectId: params.ProjectID,
 		ClassId:   params.ClassID,
@@ -82,14 +76,14 @@ func (m *mtClass) Show(params *dto.MTClassShowRequest) (*dto.MTClassShowResponse
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.MTClassClientMap[mapKey]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrService)
+		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.Show(ctx, &req)
 	if err != nil {
-		log.WithFields(logFields).Error("request err:", err.Error())
+		logger.Error("request err:", err.Error())
 		return nil, err
 	}
 	if resp == nil {
@@ -115,15 +109,11 @@ func (m *mtClass) Show(params *dto.MTClassShowRequest) (*dto.MTClassShowResponse
 }
 
 func (m *mtClass) List(params *dto.MTClassListRequest) (*dto.MTClassListResponse, error) {
-	logFields := log.Fields{}
-	logFields["model"] = "mt_class"
-	logFields["func"] = "List"
-	logFields["module"] = params.Module
-	logFields["code"] = params.Code
+	logger := m.logger.WithField("params",params).WithField("func","MTClassList")
 
 	sort, ok := pb.Sorts_value[params.SortBy]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrSortBy)
+		logger.Error(errors2.ErrSortBy)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrSortBy)
 	}
 
@@ -146,14 +136,14 @@ func (m *mtClass) List(params *dto.MTClassListRequest) (*dto.MTClassListResponse
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.MTClassClientMap[mapKey]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrService)
+		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.List(ctx, &req)
 	if err != nil {
-		log.WithFields(logFields).Error("request err:", err.Error())
+		logger.Error("request err:", err.Error())
 		return nil, err
 	}
 	if resp == nil {
@@ -185,11 +175,8 @@ func (m *mtClass) List(params *dto.MTClassListRequest) (*dto.MTClassListResponse
 }
 
 func (m *mtClass) TransferMTClass(params dto.TransferMTClass) (*dto.BatchTxRes, error) {
-	logFields := log.Fields{}
-	logFields["model"] = "mt_class"
-	logFields["func"] = "TransferMTClass"
-	logFields["module"] = params.Module
-	logFields["code"] = params.Code
+	logger := m.logger.WithField("params",params).WithField("func","TransferMTClass")
+
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 
@@ -206,12 +193,12 @@ func (m *mtClass) TransferMTClass(params dto.TransferMTClass) (*dto.BatchTxRes, 
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.MTClassClientMap[mapKey]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrService)
+		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	resp, err = grpcClient.Transfer(ctx, &req)
 	if err != nil {
-		log.WithFields(logFields).Error("request err:", err.Error())
+		logger.Error("request err:", err.Error())
 		return nil, err
 	}
 	if resp == nil {

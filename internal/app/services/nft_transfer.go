@@ -27,11 +27,8 @@ func NewNFTTransfer(logger *log.Logger) *nftTransfer {
 }
 
 func (s *nftTransfer) TransferNFTClass(params dto.TransferNftClassById) (*dto.TxRes, error) {
-	logFields := log.Fields{}
-	logFields["model"] = "nftclass"
-	logFields["func"] = "TransferNFTClass"
-	logFields["module"] = params.Module
-	logFields["code"] = params.Code
+	logger := s.logger.WithField("params",params).WithField("func","TransferNFTClass")
+
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 
@@ -48,12 +45,12 @@ func (s *nftTransfer) TransferNFTClass(params dto.TransferNftClassById) (*dto.Tx
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.ClassClientMap[mapKey]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrService)
+		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	resp, err = grpcClient.Transfer(ctx, &req)
 	if err != nil {
-		log.WithFields(logFields).Error("request err:", err.Error())
+		logger.Error("request err:", err.Error())
 		return nil, err
 	}
 	if resp == nil {
@@ -64,11 +61,8 @@ func (s *nftTransfer) TransferNFTClass(params dto.TransferNftClassById) (*dto.Tx
 }
 
 func (s *nftTransfer) TransferNFT(params dto.TransferNftByNftId) (*dto.TxRes, error) {
-	logFields := log.Fields{}
-	logFields["model"] = "nft"
-	logFields["func"] = "TransferNFT"
-	logFields["module"] = params.Module
-	logFields["code"] = params.Code
+	logger := s.logger.WithField("params",params).WithField("func","TransferNFT")
+
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	req := pb2.NFTTransferRequest{
@@ -85,12 +79,12 @@ func (s *nftTransfer) TransferNFT(params dto.TransferNftByNftId) (*dto.TxRes, er
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.NftClientMap[mapKey]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrService)
+		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	resp, err = grpcClient.Transfer(ctx, &req)
 	if err != nil {
-		log.WithFields(logFields).Error("request err:", err.Error())
+		logger.Error("request err:", err.Error())
 		return nil, err
 	}
 	if resp == nil {

@@ -28,11 +28,7 @@ func NewBusiness(logger *log.Logger) *business {
 }
 
 func (s *business) GetOrderInfo(params dto.GetOrder) (*dto.OrderInfo, error) {
-	logFields := log.Fields{}
-	logFields["model"] = "order"
-	logFields["func"] = "GetOrderInfo"
-	logFields["module"] = params.Module
-	logFields["code"] = params.Code
+	logger := s.logger.WithField("params",params).WithField("func","GetOrderInfo")
 
 	req := pb.OrderShowRequest{
 		ProjectId: params.ProjectID,
@@ -43,14 +39,14 @@ func (s *business) GetOrderInfo(params dto.GetOrder) (*dto.OrderInfo, error) {
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.BusineessClientMap[mapKey]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrGrpc)
+		logger.Error(errors2.ErrGrpc)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.Show(ctx, &req)
 	if err != nil {
-		log.WithFields(logFields).Error("request err:", err.Error())
+		logger.Error("request err:", err.Error())
 		return nil, err
 	}
 	if resp == nil {
@@ -72,16 +68,12 @@ func (s *business) GetOrderInfo(params dto.GetOrder) (*dto.OrderInfo, error) {
 }
 
 func (s *business) GetAllOrders(params dto.GetAllOrder) (*dto.OrderOperationRes, error) {
-	logFields := log.Fields{}
-	logFields["model"] = "order"
-	logFields["func"] = "GetAllOrders"
-	logFields["module"] = params.Module
-	logFields["code"] = params.Code
+	logger := s.logger.WithField("params",params).WithField("func","GetAllOrders")
 
 	sorts := strings.Split(params.SortBy, "_")
 
 	if len(sorts) != 2 {
-		log.WithFields(logFields).Error(errors2.ErrSortBy)
+		logger.Error(errors2.ErrSortBy)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrSortBy)
 	}
 
@@ -89,7 +81,7 @@ func (s *business) GetAllOrders(params dto.GetAllOrder) (*dto.OrderOperationRes,
 	if sorts[0] == "DATE" {
 		sort = pb.Sorts_ID
 	} else {
-		log.WithFields(logFields).Error(errors2.ErrSortBy)
+		logger.Error(errors2.ErrSortBy)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrSortBy)
 	}
 
@@ -99,7 +91,7 @@ func (s *business) GetAllOrders(params dto.GetAllOrder) (*dto.OrderOperationRes,
 	} else if sorts[1] == "ASC" {
 		rule = pb.SortRule_ASC
 	} else {
-		log.WithFields(logFields).Error(errors2.ErrSortBy)
+		logger.Error(errors2.ErrSortBy)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrSortBy)
 	}
 
@@ -119,7 +111,7 @@ func (s *business) GetAllOrders(params dto.GetAllOrder) (*dto.OrderOperationRes,
 	if params.Status != "" {
 		status, ok := pb.Status_value[strings.ToUpper(params.Status)]
 		if !ok {
-			log.WithFields(logFields).Error(errors2.ErrStatus)
+			logger.Error(errors2.ErrStatus)
 			return nil, errors2.New(errors2.ClientParams, errors2.ErrStatus)
 		}
 		req.Status = pb.Status(status)
@@ -131,14 +123,14 @@ func (s *business) GetAllOrders(params dto.GetAllOrder) (*dto.OrderOperationRes,
 
 	grpcClient, ok := initialize.BusineessClientMap[mapKey]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrService)
+		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.List(ctx, &req)
 	if err != nil {
-		log.WithFields(logFields).Error("request err:", err.Error())
+		logger.Error("request err:", err.Error())
 		return nil, err
 	}
 	if resp == nil {
@@ -177,11 +169,7 @@ func (s *business) GetAllOrders(params dto.GetAllOrder) (*dto.OrderOperationRes,
 }
 
 func (s *business) BuildOrder(params dto.BuildOrderInfo) (*dto.BuyResponse, error) {
-	logFields := log.Fields{}
-	logFields["model"] = "order"
-	logFields["func"] = "BuildOrder"
-	logFields["module"] = params.Module
-	logFields["code"] = params.Code
+	logger := s.logger.WithField("params",params).WithField("func","BuildOrder")
 
 	req := pb.BuyRequest{
 		ProjectId: params.ProjectID,
@@ -194,7 +182,7 @@ func (s *business) BuildOrder(params dto.BuildOrderInfo) (*dto.BuyResponse, erro
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.BusineessClientMap[mapKey]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrService)
+		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
@@ -203,13 +191,13 @@ func (s *business) BuildOrder(params dto.BuildOrderInfo) (*dto.BuyResponse, erro
 	case constant.OrderTypeGas:
 		resp, err = grpcClient.BuyGas(ctx, &req)
 		if err != nil {
-			log.WithFields(logFields).Error("request err:", err.Error())
+			logger.Error("request err:", err.Error())
 			return nil, err
 		}
 	case constant.OrderTypeBusiness:
 		resp, err = grpcClient.BuyBusiness(ctx, &req)
 		if err != nil {
-			log.WithFields(logFields).Error("request err:", err.Error())
+			logger.Error("request err:", err.Error())
 			return nil, err
 		}
 	default:
