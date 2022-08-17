@@ -30,12 +30,7 @@ func NewAccount(logger *log.Logger) *account {
 
 // BatchCreateAccount 批量创建链账户
 func (a *account) BatchCreateAccount(params dto.BatchCreateAccount) (*dto.BatchAccountRes, error) {
-	logFields := log.Fields{}
-	logFields["model"] = "account"
-	logFields["func"] = "CreateAccount"
-	logFields["module"] = params.Module
-	logFields["code"] = params.Code
-
+	logger := a.logger.WithField("params",params).WithField("func","BatchCreateAccount")
 	req := pb.AccountCreateRequest{
 		ProjectId:   params.ProjectID,
 		Count:       params.Count,
@@ -47,14 +42,14 @@ func (a *account) BatchCreateAccount(params dto.BatchCreateAccount) (*dto.BatchA
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.AccountClientMap[mapKey]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrService)
+		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.BatchCreate(ctx, &req)
 	if err != nil {
-		log.WithFields(logFields).Error("request err:", err.Error())
+		logger.Error("request err:", err.Error())
 		return nil, err
 	}
 	if resp == nil {
@@ -68,12 +63,7 @@ func (a *account) BatchCreateAccount(params dto.BatchCreateAccount) (*dto.BatchA
 
 // CreateAccount 单个创建链账户
 func (a *account) CreateAccount(params dto.CreateAccount) (*dto.AccountRes, error) {
-	logFields := log.Fields{}
-	logFields["model"] = "account"
-	logFields["func"] = "CreateAccount"
-	logFields["module"] = params.Module
-	logFields["code"] = params.Code
-
+	logger := a.logger.WithField("params",params).WithField("func","CreateAccount")
 	req := pb.AccountSeparateCreateRequest{
 		ProjectId:   params.ProjectID,
 		Name:        params.Name,
@@ -85,14 +75,14 @@ func (a *account) CreateAccount(params dto.CreateAccount) (*dto.AccountRes, erro
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.AccountClientMap[mapKey]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrService)
+		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.Create(ctx, &req)
 	if err != nil {
-		log.WithFields(logFields).Error("request err:", err.Error())
+		logger.Error("request err:", err.Error())
 		return nil, err
 	}
 	if resp == nil {
@@ -106,15 +96,11 @@ func (a *account) CreateAccount(params dto.CreateAccount) (*dto.AccountRes, erro
 }
 
 func (a *account) GetAccounts(params dto.AccountsInfo) (*dto.AccountsRes, error) {
-	logFields := log.Fields{}
-	logFields["model"] = "account"
-	logFields["func"] = "GetAccounts"
-	logFields["module"] = params.Module
-	logFields["code"] = params.Code
+	logger := a.logger.WithField("params",params).WithField("func","GetAccounts")
 
 	sort, ok := pb.SORT_value[params.SortBy]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrSortBy)
+		logger.Error(errors2.ErrSortBy)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrSortBy)
 	}
 
@@ -136,7 +122,7 @@ func (a *account) GetAccounts(params dto.AccountsInfo) (*dto.AccountsRes, error)
 	grpcClient, ok := initialize.AccountClientMap[mapKey]
 	if !ok {
 		if !ok {
-			log.WithFields(logFields).Error(errors2.ErrService)
+			logger.Error(errors2.ErrService)
 			return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 		}
 	}
@@ -144,7 +130,7 @@ func (a *account) GetAccounts(params dto.AccountsInfo) (*dto.AccountsRes, error)
 	defer cancel()
 	resp, err = grpcClient.Show(ctx, &req)
 	if err != nil {
-		log.WithFields(logFields).Error("request err:", err.Error())
+		logger.Error("request err:", err.Error())
 		return nil, err
 	}
 	if resp == nil {

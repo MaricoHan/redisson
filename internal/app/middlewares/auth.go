@@ -13,7 +13,6 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"gitlab.bianjie.ai/avata/utils/commons/aes"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
@@ -38,7 +37,14 @@ type authHandler struct {
 }
 
 func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	log.Debug("user request", " method:", r.Method, " url:", r.URL.Path)
+	appKey := r.Header.Get("X-Api-Key")
+
+	log := initialize.Log.WithFields(map[string]interface{}{
+		"function": "ServeHTTP",
+		"method":   r.Method,
+		"url":      r.URL.Path,
+		"api-key":  appKey,
+	})
 
 	//createTime := time.Now()
 	//defer func(createTime time.Time) {
@@ -52,13 +58,11 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//	}...).Observe(float64(interval))
 	//}(createTime)
 
-	appKey := r.Header.Get("X-Api-Key")
-
 	//查询缓存
 	var projectInfo entity.Project
 	err := initialize.RedisClient.GetObject(fmt.Sprintf("%s%s", constant.KeyProjectApikey, appKey), &projectInfo)
 	if err != nil {
-		log.Error("server http", "get project cache error:", err)
+		log.WithError(err).Error("get project from cache ")
 		writeInternalResp(w)
 		return
 	}
@@ -67,7 +71,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		projectRepo := project.NewProjectRepo(initialize.MysqlDB)
 		projectInfo, err = projectRepo.GetProjectByApiKey(appKey)
 		if err != nil {
-			log.Error("server http", "project error:", err)
+			log.WithError(err).Error("get project from cache")
 			writeInternalResp(w)
 			return
 		}
@@ -75,7 +79,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if projectInfo.Id > 0 {
 			// save cache
 			if err := initialize.RedisClient.SetObject(fmt.Sprintf("%s%s", constant.KeyProjectApikey, appKey), projectInfo, time.Hour*24); err != nil {
-				log.Error("server http", "save project cache error:", err)
+				log.WithError(err).Error("save project cache")
 				writeInternalResp(w)
 				return
 			}
@@ -84,7 +88,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if projectInfo.Id == 0 {
-		log.Error("server http:", constant.ErrApikey)
+		log.Error(constant.ErrApikey)
 		writeForbiddenResp(w, constant.ErrApikey)
 		return
 	}
@@ -93,7 +97,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var chainInfo entity.Chain
 	err = initialize.RedisClient.GetObject(fmt.Sprintf("%s%d", constant.KeyChain, projectInfo.ChainId), &chainInfo)
 	if err != nil {
-		log.Error("server http", "get chain cache error:", err)
+		log.WithError(err).Error("get chain from cache")
 		writeInternalResp(w)
 		return
 	}
@@ -102,14 +106,14 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		chainRepo := chain.NewChainRepo(initialize.MysqlDB)
 		chainInfo, err = chainRepo.QueryChainById(uint64(projectInfo.ChainId))
 		if err != nil {
-			log.Error("server http", "chain error:", err)
+			log.WithError(err).Error("query chain from db by id")
 			writeInternalResp(w)
 			return
 		}
 		if chainInfo.Id > 0 {
 			// save cache
 			if err := initialize.RedisClient.SetObject(fmt.Sprintf("%s%d", constant.KeyChain, projectInfo.ChainId), chainInfo, time.Hour*24); err != nil {
-				log.Error("server http", "save project cache error:", err)
+				log.WithError(err).Error("save project to cache")
 				writeInternalResp(w)
 				return
 			}
@@ -117,7 +121,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if chainInfo.Id == 0 {
-		log.Error("server http", "project not exist:")
+		log.Error("project not exist")
 		writeInternalResp(w)
 		return
 	}
@@ -160,6 +164,10 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		reqTimestampStr := r.Header.Get("X-Timestamp")
 		secret, err := aes.Decode(projectInfo.ApiSecret, configs.Cfg.Project.SecretPwd)
 		if err != nil {
+			log.WithFields(map[string]interface{}{
+				"secret":   projectInfo.ApiSecret,
+				"password": configs.Cfg.Project.SecretPwd,
+			}).WithError(err).Error("decrypt api-secret failed")
 			writeInternalResp(w)
 			return
 		}
@@ -168,7 +176,6 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			writeForbiddenResp(w, "")
 			return
 		}
-		log.Debugf("signature: %v", h.Signature(r, secret, reqTimestampStr, reqSignature))
 	}
 
 	r.Header.Set("X-App-Id", fmt.Sprintf("%d", authData.ProjectId))
