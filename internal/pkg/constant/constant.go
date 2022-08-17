@@ -27,6 +27,7 @@ const (
 	WenchangNative = "wenchangchain-native"
 	WenchangDDC    = "wenchangchain-ddc"
 	DatangNative   = "datangchain-native"
+	IritaOPBNative = "irita-opb-native"
 
 	//etcdSchema
 	Schema = "avata"

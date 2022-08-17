@@ -30,15 +30,11 @@ func NewMsgs(logger *log.Logger) *msgs {
 }
 
 func (s *msgs) GetNFTHistory(params dto.NftOperationHistoryByNftId) (*dto.NftOperationHistoryByNftIdRes, error) {
-	logFields := log.Fields{}
-	logFields["model"] = "msgs"
-	logFields["func"] = "GetNFTHistory"
-	logFields["module"] = params.Module
-	logFields["code"] = params.Code
+	logger := s.logger.WithField("params",params).WithField("func","GetNFTHistory")
 
 	sort, ok := pb.SORTS_value[params.SortBy]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrSortBy)
+		logger.Error(errors2.ErrSortBy)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrSortBy)
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
@@ -62,12 +58,12 @@ func (s *msgs) GetNFTHistory(params dto.NftOperationHistoryByNftId) (*dto.NftOpe
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.MsgsClientMap[mapKey]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrService)
+		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	resp, err = grpcClient.NFTHistory(ctx, &req)
 	if err != nil {
-		log.WithFields(logFields).Error("request err:", err.Error())
+		logger.Error("request err:", err.Error())
 		return nil, err
 	}
 	if resp == nil {
@@ -100,17 +96,14 @@ func (s *msgs) GetNFTHistory(params dto.NftOperationHistoryByNftId) (*dto.NftOpe
 }
 
 func (s *msgs) GetAccountHistory(params dto.AccountsInfo) (*dto.AccountOperationRecordRes, error) {
-	logFields := log.Fields{}
-	logFields["model"] = "account"
-	logFields["func"] = "GetAccountHistory"
-	logFields["module"] = params.Module
-	logFields["code"] = params.Code
+	logger := s.logger.WithField("params",params).WithField("func","GetAccountHistory")
+
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 
 	sort, ok := pb.SORTS_value[params.SortBy]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrSortBy)
+		logger.Error(errors2.ErrSortBy)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrSortBy)
 	}
 
@@ -132,12 +125,12 @@ func (s *msgs) GetAccountHistory(params dto.AccountsInfo) (*dto.AccountOperation
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.MsgsClientMap[mapKey]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrService)
+		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	resp, err = grpcClient.AccountHistory(ctx, &req)
 	if err != nil {
-		log.WithFields(logFields).Error("request err:", err.Error())
+		logger.Error("request err:", err.Error())
 		return nil, err
 	}
 	if resp == nil {
@@ -191,16 +184,12 @@ func (s *msgs) GetAccountHistory(params dto.AccountsInfo) (*dto.AccountOperation
 	return result, nil
 }
 
-func (m *msgs) GetMTHistory(params dto.MTOperationHistoryByMTId) (*dto.MTOperationHistoryByMTIdRes, error) {
-	logFields := log.Fields{}
-	logFields["model"] = "msgs"
-	logFields["func"] = "GetMTHistory"
-	logFields["module"] = params.Module
-	logFields["code"] = params.Code
+func (s *msgs) GetMTHistory(params dto.MTOperationHistoryByMTId) (*dto.MTOperationHistoryByMTIdRes, error) {
+	logger := s.logger.WithField("params",params).WithField("func","GetMTHistory")
 
 	sort, ok := pb.SORTS_value[params.SortBy]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrSortBy)
+		logger.Error(errors2.ErrSortBy)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrSortBy)
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
@@ -225,12 +214,12 @@ func (m *msgs) GetMTHistory(params dto.MTOperationHistoryByMTId) (*dto.MTOperati
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.MsgsClientMap[mapKey]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrService)
+		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	resp, err = grpcClient.MTHistory(ctx, &req)
 	if err != nil {
-		log.WithFields(logFields).Error("request err:", err.Error())
+		logger.Error("request err:", err.Error())
 		return nil, err
 	}
 	if resp == nil {

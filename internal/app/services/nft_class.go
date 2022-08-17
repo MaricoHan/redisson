@@ -27,16 +27,13 @@ func NewNFTClass(logger *log.Logger) *nftClass {
 }
 
 func (n *nftClass) GetAllNFTClasses(params dto.NftClasses) (*dto.NftClassesRes, error) {
-	logFields := log.Fields{}
-	logFields["model"] = "nftclass"
-	logFields["func"] = "GetAllNFTClasses"
-	logFields["module"] = params.Module
-	logFields["code"] = params.Code
+	logger := n.logger.WithField("params",params).WithField("func","NFTClassList")
+
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	sort, ok := pb.SORTS_value[params.SortBy]
 	if !ok {
-		log.WithFields(logFields).Error("sort_by is illegal")
+		logger.Error("sort_by is illegal")
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrSortBy)
 	}
 
@@ -58,12 +55,12 @@ func (n *nftClass) GetAllNFTClasses(params dto.NftClasses) (*dto.NftClassesRes, 
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.ClassClientMap[mapKey]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrService)
+		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	resp, err = grpcClient.List(ctx, &req)
 	if err != nil {
-		log.WithFields(logFields).Error("request err:", err.Error())
+		logger.Error("request err:", err.Error())
 		return nil, err
 	}
 	if resp == nil {
@@ -99,11 +96,8 @@ func (n *nftClass) GetAllNFTClasses(params dto.NftClasses) (*dto.NftClassesRes, 
 }
 
 func (n *nftClass) GetNFTClass(params dto.NftClasses) (*dto.NftClassRes, error) {
-	logFields := log.Fields{}
-	logFields["model"] = "nftclass"
-	logFields["func"] = "GetNFTClass"
-	logFields["module"] = params.Module
-	logFields["code"] = params.Code
+	logger := n.logger.WithField("params",params).WithField("func","GetNFTClass")
+
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	req := pb.ClassShowRequest{
@@ -116,12 +110,12 @@ func (n *nftClass) GetNFTClass(params dto.NftClasses) (*dto.NftClassRes, error) 
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.ClassClientMap[mapKey]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrService)
+		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	resp, err = grpcClient.Show(ctx, &req)
 	if err != nil {
-		log.WithFields(logFields).Error("request err:", err.Error())
+		logger.Error("request err:", err.Error())
 		return nil, err
 	}
 	if resp == nil {
@@ -143,11 +137,8 @@ func (n *nftClass) GetNFTClass(params dto.NftClasses) (*dto.NftClassRes, error) 
 }
 
 func (n *nftClass) CreateNFTClass(params dto.CreateNftClass) (*dto.TxRes, error) {
-	logFields := log.Fields{}
-	logFields["model"] = "nftclass"
-	logFields["func"] = "CreateNFTClass"
-	logFields["module"] = params.Module
-	logFields["code"] = params.Code
+	logger := n.logger.WithField("params",params).WithField("func","CreateNFTClass")
+
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	req := pb.ClassCreateRequest{
@@ -169,12 +160,12 @@ func (n *nftClass) CreateNFTClass(params dto.CreateNftClass) (*dto.TxRes, error)
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.ClassClientMap[mapKey]
 	if !ok {
-		log.WithFields(logFields).Error(errors2.ErrService)
+		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	resp, err = grpcClient.Create(ctx, &req)
 	if err != nil {
-		log.WithFields(logFields).Error("request err:", err.Error())
+		logger.Error("request err:", err.Error())
 		return nil, err
 	}
 	if resp == nil {

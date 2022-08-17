@@ -111,41 +111,57 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	}
 	GrpcConnMap[constant.WenchangDDC] = wenDDcConn
 
+	logger.Info("connecting irita-opb-native ...")
+	IritaOPBNativeConn, err := grpc.DialContext(context.Background(), cfg.GrpcClient.IritaOPBNativeAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp), grpc.WithBlock(), grpc.WithBalancerName(roundrobin.Name))
+	if err != nil {
+		logger.Fatal("get irita-opb-native grpc connect failed, err: ", err.Error())
+	}
+	GrpcConnMap[constant.IritaOPBNative] = IritaOPBNativeConn
+
 	//初始化Account grpc client
 	AccountClientMap = make(map[string]pb_account.AccountClient)
 	AccountClientMap[constant.WenchangDDC] = pb_account.NewAccountClient(GrpcConnMap[constant.WenchangDDC])
 	AccountClientMap[constant.WenchangNative] = pb_account.NewAccountClient(GrpcConnMap[constant.WenchangNative])
+	AccountClientMap[constant.IritaOPBNative] = pb_account.NewAccountClient(GrpcConnMap[constant.IritaOPBNative])
 	//初始化business grpc client
 	BusineessClientMap = make(map[string]pb_business.BuyClient)
 	BusineessClientMap[constant.WenchangDDC] = pb_business.NewBuyClient(GrpcConnMap[constant.WenchangDDC])
 	BusineessClientMap[constant.WenchangNative] = pb_business.NewBuyClient(GrpcConnMap[constant.WenchangNative])
+	BusineessClientMap[constant.IritaOPBNative] = pb_business.NewBuyClient(GrpcConnMap[constant.IritaOPBNative])
 	//初始化msgs grpc client
 	MsgsClientMap = make(map[string]pb_msgs.MSGSClient)
 	MsgsClientMap[constant.WenchangDDC] = pb_msgs.NewMSGSClient(GrpcConnMap[constant.WenchangDDC])
 	MsgsClientMap[constant.WenchangNative] = pb_msgs.NewMSGSClient(GrpcConnMap[constant.WenchangNative])
+	MsgsClientMap[constant.IritaOPBNative] = pb_msgs.NewMSGSClient(GrpcConnMap[constant.IritaOPBNative])
 	//初始化nft grpc client
 	NftClientMap = make(map[string]pb_nft.NFTClient)
 	NftClientMap[constant.WenchangDDC] = pb_nft.NewNFTClient(GrpcConnMap[constant.WenchangDDC])
 	NftClientMap[constant.WenchangNative] = pb_nft.NewNFTClient(GrpcConnMap[constant.WenchangNative])
+	NftClientMap[constant.IritaOPBNative] = pb_nft.NewNFTClient(GrpcConnMap[constant.IritaOPBNative])
 	//初始化nft class grpc client
 	ClassClientMap = make(map[string]pb_class.ClassClient)
 	ClassClientMap[constant.WenchangDDC] = pb_class.NewClassClient(GrpcConnMap[constant.WenchangDDC])
 	ClassClientMap[constant.WenchangNative] = pb_class.NewClassClient(GrpcConnMap[constant.WenchangNative])
+	ClassClientMap[constant.IritaOPBNative] = pb_class.NewClassClient(GrpcConnMap[constant.IritaOPBNative])
 	//初始化tx grpc client
 	TxClientMap = make(map[string]pb_tx.TxClient)
 	TxClientMap[constant.WenchangDDC] = pb_tx.NewTxClient(GrpcConnMap[constant.WenchangDDC])
 	TxClientMap[constant.WenchangNative] = pb_tx.NewTxClient(GrpcConnMap[constant.WenchangNative])
+	TxClientMap[constant.IritaOPBNative] = pb_tx.NewTxClient(GrpcConnMap[constant.IritaOPBNative])
 	// 初始化mt
 	MTClientMap = make(map[string]pb_mt.MTClient)
 	MTClientMap[constant.WenchangDDC] = pb_mt.NewMTClient(GrpcConnMap[constant.WenchangDDC])
 	MTClientMap[constant.WenchangNative] = pb_mt.NewMTClient(GrpcConnMap[constant.WenchangNative])
+	MTClientMap[constant.IritaOPBNative] = pb_mt.NewMTClient(GrpcConnMap[constant.IritaOPBNative])
 	// 初始化mt_class
 	MTClassClientMap = make(map[string]pb_mt_class.MTClassClient)
 	MTClassClientMap[constant.WenchangDDC] = pb_mt_class.NewMTClassClient(GrpcConnMap[constant.WenchangDDC])
 	MTClassClientMap[constant.WenchangNative] = pb_mt_class.NewMTClassClient(GrpcConnMap[constant.WenchangNative])
+	MTClassClientMap[constant.IritaOPBNative] = pb_mt_class.NewMTClassClient(GrpcConnMap[constant.IritaOPBNative])
 	// 初始化mt_msgs
 	MTMsgsClientMap = make(map[string]pb_mt_msgs.MTMSGSClient)
 	MTMsgsClientMap[constant.WenchangNative] = pb_mt_msgs.NewMTMSGSClient(GrpcConnMap[constant.WenchangNative])
+	MTMsgsClientMap[constant.IritaOPBNative] = pb_mt_msgs.NewMTMSGSClient(GrpcConnMap[constant.IritaOPBNative])
 }
 
 func InitRedisClient(cfg *configs.Config, logger *log.Logger) {

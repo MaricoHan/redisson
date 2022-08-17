@@ -12,8 +12,8 @@ router_prefix = "v1beta1"
 grpc_timeout = 1000000
 
 [mysql]
-host = "192.168.0.119"
-port = 3306
+host = "192.168.150.40"
+port = 23306
 username = "root"
 password = "rootPassword"
 # host = "192.168.150.40"
@@ -33,7 +33,8 @@ db = 11
 
 [grpc_client]
 wenchangchain_ddc_addr = "127.0.0.1:10000"
-wenchangchain_native_addr = "127.0.0.1:10000"
+wenchangchain_native_addr = "127.0.0.1:10001"
+irita_opb_native_addr = "127.0.0.1:10002"
 
 [project]
 secret_pwd = "Console_Projects_Secrets"

@@ -29,11 +29,7 @@ func NewTx(logger *log.Logger) *tx {
 }
 
 func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHashRes, error) {
-	log := t.logger.WithFields(map[string]interface{}{
-		"func":   "TxResultByTxHash",
-		"module": params.Module,
-		"code":   params.Code,
-	})
+	logger := t.logger.WithField("params",params).WithField("func","TxResultByTxHash")
 
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
@@ -46,12 +42,12 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.TxClientMap[mapKey]
 	if !ok {
-		log.Error(errors2.ErrService)
+		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	resp, err = grpcClient.Show(ctx, &req)
 	if err != nil {
-		log.WithError(err).Error("request err")
+		logger.WithError(err).Error("request err")
 		return nil, err
 	}
 	if resp == nil || resp.Detail == nil {
@@ -70,7 +66,7 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 		var tagInterface interface{}
 		err = json.Unmarshal([]byte(resp.Detail.Tag), &tagInterface)
 		if err != nil {
-			log.WithError(err).Error("Unmarshal failed")
+			logger.WithError(err).Error("Unmarshal failed")
 			return nil, errors2.ErrInternal
 		}
 		result.Tag = tagInterface.(map[string]interface{})
@@ -84,7 +80,7 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 		result.Nft = new(types.JSON)
 		err = json.Unmarshal([]byte(resp.Detail.Nft), &result.Nft)
 		if err != nil {
-			log.WithError(err).Error("Unmarshal failed")
+			logger.WithError(err).Error("Unmarshal failed")
 			return nil, errors2.ErrInternal
 		}
 		result.NftID = resp.Detail.NftId
@@ -95,7 +91,7 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 		result.Mt = new(types.JSON)
 		err = json.Unmarshal([]byte(resp.Detail.Mt), result.Mt)
 		if err != nil {
-			log.WithError(err).Error("Unmarshal failed")
+			logger.WithError(err).Error("Unmarshal failed")
 			return nil, errors2.ErrInternal
 		}
 	}
