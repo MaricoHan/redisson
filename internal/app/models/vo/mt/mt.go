@@ -24,6 +24,11 @@ type EditRequest struct {
 	OperationID string                 `json:"operation_id"`
 }
 type BurnRequest struct {
+	Amount      uint64                 `json:"amount"`
+	Tag         map[string]interface{} `json:"tag"`
+	OperationID string                 `json:"operation_id"`
+}
+type BatchBurnRequest struct {
 	Mts         []*pb.BurnMT           `json:"mts"`
 	Tag         map[string]interface{} `json:"tag"`
 	OperationID string                 `json:"operation_id"`

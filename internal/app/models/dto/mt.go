@@ -45,6 +45,17 @@ type EditResponse struct {
 	OperationID string `json:"operation_id"`
 }
 type BurnRequest struct {
+	Code        string `json:"code"`
+	Module      string `json:"module"`
+	ProjectID   uint64 `json:"project_id"`
+	Owner       string `json:"owner"`
+	ClassID     string `json:"class_id"`
+	MtID        string `json:"mt_id"`
+	Amount      uint64 `json:"amount"`
+	Tag         string `json:"tag"`
+	OperationID string `json:"operation_id" validate:"required"`
+}
+type BatchBurnRequest struct {
 	Code        string       `json:"code"`
 	Module      string       `json:"module"`
 	ProjectID   uint64       `json:"project_id"`
