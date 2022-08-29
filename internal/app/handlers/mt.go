@@ -17,6 +17,8 @@ import (
 type IMT interface {
 	Issue(ctx context.Context, request interface{}) (response interface{}, err error)
 	Mint(ctx context.Context, request interface{}) (response interface{}, err error)
+	BatchMint(ctx context.Context, request interface{}) (response interface{}, err error)
+
 	Edit(ctx context.Context, request interface{}) (response interface{}, err error)
 	Burn(ctx context.Context, request interface{}) (response interface{}, err error)
 	Transfer(ctx context.Context, request interface{}) (response interface{}, err error)
@@ -65,7 +67,6 @@ func (m MT) Issue(ctx context.Context, request interface{}) (response interface{
 
 	return m.svc.Issue(&param)
 }
-
 func (h MT) Mint(ctx context.Context, request interface{}) (response interface{}, err error) {
 	// 接收请求
 	req, ok := request.(*vo.MintRequest)
@@ -88,12 +89,43 @@ func (h MT) Mint(ctx context.Context, request interface{}) (response interface{}
 		ProjectID:   authData.ProjectId,
 		ClassID:     h.ClassID(ctx),
 		MTID:        h.MTID(ctx),
-		Recipients:  req.Recipients,
+		Amount:      req.Amount,
+		Recipient:   req.Recipient,
 		Tag:         string(tagBz),
 		OperationID: req.OperationID,
 	}
 
 	return h.svc.Mint(&param)
+}
+
+func (h MT) BatchMint(ctx context.Context, request interface{}) (response interface{}, err error) {
+	// 接收请求
+	req, ok := request.(*vo.BatchMintRequest)
+	if !ok {
+		log.Debugf("failed to assert : %v", request)
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	}
+	// 转换tag
+	var tagBz []byte
+	if len(req.Tag) > 0 {
+		tagBz, _ = json.Marshal(req.Tag)
+	}
+	req.OperationID = strings.TrimSpace(req.OperationID)
+
+	// 获取账户基本信息
+	authData := h.AuthData(ctx)
+	param := dto.BatchMintRequest{
+		Code:        authData.Code,
+		Module:      authData.Module,
+		ProjectID:   authData.ProjectId,
+		ClassID:     h.ClassID(ctx),
+		MTID:        h.MTID(ctx),
+		Recipients:  req.Recipients,
+		Tag:         string(tagBz),
+		OperationID: req.OperationID,
+	}
+
+	return h.svc.BatchMint(&param)
 }
 
 func (h MT) Edit(ctx context.Context, request interface{}) (response interface{}, err error) {
