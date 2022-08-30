@@ -21,6 +21,7 @@ type IMT interface {
 	Transfer(params *dto.MTTransferRequest) (*dto.MTTransferResponse, error)
 
 	BatchTransfer(params *dto.MTBatchTransferRequest) (*dto.MTBatchTransferResponse, error)
+	BatchBurn(params *dto.BatchBurnRequest) (*dto.BatchBurnResponse, error)
 	Show(params *dto.MTShowRequest) (*dto.MTShowResponse, error)
 	List(params *dto.MTListRequest) (*dto.MTListResponse, error)
 	Balances(params *dto.MTBalancesRequest) (*dto.MTBalancesResponse, error)
@@ -181,40 +182,40 @@ func (m MT) Edit(params *dto.EditRequest) (*dto.EditResponse, error) {
 	return &dto.EditResponse{OperationID: params.OperationID}, nil
 }
 
-//func (m MT) BatchBurn(params *dto.BurnRequest) (*dto.BurnResponse, error) {
-//	logger := m.logger.WithField("params",params).WithField("func","BurnMT")
-//
-//	req := pb.MTDeleteRequest{
-//		ProjectId:   params.ProjectID,
-//		Owner:       params.Owner,
-//		Mts:         params.Mts,
-//		Tag:         params.Tag,
-//		OperationId: params.OperationID,
-//	}
-//
-//	resp := new(pb.MTDeleteResponse)
-//
-//	var err error
-//	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
-//	grpcClient, ok := initialize.MTClientMap[mapKey]
-//	if !ok {
-//		logger.Error(errors2.ErrService)
-//		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
-//	}
-//
-//	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
-//	defer cancel()
-//	resp, err = grpcClient.Delete(ctx, &req)
-//	if err != nil {
-//		logger.Error("request err:", err.Error())
-//		return nil, err
-//	}
-//	if resp == nil {
-//		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
-//	}
-//
-//	return &dto.BurnResponse{OperationID: params.OperationID}, nil
-//}
+func (m MT) BatchBurn(params *dto.BatchBurnRequest) (*dto.BatchBurnResponse, error) {
+	logger := m.logger.WithField("params", params).WithField("func", "BurnMT")
+
+	req := pb.MTBatchDeleteRequest{
+		ProjectId:   params.ProjectID,
+		Owner:       params.Owner,
+		Mts:         params.Mts,
+		Tag:         params.Tag,
+		OperationId: params.OperationID,
+	}
+
+	resp := new(pb.MTBatchDeleteResponse)
+
+	var err error
+	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+	grpcClient, ok := initialize.MTClientMap[mapKey]
+	if !ok {
+		logger.Error(errors2.ErrService)
+		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
+	}
+
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+	resp, err = grpcClient.BatchDelete(ctx, &req)
+	if err != nil {
+		logger.Error("request err:", err.Error())
+		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+	}
+
+	return &dto.BatchBurnResponse{OperationID: params.OperationID}, nil
+}
 func (m MT) Burn(params *dto.BurnRequest) (*dto.BurnResponse, error) {
 	logger := m.logger.WithField("params", params).WithField("func", "BurnMT")
 

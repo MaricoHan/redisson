@@ -156,34 +156,34 @@ func (h MT) Burn(ctx context.Context, request interface{}) (response interface{}
 	return h.svc.Burn(&param)
 }
 
-//func (h MT) BatchBurn(ctx context.Context, request interface{}) (response interface{}, err error) {
-//	// 接收请求
-//	req, ok := request.(*vo.BurnRequest)
-//	if !ok {
-//		log.Debugf("failed to assert : %v", request)
-//		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
-//	}
-//	// 转换tag
-//	var tagBz []byte
-//	if len(req.Tag) > 0 {
-//		tagBz, _ = json.Marshal(req.Tag)
-//	}
-//	req.OperationID = strings.TrimSpace(req.OperationID)
-//
-//	// 获取账户基本信息
-//	authData := h.AuthData(ctx)
-//	param := dto.BurnRequest{
-//		Code:        authData.Code,
-//		Module:      authData.Module,
-//		ProjectID:   authData.ProjectId,
-//		Owner:       h.Owner(ctx),
-//		Mts:         req.Mts,
-//		Tag:         string(tagBz),
-//		OperationID: req.OperationID,
-//	}
-//
-//	return h.svc.Burn(&param)
-//}
+func (h MT) BatchBurn(ctx context.Context, request interface{}) (response interface{}, err error) {
+	// 接收请求
+	req, ok := request.(*vo.BatchBurnRequest)
+	if !ok {
+		log.Debugf("failed to assert : %v", request)
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	}
+	// 转换tag
+	var tagBz []byte
+	if len(req.Tag) > 0 {
+		tagBz, _ = json.Marshal(req.Tag)
+	}
+	req.OperationID = strings.TrimSpace(req.OperationID)
+
+	// 获取账户基本信息
+	authData := h.AuthData(ctx)
+	param := dto.BatchBurnRequest{
+		Code:        authData.Code,
+		Module:      authData.Module,
+		ProjectID:   authData.ProjectId,
+		Owner:       h.Owner(ctx),
+		Mts:         req.Mts,
+		Tag:         string(tagBz),
+		OperationID: req.OperationID,
+	}
+
+	return h.svc.Burn(&param)
+}
 
 func (h MT) Transfer(ctx context.Context, request interface{}) (response interface{}, err error) {
 	// 接收请求

@@ -76,6 +76,9 @@ type MTBatchTransferRequest struct {
 	Tag         string         `json:"tag"`
 	OperationID string         `json:"operation_id" validate:"required"`
 }
+type BatchBurnResponse struct {
+	OperationID string `json:"operation_id"`
+}
 type MTBatchTransferResponse struct {
 	OperationID string `json:"operation_id"`
 }
