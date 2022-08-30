@@ -16,6 +16,8 @@ import (
 type IMT interface {
 	Issue(params *dto.IssueRequest) (*dto.IssueResponse, error)
 	Mint(params *dto.MintRequest) (*dto.MintResponse, error)
+	BatchMint(params *dto.BatchMintRequest) (*dto.BatchMintResponse, error)
+
 	Edit(params *dto.EditRequest) (*dto.EditResponse, error)
 	Burn(params *dto.BurnRequest) (*dto.BurnResponse, error)
 	Transfer(params *dto.MTTransferRequest) (*dto.MTTransferResponse, error)
@@ -80,7 +82,8 @@ func (m MT) Mint(params *dto.MintRequest) (*dto.MintResponse, error) {
 		ProjectId:   params.ProjectID,
 		ClassId:     params.ClassID,
 		MtId:        params.MTID,
-		Recipients:  params.Recipients,
+		Amount:      params.Amount,
+		Recipient:   params.Recipient,
 		Tag:         params.Tag,
 		OperationId: params.OperationID,
 	}
@@ -107,6 +110,41 @@ func (m MT) Mint(params *dto.MintRequest) (*dto.MintResponse, error) {
 	}
 
 	return &dto.MintResponse{OperationID: params.OperationID}, nil
+}
+func (m MT) BatchMint(params *dto.BatchMintRequest) (*dto.BatchMintResponse, error) {
+	logger := m.logger.WithField("params", params).WithField("func", "MintMT")
+
+	req := pb.MTBatchMintRequest{
+		ProjectId:   params.ProjectID,
+		ClassId:     params.ClassID,
+		MtId:        params.MTID,
+		Recipients:  params.Recipients,
+		Tag:         params.Tag,
+		OperationId: params.OperationID,
+	}
+
+	resp := new(pb.MTBatchMintResponse)
+
+	var err error
+	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+	grpcClient, ok := initialize.MTClientMap[mapKey]
+	if !ok {
+		logger.Error(errors2.ErrService)
+		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
+	}
+
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+	resp, err = grpcClient.BatchMint(ctx, &req)
+	if err != nil {
+		logger.Error("request err:", err.Error())
+		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+	}
+
+	return &dto.BatchMintResponse{OperationID: params.OperationID}, nil
 }
 
 func (m MT) Show(params *dto.MTShowRequest) (*dto.MTShowResponse, error) {

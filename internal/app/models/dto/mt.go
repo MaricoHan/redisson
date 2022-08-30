@@ -20,6 +20,21 @@ type IssueResponse struct {
 }
 
 type MintRequest struct {
+	Code        string `json:"code"`
+	Module      string `json:"module"`
+	ProjectID   uint64 `json:"project_id"`
+	ClassID     string `json:"class_id"`
+	MTID        string `json:"mt_id"`
+	Amount      uint64 `json:"amount,omitempty"`
+	Recipient   string `json:"recipient,omitempty"`
+	Tag         string `json:"tag"`
+	OperationID string `json:"operation_id" validate:"required"`
+}
+type MintResponse struct {
+	OperationID string `json:"operation_id"`
+}
+
+type BatchMintRequest struct {
 	Code        string          `json:"code"`
 	Module      string          `json:"module"`
 	ProjectID   uint64          `json:"project_id"`
@@ -29,7 +44,7 @@ type MintRequest struct {
 	Tag         string          `json:"tag"`
 	OperationID string          `json:"operation_id" validate:"required"`
 }
-type MintResponse struct {
+type BatchMintResponse struct {
 	OperationID string `json:"operation_id"`
 }
 type EditRequest struct {

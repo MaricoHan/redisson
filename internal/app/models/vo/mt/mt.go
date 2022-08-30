@@ -14,10 +14,17 @@ type IssueRequest struct {
 }
 
 type MintRequest struct {
+	Amount      uint64                 `json:"amount,omitempty"`
+	Recipient   string                 `json:"recipient,omitempty"`
+	Tag         map[string]interface{} `json:"tag"`
+	OperationID string                 `json:"operation_id"`
+}
+type BatchMintRequest struct {
 	Recipients  []*pb.Recipient        `json:"recipients"`
 	Tag         map[string]interface{} `json:"tag"`
 	OperationID string                 `json:"operation_id"`
 }
+
 type EditRequest struct {
 	Mts         []*pb.EditMetadata     `json:"mts"`
 	Tag         map[string]interface{} `json:"tag"`
