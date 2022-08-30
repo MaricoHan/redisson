@@ -214,7 +214,7 @@ func (h MT) BatchBurn(ctx context.Context, request interface{}) (response interf
 		OperationID: req.OperationID,
 	}
 
-	return h.svc.Burn(&param)
+	return h.svc.BatchBurn(&param)
 }
 
 func (h MT) Transfer(ctx context.Context, request interface{}) (response interface{}, err error) {
