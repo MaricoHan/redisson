@@ -149,7 +149,7 @@ func (h MT) Edit(ctx context.Context, request interface{}) (response interface{}
 		Module:      authData.Module,
 		ProjectID:   authData.ProjectId,
 		Owner:       h.Owner(ctx),
-		Mts:         req.Mts,
+		Data:        req.Data,
 		Tag:         string(tagBz),
 		OperationID: req.OperationID,
 	}

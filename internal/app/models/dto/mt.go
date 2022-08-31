@@ -48,13 +48,13 @@ type BatchMintResponse struct {
 	OperationID string `json:"operation_id"`
 }
 type EditRequest struct {
-	Code        string             `json:"code"`
-	Module      string             `json:"module"`
-	ProjectID   uint64             `json:"project_id"`
-	Owner       string             `json:"owner"`
-	Mts         []*pb.EditMetadata `json:"mts"`
-	Tag         string             `json:"tag"`
-	OperationID string             `json:"operation_id" validate:"required"`
+	Code        string `json:"code"`
+	Module      string `json:"module"`
+	ProjectID   uint64 `json:"project_id"`
+	Owner       string `json:"owner"`
+	Data        string `json:"data"`
+	Tag         string `json:"tag"`
+	OperationID string `json:"operation_id" validate:"required"`
 }
 type EditResponse struct {
 	OperationID string `json:"operation_id"`

@@ -26,7 +26,7 @@ type BatchMintRequest struct {
 }
 
 type EditRequest struct {
-	Mts         []*pb.EditMetadata     `json:"mts"`
+	Data        string                 `json:"data"`
 	Tag         map[string]interface{} `json:"tag"`
 	OperationID string                 `json:"operation_id"`
 }
