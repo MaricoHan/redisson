@@ -43,11 +43,11 @@ func (m MTController) GetEndpoints() []kit.Endpoint {
 			Method:  http.MethodGet,
 			Handler: m.makeHandler(m.handler.Balances, nil),
 		},
-		//{
-		//	URI:     "/mt/mts/{owner}",
-		//	Method:  http.MethodPatch,
-		//	Handler: m.makeHandler(m.handler.Edit, &vo.EditRequest{}),
-		//},
+		{
+			URI:     "/mt/mts/{class_id}/{owner}/{mt_id}",
+			Method:  http.MethodPatch,
+			Handler: m.makeHandler(m.handler.Edit, &vo.EditRequest{}),
+		},
 		//{
 		//	URI:     "/mt/mts/{owner}",
 		//	Method:  http.MethodDelete,

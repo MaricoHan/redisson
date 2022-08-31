@@ -111,6 +111,7 @@ func (m MT) Mint(params *dto.MintRequest) (*dto.MintResponse, error) {
 
 	return &dto.MintResponse{OperationID: params.OperationID}, nil
 }
+
 func (m MT) BatchMint(params *dto.BatchMintRequest) (*dto.BatchMintResponse, error) {
 	logger := m.logger.WithField("params", params).WithField("func", "MintMT")
 
@@ -185,13 +186,14 @@ func (m MT) Show(params *dto.MTShowRequest) (*dto.MTShowResponse, error) {
 	}
 	return result, nil
 }
+
 func (m MT) Edit(params *dto.EditRequest) (*dto.EditResponse, error) {
 	logger := m.logger.WithField("params", params).WithField("func", "EditMT")
 
 	req := pb.MTEditRequest{
 		ProjectId:   params.ProjectID,
 		Owner:       params.Owner,
-		Mts:         params.Mts,
+		Data:        params.Data,
 		Tag:         params.Tag,
 		OperationId: params.OperationID,
 	}
@@ -254,6 +256,7 @@ func (m MT) BatchBurn(params *dto.BatchBurnRequest) (*dto.BatchBurnResponse, err
 
 	return &dto.BatchBurnResponse{OperationID: params.OperationID}, nil
 }
+
 func (m MT) Burn(params *dto.BurnRequest) (*dto.BurnResponse, error) {
 	logger := m.logger.WithField("params", params).WithField("func", "BurnMT")
 
@@ -290,6 +293,7 @@ func (m MT) Burn(params *dto.BurnRequest) (*dto.BurnResponse, error) {
 
 	return &dto.BurnResponse{OperationID: params.OperationID}, nil
 }
+
 func (m MT) Transfer(params *dto.MTTransferRequest) (*dto.MTTransferResponse, error) {
 	logger := m.logger.WithField("params", params).WithField("func", "TransferMT")
 
@@ -361,6 +365,7 @@ func (m MT) BatchTransfer(params *dto.MTBatchTransferRequest) (*dto.MTBatchTrans
 
 	return &dto.MTBatchTransferResponse{OperationID: params.OperationID}, nil
 }
+
 func (m MT) List(params *dto.MTListRequest) (*dto.MTListResponse, error) {
 	logger := m.logger.WithField("params", params).WithField("func", "ListMT")
 
