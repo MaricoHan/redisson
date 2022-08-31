@@ -54,6 +54,8 @@ type EditRequest struct {
 	Owner       string `json:"owner"`
 	Data        string `json:"data"`
 	Tag         string `json:"tag"`
+	ClassId     string `json:"class_id"`
+	MTID        string `json:"mt_id"`
 	OperationID string `json:"operation_id" validate:"required"`
 }
 type EditResponse struct {

@@ -195,6 +195,8 @@ func (m MT) Edit(params *dto.EditRequest) (*dto.EditResponse, error) {
 		Owner:       params.Owner,
 		Data:        params.Data,
 		Tag:         params.Tag,
+		ClassId:     params.ClassId,
+		MtId:        params.MTID,
 		OperationId: params.OperationID,
 	}
 
