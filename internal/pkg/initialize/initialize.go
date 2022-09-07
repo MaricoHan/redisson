@@ -13,6 +13,7 @@ import (
 	pb_mt_msgs "gitlab.bianjie.ai/avata/chains/api/pb/mt_msgs"
 	pb_nft "gitlab.bianjie.ai/avata/chains/api/pb/nft"
 	pb_tx "gitlab.bianjie.ai/avata/chains/api/pb/tx"
+	pb_tx_queue "gitlab.bianjie.ai/avata/chains/api/pb/tx_queue"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/redis"
@@ -38,6 +39,11 @@ var TxClientMap map[string]pb_tx.TxClient
 var MTClientMap map[string]pb_mt.MTClient
 var MTClassClientMap map[string]pb_mt_class.MTClassClient
 var MTMsgsClientMap map[string]pb_mt_msgs.MTMSGSClient
+
+// todo 服务未确定 暂时这么写
+var TxQueueServer *grpc.ClientConn
+var TxQueueClient pb_tx_queue.TxQueueClient
+
 var Log = new(log.Logger)
 
 func Logger(cfg *configs.Config) *log.Logger {
@@ -118,6 +124,12 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	}
 	GrpcConnMap[constant.IritaOPBNative] = IritaOPBNativeConn
 
+	logger.Info("connecting tx-queue-server ...")
+	TxQueueServer, err = grpc.DialContext(context.Background(), cfg.GrpcClient.TxQueueAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp), grpc.WithBlock(), grpc.WithBalancerName(roundrobin.Name))
+	if err != nil {
+		logger.Fatal("get tx-queue-server grpc connect failed, err: ", err.Error())
+	}
+
 	//初始化Account grpc client
 	AccountClientMap = make(map[string]pb_account.AccountClient)
 	AccountClientMap[constant.WenchangDDC] = pb_account.NewAccountClient(GrpcConnMap[constant.WenchangDDC])
@@ -162,6 +174,9 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	MTMsgsClientMap = make(map[string]pb_mt_msgs.MTMSGSClient)
 	MTMsgsClientMap[constant.WenchangNative] = pb_mt_msgs.NewMTMSGSClient(GrpcConnMap[constant.WenchangNative])
 	MTMsgsClientMap[constant.IritaOPBNative] = pb_mt_msgs.NewMTMSGSClient(GrpcConnMap[constant.IritaOPBNative])
+
+	// 初始化tx_queue
+	TxQueueClient = pb_tx_queue.NewTxQueueClient(TxQueueServer)
 }
 
 func InitRedisClient(cfg *configs.Config, logger *log.Logger) {
