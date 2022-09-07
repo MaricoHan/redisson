@@ -3,20 +3,22 @@ package services
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
+
 	log "github.com/sirupsen/logrus"
 	pb "gitlab.bianjie.ai/avata/chains/api/pb/buy"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
-	"strings"
-	"time"
 )
 
 type IBusiness interface {
 	GetOrderInfo(params dto.GetOrder) (*dto.OrderInfo, error)
 	GetAllOrders(params dto.GetAllOrder) (*dto.OrderOperationRes, error)
 	BuildOrder(params dto.BuildOrderInfo) (*dto.BuyResponse, error)
+	BatchBuyGas(params dto.BatchBuyGas) (*dto.BuyResponse, error)
 }
 
 type business struct {
@@ -28,7 +30,7 @@ func NewBusiness(logger *log.Logger) *business {
 }
 
 func (s *business) GetOrderInfo(params dto.GetOrder) (*dto.OrderInfo, error) {
-	logger := s.logger.WithField("params",params).WithField("func","GetOrderInfo")
+	logger := s.logger.WithField("params", params).WithField("func", "GetOrderInfo")
 
 	req := pb.OrderShowRequest{
 		ProjectId: params.ProjectID,
@@ -68,7 +70,7 @@ func (s *business) GetOrderInfo(params dto.GetOrder) (*dto.OrderInfo, error) {
 }
 
 func (s *business) GetAllOrders(params dto.GetAllOrder) (*dto.OrderOperationRes, error) {
-	logger := s.logger.WithField("params",params).WithField("func","GetAllOrders")
+	logger := s.logger.WithField("params", params).WithField("func", "GetAllOrders")
 
 	sorts := strings.Split(params.SortBy, "_")
 
@@ -169,7 +171,7 @@ func (s *business) GetAllOrders(params dto.GetAllOrder) (*dto.OrderOperationRes,
 }
 
 func (s *business) BuildOrder(params dto.BuildOrderInfo) (*dto.BuyResponse, error) {
-	logger := s.logger.WithField("params",params).WithField("func","BuildOrder")
+	logger := s.logger.WithField("params", params).WithField("func", "BuildOrder")
 
 	req := pb.BuyRequest{
 		ProjectId: params.ProjectID,
@@ -211,4 +213,39 @@ func (s *business) BuildOrder(params dto.BuildOrderInfo) (*dto.BuyResponse, erro
 	}
 	return result, nil
 
+}
+
+func (s *business) BatchBuyGas(params dto.BatchBuyGas) (*dto.BuyResponse, error) {
+	logger := s.logger.WithFields(map[string]interface{}{
+		"func":   "BatchBuyGas",
+		"params": params,
+	})
+
+	req := pb.BatchBuyRequest{
+		ProjectId: params.ProjectID,
+		List:      params.List,
+		OrderId:   params.OrderId,
+	}
+	resp := &pb.BatchBuyResponse{}
+	var err error
+	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+	grpcClient, ok := initialize.BusineessClientMap[mapKey]
+	if !ok {
+		logger.Error(errors2.ErrService)
+		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
+	}
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+	resp, err = grpcClient.BatchBuyGas(ctx, &req)
+	if err != nil {
+		logger.Error("request err:", err.Error())
+		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+	}
+	result := &dto.BuyResponse{
+		OrderId: resp.OrderId,
+	}
+	return result, nil
 }

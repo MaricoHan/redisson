@@ -1,5 +1,7 @@
 package dto
 
+import pb "gitlab.bianjie.ai/avata/chains/api/pb/buy"
+
 type BuildOrderInfo struct {
 	ProjectID uint64 `json:"project_id"`
 	Address   string `json:"address"`
@@ -52,4 +54,13 @@ type OrderInfo struct {
 	CreateTime string `json:"create_time"`
 	UpdateTime string `json:"update_time"`
 	OrderType  string `json:"order_type"`
+}
+
+type BatchBuyGas struct {
+	ProjectID uint64             `json:"project_id"`
+	ChainId   uint64             `json:"chain_id"`
+	Module    string             `json:"module"`
+	List      []*pb.BatchBuyList `json:"list"`
+	OrderId   string             `json:"order_id"`
+	Code      string             `json:"code"`
 }
