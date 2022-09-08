@@ -5,7 +5,7 @@ import pb "gitlab.bianjie.ai/avata/chains/api/pb/buy"
 type BuildOrderInfo struct {
 	ProjectID  uint64 `json:"project_id"`
 	Address    string `json:"address"`
-	Amount     int64  `json:"amount"`
+	Amount     uint64 `json:"amount"`
 	ChainId    uint64 `json:"chain_id"`
 	Module     string `json:"module"`
 	OrderType  string `json:"order_type"`
