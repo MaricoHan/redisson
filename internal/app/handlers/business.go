@@ -31,11 +31,13 @@ func (h *Business) GetOrderInfo(ctx context.Context, _ interface{}) (interface{}
 	authData := h.AuthData(ctx)
 
 	params := dto.GetOrder{
-		ProjectID: authData.ProjectId,
-		Module:    authData.Module,
-		OrderId:   h.GetOrderId(ctx),
-		Code:      authData.Code,
+		ProjectID:  authData.ProjectId,
+		Module:     authData.Module,
+		OrderId:    h.GetOrderId(ctx),
+		Code:       authData.Code,
+		AccessMode: authData.AccessMode,
 	}
+
 	return h.svc.GetOrderInfo(params)
 }
 
@@ -43,12 +45,13 @@ func (h *Business) GetAllOrders(ctx context.Context, _ interface{}) (interface{}
 	authData := h.AuthData(ctx)
 
 	params := dto.GetAllOrder{
-		Page:      dto.Page{},
-		Module:    authData.Module,
-		ProjectId: authData.ProjectId,
-		Account:   h.GetAccount(ctx),
-		Code:      authData.Code,
-		Status:    h.GetStatus(ctx),
+		Page:       dto.Page{},
+		Module:     authData.Module,
+		ProjectId:  authData.ProjectId,
+		Account:    h.GetAccount(ctx),
+		Code:       authData.Code,
+		Status:     h.GetStatus(ctx),
+		AccessMode: authData.AccessMode,
 	}
 	offset, err := h.Offset(ctx)
 	if err != nil {
@@ -114,14 +117,15 @@ func (h *Business) BuildOrder(ctx context.Context, request interface{}) (interfa
 	}
 
 	params := dto.BuildOrderInfo{
-		ProjectID: authData.ProjectId,
-		ChainId:   authData.ChainId,
-		Address:   OrderRes.Account,
-		Amount:    OrderRes.Amount,
-		Module:    authData.Module,
-		OrderType: OrderRes.OrderType,
-		OrderId:   OrderRes.OrderId,
-		Code:      authData.Code,
+		ProjectID:  authData.ProjectId,
+		ChainId:    authData.ChainId,
+		Address:    OrderRes.Account,
+		Amount:     OrderRes.Amount,
+		Module:     authData.Module,
+		OrderType:  OrderRes.OrderType,
+		OrderId:    OrderRes.OrderId,
+		Code:       authData.Code,
+		AccessMode: authData.AccessMode,
 	}
 	return h.svc.BuildOrder(params)
 }
@@ -162,12 +166,13 @@ func (h *Business) BatchBuyGas(ctx context.Context, request interface{}) (interf
 	}
 
 	params := dto.BatchBuyGas{
-		ProjectID: authData.ProjectId,
-		ChainId:   authData.ChainId,
-		Module:    authData.Module,
-		List:      OrderRes.List,
-		OrderId:   OrderRes.OrderId,
-		Code:      authData.Code,
+		ProjectID:  authData.ProjectId,
+		ChainId:    authData.ChainId,
+		Module:     authData.Module,
+		List:       OrderRes.List,
+		OrderId:    OrderRes.OrderId,
+		Code:       authData.Code,
+		AccessMode: authData.AccessMode,
 	}
 	return h.svc.BatchBuyGas(params)
 }

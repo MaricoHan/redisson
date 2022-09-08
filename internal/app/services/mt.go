@@ -8,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	pb "gitlab.bianjie.ai/avata/chains/api/pb/mt"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
@@ -40,6 +41,11 @@ func NewMT(logger *log.Logger) *MT {
 
 func (m MT) Issue(params *dto.IssueRequest) (*dto.IssueResponse, error) {
 	logger := m.logger.WithField("params", params).WithField("func", "IssueMT")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	req := pb.MTIssueRequest{
 		ProjectId:   params.ProjectID,
@@ -78,6 +84,11 @@ func (m MT) Issue(params *dto.IssueRequest) (*dto.IssueResponse, error) {
 func (m MT) Mint(params *dto.MintRequest) (*dto.MintResponse, error) {
 	logger := m.logger.WithField("params", params).WithField("func", "MintMT")
 
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
+
 	req := pb.MTMintRequest{
 		ProjectId:   params.ProjectID,
 		ClassId:     params.ClassID,
@@ -115,6 +126,11 @@ func (m MT) Mint(params *dto.MintRequest) (*dto.MintResponse, error) {
 func (m MT) BatchMint(params *dto.BatchMintRequest) (*dto.BatchMintResponse, error) {
 	logger := m.logger.WithField("params", params).WithField("func", "MintMT")
 
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
+
 	req := pb.MTBatchMintRequest{
 		ProjectId:   params.ProjectID,
 		ClassId:     params.ClassID,
@@ -150,6 +166,11 @@ func (m MT) BatchMint(params *dto.BatchMintRequest) (*dto.BatchMintResponse, err
 
 func (m MT) Show(params *dto.MTShowRequest) (*dto.MTShowResponse, error) {
 	logger := m.logger.WithField("params", params).WithField("func", "ShowMT")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	req := pb.MTShowRequest{
 		ProjectId: params.ProjectID,
@@ -190,6 +211,11 @@ func (m MT) Show(params *dto.MTShowRequest) (*dto.MTShowResponse, error) {
 func (m MT) Edit(params *dto.EditRequest) (*dto.EditResponse, error) {
 	logger := m.logger.WithField("params", params).WithField("func", "EditMT")
 
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
+
 	req := pb.MTEditRequest{
 		ProjectId:   params.ProjectID,
 		Owner:       params.Owner,
@@ -227,6 +253,11 @@ func (m MT) Edit(params *dto.EditRequest) (*dto.EditResponse, error) {
 func (m MT) BatchBurn(params *dto.BatchBurnRequest) (*dto.BatchBurnResponse, error) {
 	logger := m.logger.WithField("params", params).WithField("func", "BurnMT")
 
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
+
 	req := pb.MTBatchDeleteRequest{
 		ProjectId:   params.ProjectID,
 		Owner:       params.Owner,
@@ -261,6 +292,11 @@ func (m MT) BatchBurn(params *dto.BatchBurnRequest) (*dto.BatchBurnResponse, err
 
 func (m MT) Burn(params *dto.BurnRequest) (*dto.BurnResponse, error) {
 	logger := m.logger.WithField("params", params).WithField("func", "BurnMT")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	req := pb.MTDeleteRequest{
 		ProjectId:   params.ProjectID,
@@ -299,6 +335,11 @@ func (m MT) Burn(params *dto.BurnRequest) (*dto.BurnResponse, error) {
 func (m MT) Transfer(params *dto.MTTransferRequest) (*dto.MTTransferResponse, error) {
 	logger := m.logger.WithField("params", params).WithField("func", "TransferMT")
 
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
+
 	req := pb.MTTransferRequest{
 		ProjectId:   params.ProjectID,
 		Owner:       params.Owner,
@@ -336,6 +377,11 @@ func (m MT) Transfer(params *dto.MTTransferRequest) (*dto.MTTransferResponse, er
 func (m MT) BatchTransfer(params *dto.MTBatchTransferRequest) (*dto.MTBatchTransferResponse, error) {
 	logger := m.logger.WithField("params", params).WithField("func", "BatchTransferMT")
 
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
+
 	req := pb.MTBatchTransferRequest{
 		ProjectId:   params.ProjectID,
 		Owner:       params.Owner,
@@ -370,6 +416,11 @@ func (m MT) BatchTransfer(params *dto.MTBatchTransferRequest) (*dto.MTBatchTrans
 
 func (m MT) List(params *dto.MTListRequest) (*dto.MTListResponse, error) {
 	logger := m.logger.WithField("params", params).WithField("func", "ListMT")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	sort, ok := pb.Sorts_value[params.SortBy]
 	if !ok {
@@ -436,6 +487,11 @@ func (m MT) List(params *dto.MTListRequest) (*dto.MTListResponse, error) {
 
 func (m MT) Balances(params *dto.MTBalancesRequest) (*dto.MTBalancesResponse, error) {
 	logger := m.logger.WithField("params", params).WithField("func", "BalancesList")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	req := pb.MTBalancesRequest{
 		ProjectId: params.ProjectID,

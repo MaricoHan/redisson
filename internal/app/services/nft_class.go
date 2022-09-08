@@ -3,13 +3,15 @@ package services
 import (
 	"context"
 	"fmt"
+	"time"
+
 	log "github.com/sirupsen/logrus"
 	pb "gitlab.bianjie.ai/avata/chains/api/pb/class"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
-	"time"
 )
 
 type INFTClass interface {
@@ -27,7 +29,12 @@ func NewNFTClass(logger *log.Logger) *nftClass {
 }
 
 func (n *nftClass) GetAllNFTClasses(params dto.NftClasses) (*dto.NftClassesRes, error) {
-	logger := n.logger.WithField("params",params).WithField("func","NFTClassList")
+	logger := n.logger.WithField("params", params).WithField("func", "NFTClassList")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
@@ -96,7 +103,12 @@ func (n *nftClass) GetAllNFTClasses(params dto.NftClasses) (*dto.NftClassesRes, 
 }
 
 func (n *nftClass) GetNFTClass(params dto.NftClasses) (*dto.NftClassRes, error) {
-	logger := n.logger.WithField("params",params).WithField("func","GetNFTClass")
+	logger := n.logger.WithField("params", params).WithField("func", "GetNFTClass")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
@@ -137,7 +149,12 @@ func (n *nftClass) GetNFTClass(params dto.NftClasses) (*dto.NftClassRes, error) 
 }
 
 func (n *nftClass) CreateNFTClass(params dto.CreateNftClass) (*dto.TxRes, error) {
-	logger := n.logger.WithField("params",params).WithField("func","CreateNFTClass")
+	logger := n.logger.WithField("params", params).WithField("func", "CreateNFTClass")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()

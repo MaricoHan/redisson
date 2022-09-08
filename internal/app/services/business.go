@@ -9,6 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	pb "gitlab.bianjie.ai/avata/chains/api/pb/buy"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
@@ -39,6 +40,10 @@ func (s *business) GetOrderInfo(params dto.GetOrder) (*dto.OrderInfo, error) {
 	resp := &pb.BuyOrderShowResponse{}
 	var err error
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+	// 非托管模式仅支持文昌链-天舟；托管模式仅支持文昌链-DDC
+	if (params.AccessMode != entity.UNMANAGED || mapKey != constant.IritaOPBNative) && (params.AccessMode != entity.MANAGED || mapKey != constant.WenchangDDC) {
+		return nil, errors2.ErrNotImplemented
+	}
 	grpcClient, ok := initialize.BusineessClientMap[mapKey]
 	if !ok {
 		logger.Error(errors2.ErrGrpc)
@@ -72,6 +77,10 @@ func (s *business) GetOrderInfo(params dto.GetOrder) (*dto.OrderInfo, error) {
 func (s *business) GetAllOrders(params dto.GetAllOrder) (*dto.OrderOperationRes, error) {
 	logger := s.logger.WithField("params", params).WithField("func", "GetAllOrders")
 
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 	sorts := strings.Split(params.SortBy, "_")
 
 	if len(sorts) != 2 {
@@ -182,6 +191,10 @@ func (s *business) BuildOrder(params dto.BuildOrderInfo) (*dto.BuyResponse, erro
 	resp := &pb.BuyResponse{}
 	var err error
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+	// 非托管模式仅支持文昌链-天舟；托管模式仅支持文昌链-DDC
+	if (params.AccessMode != entity.UNMANAGED || mapKey != constant.IritaOPBNative) && (params.AccessMode != entity.MANAGED || mapKey != constant.WenchangDDC) {
+		return nil, errors2.ErrNotImplemented
+	}
 	grpcClient, ok := initialize.BusineessClientMap[mapKey]
 	if !ok {
 		logger.Error(errors2.ErrService)
@@ -229,6 +242,10 @@ func (s *business) BatchBuyGas(params dto.BatchBuyGas) (*dto.BuyResponse, error)
 	resp := &pb.BatchBuyResponse{}
 	var err error
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+	// 非托管模式仅支持文昌链-天舟；
+	if params.AccessMode != entity.UNMANAGED || mapKey != constant.IritaOPBNative {
+		return nil, errors2.ErrNotImplemented
+	}
 	grpcClient, ok := initialize.BusineessClientMap[mapKey]
 	if !ok {
 		logger.Error(errors2.ErrService)

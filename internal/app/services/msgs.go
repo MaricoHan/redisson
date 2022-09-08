@@ -4,14 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/volatiletech/sqlboiler/types"
 	pb "gitlab.bianjie.ai/avata/chains/api/pb/msgs"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
-	"time"
 )
 
 type IMsgs interface {
@@ -30,13 +32,19 @@ func NewMsgs(logger *log.Logger) *msgs {
 }
 
 func (s *msgs) GetNFTHistory(params dto.NftOperationHistoryByNftId) (*dto.NftOperationHistoryByNftIdRes, error) {
-	logger := s.logger.WithField("params",params).WithField("func","GetNFTHistory")
+	logger := s.logger.WithField("params", params).WithField("func", "GetNFTHistory")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	sort, ok := pb.SORTS_value[params.SortBy]
 	if !ok {
 		logger.Error(errors2.ErrSortBy)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrSortBy)
 	}
+
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	req := pb.NFTHistoryRequest{
@@ -96,7 +104,12 @@ func (s *msgs) GetNFTHistory(params dto.NftOperationHistoryByNftId) (*dto.NftOpe
 }
 
 func (s *msgs) GetAccountHistory(params dto.AccountsInfo) (*dto.AccountOperationRecordRes, error) {
-	logger := s.logger.WithField("params",params).WithField("func","GetAccountHistory")
+	logger := s.logger.WithField("params", params).WithField("func", "GetAccountHistory")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
@@ -185,13 +198,19 @@ func (s *msgs) GetAccountHistory(params dto.AccountsInfo) (*dto.AccountOperation
 }
 
 func (s *msgs) GetMTHistory(params dto.MTOperationHistoryByMTId) (*dto.MTOperationHistoryByMTIdRes, error) {
-	logger := s.logger.WithField("params",params).WithField("func","GetMTHistory")
+	logger := s.logger.WithField("params", params).WithField("func", "GetMTHistory")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	sort, ok := pb.SORTS_value[params.SortBy]
 	if !ok {
 		logger.Error(errors2.ErrSortBy)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrSortBy)
 	}
+
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	req := pb.MTHistoryRequest{

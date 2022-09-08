@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
 )
@@ -29,6 +30,7 @@ func (h *Tx) TxResultByTxHash(ctx context.Context, _ interface{}) (interface{}, 
 		PlatFormID:  authData.PlatformId,
 		Module:      authData.Module,
 		Code:        authData.Code,
+		AccessMode:  authData.AccessMode,
 	}
 	// 校验参数 end
 	// 业务数据入库的地方

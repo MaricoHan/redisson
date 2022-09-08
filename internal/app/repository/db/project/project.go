@@ -18,6 +18,6 @@ func NewProjectRepo(db *gorm.DB) *ProjectRepo {
 }
 
 func (p *ProjectRepo) GetProjectByApiKey(apiKey string) (project entity.Project, err error) {
-	err = p.db.Select("id,chain_id,user_id,api_secret,api_key").Where("api_key=?", apiKey).Find(&project).Error
+	err = p.db.Select("id,chain_id,user_id,api_secret,api_key,access_mode").Where("api_key=?", apiKey).Find(&project).Error
 	return project, err
 }
