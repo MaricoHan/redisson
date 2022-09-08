@@ -1,11 +1,12 @@
 package dto
 
 type MTClassShowRequest struct {
-	ProjectID uint64 `json:"project_id"`
-	ClassID   string `json:"class_id"`
-	Status    string `json:"status"`
-	Module    string `json:"module"`
-	Code      string `json:"code"`
+	ProjectID  uint64 `json:"project_id"`
+	ClassID    string `json:"class_id"`
+	Status     string `json:"status"`
+	Module     string `json:"module"`
+	Code       string `json:"code"`
+	AccessMode int    `json:"access_mode"`
 }
 
 type MTClassShowResponse struct {
@@ -30,6 +31,7 @@ type MTClassListRequest struct {
 	PlatFormID uint64 `json:"plat_form_id"`
 	Module     string `json:"module"`
 	Code       string `json:"code"`
+	AccessMode int    `json:"access_mode"`
 }
 
 type MTClassListResponse struct {
@@ -57,4 +59,5 @@ type TransferMTClass struct {
 	Module      string `json:"module"`
 	Code        string `json:"code"`
 	OperationId string `json:"operation_id"`
+	AccessMode  int    `json:"access_mode"`
 }

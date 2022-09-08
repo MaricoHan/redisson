@@ -7,6 +7,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	pb "gitlab.bianjie.ai/avata/chains/api/pb/account"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
@@ -30,7 +31,13 @@ func NewAccount(logger *log.Logger) *account {
 
 // BatchCreateAccount 批量创建链账户
 func (a *account) BatchCreateAccount(params dto.BatchCreateAccount) (*dto.BatchAccountRes, error) {
-	logger := a.logger.WithField("params",params).WithField("func","BatchCreateAccount")
+	logger := a.logger.WithField("params", params).WithField("func", "BatchCreateAccount")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
+
 	req := pb.AccountCreateRequest{
 		ProjectId:   params.ProjectID,
 		Count:       params.Count,
@@ -63,7 +70,13 @@ func (a *account) BatchCreateAccount(params dto.BatchCreateAccount) (*dto.BatchA
 
 // CreateAccount 单个创建链账户
 func (a *account) CreateAccount(params dto.CreateAccount) (*dto.AccountRes, error) {
-	logger := a.logger.WithField("params",params).WithField("func","CreateAccount")
+	logger := a.logger.WithField("params", params).WithField("func", "CreateAccount")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
+
 	req := pb.AccountSeparateCreateRequest{
 		ProjectId:   params.ProjectID,
 		Name:        params.Name,
@@ -96,7 +109,12 @@ func (a *account) CreateAccount(params dto.CreateAccount) (*dto.AccountRes, erro
 }
 
 func (a *account) GetAccounts(params dto.AccountsInfo) (*dto.AccountsRes, error) {
-	logger := a.logger.WithField("params",params).WithField("func","GetAccounts")
+	logger := a.logger.WithField("params", params).WithField("func", "GetAccounts")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	sort, ok := pb.SORT_value[params.SortBy]
 	if !ok {

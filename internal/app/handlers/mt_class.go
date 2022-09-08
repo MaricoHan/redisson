@@ -64,6 +64,7 @@ func (h MTClass) CreateMTClass(ctx context.Context, request interface{}) (interf
 		Tag:         tagBytes,
 		Code:        authData.Code,
 		OperationId: operationId,
+		AccessMode:  authData.AccessMode,
 	}
 	return h.svc.CreateMTClass(params)
 }
@@ -102,6 +103,7 @@ func (h MTClass) TransferMTClass(ctx context.Context, request interface{}) (inte
 		Tag:         tagBytes,
 		Code:        authData.Code,
 		OperationId: operationId,
+		AccessMode:  authData.AccessMode,
 	}
 	return h.svc.TransferMTClass(params)
 }
@@ -120,6 +122,7 @@ func (h MTClass) List(ctx context.Context, _ interface{}) (interface{}, error) {
 		PlatFormID: authData.PlatformId,
 		Module:     authData.Module,
 		Code:       authData.Code,
+		AccessMode: authData.AccessMode,
 	}
 	offset, err := h.Offset(ctx)
 	if err != nil {
@@ -155,11 +158,12 @@ func (h MTClass) Show(ctx context.Context, _ interface{}) (interface{}, error) {
 	// 校验参数 start
 	authData := h.AuthData(ctx)
 	params := dto.MTClassShowRequest{
-		ProjectID: authData.ProjectId,
-		ClassID:   h.Id(ctx),
-		Status:    h.Status(ctx),
-		Module:    authData.Module,
-		Code:      authData.Code,
+		ProjectID:  authData.ProjectId,
+		ClassID:    h.Id(ctx),
+		Status:     h.Status(ctx),
+		Module:     authData.Module,
+		Code:       authData.Code,
+		AccessMode: authData.AccessMode,
 	}
 
 	// 校验参数 end

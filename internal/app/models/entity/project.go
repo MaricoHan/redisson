@@ -10,6 +10,7 @@ type Project struct {
 	Code        string    `gorm:"column:code;type:char(16);comment:项目 Code;NOT NULL" json:"code"`
 	ApiKey      string    `gorm:"column:api_key;type:varchar(40);comment:项目 Key;NOT NULL" json:"api_key"`
 	ApiSecret   string    `gorm:"column:api_secret;type:char(40);comment:项目密钥;NOT NULL" json:"api_secret"`
+	AccessMode  int       `gorm:"column:access_mode;type:tinyint(1);default:1;comment:项目的接入方式 1：托管 2：非托管;NOT NULL" json:"access_mode"`
 	ChainId     uint      `gorm:"column:chain_id;type:bigint(20) unsigned;default:0;comment:链 ID;NOT NULL" json:"chain_id"`
 	UserId      uint      `gorm:"column:user_id;type:bigint(20) unsigned;default:0;comment:用户 ID;NOT NULL" json:"user_id"`
 	Name        string    `gorm:"column:name;type:varchar(255);comment:项目名称;NOT NULL" json:"name"`
@@ -17,3 +18,8 @@ type Project struct {
 	UpdatedAt   time.Time `gorm:"column:updated_at;type:datetime;default:CURRENT_TIMESTAMP;comment:更新时间;NOT NULL" json:"updated_at"`
 	CreatedAt   time.Time `gorm:"column:created_at;type:datetime;default:CURRENT_TIMESTAMP;comment:创建时间;NOT NULL" json:"created_at"`
 }
+
+const (
+	MANAGED = iota + 1
+	UNMANAGED
+)

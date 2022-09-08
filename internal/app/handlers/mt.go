@@ -3,9 +3,10 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"strings"
+
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	service "gitlab.bianjie.ai/avata/open-api/internal/app/services"
-	"strings"
 
 	log "github.com/sirupsen/logrus"
 
@@ -37,7 +38,7 @@ func NewMT(svc service.IMT) *MT {
 	return &MT{svc: svc}
 }
 
-func (m MT) Issue(ctx context.Context, request interface{}) (response interface{}, err error) {
+func (h MT) Issue(ctx context.Context, request interface{}) (response interface{}, err error) {
 	// 接收请求
 	req, ok := request.(*vo.IssueRequest)
 	if !ok {
@@ -52,21 +53,23 @@ func (m MT) Issue(ctx context.Context, request interface{}) (response interface{
 	req.OperationID = strings.TrimSpace(req.OperationID)
 
 	// 获取账户基本信息
-	authData := m.AuthData(ctx)
+	authData := h.AuthData(ctx)
 	param := dto.IssueRequest{
 		ProjectID:   authData.ProjectId,
 		Module:      authData.Module,
 		Code:        authData.Code,
-		ClassID:     m.ClassID(ctx),
+		ClassID:     h.ClassID(ctx),
 		Metadata:    req.Metadata,
 		Amount:      req.Amount,
 		Recipient:   req.Recipient,
 		Tag:         string(tagBz),
 		OperationID: req.OperationID,
+		AccessMode:  authData.AccessMode,
 	}
 
-	return m.svc.Issue(&param)
+	return h.svc.Issue(&param)
 }
+
 func (h MT) Mint(ctx context.Context, request interface{}) (response interface{}, err error) {
 	// 接收请求
 	req, ok := request.(*vo.MintRequest)
@@ -93,6 +96,7 @@ func (h MT) Mint(ctx context.Context, request interface{}) (response interface{}
 		Recipient:   req.Recipient,
 		Tag:         string(tagBz),
 		OperationID: req.OperationID,
+		AccessMode:  authData.AccessMode,
 	}
 
 	return h.svc.Mint(&param)
@@ -123,6 +127,7 @@ func (h MT) BatchMint(ctx context.Context, request interface{}) (response interf
 		Recipients:  req.Recipients,
 		Tag:         string(tagBz),
 		OperationID: req.OperationID,
+		AccessMode:  authData.AccessMode,
 	}
 
 	return h.svc.BatchMint(&param)
@@ -154,6 +159,7 @@ func (h MT) Edit(ctx context.Context, request interface{}) (response interface{}
 		Data:        req.Data,
 		Tag:         string(tagBz),
 		OperationID: req.OperationID,
+		AccessMode:  authData.AccessMode,
 	}
 
 	return h.svc.Edit(&param)
@@ -185,6 +191,7 @@ func (h MT) Burn(ctx context.Context, request interface{}) (response interface{}
 		Amount:      req.Amount,
 		Tag:         string(tagBz),
 		OperationID: req.OperationID,
+		AccessMode:  authData.AccessMode,
 	}
 
 	return h.svc.Burn(&param)
@@ -214,6 +221,7 @@ func (h MT) BatchBurn(ctx context.Context, request interface{}) (response interf
 		Mts:         req.Mts,
 		Tag:         string(tagBz),
 		OperationID: req.OperationID,
+		AccessMode:  authData.AccessMode,
 	}
 
 	return h.svc.BatchBurn(&param)
@@ -246,6 +254,7 @@ func (h MT) Transfer(ctx context.Context, request interface{}) (response interfa
 		Recipient:   req.Recipient,
 		Tag:         string(tagBz),
 		OperationID: req.OperationID,
+		AccessMode:  authData.AccessMode,
 	}
 
 	return h.svc.Transfer(&param)
@@ -275,44 +284,47 @@ func (h MT) BatchTransfer(ctx context.Context, request interface{}) (response in
 		Mts:         req.Mts,
 		Tag:         string(tagBz),
 		OperationID: req.OperationID,
+		AccessMode:  authData.AccessMode,
 	}
 
 	return h.svc.BatchTransfer(&param)
 }
 
-func (m MT) Show(ctx context.Context, request interface{}) (response interface{}, err error) {
+func (h MT) Show(ctx context.Context, request interface{}) (response interface{}, err error) {
 	// 获取账户基本信息
-	authData := m.AuthData(ctx)
+	authData := h.AuthData(ctx)
 	param := dto.MTShowRequest{
-		ProjectID: authData.ProjectId,
-		Module:    authData.Module,
-		Code:      authData.Code,
-		ClassID:   m.ClassID(ctx),
-		MTID:      m.MTID(ctx),
+		ProjectID:  authData.ProjectId,
+		Module:     authData.Module,
+		Code:       authData.Code,
+		ClassID:    h.ClassID(ctx),
+		MTID:       h.MTID(ctx),
+		AccessMode: authData.AccessMode,
 	}
 
-	return m.svc.Show(&param)
+	return h.svc.Show(&param)
 }
 
-func (m MT) List(ctx context.Context, request interface{}) (response interface{}, err error) {
+func (h MT) List(ctx context.Context, request interface{}) (response interface{}, err error) {
 	// 获取账户基本信息
-	authData := m.AuthData(ctx)
+	authData := h.AuthData(ctx)
 	params := dto.MTListRequest{
-		ProjectID: authData.ProjectId,
-		MtId:      m.ID(ctx),
-		ClassId:   m.ClassID(ctx),
-		Issuer:    m.Issuer(ctx),
-		TxHash:    m.TxHash(ctx),
-		Module:    authData.Module,
-		Code:      authData.Code,
+		ProjectID:  authData.ProjectId,
+		MtId:       h.ID(ctx),
+		ClassId:    h.ClassID(ctx),
+		Issuer:     h.Issuer(ctx),
+		TxHash:     h.TxHash(ctx),
+		Module:     authData.Module,
+		Code:       authData.Code,
+		AccessMode: authData.AccessMode,
 	}
-	offset, err := m.Offset(ctx)
+	offset, err := h.Offset(ctx)
 	if err != nil {
 		return nil, err
 	}
 	params.Offset = offset
 
-	limit, err := m.Limit(ctx)
+	limit, err := h.Limit(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -322,39 +334,40 @@ func (m MT) List(ctx context.Context, request interface{}) (response interface{}
 		params.Limit = 10
 	}
 
-	startDateR := m.StartDate(ctx)
+	startDateR := h.StartDate(ctx)
 	if startDateR != "" {
 		params.StartDate = startDateR
 	}
 
-	endDateR := m.EndDate(ctx)
+	endDateR := h.EndDate(ctx)
 	if endDateR != "" {
 
 		params.EndDate = endDateR
 	}
 
-	params.SortBy = m.SortBy(ctx)
-	return m.svc.List(&params)
+	params.SortBy = h.SortBy(ctx)
+	return h.svc.List(&params)
 }
 
-func (m MT) Balances(ctx context.Context, request interface{}) (response interface{}, err error) {
+func (h MT) Balances(ctx context.Context, request interface{}) (response interface{}, err error) {
 	// 获取账户基本信息
-	authData := m.AuthData(ctx)
+	authData := h.AuthData(ctx)
 	params := dto.MTBalancesRequest{
-		ProjectID: authData.ProjectId,
-		Module:    authData.Module,
-		Code:      authData.Code,
-		MtId:      m.ID(ctx),
-		ClassId:   m.ClassID(ctx),
-		Account:   m.Account(ctx),
+		ProjectID:  authData.ProjectId,
+		Module:     authData.Module,
+		Code:       authData.Code,
+		MtId:       h.ID(ctx),
+		ClassId:    h.ClassID(ctx),
+		Account:    h.Account(ctx),
+		AccessMode: authData.AccessMode,
 	}
-	offset, err := m.Offset(ctx)
+	offset, err := h.Offset(ctx)
 	if err != nil {
 		return nil, err
 	}
 	params.Offset = offset
 
-	limit, err := m.Limit(ctx)
+	limit, err := h.Limit(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -364,7 +377,7 @@ func (m MT) Balances(ctx context.Context, request interface{}) (response interfa
 		params.Limit = 10
 	}
 
-	return m.svc.Balances(&params)
+	return h.svc.Balances(&params)
 }
 
 func (MT) ClassID(ctx context.Context) string {

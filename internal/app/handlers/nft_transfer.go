@@ -59,6 +59,7 @@ func (h *NFTTransfer) TransferNftClassByID(ctx context.Context, request interfac
 		Tag:         tagBytes,
 		Code:        authData.Code,
 		OperationId: operationId,
+		AccessMode:  authData.AccessMode,
 	}
 	return h.svc.TransferNFTClass(params)
 }
@@ -99,6 +100,7 @@ func (h *NFTTransfer) TransferNftByNftId(ctx context.Context, request interface{
 		Tag:         tagBytes,
 		Code:        authData.Code,
 		OperationId: operationId,
+		AccessMode:  authData.AccessMode,
 	}
 	//不能自己转让给自己
 	//400
