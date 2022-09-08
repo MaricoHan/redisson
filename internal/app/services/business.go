@@ -185,7 +185,7 @@ func (s *business) BuildOrder(params dto.BuildOrderInfo) (*dto.BuyResponse, erro
 	req := pb.BuyRequest{
 		ProjectId: params.ProjectID,
 		Address:   params.Address,
-		Amount:    uint64(params.Amount),
+		Amount:    params.Amount,
 		OrderId:   params.OrderId,
 	}
 	resp := &pb.BuyResponse{}
