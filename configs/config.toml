@@ -32,10 +32,10 @@ password = ""
 db = 11
 
 [grpc_client]
-wenchangchain_ddc_addr = "127.0.0.1:10000"
-wenchangchain_native_addr = "127.0.0.1:10001"
-irita_opb_native_addr = "127.0.0.1:10001"
-tx_queue_addr = "127.0.0.1:10004"
+wenchangchain_ddc_addr = "127.0.0.1:10001"
+wenchangchain_native_addr = "127.0.0.1:10000"
+irita_opb_native_addr = "127.0.0.1:10000"
+state_gateway_addr = "127.0.0.1:10004"
 
 [project]
 secret_pwd = "Console_Projects_Secrets"

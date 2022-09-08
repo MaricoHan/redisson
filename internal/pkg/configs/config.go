@@ -47,8 +47,7 @@ type (
 		WenchangchainDDCAddr    string `mapstructure:"wenchangchain_ddc_addr"`
 		WenchangchainNativeAddr string `mapstructure:"wenchangchain_native_addr"`
 		IritaOPBNativeAddr      string `mapstructure:"irita_opb_native_addr"`
-		// todo 服务名未确定 暂时这样
-		TxQueueAddr string `mapstructure:"tx_queue_addr"`
+		StateGatewayAddr        string `mapstructure:"state_gateway_addr"`
 	}
 
 	Project struct {

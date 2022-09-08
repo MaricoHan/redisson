@@ -48,12 +48,19 @@ func (h *Tx) TxQueueInfo(ctx context.Context, _ interface{}) (interface{}, error
 	// 校验参数 start
 	authData := h.AuthData(ctx)
 	params := dto.TxQueueInfo{
-		OperationId: h.TaskId(ctx),
+		OperationId: h.OperationID(ctx),
 		ProjectID:   authData.ProjectId,
 		Module:      authData.Module,
 		Code:        authData.Code,
 	}
 	// 校验参数 end
-	// 业务数据入库的地方
 	return h.svc.TxQueueInfo(params)
+}
+
+func (h *Tx) OperationID(ctx context.Context) string {
+	OperationID := ctx.Value("operation_id")
+	if OperationID == nil || OperationID == "" {
+		return ""
+	}
+	return OperationID.(string)
 }

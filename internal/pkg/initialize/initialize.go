@@ -40,8 +40,7 @@ var MTClientMap map[string]pb_mt.MTClient
 var MTClassClientMap map[string]pb_mt_class.MTClassClient
 var MTMsgsClientMap map[string]pb_mt_msgs.MTMSGSClient
 
-// todo 服务未确定 暂时这么写
-var TxQueueServer *grpc.ClientConn
+var StateGatewayServer *grpc.ClientConn
 var TxQueueClient pb_tx_queue.TxQueueClient
 
 var Log = new(log.Logger)
@@ -125,7 +124,7 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	GrpcConnMap[constant.IritaOPBNative] = IritaOPBNativeConn
 
 	logger.Info("connecting tx-queue-server ...")
-	TxQueueServer, err = grpc.DialContext(context.Background(), cfg.GrpcClient.TxQueueAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp), grpc.WithBlock(), grpc.WithBalancerName(roundrobin.Name))
+	StateGatewayServer, err = grpc.DialContext(context.Background(), cfg.GrpcClient.StateGatewayAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp), grpc.WithBlock(), grpc.WithBalancerName(roundrobin.Name))
 	if err != nil {
 		logger.Fatal("get tx-queue-server grpc connect failed, err: ", err.Error())
 	}
@@ -176,7 +175,7 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	MTMsgsClientMap[constant.IritaOPBNative] = pb_mt_msgs.NewMTMSGSClient(GrpcConnMap[constant.IritaOPBNative])
 
 	// 初始化tx_queue
-	TxQueueClient = pb_tx_queue.NewTxQueueClient(TxQueueServer)
+	TxQueueClient = pb_tx_queue.NewTxQueueClient(StateGatewayServer)
 }
 
 func InitRedisClient(cfg *configs.Config, logger *log.Logger) {
