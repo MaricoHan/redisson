@@ -1,10 +1,11 @@
 package controller
 
 import (
+	"net/http"
+
 	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	kit "gitlab.bianjie.ai/avata/open-api/pkg/gokit"
-	"net/http"
 )
 
 type EmptionController struct {
@@ -33,6 +34,11 @@ func (c EmptionController) GetEndpoints() []kit.Endpoint {
 			URI:     "/orders",
 			Method:  http.MethodGet,
 			Handler: c.makeHandler(c.handler.GetAllOrders, nil),
+		},
+		kit.Endpoint{
+			URI:     "/orders/batch",
+			Method:  http.MethodPost,
+			Handler: c.makeHandler(c.handler.BatchBuyGas, &vo.BatchBuyRequest{}),
 		},
 	)
 	return ends

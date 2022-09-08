@@ -3,14 +3,16 @@ package services
 import (
 	"context"
 	"fmt"
+	"time"
+
 	log "github.com/sirupsen/logrus"
 	pb "gitlab.bianjie.ai/avata/chains/api/pb/class"
 	pb2 "gitlab.bianjie.ai/avata/chains/api/pb/nft"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
-	"time"
 )
 
 type INFTTransfer interface {
@@ -27,7 +29,12 @@ func NewNFTTransfer(logger *log.Logger) *nftTransfer {
 }
 
 func (s *nftTransfer) TransferNFTClass(params dto.TransferNftClassById) (*dto.TxRes, error) {
-	logger := s.logger.WithField("params",params).WithField("func","TransferNFTClass")
+	logger := s.logger.WithField("params", params).WithField("func", "TransferNFTClass")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
@@ -61,7 +68,12 @@ func (s *nftTransfer) TransferNFTClass(params dto.TransferNftClassById) (*dto.Tx
 }
 
 func (s *nftTransfer) TransferNFT(params dto.TransferNftByNftId) (*dto.TxRes, error) {
-	logger := s.logger.WithField("params",params).WithField("func","TransferNFT")
+	logger := s.logger.WithField("params", params).WithField("func", "TransferNFT")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()

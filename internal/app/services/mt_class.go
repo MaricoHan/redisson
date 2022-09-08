@@ -7,6 +7,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	pb "gitlab.bianjie.ai/avata/chains/api/pb/mt_class"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
@@ -31,7 +32,12 @@ func NewMTClass(logger *log.Logger) *mtClass {
 }
 
 func (m *mtClass) CreateMTClass(params dto.CreateMTClass) (*dto.BatchTxRes, error) {
-	logger := m.logger.WithField("params",params).WithField("func","CreateMTClass")
+	logger := m.logger.WithField("params", params).WithField("func", "CreateMTClass")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
@@ -64,7 +70,12 @@ func (m *mtClass) CreateMTClass(params dto.CreateMTClass) (*dto.BatchTxRes, erro
 }
 
 func (m *mtClass) Show(params *dto.MTClassShowRequest) (*dto.MTClassShowResponse, error) {
-	logger := m.logger.WithField("params",params).WithField("func","ShowMTClass")
+	logger := m.logger.WithField("params", params).WithField("func", "ShowMTClass")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	req := pb.MTClassShowRequest{
 		ProjectId: params.ProjectID,
@@ -109,7 +120,12 @@ func (m *mtClass) Show(params *dto.MTClassShowRequest) (*dto.MTClassShowResponse
 }
 
 func (m *mtClass) List(params *dto.MTClassListRequest) (*dto.MTClassListResponse, error) {
-	logger := m.logger.WithField("params",params).WithField("func","MTClassList")
+	logger := m.logger.WithField("params", params).WithField("func", "MTClassList")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	sort, ok := pb.Sorts_value[params.SortBy]
 	if !ok {
@@ -175,7 +191,12 @@ func (m *mtClass) List(params *dto.MTClassListRequest) (*dto.MTClassListResponse
 }
 
 func (m *mtClass) TransferMTClass(params dto.TransferMTClass) (*dto.BatchTxRes, error) {
-	logger := m.logger.WithField("params",params).WithField("func","TransferMTClass")
+	logger := m.logger.WithField("params", params).WithField("func", "TransferMTClass")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()

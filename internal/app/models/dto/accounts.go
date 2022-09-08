@@ -13,6 +13,7 @@ type BatchCreateAccount struct {
 	Module      string `json:"module"`
 	Code        string `json:"code"`
 	OperationId string `json:"operation_id"`
+	AccessMode  int    `json:"access_mode"`
 }
 
 // CreateAccount 创建链账户
@@ -24,6 +25,7 @@ type CreateAccount struct {
 	Code        string `json:"code"`
 	Name        string `json:"name"`
 	OperationId string `json:"operation_id"`
+	AccessMode  int    `json:"access_mode"`
 }
 
 type AccountsInfo struct {
@@ -39,6 +41,7 @@ type AccountsInfo struct {
 	TxHash          string `json:"tx_hash"`
 	OperationId     string `json:"operation_id"`
 	Name            string `json:"name"`
+	AccessMode      int    `json:"access_mode"`
 }
 
 type BatchAccountRes struct {

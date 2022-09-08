@@ -2,11 +2,12 @@ package handlers
 
 import (
 	"context"
+	"strings"
+
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
 	"gitlab.bianjie.ai/avata/utils/errors"
-	"strings"
 )
 
 type IAccount interface {
@@ -48,6 +49,7 @@ func (h *Account) BatchCreateAccount(ctx context.Context, request interface{}) (
 		Module:      authData.Module,
 		Code:        authData.Code,
 		OperationId: operationId,
+		AccessMode:  authData.AccessMode,
 	}
 	if params.Count < 0 || params.Count > 1000 {
 		return nil, errors.New(errors.ClientParams, errors.ErrCountLen)
@@ -87,6 +89,7 @@ func (h *Account) CreateAccount(ctx context.Context, request interface{}) (inter
 		Module:      authData.Module,
 		Code:        authData.Code,
 		OperationId: operationId,
+		AccessMode:  authData.AccessMode,
 	}
 
 	return h.svc.CreateAccount(params)
@@ -104,6 +107,7 @@ func (h *Account) GetAccounts(ctx context.Context, _ interface{}) (interface{}, 
 		Code:        authData.Code,
 		OperationId: h.OperationID(ctx),
 		Name:        h.Name(ctx),
+		AccessMode:  authData.AccessMode,
 	}
 	offset, err := h.Offset(ctx)
 	if err != nil {
