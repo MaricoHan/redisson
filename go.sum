@@ -515,6 +515,8 @@ github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9de
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
+gitlab.bianjie.ai/avata/chains/api.git v0.8.1-0.20220907102110-5b2c1892c7b5 h1:AlvTtsJ/vX7Iqj9DxBvb4o39znWZhgV4ZlBtRwO7Qxg=
+gitlab.bianjie.ai/avata/chains/api.git v0.8.1-0.20220907102110-5b2c1892c7b5/go.mod h1:lcdtaR68PfIyq2/hWI3JGXV8m/zukqF5STGFLcFRWRI=
 gitlab.bianjie.ai/avata/utils/commons.git v0.1.0 h1:se9upXFUsjoWfxhI961dMtqdZm6jYamwok70KvwUq9M=
 gitlab.bianjie.ai/avata/utils/commons.git v0.1.0/go.mod h1:rs9lQ/MOF87O2POteMreuyTZRDa7ylGsiLSavbBsPrY=
 gitlab.bianjie.ai/avata/utils/errors.git v0.1.7-0.20220908103754-f9c7acab1a7d h1:Cl3lcMx9XowoJfwVpK4p9px7V8iEy2pzWxafH8cruMs=
