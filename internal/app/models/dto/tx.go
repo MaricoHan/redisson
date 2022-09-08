@@ -9,6 +9,7 @@ type TxResultByTxHash struct {
 	PlatFormID  uint64 `json:"plat_form_id"`
 	Module      string `json:"module"`
 	Code        string `json:"code"`
+	AccessMode  int    `json:"access_mode"`
 }
 
 type TxResultByTxHashRes struct {

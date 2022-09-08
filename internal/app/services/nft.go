@@ -8,6 +8,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	pb "gitlab.bianjie.ai/avata/chains/api/pb/nft"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
@@ -35,7 +36,12 @@ func NewNFT(logger *log.Logger) *nft {
 }
 
 func (s *nft) List(params dto.Nfts) (*dto.NftsRes, error) {
-	logger := s.logger.WithField("params",params).WithField("func","NFTList")
+	logger := s.logger.WithField("params", params).WithField("func", "NFTList")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	sort, ok := pb.SORTS_value[params.SortBy]
 	if !ok {
@@ -107,7 +113,12 @@ func (s *nft) List(params dto.Nfts) (*dto.NftsRes, error) {
 }
 
 func (s *nft) Create(params dto.CreateNfts) (*dto.TxRes, error) {
-	logger := s.logger.WithField("params",params).WithField("func","CreateNFT")
+	logger := s.logger.WithField("params", params).WithField("func", "CreateNFT")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	req := pb.NFTCreateRequest{
 		ProjectId:   params.ProjectID,
@@ -143,7 +154,12 @@ func (s *nft) Create(params dto.CreateNfts) (*dto.TxRes, error) {
 }
 
 func (s *nft) BatchCreate(params dto.BatchCreateNfts) (*dto.BatchTxRes, error) {
-	logger := s.logger.WithField("params",params).WithField("func","BatchCreateNFT")
+	logger := s.logger.WithField("params", params).WithField("func", "BatchCreateNFT")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	req := pb.NFTBatchCreateRequest{
 		ProjectId:   params.ProjectID,
@@ -178,7 +194,12 @@ func (s *nft) BatchCreate(params dto.BatchCreateNfts) (*dto.BatchTxRes, error) {
 }
 
 func (s *nft) Show(params dto.NftByNftId) (*dto.NftReq, error) {
-	logger := s.logger.WithField("params",params).WithField("func","ShowNFT")
+	logger := s.logger.WithField("params", params).WithField("func", "ShowNFT")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	req := pb.NFTShowRequest{
 		ProjectId: params.ProjectID,
@@ -223,7 +244,12 @@ func (s *nft) Show(params dto.NftByNftId) (*dto.NftReq, error) {
 }
 
 func (s *nft) Update(params dto.EditNftByNftId) (*dto.TxRes, error) {
-	logger := s.logger.WithField("params",params).WithField("func","UpdateNFT")
+	logger := s.logger.WithField("params", params).WithField("func", "UpdateNFT")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	req := pb.NFTUpdateRequest{
 		ProjectId:   params.ProjectID,
@@ -258,7 +284,12 @@ func (s *nft) Update(params dto.EditNftByNftId) (*dto.TxRes, error) {
 }
 
 func (s *nft) Delete(params dto.DeleteNftByNftId) (*dto.TxRes, error) {
-	logger := s.logger.WithField("params",params).WithField("func","DeleteNFT")
+	logger := s.logger.WithField("params", params).WithField("func", "DeleteNFT")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	req := pb.NFTDeleteRequest{
 		ProjectId:   params.ProjectID,
@@ -288,8 +319,14 @@ func (s *nft) Delete(params dto.DeleteNftByNftId) (*dto.TxRes, error) {
 	}
 	return &dto.TxRes{TaskId: resp.TaskId, OperationId: resp.OperationId}, nil
 }
+
 func (s *nft) BatchTransfer(params *dto.BatchTransferRequest) (*dto.BatchTxRes, error) {
-	logger := s.logger.WithField("params",params).WithField("func","BatchTransferNFT")
+	logger := s.logger.WithField("params", params).WithField("func", "BatchTransferNFT")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	req := pb.NFTBatchTransferRequest{
 		ProjectId:   params.ProjectID,
@@ -319,8 +356,14 @@ func (s *nft) BatchTransfer(params *dto.BatchTransferRequest) (*dto.BatchTxRes, 
 	}
 	return &dto.BatchTxRes{OperationId: resp.OperationId}, nil
 }
+
 func (s *nft) BatchEdit(params *dto.BatchEditRequest) (*dto.BatchTxRes, error) {
-	logger := s.logger.WithField("params",params).WithField("func","BatchEditNFT")
+	logger := s.logger.WithField("params", params).WithField("func", "BatchEditNFT")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	req := pb.NFTBatchEditRequest{
 		ProjectId:   params.ProjectID,
@@ -352,7 +395,12 @@ func (s *nft) BatchEdit(params *dto.BatchEditRequest) (*dto.BatchTxRes, error) {
 }
 
 func (s *nft) BatchDelete(params *dto.BatchDeleteRequest) (*dto.BatchTxRes, error) {
-	logger := s.logger.WithField("params",params).WithField("func","BatchDeleteNFT")
+	logger := s.logger.WithField("params", params).WithField("func", "BatchDeleteNFT")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	req := pb.NFTBatchDeleteRequest{
 		ProjectId:   params.ProjectID,

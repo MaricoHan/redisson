@@ -3,6 +3,8 @@ package initialize
 import (
 	"context"
 	"fmt"
+	"time"
+
 	log "github.com/sirupsen/logrus"
 	pb_account "gitlab.bianjie.ai/avata/chains/api/pb/account"
 	pb_business "gitlab.bianjie.ai/avata/chains/api/pb/buy"
@@ -24,7 +26,6 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
-	"time"
 )
 
 var RedisClient *redis.RedisClient

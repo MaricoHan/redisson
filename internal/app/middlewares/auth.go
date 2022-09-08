@@ -132,6 +132,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		PlatformId: uint64(projectInfo.UserId),
 		Module:     chainInfo.Module,
 		Code:       chainInfo.Code,
+		AccessMode: projectInfo.AccessMode,
 	}
 
 	if fmt.Sprintf("%s-%s", chainInfo.Code, chainInfo.Module) == constant.WenchangDDC {

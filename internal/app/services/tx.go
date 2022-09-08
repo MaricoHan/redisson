@@ -13,6 +13,7 @@ import (
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
 )
@@ -32,6 +33,10 @@ func NewTx(logger *log.Logger) *tx {
 
 func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHashRes, error) {
 	logger := t.logger.WithField("params", params).WithField("func", "TxResultByTxHash")
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
 )
@@ -32,6 +33,7 @@ func (h *Msgs) GetNFTHistory(ctx context.Context, _ interface{}) (interface{}, e
 		PlatFormID: authData.PlatformId,
 		Module:     authData.Module,
 		Code:       authData.Code,
+		AccessMode: authData.AccessMode,
 	}
 
 	offset, err := h.Offset(ctx)
@@ -81,6 +83,7 @@ func (h *Msgs) GetAccountHistory(ctx context.Context, _ interface{}) (interface{
 		Module:          authData.Module,
 		Code:            authData.Code,
 		OperationModule: h.operationModule(ctx),
+		AccessMode:      authData.AccessMode,
 	}
 
 	offset, err := h.Offset(ctx)
@@ -127,6 +130,7 @@ func (h *Msgs) GetMTHistory(ctx context.Context, _ interface{}) (interface{}, er
 		PlatFormID: authData.PlatformId,
 		Module:     authData.Module,
 		Code:       authData.Code,
+		AccessMode: authData.AccessMode,
 	}
 
 	offset, err := h.Offset(ctx)

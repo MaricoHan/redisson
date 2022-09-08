@@ -14,12 +14,29 @@ type IssueRequest struct {
 	Recipient   string `json:"recipient"`
 	Tag         string `json:"tag"`
 	OperationID string `json:"operation_id" validate:"required"`
+	AccessMode  int    `json:"access_mode"`
 }
 type IssueResponse struct {
 	OperationID string `json:"operation_id"`
 }
 
 type MintRequest struct {
+	Code        string `json:"code"`
+	Module      string `json:"module"`
+	ProjectID   uint64 `json:"project_id"`
+	ClassID     string `json:"class_id"`
+	MTID        string `json:"mt_id"`
+	Amount      uint64 `json:"amount,omitempty"`
+	Recipient   string `json:"recipient,omitempty"`
+	Tag         string `json:"tag"`
+	OperationID string `json:"operation_id" validate:"required"`
+	AccessMode  int    `json:"access_mode"`
+}
+type MintResponse struct {
+	OperationID string `json:"operation_id"`
+}
+
+type BatchMintRequest struct {
 	Code        string          `json:"code"`
 	Module      string          `json:"module"`
 	ProjectID   uint64          `json:"project_id"`
@@ -28,23 +45,39 @@ type MintRequest struct {
 	Recipients  []*pb.Recipient `json:"recipients"`
 	Tag         string          `json:"tag"`
 	OperationID string          `json:"operation_id" validate:"required"`
+	AccessMode  int             `json:"access_mode"`
 }
-type MintResponse struct {
+type BatchMintResponse struct {
 	OperationID string `json:"operation_id"`
 }
 type EditRequest struct {
-	Code        string             `json:"code"`
-	Module      string             `json:"module"`
-	ProjectID   uint64             `json:"project_id"`
-	Owner       string             `json:"owner"`
-	Mts         []*pb.EditMetadata `json:"mts"`
-	Tag         string             `json:"tag"`
-	OperationID string             `json:"operation_id" validate:"required"`
+	Code        string `json:"code"`
+	Module      string `json:"module"`
+	ProjectID   uint64 `json:"project_id"`
+	Owner       string `json:"owner"`
+	Data        string `json:"data"`
+	Tag         string `json:"tag"`
+	ClassId     string `json:"class_id"`
+	MTID        string `json:"mt_id"`
+	OperationID string `json:"operation_id" validate:"required"`
+	AccessMode  int    `json:"access_mode"`
 }
 type EditResponse struct {
 	OperationID string `json:"operation_id"`
 }
 type BurnRequest struct {
+	Code        string `json:"code"`
+	Module      string `json:"module"`
+	ProjectID   uint64 `json:"project_id"`
+	Owner       string `json:"owner"`
+	ClassID     string `json:"class_id"`
+	MtID        string `json:"mt_id"`
+	Amount      uint64 `json:"amount"`
+	Tag         string `json:"tag"`
+	OperationID string `json:"operation_id" validate:"required"`
+	AccessMode  int    `json:"access_mode"`
+}
+type BatchBurnRequest struct {
 	Code        string       `json:"code"`
 	Module      string       `json:"module"`
 	ProjectID   uint64       `json:"project_id"`
@@ -52,6 +85,7 @@ type BurnRequest struct {
 	Mts         []*pb.BurnMT `json:"mts"`
 	Tag         string       `json:"tag"`
 	OperationID string       `json:"operation_id" validate:"required"`
+	AccessMode  int          `json:"access_mode"`
 }
 type BurnResponse struct {
 	OperationID string `json:"operation_id"`
@@ -64,6 +98,10 @@ type MTBatchTransferRequest struct {
 	Mts         []*pb.Transfer `json:"mts"`
 	Tag         string         `json:"tag"`
 	OperationID string         `json:"operation_id" validate:"required"`
+	AccessMode  int            `json:"access_mode"`
+}
+type BatchBurnResponse struct {
+	OperationID string `json:"operation_id"`
 }
 type MTBatchTransferResponse struct {
 	OperationID string `json:"operation_id"`
@@ -80,6 +118,7 @@ type MTTransferRequest struct {
 	Recipient   string `json:"recipient"`
 	Tag         string `json:"tag"`
 	OperationID string `json:"operation_id" validate:"required"`
+	AccessMode  int    `json:"access_mode"`
 }
 
 type MTTransferResponse struct {
@@ -87,11 +126,12 @@ type MTTransferResponse struct {
 }
 
 type MTShowRequest struct {
-	ProjectID uint64 `json:"project_id"`
-	ClassID   string `json:"class_id"`
-	MTID      string `json:"mt_id"`
-	Module    string `json:"module"`
-	Code      string `json:"code"`
+	ProjectID  uint64 `json:"project_id"`
+	ClassID    string `json:"class_id"`
+	MTID       string `json:"mt_id"`
+	Module     string `json:"module"`
+	Code       string `json:"code"`
+	AccessMode int    `json:"access_mode"`
 }
 
 type MTShowResponse struct {
@@ -107,13 +147,14 @@ type MTShowResponse struct {
 
 type MTListRequest struct {
 	Page
-	ProjectID uint64 `json:"project_id"`
-	MtId      string `json:"mt_id"`    // MT ID
-	ClassId   string `json:"class_id"` // 类别ID
-	Issuer    string `json:"issuer"`   // 发行者
-	TxHash    string `json:"tx_hash"`  // 交易hash
-	Module    string `json:"module"`
-	Code      string `json:"code"`
+	ProjectID  uint64 `json:"project_id"`
+	MtId       string `json:"mt_id"`    // MT ID
+	ClassId    string `json:"class_id"` // 类别ID
+	Issuer     string `json:"issuer"`   // 发行者
+	TxHash     string `json:"tx_hash"`  // 交易hash
+	Module     string `json:"module"`
+	Code       string `json:"code"`
+	AccessMode int    `json:"access_mode"`
 }
 
 type MTListResponse struct {
@@ -142,6 +183,7 @@ type CreateMTClass struct {
 	Module      string `json:"module"`
 	Code        string `json:"code"`
 	OperationId string `json:"operation_id"`
+	AccessMode  int    `json:"access_mode"`
 }
 
 type MTOperationHistoryByMTId struct {
@@ -156,6 +198,7 @@ type MTOperationHistoryByMTId struct {
 	PlatFormID uint64 `json:"plat_form_id"`
 	Module     string `json:"module"`
 	Code       string `json:"code"`
+	AccessMode int    `json:"access_mode"`
 }
 
 type MTOperationHistoryByMTIdRes struct {
@@ -174,12 +217,13 @@ type MTOperationRecord struct {
 
 type MTBalancesRequest struct {
 	Page
-	ProjectID uint64 `json:"project_id"`
-	MtId      string `json:"mt_id"`    // MT ID
-	ClassId   string `json:"class_id"` // 类别ID
-	Account   string `json:"account"`
-	Module    string `json:"module"`
-	Code      string `json:"code"`
+	ProjectID  uint64 `json:"project_id"`
+	MtId       string `json:"mt_id"`    // MT ID
+	ClassId    string `json:"class_id"` // 类别ID
+	Account    string `json:"account"`
+	Module     string `json:"module"`
+	Code       string `json:"code"`
+	AccessMode int    `json:"access_mode"`
 }
 
 type MTBalances struct {

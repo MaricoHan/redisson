@@ -17,6 +17,7 @@ type NftOperationHistoryByNftId struct {
 	Module          string `json:"module"`
 	OperationModule string `json:"operation_module"`
 	Code            string `json:"code"`
+	AccessMode      int    `json:"access_mode"`
 }
 
 type NftOperationHistoryByNftIdRes struct {
@@ -46,6 +47,7 @@ type CreateNftClass struct {
 	Tag         []byte `json:"tag"`
 	Module      string `json:"module"`
 	Code        string `json:"code"`
+	AccessMode  int    `json:"access_mode"`
 	OperationId string `json:"operation_id"`
 	ClassId     string `json:"class_id"`
 }
@@ -61,6 +63,7 @@ type NftClasses struct {
 	PlatFormID uint64 `json:"plat_form_id"`
 	Module     string `json:"module"`
 	Code       string `json:"code"`
+	AccessMode int    `json:"access_mode"`
 }
 
 type TxRes struct {
@@ -116,6 +119,7 @@ type TransferNftClassById struct {
 	Tag         []byte `json:"tag"`
 	Module      string `json:"module"`
 	Code        string `json:"code"`
+	AccessMode  int    `json:"access_mode"`
 	OperationId string `json:"operation_id"`
 }
 
@@ -130,6 +134,7 @@ type TransferNftByNftId struct {
 	Tag         []byte `json:"tag"`
 	Module      string `json:"module"`
 	Code        string `json:"code"`
+	AccessMode  int    `json:"access_mode"`
 	OperationId string `json:"operation_id"`
 }
 
@@ -179,6 +184,7 @@ type Nfts struct {
 	Module     string `json:"module"`
 	Code       string `json:"code"`
 	Name       string `json:"name"`
+	AccessMode int    `json:"access_mode"`
 }
 
 type CreateNfts struct {
@@ -195,6 +201,7 @@ type CreateNfts struct {
 	Tag         []byte `json:"tag"`
 	Module      string `json:"module"`
 	Code        string `json:"code"`
+	AccessMode  int    `json:"access_mode"`
 	OperationId string `json:"operation_id"`
 }
 
@@ -213,6 +220,7 @@ type BatchCreateNfts struct {
 	Module      string                         `json:"module"`
 	Code        string                         `json:"code"`
 	OperationId string                         `json:"operation_id"`
+	AccessMode  int                            `json:"access_mode"`
 }
 
 type NftByNftId struct {
@@ -223,6 +231,7 @@ type NftByNftId struct {
 	ClassId    string `json:"class_id"`
 	Module     string `json:"module"`
 	Code       string `json:"code"`
+	AccessMode int    `json:"access_mode"`
 }
 
 type EditNftByNftId struct {
@@ -238,6 +247,7 @@ type EditNftByNftId struct {
 	Sender      string `json:"owner"`
 	Tag         []byte `json:"tag"`
 	Code        string `json:"code"`
+	AccessMode  int    `json:"access_mode"`
 	OperationId string `json:"operation_id"`
 }
 
@@ -251,6 +261,7 @@ type DeleteNftByNftId struct {
 	Tag         []byte `json:"tag"`
 	Module      string `json:"module"`
 	Code        string `json:"code"`
+	AccessMode  int    `json:"access_mode"`
 	OperationId string `json:"operation_id"`
 }
 
@@ -265,6 +276,7 @@ type BatchTransferRequest struct {
 	Data        []*pb.NFTBatchTransferData `json:"data" validate:"required"`
 	Tag         string                     `json:"tag"`
 	OperationID string                     `json:"operation_id" validate:"required"`
+	AccessMode  int                        `json:"access_mode"`
 }
 
 type BatchEditRequest struct {
@@ -278,6 +290,7 @@ type BatchEditRequest struct {
 	Nfts        []*pb.NFTBatchEditData `json:"nfts"`
 	Tag         string                 `json:"tag"`
 	OperationID string                 `json:"operation_id" validate:"required"`
+	AccessMode  int                    `json:"access_mode"`
 }
 
 type BatchDeleteRequest struct {
@@ -291,4 +304,5 @@ type BatchDeleteRequest struct {
 	Nfts        []*pb.NFTIndex `json:"nfts"`
 	Tag         string         `json:"tag"`
 	OperationID string         `json:"operation_id" validate:"required"`
+	AccessMode  int            `json:"access_mode"`
 }
