@@ -124,7 +124,7 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	}
 	GrpcConnMap[constant.IritaOPBNative] = IritaOPBNativeConn
 
-	logger.Info("connecting tx-queue-server ...")
+	logger.Info("connecting state-gateway-server ...")
 	StateGatewayServer, err = grpc.DialContext(context.Background(), cfg.GrpcClient.StateGatewayAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp), grpc.WithBlock(), grpc.WithBalancerName(roundrobin.Name))
 	if err != nil {
 		logger.Fatal("get tx-queue-server grpc connect failed, err: ", err.Error())
