@@ -126,7 +126,7 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	logger.Info("connecting state-gateway-server ...")
 	StateGatewayServer, err = grpc.DialContext(context.Background(), cfg.GrpcClient.StateGatewayAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp), grpc.WithBlock(), grpc.WithBalancerName(roundrobin.Name))
 	if err != nil {
-		logger.Fatal("get tx-queue-server grpc connect failed, err: ", err.Error())
+		logger.Fatal("get state-gateway-server grpc connect failed, err: ", err.Error())
 	}
 
 	//初始化Account grpc client
