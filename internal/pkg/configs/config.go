@@ -47,6 +47,7 @@ type (
 		WenchangchainDDCAddr    string `mapstructure:"wenchangchain_ddc_addr"`
 		WenchangchainNativeAddr string `mapstructure:"wenchangchain_native_addr"`
 		IritaOPBNativeAddr      string `mapstructure:"irita_opb_native_addr"`
+		StateGatewayAddr        string `mapstructure:"state_gateway_addr"`
 	}
 
 	Project struct {

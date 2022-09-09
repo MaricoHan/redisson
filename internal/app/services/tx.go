@@ -9,16 +9,18 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/volatiletech/sqlboiler/types"
 	pb "gitlab.bianjie.ai/avata/chains/api/pb/tx"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
+	pb_queue "gitlab.bianjie.ai/avata/chains/api/pb/tx_queue"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
 )
 
 type ITx interface {
 	TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHashRes, error)
+	TxQueueInfo(params dto.TxQueueInfo) (*dto.TxQueueInfoRes, error)
 }
 
 type tx struct {
@@ -31,7 +33,6 @@ func NewTx(logger *log.Logger) *tx {
 
 func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHashRes, error) {
 	logger := t.logger.WithField("params", params).WithField("func", "TxResultByTxHash")
-
 	// 非托管模式不支持
 	if params.AccessMode == entity.UNMANAGED {
 		return nil, errors2.ErrNotImplemented
@@ -101,6 +102,39 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 			return nil, errors2.ErrInternal
 		}
 	}
+
+	return result, nil
+}
+
+func (t *tx) TxQueueInfo(params dto.TxQueueInfo) (*dto.TxQueueInfoRes, error) {
+	logger := t.logger.WithField("params", params).WithField("func", "TxQueueInfo")
+
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+	req := pb_queue.TxQueueShowRequest{
+		ProjectId:   params.ProjectID,
+		OperationId: params.OperationId,
+		Code:        params.Code,
+		Module:      params.Module,
+	}
+	resp := &pb_queue.TxQueueShowResponse{}
+	var err error
+	resp, err = initialize.TxQueueClient.Show(ctx, &req)
+	if err != nil {
+		logger.WithError(err).Error("request err")
+		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+	}
+	result := new(dto.TxQueueInfoRes)
+	result.QueueTotal = resp.QueueTotal
+	result.QueueRequestTime = resp.QueueRequestTime
+	result.QueueCostTime = resp.QueueCostTime
+	result.TxQueuePosition = resp.TxQueuePosition
+	result.TxRequestTime = resp.TxRequestTime
+	result.TxCostTime = resp.TxCostTime
+	result.TxMessage = resp.TxMessage
 
 	return result, nil
 }

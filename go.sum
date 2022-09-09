@@ -519,8 +519,8 @@ gitlab.bianjie.ai/avata/chains/api.git v0.8.1-0.20220908022125-3ea39210eb3d h1:m
 gitlab.bianjie.ai/avata/chains/api.git v0.8.1-0.20220908022125-3ea39210eb3d/go.mod h1:lcdtaR68PfIyq2/hWI3JGXV8m/zukqF5STGFLcFRWRI=
 gitlab.bianjie.ai/avata/utils/commons.git v0.1.0 h1:se9upXFUsjoWfxhI961dMtqdZm6jYamwok70KvwUq9M=
 gitlab.bianjie.ai/avata/utils/commons.git v0.1.0/go.mod h1:rs9lQ/MOF87O2POteMreuyTZRDa7ylGsiLSavbBsPrY=
-gitlab.bianjie.ai/avata/utils/errors.git v0.1.6 h1:phhOFBbTFPfy4/U9+hOHBSprQJuJ5aOJDTmiZWUjFfM=
-gitlab.bianjie.ai/avata/utils/errors.git v0.1.6/go.mod h1:1chu2UMM8wN2FrwYs3s497llCUqXil7IKDSKtVtkXss=
+gitlab.bianjie.ai/avata/utils/errors.git v0.1.7-0.20220908103754-f9c7acab1a7d h1:Cl3lcMx9XowoJfwVpK4p9px7V8iEy2pzWxafH8cruMs=
+gitlab.bianjie.ai/avata/utils/errors.git v0.1.7-0.20220908103754-f9c7acab1a7d/go.mod h1:1chu2UMM8wN2FrwYs3s497llCUqXil7IKDSKtVtkXss=
 go.etcd.io/etcd/api/v3 v3.5.0/go.mod h1:cbVKeC6lCfl7j/8jBhAK6aIYO9XOjdptoxU/nLQcPvs=
 go.etcd.io/etcd/api/v3 v3.5.1/go.mod h1:cbVKeC6lCfl7j/8jBhAK6aIYO9XOjdptoxU/nLQcPvs=
 go.etcd.io/etcd/client/pkg/v3 v3.5.0/go.mod h1:IJHfcCEKxYu1Os13ZdwCwIUTUVGYTSAM3YSwc9/Ac1g=
