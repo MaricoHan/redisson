@@ -295,6 +295,8 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 			case errors2.NotFound:
 				//metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "404"}...).Add(1)
 				w.WriteHeader(http.StatusNotFound) //404
+			case errors2.NotImplemented:
+				w.WriteHeader(http.StatusNotImplemented) //501
 			default:
 				//metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "500"}...).Add(1)
 				w.WriteHeader(http.StatusInternalServerError) //500
