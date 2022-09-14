@@ -193,6 +193,9 @@ func (s *business) BuildOrder(params dto.BuildOrderInfo) (*dto.BuyResponse, erro
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	// 非托管模式仅支持文昌链-天舟充值 gas；托管模式仅支持文昌链-DDC
 	if (params.OrderType != constant.OrderTypeGas || params.AccessMode != entity.UNMANAGED || mapKey != constant.IritaOPBNative) && (params.AccessMode != entity.MANAGED || mapKey != constant.WenchangDDC) {
+		if params.OrderType == constant.OrderTypeBusiness && params.AccessMode == entity.UNMANAGED && mapKey == constant.IritaOPBNative {
+			return nil, errors2.New(errors2.ClientParams, errors2.ErrOrderType)
+		}
 		return nil, errors2.ErrNotImplemented
 	}
 	grpcClient, ok := initialize.BusineessClientMap[mapKey]
