@@ -22,7 +22,7 @@ const (
 	AccountFailed                  = "ACCOUNT_ERROR"
 	TimestampTimeout               = "TIMESTAMP_TIME"
 	DuplicateRequest               = "DUPLICATE_REQUEST"
-	UnSupported                    = "NOT_FOUND"
+	UnSupported                    = "NOT_IMPLEMENTED"
 
 	// ErrOffset		error msg handle
 	ErrName         = "name is a required field"
