@@ -2,8 +2,9 @@ package middlewares
 
 import (
 	"encoding/json"
-	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"net/http"
+
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 )
 
 func writeBadRequestResp(w http.ResponseWriter, err constant.IError) {
@@ -23,7 +24,7 @@ func writeBadRequestResp(w http.ResponseWriter, err constant.IError) {
 
 func writeNotFoundRequestResp(w http.ResponseWriter, err constant.IError) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.WriteHeader(http.StatusNotFound)
+	w.WriteHeader(http.StatusNotImplemented)
 	response := constant.Response{
 		ErrorResp: &constant.ErrorResp{
 			CodeSpace: err.CodeSpace(),
