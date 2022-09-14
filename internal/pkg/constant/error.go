@@ -38,14 +38,15 @@ const (
 )
 
 var (
-	ErrInternal     = Register(RootCodeSpace, InternalFailed, "internal")
-	ErrAuthenticate = Register(RootCodeSpace, AuthenticationFailed, "authentication failed")
-	ErrParams       = Register(RootCodeSpace, ClientParamsError, ErrClientParams)
-	ErrIdempotent   = Register(RootCodeSpace, FrequentRequestsNotSupports, "frequent requests not supports")
-	ErrNftStatus    = Register(RootCodeSpace, NftStatusAbnormal, ErrNftStatusMsg)
-	ErrTimestamp    = Register(RootCodeSpace, TimestampTimeout, "timestamp is timeout")
-	ErrDuplicate    = Register(RootCodeSpace, DuplicateRequest, "duplicate request")
-	ErrUnSupported  = Register(MtCodeSpace, UnSupported, "not implemented")
+	ErrInternal             = Register(RootCodeSpace, InternalFailed, "internal")
+	ErrAuthenticate         = Register(RootCodeSpace, AuthenticationFailed, "authentication failed")
+	ErrParams               = Register(RootCodeSpace, ClientParamsError, ErrClientParams)
+	ErrIdempotent           = Register(RootCodeSpace, FrequentRequestsNotSupports, "frequent requests not supports")
+	ErrNftStatus            = Register(RootCodeSpace, NftStatusAbnormal, ErrNftStatusMsg)
+	ErrTimestamp            = Register(RootCodeSpace, TimestampTimeout, "timestamp is timeout")
+	ErrDuplicate            = Register(RootCodeSpace, DuplicateRequest, "duplicate request")
+	ErrUnSupported          = Register(MtCodeSpace, UnSupported, "not implemented")
+	ErrUnmanagedUnSupported = Register(RootCodeSpace, UnSupported, "not implemented")
 )
 
 var usedErrorCodes = map[string]*AppError{}
