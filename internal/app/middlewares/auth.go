@@ -141,9 +141,8 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 非托管模式不支持
-	if projectInfo.AccessMode == entity.UNMANAGED || fmt.Sprintf("%s-%s", chainInfo.Code, chainInfo.Module) == constant.WenchangNative {
-		if !strings.Contains(r.RequestURI, "/orders/") {
+	if fmt.Sprintf("%s-%s", chainInfo.Code, chainInfo.Module) == constant.WenchangNative {
+		if strings.Contains(r.RequestURI, "/orders/") {
 			writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
 			return
 		}
