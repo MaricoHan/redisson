@@ -135,8 +135,16 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if fmt.Sprintf("%s-%s", chainInfo.Code, chainInfo.Module) == constant.WenchangDDC {
-		if strings.Contains(r.RequestURI, "/mt/") {
-			writeNotFoundRequestResp(w, constant.ErrUnSupported)
+		if strings.Contains(r.RequestURI, "/mt/") || strings.Contains(r.RequestURI, "/nft/batch/") || strings.Contains(r.RequestURI, "/order/batch/") {
+			writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
+			return
+		}
+	}
+
+	// 非托管模式不支持
+	if projectInfo.AccessMode == entity.UNMANAGED || fmt.Sprintf("%s-%s", chainInfo.Code, chainInfo.Module) == constant.WenchangNative {
+		if !strings.Contains(r.RequestURI, "/orders/") {
+			writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
 			return
 		}
 	}
