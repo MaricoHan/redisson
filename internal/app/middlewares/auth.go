@@ -78,7 +78,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		if projectInfo.Id > 0 {
 			// save cache
-			if err := initialize.RedisClient.SetObject(fmt.Sprintf("%s%s", constant.KeyProjectApikey, appKey), projectInfo, time.Hour*24); err != nil {
+			if err := initialize.RedisClient.SetObject(fmt.Sprintf("%s%s", constant.KeyProjectApikey, appKey), projectInfo, time.Minute*5); err != nil {
 				log.WithError(err).Error("save project cache")
 				writeInternalResp(w)
 				return
@@ -112,7 +112,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		if chainInfo.Id > 0 {
 			// save cache
-			if err := initialize.RedisClient.SetObject(fmt.Sprintf("%s%d", constant.KeyChain, projectInfo.ChainId), chainInfo, time.Hour*24); err != nil {
+			if err := initialize.RedisClient.SetObject(fmt.Sprintf("%s%d", constant.KeyChain, projectInfo.ChainId), chainInfo, time.Minute*5); err != nil {
 				log.WithError(err).Error("save project to cache")
 				writeInternalResp(w)
 				return
