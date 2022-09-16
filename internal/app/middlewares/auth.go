@@ -134,25 +134,33 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		AccessMode: projectInfo.AccessMode,
 	}
 
+	// DDC 不支持 NFT-批量、orders-批量、MT
 	if fmt.Sprintf("%s-%s", chainInfo.Code, chainInfo.Module) == constant.WenchangDDC {
 		if strings.Contains(r.RequestURI, "/mt/") || strings.Contains(r.RequestURI, "/nft/batch/") || strings.Contains(r.RequestURI, "/orders/batch") {
 			writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
 			return
 		}
-	}
+	} else { // native
+		// 非托管模式
+		if projectInfo.AccessMode == entity.UNMANAGED {
+			if fmt.Sprintf("%s-%s", chainInfo.Code, chainInfo.Module) == constant.IritaOPBNative {
+				// 文昌链-天舟除 orders 都不支持
+				if !strings.Contains(r.RequestURI, "/orders") {
+					writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
+					return
+				}
+			} else {
+				// 文昌链-天和都不支持
+				writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
+				return
+			}
 
-	if fmt.Sprintf("%s-%s", chainInfo.Code, chainInfo.Module) == constant.WenchangNative {
-		if strings.Contains(r.RequestURI, "/orders") {
-			writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
-			return
-		}
-	}
-
-	// 非托管模式不支持
-	if projectInfo.AccessMode == entity.UNMANAGED {
-		if !strings.Contains(r.RequestURI, "/orders") {
-			writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
-			return
+		} else {
+			// 托管不支持 orders
+			if strings.Contains(r.RequestURI, "/orders") {
+				writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
+				return
+			}
 		}
 	}
 
