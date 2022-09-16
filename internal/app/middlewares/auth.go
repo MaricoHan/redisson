@@ -135,14 +135,14 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if fmt.Sprintf("%s-%s", chainInfo.Code, chainInfo.Module) == constant.WenchangDDC {
-		if strings.Contains(r.RequestURI, "/mt/") || strings.Contains(r.RequestURI, "/nft/batch/") || strings.Contains(r.RequestURI, "/order/batch/") {
+		if strings.Contains(r.RequestURI, "/mt/") || strings.Contains(r.RequestURI, "/nft/batch/") || strings.Contains(r.RequestURI, "/orders/batch") {
 			writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
 			return
 		}
 	}
 
 	if fmt.Sprintf("%s-%s", chainInfo.Code, chainInfo.Module) == constant.WenchangNative {
-		if strings.Contains(r.RequestURI, "/orders/") {
+		if strings.Contains(r.RequestURI, "/orders") {
 			writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
 			return
 		}
@@ -150,7 +150,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// 非托管模式不支持
 	if projectInfo.AccessMode == entity.UNMANAGED {
-		if !strings.Contains(r.RequestURI, "/orders/") {
+		if !strings.Contains(r.RequestURI, "/orders") {
 			writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
 			return
 		}
