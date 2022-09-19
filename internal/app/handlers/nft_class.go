@@ -84,6 +84,7 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 		Code:        authData.Code,
 		OperationId: operationId,
 		ClassId:     classId,
+		AccessMode:  authData.AccessMode,
 	}
 	return h.svc.CreateNFTClass(params)
 }
@@ -102,6 +103,7 @@ func (h NftClass) Classes(ctx context.Context, _ interface{}) (interface{}, erro
 		Owner:      h.Owner(ctx),
 		TxHash:     h.TxHash(ctx),
 		Code:       authData.Code,
+		AccessMode: authData.AccessMode,
 	}
 	offset, err := h.Offset(ctx)
 	if err != nil {
@@ -151,6 +153,7 @@ func (h NftClass) ClassByID(ctx context.Context, _ interface{}) (interface{}, er
 		Module:     authData.Module,
 		Id:         h.Id(ctx),
 		Code:       authData.Code,
+		AccessMode: authData.AccessMode,
 	}
 
 	// 校验参数 end

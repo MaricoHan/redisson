@@ -2,12 +2,14 @@ package handlers
 
 import (
 	"context"
+
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
 )
 
 type ITx interface {
 	TxResultByTxHash(ctx context.Context, _ interface{}) (interface{}, error)
+	TxQueueInfo(ctx context.Context, _ interface{}) (interface{}, error)
 }
 
 type Tx struct {
@@ -29,6 +31,7 @@ func (h *Tx) TxResultByTxHash(ctx context.Context, _ interface{}) (interface{}, 
 		PlatFormID:  authData.PlatformId,
 		Module:      authData.Module,
 		Code:        authData.Code,
+		AccessMode:  authData.AccessMode,
 	}
 	// 校验参数 end
 	// 业务数据入库的地方
@@ -41,4 +44,25 @@ func (h *Tx) TaskId(ctx context.Context) string {
 		return ""
 	}
 	return taskid.(string)
+}
+
+func (h *Tx) TxQueueInfo(ctx context.Context, _ interface{}) (interface{}, error) {
+	// 校验参数 start
+	authData := h.AuthData(ctx)
+	params := dto.TxQueueInfo{
+		OperationId: h.OperationID(ctx),
+		ProjectID:   authData.ProjectId,
+		Module:      authData.Module,
+		Code:        authData.Code,
+	}
+	// 校验参数 end
+	return h.svc.TxQueueInfo(params)
+}
+
+func (h *Tx) OperationID(ctx context.Context) string {
+	OperationID := ctx.Value("operation_id")
+	if OperationID == nil || OperationID == "" {
+		return ""
+	}
+	return OperationID.(string)
 }

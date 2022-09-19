@@ -13,8 +13,6 @@ import (
 	"strings"
 	"time"
 
-	"gitlab.bianjie.ai/avata/utils/commons/aes"
-
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/chain"
@@ -22,6 +20,7 @@ import (
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
+	"gitlab.bianjie.ai/avata/utils/commons/aes"
 )
 
 // 误差时间
@@ -132,12 +131,36 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		PlatformId: uint64(projectInfo.UserId),
 		Module:     chainInfo.Module,
 		Code:       chainInfo.Code,
+		AccessMode: projectInfo.AccessMode,
 	}
 
+	// DDC 不支持 NFT-批量、orders-批量、MT
 	if fmt.Sprintf("%s-%s", chainInfo.Code, chainInfo.Module) == constant.WenchangDDC {
-		if strings.Contains(r.RequestURI, "/mt/") {
-			writeNotFoundRequestResp(w, constant.ErrUnSupported)
+		if strings.Contains(r.RequestURI, "/mt/") || strings.Contains(r.RequestURI, "/nft/batch/") || strings.Contains(r.RequestURI, "/orders/batch") {
+			writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
 			return
+		}
+	} else { // native
+		// 非托管模式
+		if projectInfo.AccessMode == entity.UNMANAGED {
+			if fmt.Sprintf("%s-%s", chainInfo.Code, chainInfo.Module) == constant.IritaOPBNative {
+				// 文昌链-天舟除 orders 都不支持
+				if !strings.Contains(r.RequestURI, "/orders") {
+					writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
+					return
+				}
+			} else {
+				// 文昌链-天和都不支持
+				writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
+				return
+			}
+
+		} else {
+			// 托管不支持 orders
+			if strings.Contains(r.RequestURI, "/orders") {
+				writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
+				return
+			}
 		}
 	}
 

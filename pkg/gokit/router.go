@@ -286,7 +286,7 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 
 		if errMesg != "" && respErr.Message() != "" {
 			switch respErr.Code() {
-			case errors2.ClientParams, errors2.StatusFailed, errors2.ChainFailed, errors2.DuplicateRequest, errors2.OrderFailed:
+			case errors2.ClientParams, errors2.StatusFailed, errors2.ChainFailed, errors2.DuplicateRequest, errors2.OrderFailed, errors2.StateGatewayFailed:
 				//metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "400"}...).Add(1)
 				w.WriteHeader(http.StatusBadRequest) //400
 			case errors2.Authentication:
@@ -295,6 +295,8 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 			case errors2.NotFound:
 				//metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "404"}...).Add(1)
 				w.WriteHeader(http.StatusNotFound) //404
+			case errors2.NotImplemented:
+				w.WriteHeader(http.StatusNotImplemented) //501
 			default:
 				//metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "500"}...).Add(1)
 				w.WriteHeader(http.StatusInternalServerError) //500

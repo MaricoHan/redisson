@@ -82,6 +82,7 @@ func (h *NFT) CreateNft(ctx context.Context, request interface{}) (interface{}, 
 		Tag:         tagBytes,
 		Code:        authData.Code,
 		OperationId: operationId,
+		AccessMode:  authData.AccessMode,
 	}
 
 	params.Amount = 1
@@ -135,6 +136,7 @@ func (h *NFT) BatchCreateNft(ctx context.Context, request interface{}) (interfac
 		Tag:         tagBytes,
 		Code:        authData.Code,
 		OperationId: operationId,
+		AccessMode:  authData.AccessMode,
 	}
 
 	return h.svc.BatchCreate(params)
@@ -186,6 +188,7 @@ func (h *NFT) EditNftByNftId(ctx context.Context, request interface{}) (interfac
 		Tag:         tagBytes,
 		Code:        authData.Code,
 		OperationId: operationId,
+		AccessMode:  authData.AccessMode,
 	}
 
 	return h.svc.Update(params)
@@ -222,6 +225,7 @@ func (h *NFT) DeleteNftByNftId(ctx context.Context, request interface{}) (interf
 		Tag:         tagBytes,
 		Code:        authData.Code,
 		OperationId: operationId,
+		AccessMode:  authData.AccessMode,
 	}
 
 	return h.svc.Delete(params)
@@ -247,6 +251,7 @@ func (h *NFT) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 		Status:     status,
 		Code:       authData.Code,
 		Name:       h.Name(ctx),
+		AccessMode: authData.AccessMode,
 	}
 	offset, err := h.Offset(ctx)
 	if err != nil {
@@ -293,6 +298,7 @@ func (h *NFT) NftByNftId(ctx context.Context, _ interface{}) (interface{}, error
 		ClassId:    h.ClassId(ctx),
 		NftId:      h.NftId(ctx),
 		Code:       authData.Code,
+		AccessMode: authData.AccessMode,
 	}
 
 	return h.svc.Show(params)
@@ -329,6 +335,7 @@ func (h *NFT) BatchTransfer(ctx context.Context, request interface{}) (interface
 		Data:        req.Data,
 		Tag:         string(tagBz),
 		OperationID: req.OperationID,
+		AccessMode:  authData.AccessMode,
 	}
 
 	return h.svc.BatchTransfer(&params)
@@ -364,6 +371,7 @@ func (h *NFT) BatchEdit(ctx context.Context, request interface{}) (interface{}, 
 		Nfts:        req.Nfts,
 		Tag:         string(tagBz),
 		OperationID: req.OperationID,
+		AccessMode:  authData.AccessMode,
 	}
 
 	return h.svc.BatchEdit(&params)
@@ -399,6 +407,7 @@ func (h *NFT) BatchDelete(ctx context.Context, request interface{}) (interface{}
 		Nfts:        req.Nfts,
 		Tag:         string(tagBz),
 		OperationID: req.OperationID,
+		AccessMode:  authData.AccessMode,
 	}
 
 	return h.svc.BatchDelete(&params)
