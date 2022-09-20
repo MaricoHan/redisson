@@ -2,28 +2,49 @@ package mutex
 
 import (
 	"context"
-	"github.com/MaricoHan/redisson/base"
-	"github.com/MaricoHan/redisson/internal/root"
-	"github.com/go-redis/redis/v8"
+	"errors"
 	"io/ioutil"
 	"strconv"
 	"time"
+
+	"github.com/MaricoHan/redisson/base"
+	"github.com/MaricoHan/redisson/internal/root"
+	"github.com/go-redis/redis/v8"
 )
 
 var (
-	lockScript   string
-	unlockScript string
+	lockScript    string
+	unlockScript  string
+	renewalScript string
 )
 
 type Mutex struct {
 	*root.Root
 	Name    string
-	TimeOut int64
+	TimeOut time.Duration
 }
 
-func (m *Mutex) Lock() {
-	//goID := base.GoID()
+func (m *Mutex) Lock() error {
+	_, err := m.tryLock()
+	if err != nil {
+		return err
+	}
+	// 加锁成功，开个协程，定时续锁
+	go func() {
+		ticker := time.Tick(time.Duration(m.TimeOut / 3))
+		for range ticker {
+			res, err := m.Client.Eval(context.TODO(), renewalScript, []string{m.Name}, m.TimeOut).Int64()
+			if err != nil {
+				return
+			}
+			if res == 0 {
+				return
+			}
+		}
 
+	}()
+
+	return nil
 }
 
 func (m *Mutex) tryLock() (bool, error) {
@@ -40,7 +61,7 @@ func (m *Mutex) tryLock() (bool, error) {
 	}
 	// 申请锁的耗时如果大于等于最大等待时间，则申请锁失败.
 	if time.Now().After(startTime.Add(m.LockTimeout)) {
-		return false, nil
+		return false, errors.New("timeout")
 	}
 
 	for {
@@ -52,9 +73,8 @@ func (m *Mutex) tryLock() (bool, error) {
 			return true, nil
 		}
 		if time.Now().After(startTime.Add(m.LockTimeout)) {
-			return false, nil
+			return false, errors.New("timeout")
 		}
-
 	}
 }
 
@@ -75,8 +95,21 @@ func (m *Mutex) RLock() {
 
 }
 
-func (m *Mutex) Unlock() {
+func (m *Mutex) Unlock() error {
+	goID := base.GoID()
+	if m.Uuid+":"+strconv.FormatInt(goID, 10) != m.Client.Get(context.TODO(), m.Name).String() {
+		return errors.New("mismatch identification")
+	}
 
+	return m.unlockInner()
+}
+
+func (m *Mutex) unlockInner() error {
+	_, err := m.Client.Eval(context.TODO(), unlockScript, []string{m.Name}).Result()
+	if err == redis.Nil {
+		return nil
+	}
+	return err
 }
 
 func init() {
@@ -91,4 +124,10 @@ func init() {
 		panic(err)
 	}
 	unlockScript = string(file)
+
+	file, err = ioutil.ReadFile("./renewal.lua")
+	if err != nil {
+		panic(err)
+	}
+	renewalScript = string(file)
 }
