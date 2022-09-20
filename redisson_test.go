@@ -1,4 +1,4 @@
-package test
+package redisson_test
 
 import (
 	"github.com/MaricoHan/redisson"
@@ -13,7 +13,7 @@ func TestLock(t *testing.T) {
 	})
 	redisson := redisson.New(client)
 
-	mutex := redisson.NewRWMutex("han")
+	mutex := redisson.NewMutex("han")
 	mutex.Lock()
 	mutex.Unlock()
 }

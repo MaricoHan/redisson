@@ -1,23 +1,31 @@
 package redisson
 
 import (
+	"github.com/MaricoHan/redisson/internal/mutex"
+	"github.com/MaricoHan/redisson/internal/root"
 	"github.com/go-redis/redis/v8"
-	"time"
+	"github.com/segmentio/ksuid"
 )
 
 type Redisson struct {
-	client *redis.Client
+	root *root.Root
 }
 
-func New(client *redis.Client) *Redisson {
+func New(client *redis.Client, options *Options) *Redisson {
+	options.init()
+
 	return &Redisson{
-		client: client,
+		root: &root.Root{
+			Client:  client,
+			Options: options,
+			Uuid:    ksuid.New().String(),
+		},
 	}
 }
 
-func (r *Redisson) NewRWMutex(name string, options ...Option) *Mutex {
+func (r *Redisson) NewMutex(name string, options ...Option) *mutex.Mutex {
 
-	m := &Mutex{client: r.client, Name: name}
+	m := &mutex.Mutex{Root: r.root, Name: name}
 
 	for i := range options {
 		options[i].Apply(m)
@@ -26,18 +34,22 @@ func (r *Redisson) NewRWMutex(name string, options ...Option) *Mutex {
 	return m
 }
 
-type Option interface {
-	Apply(mutex *Mutex)
+func (r *Redisson) NewRWMutex() {
+
 }
 
-type OptionFunc func(mutex *Mutex)
+type Option interface {
+	Apply(mutex *mutex.Mutex)
+}
 
-func (f OptionFunc) Apply(mutex *Mutex) {
+type OptionFunc func(mutex *mutex.Mutex)
+
+func (f OptionFunc) Apply(mutex *mutex.Mutex) {
 	f(mutex)
 }
 
-func WithExpireDuration(dur time.Duration) Option {
-	return OptionFunc(func(mutex *Mutex) {
+func WithExpireDuration(dur int64) Option {
+	return OptionFunc(func(mutex *mutex.Mutex) {
 		mutex.TimeOut = dur
 	})
 }
