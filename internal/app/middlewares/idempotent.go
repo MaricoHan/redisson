@@ -23,15 +23,20 @@ type idempotentMiddlewareHandler struct {
 }
 
 func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		h.next.ServeHTTP(w, r)
-		return
-	}
 	// 把request的内容读取出来
 	var bodyBytes []byte
 	if r.Body != nil {
 		bodyBytes, _ = ioutil.ReadAll(r.Body)
 	}
+	if bodyBytes == nil || len(bodyBytes) < 1 {
+		h.next.ServeHTTP(w, r)
+		return
+	}
+	//if r.Method != http.MethodPost {
+	//	h.next.ServeHTTP(w, r)
+	//	return
+	//}
+
 	// 把刚刚读出来的再写进去
 	r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 	req := &vo.Base{}
