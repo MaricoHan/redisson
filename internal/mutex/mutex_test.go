@@ -20,7 +20,7 @@ var (
 var (
 	r = &root.Root{
 		Client: rdc,
-		Uuid:   "uuid",
+		UUID:   "uuid",
 	}
 	options = []Option{
 		WithExpireDuration(10 * time.Second),
