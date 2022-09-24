@@ -1,5 +1,5 @@
 # redisson
-实现 redis 分布式 互斥锁和读写锁
+使用 redis 实现：分布式“互斥锁”和“读写锁”
 
 [![Go](https://github.com/MaricoHan/redisson/actions/workflows/go.yml/badge.svg)](https://github.com/MaricoHan/redisson/actions/workflows/go.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/MaricoHan/redisson)](https://goreportcard.com/report/github.com/MaricoHan/redisson)
