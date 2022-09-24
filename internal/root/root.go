@@ -8,7 +8,7 @@ import (
 
 type Root struct {
 	Client *redis.Client
-	Uuid   string
+	UUID   string
 }
 
 type BaseMutex struct {

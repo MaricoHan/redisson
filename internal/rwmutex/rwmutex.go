@@ -65,7 +65,7 @@ func (r RWMutex) Lock() error {
 	}
 	// 加锁成功，开个协程，定时续锁
 	go func() {
-		ticker := time.Tick(r.Expiration / 3)
+		ticker := time.NewTicker(r.Expiration / 3).C
 		for range ticker {
 			res, err := r.Client.Eval(context.TODO(), renewalScript, []string{r.Name}, expiration).Int64()
 			if err != nil || res == 0 {
@@ -102,7 +102,7 @@ func (r RWMutex) tryLock(ctx context.Context, goID, expiration int64) error {
 }
 
 func (r RWMutex) lockInner(goID, expiration int64) (int64, error) {
-	pTTL, err := r.Client.Eval(context.Background(), lockScript, []string{r.Name}, r.Uuid+":"+strconv.FormatInt(goID, 10), expiration).Result()
+	pTTL, err := r.Client.Eval(context.Background(), lockScript, []string{r.Name}, r.UUID+":"+strconv.FormatInt(goID, 10), expiration).Result()
 	if err == redis.Nil {
 		return 0, nil
 	}
@@ -127,7 +127,7 @@ func (r RWMutex) RLock() error {
 	}
 	// 加锁成功，开个协程，定时续锁
 	go func() {
-		ticker := time.Tick(r.Expiration / 3)
+		ticker := time.NewTicker(r.Expiration / 3).C
 		for range ticker {
 			res, err := r.Client.Eval(context.TODO(), renewalScript, []string{r.Name}, expiration).Int64()
 			if err != nil || res == 0 {
@@ -165,7 +165,7 @@ func (r RWMutex) tryRLock(ctx context.Context, goID, expiration int64) error {
 }
 
 func (r RWMutex) rLockInner(goID, expiration int64) (int64, error) {
-	pTTL, err := r.Client.Eval(context.Background(), rLockScript, []string{r.Name}, r.Uuid+":"+strconv.FormatInt(goID, 10), expiration).Result()
+	pTTL, err := r.Client.Eval(context.Background(), rLockScript, []string{r.Name}, r.UUID+":"+strconv.FormatInt(goID, 10), expiration).Result()
 	if err == redis.Nil {
 		return 0, nil
 	}
@@ -181,7 +181,7 @@ func (r *RWMutex) Unlock() error {
 	return r.unlockInner(goID)
 }
 func (r *RWMutex) unlockInner(goID int64) error {
-	res, err := r.Client.Eval(context.TODO(), unlockScript, []string{r.Name, base.ChannelName(r.Name)}, r.Uuid+":"+strconv.FormatInt(goID, 10), 1).Int64()
+	res, err := r.Client.Eval(context.TODO(), unlockScript, []string{r.Name, base.ChannelName(r.Name)}, r.UUID+":"+strconv.FormatInt(goID, 10), 1).Int64()
 	if err != nil {
 		return err
 	}

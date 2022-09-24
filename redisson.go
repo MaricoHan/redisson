@@ -17,7 +17,7 @@ func New(client *redis.Client) *Redisson {
 	return &Redisson{
 		root: &root.Root{
 			Client: client,
-			Uuid:   ksuid.New().String(),
+			UUID:   ksuid.New().String(),
 		},
 	}
 }
