@@ -9,19 +9,20 @@ import (
 type Root struct {
 	Client *redis.Client
 	Uuid   string
-	*Options
 }
 
-func ChannelName(name string) string {
-	return "redisson_lock__channel" + ":{" + name + "}"
+type BaseMutex struct {
+	Name        string
+	Expiration  time.Duration
+	WaitTimeout time.Duration
+	*redis.PubSub
 }
 
-type Options struct {
-	LockTimeout time.Duration
-}
-
-func (o *Options) Init() {
-	if o.LockTimeout <= 0 {
-		o.LockTimeout = 30 * time.Second
+func (b *BaseMutex) CheckAndInit() {
+	if b.WaitTimeout <= 0 {
+		b.WaitTimeout = 30 * time.Second
+	}
+	if b.Expiration <= 0 {
+		b.Expiration = 10 * time.Second
 	}
 }

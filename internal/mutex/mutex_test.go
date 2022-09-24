@@ -3,34 +3,31 @@ package mutex
 import (
 	"context"
 	"fmt"
+	"github.com/MaricoHan/redisson/pkg/base"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/go-redis/redis/v8"
 
-	"github.com/MaricoHan/redisson/base"
 	"github.com/MaricoHan/redisson/internal/root"
 )
 
 var (
-	rdc     = redis.NewClient(&redis.Options{Addr: ":6379"})
-	options = &root.Options{
-		LockTimeout: 30 * time.Second,
-	}
+	rdc = redis.NewClient(&redis.Options{Addr: ":6379"})
 )
 
 var (
-	mutex = Mutex{
-		Root: &root.Root{
-			Client:  rdc,
-			Uuid:    "uuid",
-			Options: options,
-		},
-		Name:       "mutexKey",
-		Expiration: 10 * time.Second,
-		PubSub:     rdc.Subscribe(context.Background(), root.ChannelName("mutexKey")),
+	r = &root.Root{
+		Client: rdc,
+		Uuid:   "uuid",
 	}
+	options = []Option{
+		WithExpireDuration(10 * time.Second),
+		WithWaitTimeout(20 * time.Second),
+	}
+
+	mutex = NewMutex(r, "mutexKey", options...)
 )
 
 func TestMutex_lockInner(t *testing.T) {
@@ -43,16 +40,12 @@ func TestMutex_lockInner(t *testing.T) {
 }
 
 func TestMutex_tryLock(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), mutex.LockTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), mutex.WaitTimeout)
 	defer cancel()
 	goID := base.GoID()
 
-	lock, err := mutex.tryLock(ctx, goID, int64(mutex.Expiration/time.Millisecond))
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	t.Log(lock)
+	err := mutex.tryLock(ctx, goID, int64(mutex.Expiration/time.Millisecond))
+	t.Log(err)
 }
 
 func TestMutex_unlockInner_ExpiredMutex(t *testing.T) {
@@ -109,42 +102,34 @@ func TestMutex_unlockInner(t *testing.T) {
 }
 
 func TestMutex_Unlock(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), mutex.LockTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), mutex.WaitTimeout)
 	defer cancel()
 	goID := base.GoID()
 	// 第一次上锁
-	lock, err := mutex.tryLock(ctx, goID, int64(mutex.Expiration/time.Millisecond))
+	err := mutex.tryLock(ctx, goID, int64(mutex.Expiration/time.Millisecond))
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	if lock {
-		t.Log("lock successfully")
-	} else {
-		t.Log("wait timeout")
-	}
+	t.Log("lock successfully")
 
 	waitGroup := sync.WaitGroup{}
 	waitGroup.Add(1)
 	go func() {
-		ctx, cancel := context.WithTimeout(context.Background(), mutex.LockTimeout)
+		ctx, cancel := context.WithTimeout(context.Background(), mutex.WaitTimeout)
 		defer func() {
 			cancel()
 			waitGroup.Done()
 		}()
 		// 不解锁，第二次上锁，会阻塞 10s，然后加锁成功
 		t.Log("try lock ...")
-		lock, err = mutex.tryLock(ctx, goID, int64(mutex.Expiration/time.Millisecond))
+		err = mutex.tryLock(ctx, goID, int64(mutex.Expiration/time.Millisecond))
 		cancel()
 		if err != nil {
 			t.Error(err)
 			return
 		}
-		if lock {
-			t.Log("lock successfully")
-		} else {
-			t.Log("wait timeout")
-		}
+		t.Log("lock successfully")
 	}()
 
 	// 10s 后解锁
@@ -168,7 +153,7 @@ func TestMutex_Renewal(t *testing.T) {
 	}
 	t.Log("lock successfully")
 
-	// 测试：达到过期时间的 1/3 ，锁的过期时间会被重置
+	// 测试：达到过期时间的 1/3，如果未主动释放锁，锁的过期时间会被重置
 	ticker := time.Tick(time.Second)
 	for range ticker {
 		fmt.Println(mutex.Client.PTTL(context.Background(), mutex.Name).Val())

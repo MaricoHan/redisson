@@ -16,3 +16,7 @@ func GoID() int64 {
 	parseInt, _ := strconv.ParseInt(strings.TrimSpace(s[10:strings.IndexByte(s, '[')]), 10, 64)
 	return parseInt
 }
+
+func ChannelName(name string) string {
+	return "redisson_lock__channel" + ":{" + name + "}"
+}
