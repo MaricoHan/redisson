@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/MaricoHan/redisson"
 	"github.com/go-redis/redis/v8"
 
-	"github.com/MaricoHan/redisson"
-	"github.com/MaricoHan/redisson/internal/root"
+	"github.com/MaricoHan/redisson/internal/mutex"
 )
 
 func TestMutex(t *testing.T) {
@@ -16,17 +16,14 @@ func TestMutex(t *testing.T) {
 		Addr: "localhost:6379",
 		DB:   0,
 	})
-	options := []redisson.Option{
-		redisson.WithExpireDuration(30 * time.Millisecond),
+	redissonClient := redisson.New(client)
+
+	options := []mutex.Option{
+		mutex.WithExpireDuration(30 * time.Millisecond),
 	}
+	mutex1 := redissonClient.NewMutex("redisson_mutex", options...)
 
-	redisson := redisson.New(client, &root.Options{
-		LockTimeout: 10 * time.Second,
-	})
-
-	mutex := redisson.NewMutex("redisson_mutex", options...)
-
-	err := mutex.Lock()
+	err := mutex1.Lock()
 	if err != nil {
 		t.Error(err)
 		return
@@ -40,8 +37,8 @@ func TestMutex(t *testing.T) {
 		defer func() {
 			waitGroup.Done()
 		}()
-		mutex := redisson.NewMutex("redisson_mutex")
-		err = mutex.Unlock()
+		mutex1 := redissonClient.NewMutex("redisson_mutex")
+		err = mutex1.Unlock()
 		if err != nil {
 			t.Error(err)
 			return
@@ -51,7 +48,7 @@ func TestMutex(t *testing.T) {
 	waitGroup.Wait()
 
 	// 测试：加锁的协程可以顺利解锁
-	err = mutex.Unlock()
+	err = mutex1.Unlock()
 	if err != nil {
 		t.Error(err)
 		return
