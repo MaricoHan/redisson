@@ -1,0 +1,32 @@
+name: Go
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+
+  lint-and-build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: lint
+      uses: golangci/golangci-lint-action@v3.1.0
+      with: 
+          working-direcetory: .
+          version: latest
+          
+          skip-build-cache: true
+          skip-pkg-cache: true
+      
+
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: 1.18
+
+    - name: Build
+      run: go build -v ./
