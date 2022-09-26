@@ -1,15 +1,15 @@
 package redisson_test
 
 import (
-	"github.com/MaricoHan/redisson/internal/rwmutex"
 	"sync"
 	"testing"
 	"time"
 
-	"github.com/MaricoHan/redisson"
 	"github.com/go-redis/redis/v8"
 
+	"github.com/MaricoHan/redisson"
 	"github.com/MaricoHan/redisson/internal/mutex"
+	"github.com/MaricoHan/redisson/internal/rwmutex"
 )
 
 func TestMutex(t *testing.T) {
