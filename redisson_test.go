@@ -8,8 +8,7 @@ import (
 	"github.com/go-redis/redis/v8"
 
 	"github.com/MaricoHan/redisson"
-	"github.com/MaricoHan/redisson/internal/mutex"
-	"github.com/MaricoHan/redisson/internal/rwmutex"
+	"github.com/MaricoHan/redisson/mutex"
 )
 
 func TestMutex(t *testing.T) {
@@ -64,8 +63,8 @@ func TestRWMutex(t *testing.T) {
 	})
 	redissonClient := redisson.New(client)
 
-	options := []rwmutex.Option{
-		rwmutex.WithExpireDuration(30 * time.Millisecond),
+	options := []mutex.Option{
+		mutex.WithExpireDuration(30 * time.Millisecond),
 	}
 	mutex1 := redissonClient.NewRWMutex("redisson_mutex", options...)
 

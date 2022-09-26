@@ -4,18 +4,16 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/segmentio/ksuid"
 
-	"github.com/MaricoHan/redisson/internal/mutex"
-	"github.com/MaricoHan/redisson/internal/root"
-	"github.com/MaricoHan/redisson/internal/rwmutex"
+	"github.com/MaricoHan/redisson/mutex"
 )
 
 type Redisson struct {
-	root *root.Root
+	root *mutex.Root
 }
 
 func New(client *redis.Client) *Redisson {
 	return &Redisson{
-		root: &root.Root{
+		root: &mutex.Root{
 			Client: client,
 			UUID:   ksuid.New().String(),
 		},
@@ -26,6 +24,6 @@ func (r Redisson) NewMutex(name string, options ...mutex.Option) *mutex.Mutex {
 	return mutex.NewMutex(r.root, name, options...)
 }
 
-func (r Redisson) NewRWMutex(name string, options ...rwmutex.Option) *rwmutex.RWMutex {
-	return rwmutex.NewRWMutex(r.root, name, options...)
+func (r Redisson) NewRWMutex(name string, options ...mutex.Option) *mutex.RWMutex {
+	return mutex.NewRWMutex(r.root, name, options...)
 }
