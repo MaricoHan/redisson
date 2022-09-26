@@ -2,7 +2,6 @@ package mutex
 
 import (
 	"context"
-	"github.com/MaricoHan/redisson/pkg/base"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -13,6 +12,7 @@ import (
 	"github.com/go-redis/redis/v8"
 
 	"github.com/MaricoHan/redisson/internal/root"
+	"github.com/MaricoHan/redisson/pkg/base"
 	"github.com/MaricoHan/redisson/pkg/types"
 )
 
@@ -71,7 +71,6 @@ func (m *Mutex) Lock() error {
 				return
 			}
 		}
-
 	}()
 
 	return nil

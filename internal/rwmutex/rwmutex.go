@@ -134,7 +134,6 @@ func (r RWMutex) RLock() error {
 				return
 			}
 		}
-
 	}()
 
 	return nil

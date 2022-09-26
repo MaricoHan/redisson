@@ -1,7 +1,6 @@
 package redisson_test
 
 import (
-	"github.com/MaricoHan/redisson/internal/rwmutex"
 	"sync"
 	"testing"
 	"time"
