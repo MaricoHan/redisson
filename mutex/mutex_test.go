@@ -23,7 +23,7 @@ var (
 )
 
 func TestMutex_lockInner(t *testing.T) {
-	acquire, err := mutex.lockInner(util.GoID(), int64(mutex.expiration/time.Millisecond))
+	acquire, err := mutex.lockInner(util.GoID(), int64(mutex.Expiration/time.Millisecond))
 	if err != nil {
 		t.Error(err)
 		return
@@ -32,11 +32,11 @@ func TestMutex_lockInner(t *testing.T) {
 }
 
 func TestMutex_tryLock(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), mutex.waitTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), mutex.WaitTimeout)
 	defer cancel()
 	goID := util.GoID()
 
-	err := mutex.tryLock(ctx, goID, int64(mutex.expiration/time.Millisecond))
+	err := mutex.tryLock(ctx, goID, int64(mutex.Expiration/time.Millisecond))
 	t.Log(err)
 }
 
@@ -50,7 +50,7 @@ func TestMutex_unlockInner_ExpiredMutex(t *testing.T) {
 		return
 	}
 
-	<-mutex.pubSub.Channel() // 测试：同样会发布解锁消息
+	<-mutex.PubSub.Channel() // 测试：同样会发布解锁消息
 
 	t.Log("unlock successfully")
 }
@@ -61,7 +61,7 @@ func TestMutex_unlockInner_ExpiredMutex(t *testing.T) {
 func TestMutex_unlockInner(t *testing.T) {
 	goID := util.GoID()
 
-	_, err := mutex.lockInner(goID, int64(mutex.expiration/time.Millisecond))
+	_, err := mutex.lockInner(goID, int64(mutex.Expiration/time.Millisecond))
 	if err != nil {
 		t.Error(err)
 		return
@@ -94,11 +94,11 @@ func TestMutex_unlockInner(t *testing.T) {
 }
 
 func TestMutex_Unlock(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), mutex.waitTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), mutex.WaitTimeout)
 	defer cancel()
 	goID := util.GoID()
 	// 第一次上锁
-	err := mutex.tryLock(ctx, goID, int64(mutex.expiration/time.Millisecond))
+	err := mutex.tryLock(ctx, goID, int64(mutex.Expiration/time.Millisecond))
 	if err != nil {
 		t.Error(err)
 		return
@@ -108,14 +108,14 @@ func TestMutex_Unlock(t *testing.T) {
 	waitGroup := sync.WaitGroup{}
 	waitGroup.Add(1)
 	go func() {
-		ctx, cancel := context.WithTimeout(context.Background(), mutex.waitTimeout)
+		ctx, cancel := context.WithTimeout(context.Background(), mutex.WaitTimeout)
 		defer func() {
 			cancel()
 			waitGroup.Done()
 		}()
 		// 不解锁，第二次上锁，会阻塞 10s，然后加锁成功
 		t.Log("try lock ...")
-		err = mutex.tryLock(ctx, goID, int64(mutex.expiration/time.Millisecond))
+		err = mutex.tryLock(ctx, goID, int64(mutex.Expiration/time.Millisecond))
 		cancel()
 		if err != nil {
 			t.Error(err)
