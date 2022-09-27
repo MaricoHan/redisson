@@ -21,7 +21,7 @@ var (
 )
 
 type RWMutex struct {
-	*Root
+	root *Root
 	baseMutex
 }
 
@@ -38,7 +38,7 @@ func NewRWMutex(r *Root, name string, options ...Option) *RWMutex {
 	(&base).checkAndInit()
 
 	return &RWMutex{
-		Root:      r,
+		root:      r,
 		baseMutex: base,
 	}
 }
@@ -58,7 +58,7 @@ func (r RWMutex) Lock() error {
 	go func() {
 		ticker := time.NewTicker(r.expiration / 3).C
 		for range ticker {
-			res, err := r.Client.Eval(context.TODO(), rwMutexScript.renewalScript, []string{r.Name}, expiration).Int64()
+			res, err := r.root.Client.Eval(context.TODO(), rwMutexScript.renewalScript, []string{r.Name}, expiration).Int64()
 			if err != nil || res == 0 {
 				return
 			}
@@ -93,7 +93,7 @@ func (r RWMutex) tryLock(ctx context.Context, goID, expiration int64) error {
 }
 
 func (r RWMutex) lockInner(goID, expiration int64) (int64, error) {
-	pTTL, err := r.Client.Eval(context.Background(), rwMutexScript.lockScript, []string{r.Name}, r.UUID+":"+strconv.FormatInt(goID, 10), expiration).Result()
+	pTTL, err := r.root.Client.Eval(context.Background(), rwMutexScript.lockScript, []string{r.Name}, r.root.UUID+":"+strconv.FormatInt(goID, 10), expiration).Result()
 	if err == redis.Nil {
 		return 0, nil
 	}
@@ -120,7 +120,7 @@ func (r RWMutex) RLock() error {
 	go func() {
 		ticker := time.NewTicker(r.expiration / 3).C
 		for range ticker {
-			res, err := r.Client.Eval(context.TODO(), rwMutexScript.renewalScript, []string{r.Name}, expiration).Int64()
+			res, err := r.root.Client.Eval(context.TODO(), rwMutexScript.renewalScript, []string{r.Name}, expiration).Int64()
 			if err != nil || res == 0 {
 				return
 			}
@@ -155,7 +155,7 @@ func (r RWMutex) tryRLock(ctx context.Context, goID, expiration int64) error {
 }
 
 func (r RWMutex) rLockInner(goID, expiration int64) (int64, error) {
-	pTTL, err := r.Client.Eval(context.Background(), rwMutexScript.rLockScript, []string{r.Name}, r.UUID+":"+strconv.FormatInt(goID, 10), expiration).Result()
+	pTTL, err := r.root.Client.Eval(context.Background(), rwMutexScript.rLockScript, []string{r.Name}, r.root.UUID+":"+strconv.FormatInt(goID, 10), expiration).Result()
 	if err == redis.Nil {
 		return 0, nil
 	}
@@ -171,7 +171,7 @@ func (r *RWMutex) Unlock() error {
 	return r.unlockInner(goID)
 }
 func (r *RWMutex) unlockInner(goID int64) error {
-	res, err := r.Client.Eval(context.TODO(), rwMutexScript.unlockScript, []string{r.Name, util.ChannelName(r.Name)}, r.UUID+":"+strconv.FormatInt(goID, 10), 1).Int64()
+	res, err := r.root.Client.Eval(context.TODO(), rwMutexScript.unlockScript, []string{r.Name, util.ChannelName(r.Name)}, r.root.UUID+":"+strconv.FormatInt(goID, 10), 1).Int64()
 	if err != nil {
 		return err
 	}

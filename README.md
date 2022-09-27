@@ -164,8 +164,8 @@ func main() {
 
 ```go
 options := []mutex.Option{
-    mutex.WithWaitTimeout(10 * time.Second), // 抢锁的最长等待时间
-    mutex.WithExpireDuration(20 * time.Second), // 持有锁的过期时间
+    mutex.WithWaitTimeout(10 * time.Second),      // 抢锁的最长等待时间
+    mutex.WithExpireDuration(20 * time.Second),   // 持有锁的过期时间
 }
-rwMutex := r.NewRWMutex("rwMutexKey", options...)
+rwMutex := r.NewRWMutex("rwMutexKey", options...) // 互斥锁同理
 ```
