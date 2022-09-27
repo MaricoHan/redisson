@@ -13,17 +13,17 @@ type Root struct {
 
 type baseMutex struct {
 	Name        string
-	expiration  time.Duration
-	waitTimeout time.Duration
-	pubSub      *redis.PubSub
+	Expiration  time.Duration
+	WaitTimeout time.Duration
+	*redis.PubSub
 }
 
-func (b *baseMutex) checkAndInit() {
-	if b.waitTimeout <= 0 {
-		b.waitTimeout = 30 * time.Second
+func (b baseMutex) CheckAndInit() {
+	if b.WaitTimeout <= 0 {
+		b.WaitTimeout = 30 * time.Second
 	}
-	if b.expiration <= 0 {
-		b.expiration = 10 * time.Second
+	if b.Expiration <= 0 {
+		b.Expiration = 10 * time.Second
 	}
 }
 
@@ -39,12 +39,12 @@ func (f OptionFunc) Apply(mutex *baseMutex) {
 
 func WithExpireDuration(dur time.Duration) Option {
 	return OptionFunc(func(mutex *baseMutex) {
-		mutex.expiration = dur
+		mutex.Expiration = dur
 	})
 }
 
 func WithWaitTimeout(timeout time.Duration) Option {
 	return OptionFunc(func(mutex *baseMutex) {
-		mutex.waitTimeout = timeout
+		mutex.WaitTimeout = timeout
 	})
 }

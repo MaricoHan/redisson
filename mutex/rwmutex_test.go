@@ -24,7 +24,7 @@ var (
 
 func TestRWMutex_lockInner(t *testing.T) {
 	goID := util.GoID()
-	pTTL, err := rwMutex.lockInner(goID, int64(rwMutex.expiration/time.Millisecond))
+	pTTL, err := rwMutex.lockInner(goID, int64(rwMutex.Expiration/time.Millisecond))
 	if err != nil {
 		t.Error(err)
 		return
@@ -42,7 +42,7 @@ func TestRWMutex_unlockInner_ExpiredMutex(t *testing.T) {
 		return
 	}
 
-	<-rwMutex.pubSub.Channel() // 测试：同样会发布解锁消息
+	<-rwMutex.PubSub.Channel() // 测试：同样会发布解锁消息
 
 	t.Log("unlock successfully")
 }
@@ -57,11 +57,11 @@ func TestRWMutex_Unlock(t *testing.T) {
 }
 
 func TestRWMutex_tryLock(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), rwMutex.waitTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), rwMutex.WaitTimeout)
 	defer cancel()
 
 	goID := util.GoID()
-	err := rwMutex.tryLock(ctx, goID, int64(rwMutex.expiration/time.Millisecond))
+	err := rwMutex.tryLock(ctx, goID, int64(rwMutex.Expiration/time.Millisecond))
 	if err != nil {
 		t.Error(err)
 		return
@@ -80,7 +80,7 @@ func TestRWMutex_Lock(t *testing.T) {
 
 func TestRWMutex_rLockInner(t *testing.T) {
 	goID := util.GoID()
-	pTTL, err := rwMutex.rLockInner(goID, int64(rwMutex.expiration/time.Millisecond))
+	pTTL, err := rwMutex.rLockInner(goID, int64(rwMutex.Expiration/time.Millisecond))
 	if err != nil {
 		t.Error(err)
 		return
@@ -89,12 +89,12 @@ func TestRWMutex_rLockInner(t *testing.T) {
 }
 
 func TestRWMutex_tryRLock(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), rwMutex.waitTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), rwMutex.WaitTimeout)
 	defer cancel()
 
 	goID := util.GoID()
 
-	err := rwMutex.tryRLock(ctx, goID, int64(rwMutex.expiration/time.Millisecond))
+	err := rwMutex.tryRLock(ctx, goID, int64(rwMutex.Expiration/time.Millisecond))
 	if err != nil {
 		t.Error(err)
 		return
