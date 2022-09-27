@@ -137,7 +137,7 @@ func TestMutex_Lock_Renewal(t *testing.T) {
 	// 测试：达到过期时间的 1/3，如果未主动释放锁，写锁的过期时间会被重置
 	ticker := time.Tick(time.Second)
 	for range ticker {
-		fmt.Println(rwMutex.Client.PTTL(context.Background(), rwMutex.Name).Val())
+		fmt.Println(rwMutex.root.Client.PTTL(context.Background(), rwMutex.Name).Val())
 	}
 
 	time.After(2 * time.Minute)
@@ -154,7 +154,7 @@ func TestMutex_RLock_Renewal(t *testing.T) {
 	// 测试：达到过期时间的 1/3，如果未主动释放锁，读锁的过期时间会被重置
 	ticker := time.Tick(time.Second)
 	for range ticker {
-		fmt.Println(rwMutex.Client.PTTL(context.Background(), rwMutex.Name).Val())
+		fmt.Println(rwMutex.root.Client.PTTL(context.Background(), rwMutex.Name).Val())
 	}
 
 	time.After(2 * time.Minute)
