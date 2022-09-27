@@ -2,11 +2,7 @@ package mutex
 
 import (
 	"context"
-	"io/ioutil"
-	"os"
-	"path/filepath"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -30,34 +26,28 @@ type RWMutex struct {
 }
 
 func NewRWMutex(r *Root, name string, options ...Option) *RWMutex {
-	baseMutex := baseMutex{
+	base := baseMutex{
 		Name:   name,
-		PubSub: r.Client.Subscribe(context.Background(), util.ChannelName(name)),
+		pubSub: r.Client.Subscribe(context.Background(), util.ChannelName(name)),
 	}
 
 	for i := range options {
-		options[i].Apply(&baseMutex)
+		options[i].Apply(&base)
 	}
 
-	m := &RWMutex{
+	(&base).checkAndInit()
+
+	return &RWMutex{
 		Root:      r,
-		baseMutex: baseMutex,
+		baseMutex: base,
 	}
-
-	return m.CheckAndInit()
-}
-
-func (r *RWMutex) CheckAndInit() *RWMutex {
-	r.baseMutex.CheckAndInit()
-
-	return r
 }
 
 func (r RWMutex) Lock() error {
 	// 单位：ms
-	expiration := int64(r.Expiration / time.Millisecond)
+	expiration := int64(r.expiration / time.Millisecond)
 
-	ctx, cancel := context.WithTimeout(context.Background(), r.WaitTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), r.waitTimeout)
 	defer cancel()
 	goID := util.GoID()
 	err := r.tryLock(ctx, goID, expiration)
@@ -66,7 +56,7 @@ func (r RWMutex) Lock() error {
 	}
 	// 加锁成功，开个协程，定时续锁
 	go func() {
-		ticker := time.NewTicker(r.Expiration / 3).C
+		ticker := time.NewTicker(r.expiration / 3).C
 		for range ticker {
 			res, err := r.Client.Eval(context.TODO(), rwMutexScript.renewalScript, []string{r.Name}, expiration).Int64()
 			if err != nil || res == 0 {
@@ -95,7 +85,7 @@ func (r RWMutex) tryLock(ctx context.Context, goID, expiration int64) error {
 	case <-time.After(time.Duration(pTTL) * time.Millisecond):
 		// 针对“redis 中存在未维护的锁”，即当锁自然过期后，并不会发布通知的锁
 		return r.tryLock(ctx, goID, expiration)
-	case <-r.PubSub.Channel():
+	case <-r.pubSub.Channel():
 		// 收到解锁通知，则尝试抢锁
 		return r.tryLock(ctx, goID, expiration)
 	}
@@ -117,9 +107,9 @@ func (r RWMutex) lockInner(goID, expiration int64) (int64, error) {
 
 func (r RWMutex) RLock() error {
 	// 单位：ms
-	expiration := int64(r.Expiration / time.Millisecond)
+	expiration := int64(r.expiration / time.Millisecond)
 
-	ctx, cancel := context.WithTimeout(context.Background(), r.WaitTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), r.waitTimeout)
 	defer cancel()
 	goID := util.GoID()
 	err := r.tryRLock(ctx, goID, expiration)
@@ -128,7 +118,7 @@ func (r RWMutex) RLock() error {
 	}
 	// 加锁成功，开个协程，定时续锁
 	go func() {
-		ticker := time.NewTicker(r.Expiration / 3).C
+		ticker := time.NewTicker(r.expiration / 3).C
 		for range ticker {
 			res, err := r.Client.Eval(context.TODO(), rwMutexScript.renewalScript, []string{r.Name}, expiration).Int64()
 			if err != nil || res == 0 {
@@ -157,7 +147,7 @@ func (r RWMutex) tryRLock(ctx context.Context, goID, expiration int64) error {
 	case <-time.After(time.Duration(pTTL) * time.Millisecond):
 		// 针对“redis 中存在未维护的锁”，即当锁自然过期后，并不会发布通知的锁
 		return r.tryRLock(ctx, goID, expiration)
-	case <-r.PubSub.Channel():
+	case <-r.pubSub.Channel():
 		// 收到解锁通知，则尝试抢锁
 		return r.tryRLock(ctx, goID, expiration)
 	}
@@ -193,31 +183,67 @@ func (r *RWMutex) unlockInner(goID int64) error {
 }
 
 func init() {
-	path, _ := filepath.Abs(os.Args[1])
-	index := strings.LastIndex(path, "/redisson")
-	path = path[:index+9] + "/internal/rwmutex/lua/"
+	rwMutexScript.lockScript = `
+	-- KEYS[1] 锁名
+	-- ARGV[1] 协程唯一标识：客户端标识+协程ID
+	-- ARGV[2] 过期时间
+	if redis.call('exists',KEYS[1]) == 0 then
+		redis.call('set',KEYS[1],ARGV[1])
+		redis.call('pexpire',KEYS[1],ARGV[2])
+		return nil
+	end
+	return redis.call('pttl',KEYS[1])
+`
 
-	file, err := ioutil.ReadFile(path + "lock.lua")
-	if err != nil {
-		panic(err)
-	}
-	rwMutexScript.lockScript = string(file)
+	rwMutexScript.rLockScript = `
+	-- KEYS[1] 锁名
+	-- ARGV[1] 协程唯一标识：客户端标识+协程ID
+	-- ARGV[2] 过期时间
+	local t = redis.call('type',KEYS[1])["ok"]
+	if t == "string" then
+		return redis.call('pttl',KEYS[1])
+	else
+		redis.call('hincrby',KEYS[1],ARGV[1],1)
+		redis.call('pexpire',KEYS[1],ARGV[2])
+		return nil
+	end
+`
+	rwMutexScript.renewalScript = `
+	-- KEYS[1] 锁名
+	-- ARGV[1] 过期时间
+	return redis.call('pexpire',KEYS[1],ARGV[1])
+`
 
-	file, err = ioutil.ReadFile(path + "rlock.lua")
-	if err != nil {
-		panic(err)
-	}
-	rwMutexScript.rLockScript = string(file)
-
-	file, err = ioutil.ReadFile(path + "renewal.lua")
-	if err != nil {
-		panic(err)
-	}
-	rwMutexScript.renewalScript = string(file)
-
-	file, err = ioutil.ReadFile(path + "unlock.lua")
-	if err != nil {
-		panic(err)
-	}
-	rwMutexScript.unlockScript = string(file)
+	rwMutexScript.unlockScript = `
+	-- KEYS[1] 锁名
+	-- KEYS[2] 发布订阅的channel
+	-- ARGV[1] 协程唯一标识：客户端标识+协程ID
+	-- ARGV[2] 解锁时发布的消息
+	local t = redis.call('type',KEYS[1])["ok"]
+	if  t == "hash" then
+		if redis.call('hexists',KEYS[1],ARGV[1]) == 0 then
+			return 0
+		end
+		if redis.call('hincrby',KEYS[1],ARGV[1],-1) == 0 then
+			redis.call('hdel',KEYS[1],ARGV[1])
+			if (redis.call('hlen',KEYS[1]) > 0 )then
+				return 2
+			end
+			redis.call('del',KEYS[1])
+			redis.call('publish',KEYS[2],ARGV[2])
+			return 1
+		else
+			return 1
+		end
+	elseif t == "none" then
+			redis.call('publish',KEYS[2],ARGV[2])
+			return 1
+	elseif redis.call('get',KEYS[1]) == ARGV[1] then
+			redis.call('del',KEYS[1])
+			redis.call('publish',KEYS[2],ARGV[2])
+			return 1
+	else
+		return 0
+	end
+`
 }
