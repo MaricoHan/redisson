@@ -13,8 +13,8 @@ import (
 
 var mutexScript = struct {
 	lockScript    string
-	renewalScript string
 	unlockScript  string
+	renewalScript string
 }{}
 
 type Mutex struct {
