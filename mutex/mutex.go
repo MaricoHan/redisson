@@ -46,8 +46,9 @@ func (m *Mutex) Lock() error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), m.waitTimeout)
 	defer cancel()
-	goID := util.GoID()
-	err := m.tryLock(ctx, goID, expiration)
+
+	clientID := m.root.UUID + ":" + strconv.FormatInt(util.GoID(), 10)
+	err := m.tryLock(ctx, clientID, expiration)
 	if err != nil {
 		return err
 	}
@@ -55,7 +56,7 @@ func (m *Mutex) Lock() error {
 	go func() {
 		ticker := time.NewTicker(m.expiration / 3).C
 		for range ticker {
-			res, err := m.root.Client.Eval(context.TODO(), mutexScript.renewalScript, []string{m.Name}, expiration).Int64()
+			res, err := m.root.Client.Eval(context.TODO(), mutexScript.renewalScript, []string{m.Name}, expiration, clientID).Int64()
 			if err != nil || res == 0 {
 				return
 			}
@@ -65,9 +66,9 @@ func (m *Mutex) Lock() error {
 	return nil
 }
 
-func (m *Mutex) tryLock(ctx context.Context, goID int64, expiration int64) error {
+func (m *Mutex) tryLock(ctx context.Context, keyName string, expiration int64) error {
 	// 尝试加锁
-	pTTL, err := m.lockInner(goID, expiration)
+	pTTL, err := m.lockInner(keyName, expiration)
 	if err != nil {
 		return err
 	}
@@ -81,15 +82,15 @@ func (m *Mutex) tryLock(ctx context.Context, goID int64, expiration int64) error
 		return types.ErrWaitTimeout
 	case <-time.After(time.Duration(pTTL) * time.Millisecond):
 		// 针对“redis 中存在未维护的锁”，即当锁自然过期后，并不会发布通知的锁
-		return m.tryLock(ctx, goID, expiration)
+		return m.tryLock(ctx, keyName, expiration)
 	case <-m.pubSub.Channel():
 		// 收到解锁通知，则尝试抢锁
-		return m.tryLock(ctx, goID, expiration)
+		return m.tryLock(ctx, keyName, expiration)
 	}
 }
 
-func (m *Mutex) lockInner(goID, expiration int64) (int64, error) {
-	pTTL, err := m.root.Client.Eval(context.TODO(), mutexScript.lockScript, []string{m.Name}, m.root.UUID+":"+strconv.FormatInt(goID, 10), expiration).Result()
+func (m *Mutex) lockInner(keyName string, expiration int64) (int64, error) {
+	pTTL, err := m.root.Client.Eval(context.TODO(), mutexScript.lockScript, []string{m.Name}, keyName, expiration).Result()
 	if err == redis.Nil {
 		return 0, nil
 	}
@@ -134,7 +135,11 @@ func init() {
 	mutexScript.renewalScript = `
 	-- KEYS[1] 锁名
 	-- ARGV[1] 过期时间
-	return redis.call('pexpire',KEYS[1],ARGV[1])
+	-- ARGV[2] 客户端协程唯一标识
+	if redis.call('get',KEYS[1])==ARGV[2] then
+		return redis.call('pexpire',KEYS[1],ARGV[1])
+	end
+	return 0
 `
 
 	mutexScript.unlockScript = `
