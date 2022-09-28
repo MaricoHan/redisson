@@ -49,8 +49,9 @@ func (r RWMutex) Lock() error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), r.waitTimeout)
 	defer cancel()
-	goID := util.GoID()
-	err := r.tryLock(ctx, goID, expiration)
+
+	clientID := r.root.UUID + ":" + strconv.FormatInt(util.GoID(), 10)
+	err := r.tryLock(ctx, clientID, expiration)
 	if err != nil {
 		return err
 	}
@@ -58,7 +59,7 @@ func (r RWMutex) Lock() error {
 	go func() {
 		ticker := time.NewTicker(r.expiration / 3).C
 		for range ticker {
-			res, err := r.root.Client.Eval(context.TODO(), rwMutexScript.renewalScript, []string{r.Name}, expiration).Int64()
+			res, err := r.root.Client.Eval(context.TODO(), rwMutexScript.renewalScript, []string{r.Name}, expiration, clientID).Int64()
 			if err != nil || res == 0 {
 				return
 			}
@@ -69,8 +70,8 @@ func (r RWMutex) Lock() error {
 
 }
 
-func (r RWMutex) tryLock(ctx context.Context, goID, expiration int64) error {
-	pTTL, err := r.lockInner(goID, expiration)
+func (r RWMutex) tryLock(ctx context.Context, clientID string, expiration int64) error {
+	pTTL, err := r.lockInner(clientID, expiration)
 	if err != nil {
 		return err
 	}
@@ -84,16 +85,16 @@ func (r RWMutex) tryLock(ctx context.Context, goID, expiration int64) error {
 		return types.ErrWaitTimeout
 	case <-time.After(time.Duration(pTTL) * time.Millisecond):
 		// 针对“redis 中存在未维护的锁”，即当锁自然过期后，并不会发布通知的锁
-		return r.tryLock(ctx, goID, expiration)
+		return r.tryLock(ctx, clientID, expiration)
 	case <-r.pubSub.Channel():
 		// 收到解锁通知，则尝试抢锁
-		return r.tryLock(ctx, goID, expiration)
+		return r.tryLock(ctx, clientID, expiration)
 	}
 
 }
 
-func (r RWMutex) lockInner(goID, expiration int64) (int64, error) {
-	pTTL, err := r.root.Client.Eval(context.Background(), rwMutexScript.lockScript, []string{r.Name}, r.root.UUID+":"+strconv.FormatInt(goID, 10), expiration).Result()
+func (r RWMutex) lockInner(clientID string, expiration int64) (int64, error) {
+	pTTL, err := r.root.Client.Eval(context.Background(), rwMutexScript.lockScript, []string{r.Name}, clientID, expiration).Result()
 	if err == redis.Nil {
 		return 0, nil
 	}
@@ -111,8 +112,9 @@ func (r RWMutex) RLock() error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), r.waitTimeout)
 	defer cancel()
-	goID := util.GoID()
-	err := r.tryRLock(ctx, goID, expiration)
+
+	clientID := r.root.UUID + ":" + strconv.FormatInt(util.GoID(), 10)
+	err := r.tryRLock(ctx, clientID, expiration)
 	if err != nil {
 		return err
 	}
@@ -120,7 +122,7 @@ func (r RWMutex) RLock() error {
 	go func() {
 		ticker := time.NewTicker(r.expiration / 3).C
 		for range ticker {
-			res, err := r.root.Client.Eval(context.TODO(), rwMutexScript.renewalScript, []string{r.Name}, expiration).Int64()
+			res, err := r.root.Client.Eval(context.TODO(), rwMutexScript.renewalScript, []string{r.Name}, expiration, clientID).Int64()
 			if err != nil || res == 0 {
 				return
 			}
@@ -131,8 +133,8 @@ func (r RWMutex) RLock() error {
 
 }
 
-func (r RWMutex) tryRLock(ctx context.Context, goID, expiration int64) error {
-	pTTL, err := r.rLockInner(goID, expiration)
+func (r RWMutex) tryRLock(ctx context.Context, clientID string, expiration int64) error {
+	pTTL, err := r.rLockInner(clientID, expiration)
 	if err != nil {
 		return err
 	}
@@ -146,16 +148,16 @@ func (r RWMutex) tryRLock(ctx context.Context, goID, expiration int64) error {
 		return types.ErrWaitTimeout
 	case <-time.After(time.Duration(pTTL) * time.Millisecond):
 		// 针对“redis 中存在未维护的锁”，即当锁自然过期后，并不会发布通知的锁
-		return r.tryRLock(ctx, goID, expiration)
+		return r.tryRLock(ctx, clientID, expiration)
 	case <-r.pubSub.Channel():
 		// 收到解锁通知，则尝试抢锁
-		return r.tryRLock(ctx, goID, expiration)
+		return r.tryRLock(ctx, clientID, expiration)
 	}
 
 }
 
-func (r RWMutex) rLockInner(goID, expiration int64) (int64, error) {
-	pTTL, err := r.root.Client.Eval(context.Background(), rwMutexScript.rLockScript, []string{r.Name}, r.root.UUID+":"+strconv.FormatInt(goID, 10), expiration).Result()
+func (r RWMutex) rLockInner(clientID string, expiration int64) (int64, error) {
+	pTTL, err := r.root.Client.Eval(context.Background(), rwMutexScript.rLockScript, []string{r.Name}, clientID, expiration).Result()
 	if err == redis.Nil {
 		return 0, nil
 	}
@@ -211,7 +213,21 @@ func init() {
 	rwMutexScript.renewalScript = `
 	-- KEYS[1] 锁名
 	-- ARGV[1] 过期时间
-	return redis.call('pexpire',KEYS[1],ARGV[1])
+	-- ARGV[2] 客户端协程唯一标识
+	local t = redis.call('type',KEYS[1])["ok"]
+	if t =="string" then
+		if redis.call('get',KEYS[1])==ARGV[2] then
+			return redis.call('pexpire',KEYS[1],ARGV[1])
+		end
+		return 0
+	elseif t == "hash" then
+		if redis.call('hexists',KEYS[1],ARGV[2])==0 then
+			return 0
+		end
+		return redis.call('pexpire',KEYS[1],ARGV[1])
+	else
+		return 0
+	end
 `
 
 	rwMutexScript.unlockScript = `

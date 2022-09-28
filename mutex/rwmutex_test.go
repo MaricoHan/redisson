@@ -3,6 +3,7 @@ package mutex
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"sync"
 	"testing"
 	"time"
@@ -23,8 +24,9 @@ var (
 )
 
 func TestRWMutex_lockInner(t *testing.T) {
-	goID := util.GoID()
-	pTTL, err := rwMutex.lockInner(goID, int64(rwMutex.expiration/time.Millisecond))
+	clientID := rwMutex.root.UUID + ":" + strconv.FormatInt(util.GoID(), 10)
+
+	pTTL, err := rwMutex.lockInner(clientID, int64(rwMutex.expiration/time.Millisecond))
 	if err != nil {
 		t.Error(err)
 		return
@@ -60,8 +62,9 @@ func TestRWMutex_tryLock(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), rwMutex.waitTimeout)
 	defer cancel()
 
-	goID := util.GoID()
-	err := rwMutex.tryLock(ctx, goID, int64(rwMutex.expiration/time.Millisecond))
+	clientID := rwMutex.root.UUID + ":" + strconv.FormatInt(util.GoID(), 10)
+
+	err := rwMutex.tryLock(ctx, clientID, int64(rwMutex.expiration/time.Millisecond))
 	if err != nil {
 		t.Error(err)
 		return
@@ -79,8 +82,9 @@ func TestRWMutex_Lock(t *testing.T) {
 }
 
 func TestRWMutex_rLockInner(t *testing.T) {
-	goID := util.GoID()
-	pTTL, err := rwMutex.rLockInner(goID, int64(rwMutex.expiration/time.Millisecond))
+	clientID := rwMutex.root.UUID + ":" + strconv.FormatInt(util.GoID(), 10)
+
+	pTTL, err := rwMutex.rLockInner(clientID, int64(rwMutex.expiration/time.Millisecond))
 	if err != nil {
 		t.Error(err)
 		return
@@ -92,9 +96,9 @@ func TestRWMutex_tryRLock(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), rwMutex.waitTimeout)
 	defer cancel()
 
-	goID := util.GoID()
+	clientID := rwMutex.root.UUID + ":" + strconv.FormatInt(util.GoID(), 10)
 
-	err := rwMutex.tryRLock(ctx, goID, int64(rwMutex.expiration/time.Millisecond))
+	err := rwMutex.tryRLock(ctx, clientID, int64(rwMutex.expiration/time.Millisecond))
 	if err != nil {
 		t.Error(err)
 		return
