@@ -2,7 +2,8 @@
 
 [![Go](https://github.com/MaricoHan/redisson/actions/workflows/go.yml/badge.svg)](https://github.com/MaricoHan/redisson/actions/workflows/go.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/MaricoHan/redisson)](https://goreportcard.com/report/github.com/MaricoHan/redisson)
-[![MIT Licence](https://badges.frapsoft.com/os/mit/mit.svg?v=103)](https://opensource.org/licenses/mit-license.php)   
+[![Go Report Card](https://github.com/MaricoHan/redisson/blob/master/LICENSE)](https://img.shields.io/github/license/MaricoHan/redisson
+)
 
 使用 redis 实现：分布式“互斥锁”和“读写锁”。
 
