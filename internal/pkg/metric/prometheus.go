@@ -70,7 +70,7 @@ func (p *prometheusModel) InitPrometheus() {
 	// api_service_requests
 	apiServiceRequests := metricsprometheus.NewCounterFrom(prometheus.CounterOpts{
 		Subsystem: "api",
-		Name:      "api_service_requests",
+		Name:      "service_requests",
 		Help:      "api service request",
 	}, []string{"status", "method", "name"})
 
