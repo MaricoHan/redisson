@@ -109,7 +109,7 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 func (t *tx) TxQueueInfo(params dto.TxQueueInfo) (*dto.TxQueueInfoRes, error) {
 	logger := t.logger.WithField("params", params).WithField("func", "TxQueueInfo")
 
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Microsecond*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	req := pb_queue.TxQueueShowRequest{
 		ProjectId:   params.ProjectID,

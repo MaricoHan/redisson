@@ -32,10 +32,10 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		h.next.ServeHTTP(w, r)
 		return
 	}
-	//if r.Method != http.MethodPost {
+	// if r.Method != http.MethodPost {
 	//	h.next.ServeHTTP(w, r)
 	//	return
-	//}
+	// }
 
 	// 把刚刚读出来的再写进去
 	r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
@@ -53,10 +53,10 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		h.next.ServeHTTP(w, r)
 		return
 	}
-	//if len(req.OperationID) >= 65 {
+	// if len(req.OperationID) >= 65 {
 	//	writeBadRequestResp(w, constant.NewAppError(constant.RootCodeSpace, errors2.StrToCode[errors2.DuplicateRequest], "operation_id does not comply with the rules"))
 	//	return
-	//}
+	// }
 
 	appID := r.Header.Get("X-App-Id")
 	key := fmt.Sprintf("%s:%s", appID, req.OperationID)
@@ -65,8 +65,7 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		writeBadRequestResp(w, constant.ErrDuplicate)
 		return
 	}
-
-	if err := initialize.RedisClient.Expire(key, time.Second*11); err != nil {
+	if err := initialize.RedisClient.Expire(key, time.Second*time.Duration(constant.GrpcTimeout)); err != nil {
 		// 自动过期时间设置大于open-api超时时间
 		log.Error("redis error", "redis set error:", err)
 		writeBadRequestResp(w, constant.ErrInternal)
