@@ -28,6 +28,7 @@ func GetAllControllers(logger *log.Logger) []kit.IController {
 		NewMTClassController(baseController, handlers.NewMTClass(services.NewMTClass(logger))),
 		NewMTController(baseController, handlers.NewMT(services.NewMT(logger))),
 		//NewMTMsgsController(baseController, handlers.NewMTMsgs(services.NewMTMsgs(logger))),
+		NewRightsController(baseController, handlers.NewRights(services.NewRights(logger))),
 	}
 
 	return controllers
