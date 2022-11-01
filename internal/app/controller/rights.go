@@ -36,17 +36,17 @@ func (r RightsController) GetEndpoints() []kit.Endpoint {
 		{
 			URI:     "/rights/user/auth",
 			Method:  http.MethodPost,
-			Handler: r.makeHandler(r.handler.QueryRegister, nil),
+			Handler: r.makeHandler(r.handler.UserAuth, &vo.UserAuthRequest{}),
 		},
 		{
 			URI:     "/rights/user/auth/{operation_id}",
 			Method:  http.MethodPost,
-			Handler: r.makeHandler(r.handler.QueryRegister, nil),
+			Handler: r.makeHandler(r.handler.EditUserAuth, &vo.EditUserAuthRequest{}),
 		},
 		{
 			URI:     "/rights/user/auth",
 			Method:  http.MethodGet,
-			Handler: r.makeHandler(r.handler.QueryRegister, nil),
+			Handler: r.makeHandler(r.handler.QueryUserAuth, nil),
 		},
 		{
 			URI:     "/rights/dict",

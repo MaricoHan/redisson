@@ -10,7 +10,7 @@ type RegisterRequest struct {
 	Copyrights   Copyrights             `json:"copyrights"`
 	ContactNum   string                 `json:"contact_num"`
 	Email        string                 `json:"email"`
-	UrgentTime   int                    `json:"urgent_time"`
+	UrgentTime   uint32                 `json:"urgent_time"`
 	CallbackURL  string                 `json:"callback_url"`
 	AuthFile     string                 `json:"auth_file"`
 	Metadata     map[string]interface{} `json:"metadata"`
@@ -26,7 +26,7 @@ type EditRegisterRequest struct {
 	Copyrights   Copyrights             `json:"copyrights"`
 	ContactNum   string                 `json:"contact_num"`
 	Email        string                 `json:"email"`
-	UrgentTime   int                    `json:"urgent_time"`
+	UrgentTime   uint32                 `json:"urgent_time"`
 	CallbackURL  string                 `json:"callback_url"`
 	AuthFile     string                 `json:"auth_file"`
 	Metadata     map[string]interface{} `json:"metadata"`
@@ -41,15 +41,15 @@ type ProductInfo struct {
 	CreateNatName string `json:"create_nat_name"`
 	CreateTime    string `json:"create_time"`
 	CreateAddr    string `json:"create_addr"`
-	IsPublished   int    `json:"is_published"`
+	IsPublished   uint32 `json:"is_published"`
 	PubAddr       string `json:"pub_addr"`
 	PubTime       string `json:"pub_time"`
-	PubChannel    int    `json:"pub_channel"`
+	PubChannel    uint32 `json:"pub_channel"`
 	PubAnnex      string `json:"pub_annex"`
 }
 
 type RightsInfo struct {
-	Hold          int    `json:"hold"`
+	Hold          uint32 `json:"hold"`
 	HoldName      string `json:"hold_name"`
 	HoldExp       string `json:"hold_exp"`
 	RightDocument string `json:"right_document"`
@@ -66,7 +66,7 @@ type Copyrights struct {
 }
 
 type Individual struct {
-	IsApplicant int    `json:"is_applicant"`
+	IsApplicant uint32 `json:"is_applicant"`
 	RealName    string `json:"real_name"`
 	AuthName    string `json:"auth_name"`
 	//IDCardNum       string `json:"idcard_num"`
@@ -88,7 +88,7 @@ type Individual struct {
 }
 
 type Corporate struct {
-	IsApplicant int    `json:"is_applicant"`
+	IsApplicant uint32 `json:"is_applicant"`
 	CardType    string `json:"card_type"`
 	CompanyName string `json:"company_name"`
 	AuthName    string `json:"auth_name"`
@@ -110,7 +110,7 @@ type Corporate struct {
 type UserAuthRequest struct {
 	RegisterType       uint64             `json:"register_type"`
 	OperationID        string             `json:"operation_id"`
-	AuthType           int                `json:"auth_type"`
+	AuthType           uint32             `json:"auth_type"`
 	AuthInfoIndividual AuthInfoIndividual `json:"auth_info_individual"`
 	AuthInfoCorporate  AuthInfoCorporate  `json:"auth_info_corporate"`
 	CallbackUrl        string             `json:"callback_url"`
@@ -157,7 +157,7 @@ type AuthInfoCorporate struct {
 type EditUserAuthRequest struct {
 	RegisterType       uint64             `json:"register_type"`
 	OperationID        string             `json:"operation_id"`
-	AuthType           int                `json:"auth_type"`
+	AuthType           uint32             `json:"auth_type"`
 	AuthInfoIndividual AuthInfoIndividual `json:"auth_info_individual"`
 	AuthInfoCorporate  AuthInfoCorporate  `json:"auth_info_corporate"`
 	CallbackUrl        string             `json:"callback_url"`

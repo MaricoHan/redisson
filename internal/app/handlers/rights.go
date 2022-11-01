@@ -234,11 +234,123 @@ func (r Rights) QueryRegister(ctx context.Context, request interface{}) (respons
 }
 
 func (r Rights) UserAuth(ctx context.Context, request interface{}) (response interface{}, err error) {
-	panic("implement me")
+	req := request.(*vo.UserAuthRequest)
+	// 校验参数
+	operationId := strings.TrimSpace(req.OperationID)
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
+
+	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
+	}
+
+	authData := r.AuthData(ctx)
+	params := dto.UserAuthRequest{
+		ProjectID:    authData.ProjectId,
+		RegisterType: req.RegisterType,
+		OperationID:  req.OperationID,
+		AuthType:     req.AuthType,
+		AuthInfoIndividual: dto.AuthInfoIndividual{
+			RealName:        req.AuthInfoIndividual.RealName,
+			IDCardNum:       req.AuthInfoIndividual.IDCardNum,
+			IDCardFimg:      req.AuthInfoIndividual.IDCardFimg,
+			IDCardBimg:      req.AuthInfoIndividual.IDCardBimg,
+			IDCardHimg:      req.AuthInfoIndividual.IDCardHimg,
+			IDCardStartDate: req.AuthInfoIndividual.IDCardStartDate,
+			IDCardEndDate:   req.AuthInfoIndividual.IDCardEndDate,
+			IDCardProvince:  req.AuthInfoIndividual.IDCardProvince,
+			IDCardCity:      req.AuthInfoIndividual.IDCardCity,
+			IDCardArea:      req.AuthInfoIndividual.IDCardArea,
+			ContactNum:      req.AuthInfoIndividual.Contact,
+			ContactAddr:     req.AuthInfoIndividual.ContactAddr,
+			Postcode:        req.AuthInfoIndividual.Postcode,
+			Contact:         req.AuthInfoIndividual.ContactAddr,
+			Email:           req.AuthInfoIndividual.Email,
+			IndustryCode:    req.AuthInfoIndividual.IndustryCode,
+			IndustryName:    req.AuthInfoIndividual.IndustryName,
+		},
+		AuthInfoCorporate: dto.AuthInfoCorporate{
+			CardType:        req.AuthInfoCorporate.CardType,
+			CompanyName:     req.AuthInfoCorporate.CompanyName,
+			BusLicNum:       req.AuthInfoCorporate.BusLicNum,
+			CompanyAddr:     req.AuthInfoCorporate.CompanyAddr,
+			BusLicImg:       req.AuthInfoCorporate.BusLicImg,
+			BusLicStartDate: req.AuthInfoCorporate.BusLicStartDate,
+			BusLicEndDate:   req.AuthInfoCorporate.BusLicEndDate,
+			BusLicProvince:  req.AuthInfoCorporate.BusLicProvince,
+			BusLicCity:      req.AuthInfoCorporate.BusLicCity,
+			BusLicArea:      req.AuthInfoCorporate.BusLicArea,
+			Postcode:        req.AuthInfoCorporate.Postcode,
+			Contact:         req.AuthInfoCorporate.Contact,
+			Email:           req.AuthInfoCorporate.Email,
+			IndustryCode:    req.AuthInfoCorporate.IndustryCode,
+			IndustryName:    req.AuthInfoCorporate.IndustryName,
+		},
+		CallbackUrl: req.CallbackUrl,
+	}
+
+	return r.svc.UserAuth(&params)
 }
 
 func (r Rights) EditUserAuth(ctx context.Context, request interface{}) (response interface{}, err error) {
-	panic("implement me")
+	req := request.(*vo.UserAuthRequest)
+	// 校验参数
+	operationId := strings.TrimSpace(req.OperationID)
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
+
+	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
+	}
+
+	authData := r.AuthData(ctx)
+	params := dto.EditUserAuthRequest{
+		ProjectID:    authData.ProjectId,
+		RegisterType: req.RegisterType,
+		OperationID:  req.OperationID,
+		AuthType:     req.AuthType,
+		AuthInfoIndividual: dto.AuthInfoIndividual{
+			RealName:        req.AuthInfoIndividual.RealName,
+			IDCardNum:       req.AuthInfoIndividual.IDCardNum,
+			IDCardFimg:      req.AuthInfoIndividual.IDCardFimg,
+			IDCardBimg:      req.AuthInfoIndividual.IDCardBimg,
+			IDCardHimg:      req.AuthInfoIndividual.IDCardHimg,
+			IDCardStartDate: req.AuthInfoIndividual.IDCardStartDate,
+			IDCardEndDate:   req.AuthInfoIndividual.IDCardEndDate,
+			IDCardProvince:  req.AuthInfoIndividual.IDCardProvince,
+			IDCardCity:      req.AuthInfoIndividual.IDCardCity,
+			IDCardArea:      req.AuthInfoIndividual.IDCardArea,
+			ContactNum:      req.AuthInfoIndividual.Contact,
+			ContactAddr:     req.AuthInfoIndividual.ContactAddr,
+			Postcode:        req.AuthInfoIndividual.Postcode,
+			Contact:         req.AuthInfoIndividual.ContactAddr,
+			Email:           req.AuthInfoIndividual.Email,
+			IndustryCode:    req.AuthInfoIndividual.IndustryCode,
+			IndustryName:    req.AuthInfoIndividual.IndustryName,
+		},
+		AuthInfoCorporate: dto.AuthInfoCorporate{
+			CardType:        req.AuthInfoCorporate.CardType,
+			CompanyName:     req.AuthInfoCorporate.CompanyName,
+			BusLicNum:       req.AuthInfoCorporate.BusLicNum,
+			CompanyAddr:     req.AuthInfoCorporate.CompanyAddr,
+			BusLicImg:       req.AuthInfoCorporate.BusLicImg,
+			BusLicStartDate: req.AuthInfoCorporate.BusLicStartDate,
+			BusLicEndDate:   req.AuthInfoCorporate.BusLicEndDate,
+			BusLicProvince:  req.AuthInfoCorporate.BusLicProvince,
+			BusLicCity:      req.AuthInfoCorporate.BusLicCity,
+			BusLicArea:      req.AuthInfoCorporate.BusLicArea,
+			Postcode:        req.AuthInfoCorporate.Postcode,
+			Contact:         req.AuthInfoCorporate.Contact,
+			Email:           req.AuthInfoCorporate.Email,
+			IndustryCode:    req.AuthInfoCorporate.IndustryCode,
+			IndustryName:    req.AuthInfoCorporate.IndustryName,
+		},
+		CallbackUrl: req.CallbackUrl,
+	}
+
+	return r.svc.EditUserAuth(&params)
 }
 
 func (r Rights) QueryUserAuth(ctx context.Context, request interface{}) (response interface{}, err error) {
@@ -302,13 +414,13 @@ func (Rights) OperationID(ctx context.Context) string {
 	return operationID.(string)
 }
 
-func (Rights) AuthType(ctx context.Context) string {
+func (Rights) AuthType(ctx context.Context) uint32 {
 	authType := ctx.Value("auth_type")
 
 	if authType == nil {
-		return ""
+		return 0
 	}
-	return authType.(string)
+	return authType.(uint32)
 }
 
 func (Rights) AuthNum(ctx context.Context) string {

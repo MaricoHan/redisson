@@ -11,7 +11,7 @@ type RegisterRequest struct {
 	Copyrights   Copyrights  `json:"copyrights"`
 	ContactNum   string      `json:"contact_num"`
 	Email        string      `json:"email"`
-	UrgentTime   int         `json:"urgent_time"`
+	UrgentTime   uint32      `json:"urgent_time"`
 	CallbackURL  string      `json:"callback_url"`
 	AuthFile     string      `json:"auth_file"`
 	Metadata     []byte      `json:"metadata"`
@@ -28,7 +28,7 @@ type EditRegisterRequest struct {
 	Copyrights   Copyrights  `json:"copyrights"`
 	ContactNum   string      `json:"contact_num"`
 	Email        string      `json:"email"`
-	UrgentTime   int         `json:"urgent_time"`
+	UrgentTime   uint32      `json:"urgent_time"`
 	CallbackURL  string      `json:"callback_url"`
 	AuthFile     string      `json:"auth_file"`
 	Metadata     []byte      `json:"metadata"`
@@ -43,15 +43,15 @@ type ProductInfo struct {
 	CreateNatName string `json:"create_nat_name"`
 	CreateTime    string `json:"create_time"`
 	CreateAddr    string `json:"create_addr"`
-	IsPublished   int    `json:"is_published"`
+	IsPublished   uint32 `json:"is_published"`
 	PubAddr       string `json:"pub_addr"`
 	PubTime       string `json:"pub_time"`
-	PubChannel    int    `json:"pub_channel"`
+	PubChannel    uint32 `json:"pub_channel"`
 	PubAnnex      string `json:"pub_annex"`
 }
 
 type RightsInfo struct {
-	Hold          int    `json:"hold"`
+	Hold          uint32 `json:"hold"`
 	HoldName      string `json:"hold_name"`
 	HoldExp       string `json:"hold_exp"`
 	RightDocument string `json:"right_document"`
@@ -68,7 +68,7 @@ type Copyrights struct {
 }
 
 type Individual struct {
-	IsApplicant int    `json:"is_applicant"`
+	IsApplicant uint32 `json:"is_applicant"`
 	RealName    string `json:"real_name"`
 	AuthName    string `json:"auth_name"`
 	//IDCardNum       string `json:"idcard_num"`
@@ -90,7 +90,7 @@ type Individual struct {
 }
 
 type Corporate struct {
-	IsApplicant int    `json:"is_applicant"`
+	IsApplicant uint32 `json:"is_applicant"`
 	CardType    string `json:"card_type"`
 	CompanyName string `json:"company_name"`
 	AuthName    string `json:"auth_name"`
@@ -125,10 +125,10 @@ type QueryRegisterRequest struct {
 
 type QueryRegisterResponse struct {
 	OperationID       string   `json:"operation_id"`
-	AuditStatus       int      `json:"audit_status"`
+	AuditStatus       uint32   `json:"audit_status"`
 	AuditFile         []string `json:"audit_file"`
 	AuditOpinion      string   `json:"audit_opinion"`
-	CertificateStatus int      `json:"certificate_status"`
+	CertificateStatus uint32   `json:"certificate_status"`
 	CertificateNum    string   `json:"certificate_num"`
 	CertificateURL    []string `json:"certificate_url"`
 	BackTag           string   `json:"back_tag"`
@@ -168,9 +168,9 @@ type KeyValue struct {
 }
 
 type Region struct {
-	ID         int    `json:"id"`
+	ID         uint64 `json:"id"`
 	Name       string `json:"name"`
-	ParentID   int    `json:"parent_id"`
+	ParentID   uint64 `json:"parent_id"`
 	ShortName  string `json:"short_name"`
 	MergerName string `json:"merger_name"`
 	PinYin     string `json:"pin_yin"`
@@ -178,9 +178,9 @@ type Region struct {
 
 type UserAuthRequest struct {
 	ProjectID          uint64             `json:"project_id"`
-	RegisterType       int                `json:"register_type"`
+	RegisterType       uint64             `json:"register_type"`
 	OperationID        string             `json:"operation_id"`
-	AuthType           int                `json:"auth_type"`
+	AuthType           uint32             `json:"auth_type"`
 	AuthInfoIndividual AuthInfoIndividual `json:"auth_info_individual"`
 	AuthInfoCorporate  AuthInfoCorporate  `json:"auth_info_corporate"`
 	CallbackUrl        string             `json:"callback_url"`
@@ -189,7 +189,7 @@ type UserAuthRequest struct {
 type UserAuthResponse struct {
 	OperationID      string `json:"operation_id"`
 	UserID           string `json:"user_id"`
-	AuditStatus      int    `json:"audit_status"`
+	AuditStatus      uint32 `json:"audit_status"`
 	AuditInstruction string `json:"audit_instruction"`
 }
 
@@ -233,9 +233,9 @@ type AuthInfoCorporate struct {
 
 type EditUserAuthRequest struct {
 	ProjectID          uint64             `json:"project_id"`
-	RegisterType       int                `json:"register_type"`
+	RegisterType       uint64             `json:"register_type"`
 	OperationID        string             `json:"operation_id"`
-	AuthType           int                `json:"auth_type"`
+	AuthType           uint32             `json:"auth_type"`
 	AuthInfoIndividual AuthInfoIndividual `json:"auth_info_individual"`
 	AuthInfoCorporate  AuthInfoCorporate  `json:"auth_info_corporate"`
 	CallbackUrl        string             `json:"callback_url"`
@@ -248,12 +248,12 @@ type EditUserAuthResponse struct {
 type QueryUserAuthRequest struct {
 	ProjectID    uint64 `json:"project_id"`
 	RegisterType uint64 `json:"register_type"`
-	AuthType     string `json:"auth_type"`
+	AuthType     uint32 `json:"auth_type"`
 	AuthNum      string `json:"auth_num"`
 }
 
 type QueryUserAuthResponse struct {
 	UserID           string `json:"user_id"`
-	AuditStatus      int    `json:"audit_status"`
+	AuditStatus      uint32 `json:"audit_status"`
 	AuditInstruction string `json:"audit_instruction"`
 }
