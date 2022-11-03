@@ -6,6 +6,7 @@ import (
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	service "gitlab.bianjie.ai/avata/open-api/internal/app/services"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
+	"strconv"
 	"strings"
 )
 
@@ -393,16 +394,20 @@ func (Rights) RegisterType(ctx context.Context) uint64 {
 	if registerType == 0 {
 		return 1
 	}
-	return registerType.(uint64)
+	r := registerType.(string)
+	parseUint, _ := strconv.ParseUint(r, 10, 64)
+	return parseUint
 }
 
-func (Rights) ParentID(ctx context.Context) string {
+func (Rights) ParentID(ctx context.Context) uint64 {
 	parentID := ctx.Value("parent_id")
 
 	if parentID == nil {
-		return ""
+		return 0
 	}
-	return parentID.(string)
+	p := parentID.(string)
+	parseUint, _ := strconv.ParseUint(p, 10, 64)
+	return parseUint
 }
 
 func (Rights) OperationID(ctx context.Context) string {

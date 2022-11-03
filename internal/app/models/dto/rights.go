@@ -148,7 +148,7 @@ type DictResponse struct {
 
 type RegionRequest struct {
 	ProjectID    uint64 `json:"project_id"`
-	ParentID     string `json:"parent_id"`
+	ParentID     uint64 `json:"parent_id"`
 	RegisterType uint64 `json:"register_type"`
 }
 
