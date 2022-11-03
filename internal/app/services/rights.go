@@ -317,7 +317,7 @@ func (r Rights) UserAuth(params *dto.UserAuthRequest) (*dto.UserAuthResponse, er
 	}
 	result := &dto.UserAuthResponse{
 		OperationID:      resp.OperationId,
-		UserID:           resp.UserId,
+		UserID:           resp.AuthUserId,
 		AuditStatus:      resp.AuditStatus,
 		AuditInstruction: resp.AuditInstruction,
 	}
@@ -410,7 +410,7 @@ func (r Rights) QueryUserAuth(params *dto.QueryUserAuthRequest) (*dto.QueryUserA
 		return nil, errors.New("") // todo
 	}
 	result := &dto.QueryUserAuthResponse{
-		UserID:           resp.UserId,
+		UserID:           resp.AuthUserId,
 		AuditStatus:      resp.AuditStatus,
 		AuditInstruction: resp.AuditInstruction,
 	}
