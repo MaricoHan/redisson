@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"errors"
 	log "github.com/sirupsen/logrus"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
@@ -118,14 +117,14 @@ func (r Rights) Register(params *dto.RegisterRequest) (*dto.RegisterResponse, er
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
 		logger.Error(errors2.ErrService)
-		return nil, errors.New("") // todo
+		return nil, errors2.ErrInternal
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err := grpcClient.Register(ctx, &req)
 	if err != nil {
 		logger.Error("grpc request failed")
-		return nil, errors.New("") // todo
+		return nil, err
 	}
 
 	return &dto.RegisterResponse{OperationID: resp.OperationId}, nil
@@ -215,14 +214,14 @@ func (r Rights) EditRegister(params *dto.EditRegisterRequest) (*dto.EditRegister
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
 		logger.Error(errors2.ErrService)
-		return nil, errors.New("") // todo
+		return nil, errors2.ErrInternal
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err := grpcClient.EditRegister(ctx, &req)
 	if err != nil {
 		logger.Error("grpc request failed")
-		return nil, errors.New("") // todo
+		return nil, err
 	}
 
 	return &dto.EditRegisterResponse{OperationID: resp.OperationId}, nil
@@ -235,14 +234,14 @@ func (r Rights) QueryRegister(params *dto.QueryRegisterRequest) (*dto.QueryRegis
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
 		logger.Error(errors2.ErrService)
-		return nil, errors.New("") // todo
+		return nil, errors2.ErrInternal
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err := grpcClient.RegisterInfo(ctx, &req)
 	if err != nil {
 		logger.Error("grpc request failed")
-		return nil, errors.New("") // todo
+		return nil, err
 	}
 	result := &dto.QueryRegisterResponse{
 		OperationID:       resp.OperationId,
@@ -308,14 +307,14 @@ func (r Rights) UserAuth(params *dto.UserAuthRequest) (*dto.UserAuthResponse, er
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
 		logger.Error(errors2.ErrService)
-		return nil, errors.New("") // todo
+		return nil, errors2.ErrInternal
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err := grpcClient.UserAuth(ctx, &req)
 	if err != nil {
 		logger.Error("grpc request failed")
-		return nil, errors.New("") // todo
+		return nil, err
 	}
 	result := &dto.UserAuthResponse{
 		OperationID:      resp.OperationId,
@@ -377,14 +376,14 @@ func (r Rights) EditUserAuth(params *dto.EditUserAuthRequest) (*dto.EditUserAuth
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
 		logger.Error(errors2.ErrService)
-		return nil, errors.New("") // todo
+		return nil, errors2.ErrInternal
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err := grpcClient.EditUserAuth(ctx, &req)
 	if err != nil {
 		logger.Error("grpc request failed")
-		return nil, errors.New("") // todo
+		return nil, err
 	}
 	result := &dto.EditUserAuthResponse{
 		Data: resp.Data,
@@ -402,14 +401,14 @@ func (r Rights) QueryUserAuth(params *dto.QueryUserAuthRequest) (*dto.QueryUserA
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
 		logger.Error(errors2.ErrService)
-		return nil, errors.New("") // todo
+		return nil, errors2.ErrInternal
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err := grpcClient.UserAuthInfo(ctx, &req)
 	if err != nil {
 		logger.Error("grpc request failed")
-		return nil, errors.New("") // todo
+		return nil, err
 	}
 	result := &dto.QueryUserAuthResponse{
 		UserID:           resp.AuthUserId,
@@ -426,14 +425,14 @@ func (r Rights) Dict(params *dto.DictRequest) (*dto.DictResponse, error) {
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
 		logger.Error(errors2.ErrService)
-		return nil, errors.New("") // todo
+		return nil, errors2.ErrInternal
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err := grpcClient.Dict(ctx, &req)
 	if err != nil {
 		logger.Error("grpc request failed")
-		return nil, errors.New("") // todo
+		return nil, err
 	}
 
 	result := &dto.DictResponse{
@@ -480,14 +479,14 @@ func (r Rights) Region(params *dto.RegionRequest) (*dto.RegionResponse, error) {
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
 		logger.Error(errors2.ErrService)
-		return nil, errors.New("") // todo
+		return nil, errors2.ErrInternal
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err := grpcClient.Region(ctx, &req)
 	if err != nil {
 		logger.Error("grpc request failed")
-		return nil, errors.New("") // todo
+		return nil, err
 	}
 
 	result := &dto.RegionResponse{
