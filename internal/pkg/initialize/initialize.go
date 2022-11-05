@@ -3,6 +3,7 @@ package initialize
 import (
 	"context"
 	"fmt"
+	"gitlab.bianjie.ai/avata/services/api/pb/rights"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -43,6 +44,9 @@ var MTMsgsClientMap map[string]pb_mt_msgs.MTMSGSClient
 
 var StateGatewayServer *grpc.ClientConn
 var TxQueueClient pb_tx_queue.TxQueueClient
+
+var GrpcConnRightsMap map[string]*grpc.ClientConn
+var RightsClientMap map[string]rights.RightsClient
 
 var Log = new(log.Logger)
 
@@ -132,6 +136,15 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	}
 
 	// 初始化Account grpc client
+	GrpcConnRightsMap = make(map[string]*grpc.ClientConn)
+
+	logger.Info("connecting rights_jiangsu server ...")
+	RightsConn, err := grpc.DialContext(context.Background(), cfg.GrpcClient.RightsJiangSu, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp), grpc.WithBlock(), grpc.WithBalancerName(roundrobin.Name))
+	if err != nil {
+		logger.Fatal("get rights_jiangsu grpc connect failed, err: ", err.Error())
+	}
+	GrpcConnRightsMap[constant.JiangSu] = RightsConn
+
 	AccountClientMap = make(map[string]pb_account.AccountClient)
 	AccountClientMap[constant.WenchangDDC] = pb_account.NewAccountClient(GrpcConnMap[constant.WenchangDDC])
 	AccountClientMap[constant.WenchangNative] = pb_account.NewAccountClient(GrpcConnMap[constant.WenchangNative])
@@ -178,6 +191,11 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 
 	// 初始化tx_queue
 	TxQueueClient = pb_tx_queue.NewTxQueueClient(StateGatewayServer)
+
+	// 初始化rights_jiangsu
+	RightsClientMap = make(map[string]rights.RightsClient)
+	RightsClientMap[constant.JiangSu] = rights.NewRightsClient(GrpcConnRightsMap[constant.JiangSu])
+
 }
 
 func InitRedisClient(cfg *configs.Config, logger *log.Logger) {

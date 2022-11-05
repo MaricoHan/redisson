@@ -40,6 +40,10 @@ const (
 	// Enum values for NFTSStatus
 	NFTSStatusActive = "active"
 	NFTSStatusBurned = "burned"
+
+	// rights map
+	JiangSu = "jiangsu"
+	Guizhou = "guizhou"
 )
 
 // redis key
@@ -48,3 +52,8 @@ const (
 	KeyProjectApikey = "project:apikey:"
 	KeyChain         = "chain:"
 )
+
+var RightsMap = map[uint64]string{
+	1: JiangSu,
+	2: Guizhou,
+}
