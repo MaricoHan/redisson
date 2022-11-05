@@ -39,6 +39,21 @@ func (r Rights) Register(ctx context.Context, request interface{}) (response int
 	if operationId == "" {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
 	}
+	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
+	}
+	if req.RegisterType == 0 {
+		return nil, errors2.New(errors2.ClientParams, "register_type can not be nil")
+	}
+	if req.UserID == "" {
+		return nil, errors2.New(errors2.ClientParams, "user_id can not be nil")
+	}
+	if req.ContactNum == "" {
+		return nil, errors2.New(errors2.ClientParams, "contact_num can not be nil")
+	}
+	if req.CallbackURL == "" {
+		return nil, errors2.New(errors2.ClientParams, "callback_url can not be nil")
+	}
 
 	// todo 仿照tag处理metadata
 	//tagBytes, err := r.ValidateTag(req.Metadata)
@@ -88,7 +103,7 @@ func (r Rights) Register(ctx context.Context, request interface{}) (response int
 	params := dto.RegisterRequest{
 		ProjectID:    authData.ProjectId,
 		RegisterType: req.RegisterType,
-		OperationID:  req.OperationID,
+		OperationID:  operationId,
 		UserID:       req.UserID,
 		ProductInfo: dto.ProductInfo{
 			Name:          req.ProductInfo.Name,
@@ -137,9 +152,14 @@ func (r Rights) EditRegister(ctx context.Context, request interface{}) (response
 	if operationId == "" {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
 	}
-
 	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
+	}
+	if req.RegisterType == 0 {
+		return nil, errors2.New(errors2.ClientParams, "register_type can not be nil")
+	}
+	if req.UserID == "" {
+		return nil, errors2.New(errors2.ClientParams, "user_id can not be nil")
 	}
 
 	authData := r.AuthData(ctx)
@@ -180,7 +200,7 @@ func (r Rights) EditRegister(ctx context.Context, request interface{}) (response
 	params := dto.EditRegisterRequest{
 		ProjectID:    authData.ProjectId,
 		RegisterType: req.RegisterType,
-		OperationID:  req.OperationID,
+		OperationID:  operationId,
 		UserID:       req.UserID,
 		ProductInfo: dto.ProductInfo{
 			Name:          req.ProductInfo.Name,
@@ -241,16 +261,18 @@ func (r Rights) UserAuth(ctx context.Context, request interface{}) (response int
 	if operationId == "" {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
 	}
-
 	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
+	}
+	if req.RegisterType == 0 {
+		return nil, errors2.New(errors2.ClientParams, "register_type can not be nil")
 	}
 
 	authData := r.AuthData(ctx)
 	params := dto.UserAuthRequest{
 		ProjectID:    authData.ProjectId,
 		RegisterType: req.RegisterType,
-		OperationID:  req.OperationID,
+		OperationID:  operationId,
 		AuthType:     req.AuthType,
 		AuthInfoIndividual: dto.AuthInfoIndividual{
 			RealName:        req.AuthInfoIndividual.RealName,
@@ -301,16 +323,18 @@ func (r Rights) EditUserAuth(ctx context.Context, request interface{}) (response
 	if operationId == "" {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
 	}
-
 	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
+	}
+	if req.RegisterType == 0 {
+		return nil, errors2.New(errors2.ClientParams, "register_type can not be nil")
 	}
 
 	authData := r.AuthData(ctx)
 	params := dto.EditUserAuthRequest{
 		ProjectID:    authData.ProjectId,
 		RegisterType: req.RegisterType,
-		OperationID:  req.OperationID,
+		OperationID:  operationId,
 		AuthType:     req.AuthType,
 		AuthInfoIndividual: dto.AuthInfoIndividual{
 			RealName:        req.AuthInfoIndividual.RealName,
