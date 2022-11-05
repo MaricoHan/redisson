@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	log "github.com/sirupsen/logrus"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	service "gitlab.bianjie.ai/avata/open-api/internal/app/services"
@@ -32,7 +33,11 @@ func NewRights(svc service.IRights) *Rights {
 }
 
 func (r Rights) Register(ctx context.Context, request interface{}) (response interface{}, err error) {
-	req := request.(*vo.RegisterRequest)
+	req, ok := request.(*vo.RegisterRequest)
+	if !ok {
+		log.Debugf("failed to assert : %v", request)
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	}
 
 	// 校验参数
 	operationId := strings.TrimSpace(req.OperationID)
@@ -146,7 +151,11 @@ func (r Rights) Register(ctx context.Context, request interface{}) (response int
 }
 
 func (r Rights) EditRegister(ctx context.Context, request interface{}) (response interface{}, err error) {
-	req := request.(*vo.EditRegisterRequest)
+	req, ok := request.(*vo.EditRegisterRequest)
+	if !ok {
+		log.Debugf("failed to assert : %v", request)
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	}
 	// 校验参数
 	operationId := strings.TrimSpace(r.OperationID(ctx))
 	if operationId == "" {
@@ -255,7 +264,11 @@ func (r Rights) QueryRegister(ctx context.Context, request interface{}) (respons
 }
 
 func (r Rights) UserAuth(ctx context.Context, request interface{}) (response interface{}, err error) {
-	req := request.(*vo.UserAuthRequest)
+	req, ok := request.(*vo.UserAuthRequest)
+	if !ok {
+		log.Debugf("failed to assert : %v", request)
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	}
 	// 校验参数
 	operationId := strings.TrimSpace(req.OperationID)
 	if operationId == "" {
@@ -317,7 +330,11 @@ func (r Rights) UserAuth(ctx context.Context, request interface{}) (response int
 }
 
 func (r Rights) EditUserAuth(ctx context.Context, request interface{}) (response interface{}, err error) {
-	req := request.(*vo.UserAuthRequest)
+	req, ok := request.(*vo.UserAuthRequest)
+	if !ok {
+		log.Debugf("failed to assert : %v", request)
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	}
 	// 校验参数
 	operationId := strings.TrimSpace(r.OperationID(ctx))
 	if operationId == "" {
