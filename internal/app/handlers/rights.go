@@ -148,7 +148,7 @@ func (r Rights) Register(ctx context.Context, request interface{}) (response int
 func (r Rights) EditRegister(ctx context.Context, request interface{}) (response interface{}, err error) {
 	req := request.(*vo.EditRegisterRequest)
 	// 校验参数
-	operationId := strings.TrimSpace(req.OperationID)
+	operationId := strings.TrimSpace(r.OperationID(ctx))
 	if operationId == "" {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
 	}
@@ -319,7 +319,7 @@ func (r Rights) UserAuth(ctx context.Context, request interface{}) (response int
 func (r Rights) EditUserAuth(ctx context.Context, request interface{}) (response interface{}, err error) {
 	req := request.(*vo.UserAuthRequest)
 	// 校验参数
-	operationId := strings.TrimSpace(req.OperationID)
+	operationId := strings.TrimSpace(r.OperationID(ctx))
 	if operationId == "" {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
 	}
