@@ -45,7 +45,7 @@ func (r Rights) Register(params *dto.RegisterRequest) (*dto.RegisterResponse, er
 		authorsIndividual = append(authorsIndividual, &rights.Person{
 			IsApplicant: val.IsApplicant,
 			RealName:    val.RealName,
-			AuthNum:     val.AuthName,
+			AuthNum:     val.AuthNum,
 		})
 	}
 	for _, val := range params.Authors.Corporates {
@@ -53,14 +53,14 @@ func (r Rights) Register(params *dto.RegisterRequest) (*dto.RegisterResponse, er
 			IsApplicant: val.IsApplicant,
 			CardType:    val.CardType,
 			CompanyName: val.CompanyName,
-			AuthNum:     val.AuthName,
+			AuthNum:     val.AuthNum,
 		})
 	}
 	for _, val := range params.Copyrights.Individuals {
 		copyrightsIndividual = append(copyrightsIndividual, &rights.Person{
 			IsApplicant: val.IsApplicant,
 			RealName:    val.RealName,
-			AuthNum:     val.AuthName,
+			AuthNum:     val.AuthNum,
 		})
 	}
 	for _, val := range params.Copyrights.Corporates {
@@ -68,7 +68,7 @@ func (r Rights) Register(params *dto.RegisterRequest) (*dto.RegisterResponse, er
 			IsApplicant: val.IsApplicant,
 			CardType:    val.CardType,
 			CompanyName: val.CompanyName,
-			AuthNum:     val.AuthName,
+			AuthNum:     val.AuthNum,
 		})
 	}
 
@@ -77,6 +77,7 @@ func (r Rights) Register(params *dto.RegisterRequest) (*dto.RegisterResponse, er
 		Module:      "",
 		ProjectId:   params.ProjectID,
 		OperationId: params.OperationID,
+		AuthUserId:  params.UserID,
 		ProductInfo: &rights.ProductInfo{
 			Name:          params.ProductInfo.Name,
 			CatName:       params.ProductInfo.CatName,
@@ -141,7 +142,7 @@ func (r Rights) EditRegister(params *dto.EditRegisterRequest) (*dto.EditRegister
 		authorsIndividual = append(authorsIndividual, &rights.Person{
 			IsApplicant: val.IsApplicant,
 			RealName:    val.RealName,
-			AuthNum:     val.AuthName,
+			AuthNum:     val.AuthNum,
 		})
 	}
 	for _, val := range params.Authors.Corporates {
@@ -149,14 +150,14 @@ func (r Rights) EditRegister(params *dto.EditRegisterRequest) (*dto.EditRegister
 			IsApplicant: val.IsApplicant,
 			CardType:    val.CardType,
 			CompanyName: val.CompanyName,
-			AuthNum:     val.AuthName,
+			AuthNum:     val.AuthNum,
 		})
 	}
 	for _, val := range params.Copyrights.Individuals {
 		copyrightsIndividual = append(copyrightsIndividual, &rights.Person{
 			IsApplicant: val.IsApplicant,
 			RealName:    val.RealName,
-			AuthNum:     val.AuthName,
+			AuthNum:     val.AuthNum,
 		})
 	}
 	for _, val := range params.Copyrights.Corporates {
@@ -164,7 +165,7 @@ func (r Rights) EditRegister(params *dto.EditRegisterRequest) (*dto.EditRegister
 			IsApplicant: val.IsApplicant,
 			CardType:    val.CardType,
 			CompanyName: val.CompanyName,
-			AuthNum:     val.AuthName,
+			AuthNum:     val.AuthNum,
 		})
 	}
 
@@ -173,6 +174,7 @@ func (r Rights) EditRegister(params *dto.EditRegisterRequest) (*dto.EditRegister
 		Module:      "",
 		ProjectId:   params.ProjectID,
 		OperationId: params.OperationID,
+		AuthUserId:  params.UserID,
 		ProductInfo: &rights.ProductInfo{
 			Name:          params.ProductInfo.Name,
 			CatName:       params.ProductInfo.CatName,

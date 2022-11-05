@@ -79,7 +79,7 @@ func (r Rights) Register(ctx context.Context, request interface{}) (response int
 		authorsIndividuals = append(authorsIndividuals, dto.Individual{
 			IsApplicant: val.IsApplicant,
 			RealName:    val.RealName,
-			AuthName:    val.AuthName,
+			AuthNum:     val.AuthName,
 		})
 	}
 	for _, val := range req.Authors.Corporates {
@@ -87,14 +87,14 @@ func (r Rights) Register(ctx context.Context, request interface{}) (response int
 			IsApplicant: val.IsApplicant,
 			CardType:    val.CardType,
 			CompanyName: val.CompanyName,
-			AuthName:    val.AuthName,
+			AuthNum:     val.AuthName,
 		})
 	}
 	for _, val := range req.Copyrights.Individuals {
 		copyRightsIndividuals = append(copyRightsIndividuals, dto.Individual{
 			IsApplicant: val.IsApplicant,
 			RealName:    val.RealName,
-			AuthName:    val.AuthName,
+			AuthNum:     val.AuthName,
 		})
 	}
 	for _, val := range req.Copyrights.Corporates {
@@ -102,7 +102,7 @@ func (r Rights) Register(ctx context.Context, request interface{}) (response int
 			IsApplicant: val.IsApplicant,
 			CardType:    val.CardType,
 			CompanyName: val.CompanyName,
-			AuthName:    val.AuthName,
+			AuthNum:     val.AuthName,
 		})
 	}
 	params := dto.RegisterRequest{
@@ -180,7 +180,7 @@ func (r Rights) EditRegister(ctx context.Context, request interface{}) (response
 		authorsIndividuals = append(authorsIndividuals, dto.Individual{
 			IsApplicant: val.IsApplicant,
 			RealName:    val.RealName,
-			AuthName:    val.AuthName,
+			AuthNum:     val.AuthName,
 		})
 	}
 	for _, val := range req.Authors.Corporates {
@@ -188,14 +188,14 @@ func (r Rights) EditRegister(ctx context.Context, request interface{}) (response
 			IsApplicant: val.IsApplicant,
 			CardType:    val.CardType,
 			CompanyName: val.CompanyName,
-			AuthName:    val.AuthName,
+			AuthNum:     val.AuthName,
 		})
 	}
 	for _, val := range req.Copyrights.Individuals {
 		copyRightsIndividuals = append(copyRightsIndividuals, dto.Individual{
 			IsApplicant: val.IsApplicant,
 			RealName:    val.RealName,
-			AuthName:    val.AuthName,
+			AuthNum:     val.AuthName,
 		})
 	}
 	for _, val := range req.Copyrights.Corporates {
@@ -203,7 +203,7 @@ func (r Rights) EditRegister(ctx context.Context, request interface{}) (response
 			IsApplicant: val.IsApplicant,
 			CardType:    val.CardType,
 			CompanyName: val.CompanyName,
-			AuthName:    val.AuthName,
+			AuthNum:     val.AuthName,
 		})
 	}
 	params := dto.EditRegisterRequest{
