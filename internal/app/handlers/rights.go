@@ -298,7 +298,7 @@ func (r Rights) UserAuth(ctx context.Context, request interface{}) (response int
 			IDCardProvince:  req.AuthInfoIndividual.IDCardProvince,
 			IDCardCity:      req.AuthInfoIndividual.IDCardCity,
 			IDCardArea:      req.AuthInfoIndividual.IDCardArea,
-			ContactNum:      req.AuthInfoIndividual.Contact,
+			ContactNum:      req.AuthInfoIndividual.ContactNum,
 			ContactAddr:     req.AuthInfoIndividual.ContactAddr,
 			Postcode:        req.AuthInfoIndividual.Postcode,
 			Contact:         req.AuthInfoIndividual.ContactAddr,
@@ -466,7 +466,9 @@ func (Rights) AuthType(ctx context.Context) uint32 {
 	if authType == nil {
 		return 0
 	}
-	return authType.(uint32)
+	p := authType.(string)
+	parseUint, _ := strconv.ParseUint(p, 10, 64)
+	return uint32(parseUint)
 }
 
 func (Rights) AuthNum(ctx context.Context) string {
