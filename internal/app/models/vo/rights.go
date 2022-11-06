@@ -68,7 +68,7 @@ type Copyrights struct {
 type Individual struct {
 	IsApplicant uint32 `json:"is_applicant"`
 	RealName    string `json:"real_name"`
-	AuthName    string `json:"auth_name"`
+	AuthNum     string `json:"auth_num"`
 	//IDCardNum       string `json:"idcard_num"`
 	//IDCardFimg      string `json:"idcard_fimg"`
 	//IDCardBimg      string `json:"idcard_bimg"`
@@ -91,7 +91,7 @@ type Corporate struct {
 	IsApplicant uint32 `json:"is_applicant"`
 	CardType    string `json:"card_type"`
 	CompanyName string `json:"company_name"`
-	AuthName    string `json:"auth_name"`
+	AuthNum     string `json:"auth_num"`
 	//BusLicNum       string `json:"bus_lic_num"`
 	//CompanyAddr     string `json:"company_addr"`
 	//BusLicImg       string `json:"bus_lic_img"`
