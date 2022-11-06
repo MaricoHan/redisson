@@ -56,8 +56,8 @@ type RightsInfo struct {
 }
 
 type Authors struct {
-	Individuals []Individual `json:"copyrights_individual"`
-	Corporates  []Corporate  `json:"copyrights_corporate"`
+	Individuals []Individual `json:"authors_individual"`
+	Corporates  []Corporate  `json:"authors_corporate"`
 }
 
 type Copyrights struct {
