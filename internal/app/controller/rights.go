@@ -25,7 +25,7 @@ func (r RightsController) GetEndpoints() []kit.Endpoint {
 		},
 		{
 			URI:     "/rights/register/{operation_id}",
-			Method:  http.MethodPost,
+			Method:  http.MethodPatch,
 			Handler: r.makeHandler(r.handler.EditRegister, &vo.EditRegisterRequest{}),
 		},
 		{
@@ -40,7 +40,7 @@ func (r RightsController) GetEndpoints() []kit.Endpoint {
 		},
 		{
 			URI:     "/rights/user/auth/{operation_id}",
-			Method:  http.MethodPost,
+			Method:  http.MethodPatch,
 			Handler: r.makeHandler(r.handler.EditUserAuth, &vo.EditUserAuthRequest{}),
 		},
 		{
