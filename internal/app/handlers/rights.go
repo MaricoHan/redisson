@@ -330,7 +330,7 @@ func (r Rights) UserAuth(ctx context.Context, request interface{}) (response int
 }
 
 func (r Rights) EditUserAuth(ctx context.Context, request interface{}) (response interface{}, err error) {
-	req, ok := request.(*vo.UserAuthRequest)
+	req, ok := request.(*vo.EditUserAuthRequest)
 	if !ok {
 		log.Debugf("failed to assert : %v", request)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
