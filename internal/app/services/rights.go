@@ -230,7 +230,7 @@ func (r Rights) EditRegister(params *dto.EditRegisterRequest) (*dto.EditRegister
 func (r Rights) QueryRegister(params *dto.QueryRegisterRequest) (*dto.QueryRegisterResponse, error) {
 	logger := r.logger.WithField("params", params).WithField("func", "QueryRegister")
 
-	req := rights.RegisterInfoRequest{OperationId: params.OperationID}
+	req := rights.RegisterInfoRequest{OperationId: params.OperationID, ProjectId: params.ProjectID}
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
 		logger.Error(errors2.ErrService)
