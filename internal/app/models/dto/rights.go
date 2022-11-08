@@ -1,0 +1,230 @@
+package dto
+
+type RegisterRequest struct {
+	ProjectID    uint64      `json:"project_id"`
+	RegisterType uint64      `json:"register_type"`
+	OperationID  string      `json:"operation_id"`
+	UserID       string      `json:"user_id"`
+	ProductInfo  ProductInfo `json:"product_info"`
+	RightsInfo   RightsInfo  `json:"rights_info"`
+	Authors      Authors     `json:"authors"`
+	Copyrights   Copyrights  `json:"copyrights"`
+	ContactNum   string      `json:"contact_num"`
+	Email        string      `json:"email"`
+	UrgentTime   uint32      `json:"urgent_time"`
+	CallbackURL  string      `json:"callback_url"`
+	AuthFile     string      `json:"auth_file"`
+	Metadata     []byte      `json:"metadata"`
+}
+
+type EditRegisterRequest struct {
+	ProjectID    uint64      `json:"project_id"`
+	RegisterType uint64      `json:"register_type"`
+	OperationID  string      `json:"operation_id"`
+	UserID       string      `json:"user_id"`
+	ProductInfo  ProductInfo `json:"product_info"`
+	RightsInfo   RightsInfo  `json:"rights_info"`
+	Authors      Authors     `json:"authors"`
+	Copyrights   Copyrights  `json:"copyrights"`
+	ContactNum   string      `json:"contact_num"`
+	Email        string      `json:"email"`
+	UrgentTime   uint32      `json:"urgent_time"`
+	CallbackURL  string      `json:"callback_url"`
+	AuthFile     string      `json:"auth_file"`
+	Metadata     []byte      `json:"metadata"`
+}
+
+type ProductInfo struct {
+	Name          string `json:"name"`
+	CatName       string `json:"cat_name"`
+	CoverImg      string `json:"cover_img"`
+	File          string `json:"file"`
+	Description   string `json:"description"`
+	CreateNatName string `json:"create_nat_name"`
+	CreateTime    string `json:"create_time"`
+	CreateAddr    string `json:"create_addr"`
+	IsPublished   uint32 `json:"is_published"`
+	PubAddr       string `json:"pub_addr"`
+	PubTime       string `json:"pub_time"`
+	PubChannel    uint32 `json:"pub_channel"`
+	PubAnnex      string `json:"pub_annex"`
+}
+
+type RightsInfo struct {
+	Hold          uint32 `json:"hold"`
+	HoldName      string `json:"hold_name"`
+	HoldExp       string `json:"hold_exp"`
+	RightDocument string `json:"right_document"`
+}
+
+type Authors struct {
+	Individuals []Individual `json:"copyrights_individual"`
+	Corporates  []Corporate  `json:"copyrights_corporate"`
+}
+
+type Copyrights struct {
+	Individuals []Individual `json:"copyrights_individual"`
+	Corporates  []Corporate  `json:"copyrights_corporate"`
+}
+
+type Individual struct {
+	IsApplicant uint32 `json:"is_applicant"`
+	RealName    string `json:"real_name"`
+	AuthNum     string `json:"auth_num"`
+}
+
+type Corporate struct {
+	IsApplicant uint32 `json:"is_applicant"`
+	CardType    string `json:"card_type"`
+	CompanyName string `json:"company_name"`
+	AuthNum     string `json:"auth_num"`
+}
+
+type RegisterResponse struct {
+	OperationID string `json:"operation_id"`
+}
+
+type EditRegisterResponse struct {
+	OperationID string `json:"operation_id"`
+}
+
+type QueryRegisterRequest struct {
+	ProjectID    uint64 `json:"project_id"`
+	RegisterType uint64 `json:"register_type"`
+	OperationID  string `json:"operation_id"`
+}
+
+type QueryRegisterResponse struct {
+	OperationID       string   `json:"operation_id"`
+	AuditStatus       uint32   `json:"audit_status"`
+	AuditFile         []string `json:"audit_file"`
+	AuditOpinion      string   `json:"audit_opinion"`
+	CertificateStatus uint32   `json:"certificate_status"`
+	CertificateNum    string   `json:"certificate_num"`
+	CertificateURL    []string `json:"certificate_url"`
+	BackTag           string   `json:"back_tag"`
+}
+
+type DictRequest struct {
+	ProjectID    uint64 `json:"project_id"`
+	RegisterType uint64 `json:"register_type"`
+}
+
+type DictResponse struct {
+	ProCat       []KeyValueDetail `json:"pro_cat"`
+	ProCreateNat []KeyValueDetail `json:"pro_create_nat"`
+	IndustryCode []KeyValue       `json:"industry_code"`
+	AutHold      []KeyValue       `json:"aut_hold"`
+}
+
+type RegionRequest struct {
+	ProjectID    uint64 `json:"project_id"`
+	ParentID     uint64 `json:"parent_id"`
+	RegisterType uint64 `json:"register_type"`
+}
+
+type RegionResponse struct {
+	Data []Region `json:"data"`
+}
+
+type KeyValueDetail struct {
+	Key    string `json:"key"`
+	Value  string `json:"value"`
+	Detail string `json:"detail"`
+}
+
+type KeyValue struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+type Region struct {
+	ID         uint64 `json:"id"`
+	Name       string `json:"name"`
+	ParentID   uint64 `json:"parent_id"`
+	ShortName  string `json:"short_name"`
+	MergerName string `json:"merger_name"`
+	PinYin     string `json:"pin_yin"`
+}
+
+type UserAuthRequest struct {
+	ProjectID          uint64             `json:"project_id"`
+	RegisterType       uint64             `json:"register_type"`
+	OperationID        string             `json:"operation_id"`
+	AuthType           uint32             `json:"auth_type"`
+	AuthInfoIndividual AuthInfoIndividual `json:"auth_info_individual"`
+	AuthInfoCorporate  AuthInfoCorporate  `json:"auth_info_corporate"`
+	CallbackUrl        string             `json:"callback_url"`
+}
+
+type UserAuthResponse struct {
+	OperationID      string `json:"operation_id"`
+	UserID           string `json:"user_id"`
+	AuditStatus      uint32 `json:"audit_status"`
+	AuditInstruction string `json:"audit_instruction"`
+}
+
+type AuthInfoIndividual struct {
+	RealName        string `json:"real_name"`
+	IDCardNum       string `json:"idcard_num"`
+	IDCardFimg      string `json:"idcard_fimg"`
+	IDCardBimg      string `json:"idcard_bimg"`
+	IDCardHimg      string `json:"idcard_himg"`
+	IDCardStartDate string `json:"idcard_start_date"`
+	IDCardEndDate   string `json:"idcard_end_date"`
+	IDCardProvince  string `json:"idcard_province"`
+	IDCardCity      string `json:"idcard_city"`
+	IDCardArea      string `json:"idcard_area"`
+	ContactNum      string `json:"contact_num"`
+	ContactAddr     string `json:"contact_addr"`
+	Postcode        string `json:"postcode"`
+	Contact         string `json:"contact"`
+	Email           string `json:"email"`
+	IndustryCode    string `json:"industry_code"`
+	IndustryName    string `json:"industry_name"`
+}
+
+type AuthInfoCorporate struct {
+	CardType        string `json:"card_type"`
+	CompanyName     string `json:"company_name"`
+	BusLicNum       string `json:"bus_lic_num"`
+	CompanyAddr     string `json:"company_addr"`
+	BusLicImg       string `json:"bus_lic_img"`
+	BusLicStartDate string `json:"bus_lic_start_date"`
+	BusLicEndDate   string `json:"bus_lic_end_date"`
+	BusLicProvince  string `json:"bus_lic_province"`
+	BusLicCity      string `json:"bus_lic_city"`
+	BusLicArea      string `json:"bus_lic_area"`
+	Postcode        string `json:"postcode"`
+	Contact         string `json:"contact"`
+	Email           string `json:"email"`
+	IndustryCode    string `json:"industry_code"`
+	IndustryName    string `json:"industry_name"`
+}
+
+type EditUserAuthRequest struct {
+	ProjectID          uint64             `json:"project_id"`
+	RegisterType       uint64             `json:"register_type"`
+	OperationID        string             `json:"operation_id"`
+	AuthType           uint32             `json:"auth_type"`
+	AuthInfoIndividual AuthInfoIndividual `json:"auth_info_individual"`
+	AuthInfoCorporate  AuthInfoCorporate  `json:"auth_info_corporate"`
+	CallbackUrl        string             `json:"callback_url"`
+}
+
+type EditUserAuthResponse struct {
+	Data string `json:"data"`
+}
+
+type QueryUserAuthRequest struct {
+	ProjectID    uint64 `json:"project_id"`
+	RegisterType uint64 `json:"register_type"`
+	AuthType     uint32 `json:"auth_type"`
+	AuthNum      string `json:"auth_num"`
+}
+
+type QueryUserAuthResponse struct {
+	UserID           string `json:"user_id"`
+	AuditStatus      uint32 `json:"audit_status"`
+	AuditInstruction string `json:"audit_instruction"`
+}

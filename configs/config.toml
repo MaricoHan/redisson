@@ -36,6 +36,7 @@ wenchangchain_ddc_addr = "192.168.150.41:10000"
 wenchangchain_native_addr = ":10000"
 irita_opb_native_addr = "192.168.150.43:10000"
 state_gateway_addr = "192.168.150.44:10000"
+rights_jiangsu = "192.168.150.41:10005"
 
 
 [project]
