@@ -15,19 +15,19 @@ import (
 )
 
 type IMT interface {
-	Issue(params *dto.IssueRequest) (*dto.IssueResponse, error)
-	Mint(params *dto.MintRequest) (*dto.MintResponse, error)
-	BatchMint(params *dto.BatchMintRequest) (*dto.BatchMintResponse, error)
+	Issue(ctx context.Context, params *dto.IssueRequest) (*dto.IssueResponse, error)
+	Mint(ctx context.Context, params *dto.MintRequest) (*dto.MintResponse, error)
+	BatchMint(ctx context.Context, params *dto.BatchMintRequest) (*dto.BatchMintResponse, error)
 
-	Edit(params *dto.EditRequest) (*dto.EditResponse, error)
-	Burn(params *dto.BurnRequest) (*dto.BurnResponse, error)
-	Transfer(params *dto.MTTransferRequest) (*dto.MTTransferResponse, error)
+	Edit(ctx context.Context, params *dto.EditRequest) (*dto.EditResponse, error)
+	Burn(ctx context.Context, params *dto.BurnRequest) (*dto.BurnResponse, error)
+	Transfer(ctx context.Context, params *dto.MTTransferRequest) (*dto.MTTransferResponse, error)
 
-	BatchTransfer(params *dto.MTBatchTransferRequest) (*dto.MTBatchTransferResponse, error)
-	BatchBurn(params *dto.BatchBurnRequest) (*dto.BatchBurnResponse, error)
-	Show(params *dto.MTShowRequest) (*dto.MTShowResponse, error)
-	List(params *dto.MTListRequest) (*dto.MTListResponse, error)
-	Balances(params *dto.MTBalancesRequest) (*dto.MTBalancesResponse, error)
+	BatchTransfer(ctx context.Context, params *dto.MTBatchTransferRequest) (*dto.MTBatchTransferResponse, error)
+	BatchBurn(ctx context.Context, params *dto.BatchBurnRequest) (*dto.BatchBurnResponse, error)
+	Show(ctx context.Context, params *dto.MTShowRequest) (*dto.MTShowResponse, error)
+	List(ctx context.Context, params *dto.MTListRequest) (*dto.MTListResponse, error)
+	Balances(ctx context.Context, params *dto.MTBalancesRequest) (*dto.MTBalancesResponse, error)
 }
 type MT struct {
 	logger *log.Entry
@@ -39,7 +39,7 @@ func NewMT(logger *log.Logger) *MT {
 	}
 }
 
-func (m MT) Issue(params *dto.IssueRequest) (*dto.IssueResponse, error) {
+func (m MT) Issue(ctx context.Context, params *dto.IssueRequest) (*dto.IssueResponse, error) {
 	logger := m.logger.WithField("params", params).WithField("func", "IssueMT")
 
 	// 非托管模式不支持
@@ -67,7 +67,7 @@ func (m MT) Issue(params *dto.IssueRequest) (*dto.IssueResponse, error) {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.Issue(ctx, &req)
 	if err != nil {
@@ -81,7 +81,7 @@ func (m MT) Issue(params *dto.IssueRequest) (*dto.IssueResponse, error) {
 	return &dto.IssueResponse{OperationID: params.OperationID}, nil
 }
 
-func (m MT) Mint(params *dto.MintRequest) (*dto.MintResponse, error) {
+func (m MT) Mint(ctx context.Context, params *dto.MintRequest) (*dto.MintResponse, error) {
 	logger := m.logger.WithField("params", params).WithField("func", "MintMT")
 
 	// 非托管模式不支持
@@ -109,7 +109,7 @@ func (m MT) Mint(params *dto.MintRequest) (*dto.MintResponse, error) {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.Mint(ctx, &req)
 	if err != nil {
@@ -123,7 +123,7 @@ func (m MT) Mint(params *dto.MintRequest) (*dto.MintResponse, error) {
 	return &dto.MintResponse{OperationID: params.OperationID}, nil
 }
 
-func (m MT) BatchMint(params *dto.BatchMintRequest) (*dto.BatchMintResponse, error) {
+func (m MT) BatchMint(ctx context.Context, params *dto.BatchMintRequest) (*dto.BatchMintResponse, error) {
 	logger := m.logger.WithField("params", params).WithField("func", "MintMT")
 
 	// 非托管模式不支持
@@ -150,7 +150,7 @@ func (m MT) BatchMint(params *dto.BatchMintRequest) (*dto.BatchMintResponse, err
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.BatchMint(ctx, &req)
 	if err != nil {
@@ -164,7 +164,7 @@ func (m MT) BatchMint(params *dto.BatchMintRequest) (*dto.BatchMintResponse, err
 	return &dto.BatchMintResponse{OperationID: params.OperationID}, nil
 }
 
-func (m MT) Show(params *dto.MTShowRequest) (*dto.MTShowResponse, error) {
+func (m MT) Show(ctx context.Context, params *dto.MTShowRequest) (*dto.MTShowResponse, error) {
 	logger := m.logger.WithField("params", params).WithField("func", "ShowMT")
 
 	// 非托管模式不支持
@@ -185,7 +185,7 @@ func (m MT) Show(params *dto.MTShowRequest) (*dto.MTShowResponse, error) {
 		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.Show(ctx, &req)
 	if err != nil {
@@ -208,7 +208,7 @@ func (m MT) Show(params *dto.MTShowRequest) (*dto.MTShowResponse, error) {
 	return result, nil
 }
 
-func (m MT) Edit(params *dto.EditRequest) (*dto.EditResponse, error) {
+func (m MT) Edit(ctx context.Context, params *dto.EditRequest) (*dto.EditResponse, error) {
 	logger := m.logger.WithField("params", params).WithField("func", "EditMT")
 
 	// 非托管模式不支持
@@ -236,7 +236,7 @@ func (m MT) Edit(params *dto.EditRequest) (*dto.EditResponse, error) {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.Edit(ctx, &req)
 	if err != nil {
@@ -250,7 +250,7 @@ func (m MT) Edit(params *dto.EditRequest) (*dto.EditResponse, error) {
 	return &dto.EditResponse{OperationID: params.OperationID}, nil
 }
 
-func (m MT) BatchBurn(params *dto.BatchBurnRequest) (*dto.BatchBurnResponse, error) {
+func (m MT) BatchBurn(ctx context.Context, params *dto.BatchBurnRequest) (*dto.BatchBurnResponse, error) {
 	logger := m.logger.WithField("params", params).WithField("func", "BurnMT")
 
 	// 非托管模式不支持
@@ -276,7 +276,7 @@ func (m MT) BatchBurn(params *dto.BatchBurnRequest) (*dto.BatchBurnResponse, err
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.BatchDelete(ctx, &req)
 	if err != nil {
@@ -290,7 +290,7 @@ func (m MT) BatchBurn(params *dto.BatchBurnRequest) (*dto.BatchBurnResponse, err
 	return &dto.BatchBurnResponse{OperationID: params.OperationID}, nil
 }
 
-func (m MT) Burn(params *dto.BurnRequest) (*dto.BurnResponse, error) {
+func (m MT) Burn(ctx context.Context, params *dto.BurnRequest) (*dto.BurnResponse, error) {
 	logger := m.logger.WithField("params", params).WithField("func", "BurnMT")
 
 	// 非托管模式不支持
@@ -318,7 +318,7 @@ func (m MT) Burn(params *dto.BurnRequest) (*dto.BurnResponse, error) {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.Delete(ctx, &req)
 	if err != nil {
@@ -332,7 +332,7 @@ func (m MT) Burn(params *dto.BurnRequest) (*dto.BurnResponse, error) {
 	return &dto.BurnResponse{OperationID: params.OperationID}, nil
 }
 
-func (m MT) Transfer(params *dto.MTTransferRequest) (*dto.MTTransferResponse, error) {
+func (m MT) Transfer(ctx context.Context, params *dto.MTTransferRequest) (*dto.MTTransferResponse, error) {
 	logger := m.logger.WithField("params", params).WithField("func", "TransferMT")
 
 	// 非托管模式不支持
@@ -361,7 +361,7 @@ func (m MT) Transfer(params *dto.MTTransferRequest) (*dto.MTTransferResponse, er
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.Transfer(ctx, &req)
 	if err != nil {
@@ -374,7 +374,7 @@ func (m MT) Transfer(params *dto.MTTransferRequest) (*dto.MTTransferResponse, er
 	return &dto.MTTransferResponse{OperationID: params.OperationID}, nil
 }
 
-func (m MT) BatchTransfer(params *dto.MTBatchTransferRequest) (*dto.MTBatchTransferResponse, error) {
+func (m MT) BatchTransfer(ctx context.Context, params *dto.MTBatchTransferRequest) (*dto.MTBatchTransferResponse, error) {
 	logger := m.logger.WithField("params", params).WithField("func", "BatchTransferMT")
 
 	// 非托管模式不支持
@@ -400,7 +400,7 @@ func (m MT) BatchTransfer(params *dto.MTBatchTransferRequest) (*dto.MTBatchTrans
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.BatchTransfer(ctx, &req)
 	if err != nil {
@@ -414,7 +414,7 @@ func (m MT) BatchTransfer(params *dto.MTBatchTransferRequest) (*dto.MTBatchTrans
 	return &dto.MTBatchTransferResponse{OperationID: params.OperationID}, nil
 }
 
-func (m MT) List(params *dto.MTListRequest) (*dto.MTListResponse, error) {
+func (m MT) List(ctx context.Context, params *dto.MTListRequest) (*dto.MTListResponse, error) {
 	logger := m.logger.WithField("params", params).WithField("func", "ListMT")
 
 	// 非托管模式不支持
@@ -449,7 +449,7 @@ func (m MT) List(params *dto.MTListRequest) (*dto.MTListResponse, error) {
 		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.List(ctx, &req)
 	if err != nil {
@@ -485,7 +485,7 @@ func (m MT) List(params *dto.MTListRequest) (*dto.MTListResponse, error) {
 	return result, nil
 }
 
-func (m MT) Balances(params *dto.MTBalancesRequest) (*dto.MTBalancesResponse, error) {
+func (m MT) Balances(ctx context.Context, params *dto.MTBalancesRequest) (*dto.MTBalancesResponse, error) {
 	logger := m.logger.WithField("params", params).WithField("func", "BalancesList")
 
 	// 非托管模式不支持
@@ -510,7 +510,7 @@ func (m MT) Balances(params *dto.MTBalancesRequest) (*dto.MTBalancesResponse, er
 		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.Balances(ctx, &req)
 	if err != nil {

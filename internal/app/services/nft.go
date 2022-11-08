@@ -17,15 +17,15 @@ import (
 )
 
 type INFT interface {
-	List(params dto.Nfts) (*dto.NftsRes, error)
-	Create(params dto.CreateNfts) (*dto.TxRes, error)
-	BatchCreate(params dto.BatchCreateNfts) (*dto.BatchTxRes, error)
-	Show(params dto.NftByNftId) (*dto.NftReq, error)
-	Update(params dto.EditNftByNftId) (*dto.TxRes, error)
-	Delete(params dto.DeleteNftByNftId) (*dto.TxRes, error)
-	BatchTransfer(params *dto.BatchTransferRequest) (*dto.BatchTxRes, error)
-	BatchEdit(params *dto.BatchEditRequest) (*dto.BatchTxRes, error)
-	BatchDelete(params *dto.BatchDeleteRequest) (*dto.BatchTxRes, error)
+	List(ctx context.Context, params dto.Nfts) (*dto.NftsRes, error)
+	Create(ctx context.Context, params dto.CreateNfts) (*dto.TxRes, error)
+	BatchCreate(ctx context.Context, params dto.BatchCreateNfts) (*dto.BatchTxRes, error)
+	Show(ctx context.Context, params dto.NftByNftId) (*dto.NftReq, error)
+	Update(ctx context.Context, params dto.EditNftByNftId) (*dto.TxRes, error)
+	Delete(ctx context.Context, params dto.DeleteNftByNftId) (*dto.TxRes, error)
+	BatchTransfer(ctx context.Context, params *dto.BatchTransferRequest) (*dto.BatchTxRes, error)
+	BatchEdit(ctx context.Context, params *dto.BatchEditRequest) (*dto.BatchTxRes, error)
+	BatchDelete(ctx context.Context, params *dto.BatchDeleteRequest) (*dto.BatchTxRes, error)
 }
 type nft struct {
 	logger *log.Logger
@@ -35,7 +35,7 @@ func NewNFT(logger *log.Logger) *nft {
 	return &nft{logger: logger}
 }
 
-func (s *nft) List(params dto.Nfts) (*dto.NftsRes, error) {
+func (s *nft) List(ctx context.Context, params dto.Nfts) (*dto.NftsRes, error) {
 	logger := s.logger.WithField("params", params).WithField("func", "NFTList")
 
 	// 非托管模式不支持
@@ -72,7 +72,7 @@ func (s *nft) List(params dto.Nfts) (*dto.NftsRes, error) {
 		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.List(ctx, &req)
 	if err != nil {
@@ -112,7 +112,7 @@ func (s *nft) List(params dto.Nfts) (*dto.NftsRes, error) {
 
 }
 
-func (s *nft) Create(params dto.CreateNfts) (*dto.TxRes, error) {
+func (s *nft) Create(ctx context.Context, params dto.CreateNfts) (*dto.TxRes, error) {
 	logger := s.logger.WithField("params", params).WithField("func", "CreateNFT")
 
 	// 非托管模式不支持
@@ -139,7 +139,7 @@ func (s *nft) Create(params dto.CreateNfts) (*dto.TxRes, error) {
 		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.Create(ctx, &req)
 	if err != nil {
@@ -153,7 +153,7 @@ func (s *nft) Create(params dto.CreateNfts) (*dto.TxRes, error) {
 
 }
 
-func (s *nft) BatchCreate(params dto.BatchCreateNfts) (*dto.BatchTxRes, error) {
+func (s *nft) BatchCreate(ctx context.Context, params dto.BatchCreateNfts) (*dto.BatchTxRes, error) {
 	logger := s.logger.WithField("params", params).WithField("func", "BatchCreateNFT")
 
 	// 非托管模式不支持
@@ -180,7 +180,7 @@ func (s *nft) BatchCreate(params dto.BatchCreateNfts) (*dto.BatchTxRes, error) {
 		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.BatchCreate(ctx, &req)
 	if err != nil {
@@ -193,7 +193,7 @@ func (s *nft) BatchCreate(params dto.BatchCreateNfts) (*dto.BatchTxRes, error) {
 	return &dto.BatchTxRes{OperationId: resp.OperationId}, nil
 }
 
-func (s *nft) Show(params dto.NftByNftId) (*dto.NftReq, error) {
+func (s *nft) Show(ctx context.Context, params dto.NftByNftId) (*dto.NftReq, error) {
 	logger := s.logger.WithField("params", params).WithField("func", "ShowNFT")
 
 	// 非托管模式不支持
@@ -214,7 +214,7 @@ func (s *nft) Show(params dto.NftByNftId) (*dto.NftReq, error) {
 		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.Show(ctx, &req)
 	if err != nil {
@@ -243,7 +243,7 @@ func (s *nft) Show(params dto.NftByNftId) (*dto.NftReq, error) {
 
 }
 
-func (s *nft) Update(params dto.EditNftByNftId) (*dto.TxRes, error) {
+func (s *nft) Update(ctx context.Context, params dto.EditNftByNftId) (*dto.TxRes, error) {
 	logger := s.logger.WithField("params", params).WithField("func", "UpdateNFT")
 
 	// 非托管模式不支持
@@ -270,7 +270,8 @@ func (s *nft) Update(params dto.EditNftByNftId) (*dto.TxRes, error) {
 		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.Update(ctx, &req)
 	if err != nil {
@@ -283,7 +284,7 @@ func (s *nft) Update(params dto.EditNftByNftId) (*dto.TxRes, error) {
 	return &dto.TxRes{TaskId: resp.TaskId, OperationId: resp.OperationId}, nil
 }
 
-func (s *nft) Delete(params dto.DeleteNftByNftId) (*dto.TxRes, error) {
+func (s *nft) Delete(ctx context.Context, params dto.DeleteNftByNftId) (*dto.TxRes, error) {
 	logger := s.logger.WithField("params", params).WithField("func", "DeleteNFT")
 
 	// 非托管模式不支持
@@ -307,7 +308,7 @@ func (s *nft) Delete(params dto.DeleteNftByNftId) (*dto.TxRes, error) {
 		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.Delete(ctx, &req)
 	if err != nil {
@@ -320,7 +321,7 @@ func (s *nft) Delete(params dto.DeleteNftByNftId) (*dto.TxRes, error) {
 	return &dto.TxRes{TaskId: resp.TaskId, OperationId: resp.OperationId}, nil
 }
 
-func (s *nft) BatchTransfer(params *dto.BatchTransferRequest) (*dto.BatchTxRes, error) {
+func (s *nft) BatchTransfer(ctx context.Context, params *dto.BatchTransferRequest) (*dto.BatchTxRes, error) {
 	logger := s.logger.WithField("params", params).WithField("func", "BatchTransferNFT")
 
 	// 非托管模式不支持
@@ -344,7 +345,7 @@ func (s *nft) BatchTransfer(params *dto.BatchTransferRequest) (*dto.BatchTxRes, 
 		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.BatchTransfer(ctx, &req)
 	if err != nil {
@@ -357,7 +358,7 @@ func (s *nft) BatchTransfer(params *dto.BatchTransferRequest) (*dto.BatchTxRes, 
 	return &dto.BatchTxRes{OperationId: resp.OperationId}, nil
 }
 
-func (s *nft) BatchEdit(params *dto.BatchEditRequest) (*dto.BatchTxRes, error) {
+func (s *nft) BatchEdit(ctx context.Context, params *dto.BatchEditRequest) (*dto.BatchTxRes, error) {
 	logger := s.logger.WithField("params", params).WithField("func", "BatchEditNFT")
 
 	// 非托管模式不支持
@@ -381,7 +382,7 @@ func (s *nft) BatchEdit(params *dto.BatchEditRequest) (*dto.BatchTxRes, error) {
 		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.BatchEdit(ctx, &req)
 	if err != nil {
@@ -394,7 +395,7 @@ func (s *nft) BatchEdit(params *dto.BatchEditRequest) (*dto.BatchTxRes, error) {
 	return &dto.BatchTxRes{OperationId: resp.OperationId}, nil
 }
 
-func (s *nft) BatchDelete(params *dto.BatchDeleteRequest) (*dto.BatchTxRes, error) {
+func (s *nft) BatchDelete(ctx context.Context, params *dto.BatchDeleteRequest) (*dto.BatchTxRes, error) {
 	logger := s.logger.WithField("params", params).WithField("func", "BatchDeleteNFT")
 
 	// 非托管模式不支持
@@ -418,7 +419,7 @@ func (s *nft) BatchDelete(params *dto.BatchDeleteRequest) (*dto.BatchTxRes, erro
 		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.BatchDelete(ctx, &req)
 	if err != nil {

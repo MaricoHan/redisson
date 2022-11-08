@@ -45,8 +45,8 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"api-key":  appKey,
 	})
 
-	//createTime := time.Now()
-	//defer func(createTime time.Time) {
+	// createTime := time.Now()
+	// defer func(createTime time.Time) {
 	//	//监控响应时间
 	//	interval := time.Now().Sub(createTime)
 	//	metric.NewPrometheus().ApiHttpRequestRtSeconds.With([]string{
@@ -55,9 +55,9 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//		"uri",
 	//		r.RequestURI,
 	//	}...).Observe(float64(interval))
-	//}(createTime)
+	// }(createTime)
 
-	//查询缓存
+	// 查询缓存
 	var projectInfo entity.Project
 	err := initialize.RedisClient.GetObject(fmt.Sprintf("%s%s", constant.KeyProjectApikey, appKey), &projectInfo)
 	if err != nil {
@@ -66,7 +66,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if projectInfo.Id < 1 {
-		//查询project信息
+		// 查询project信息
 		projectRepo := project.NewProjectRepo(initialize.MysqlDB)
 		projectInfo, err = projectRepo.GetProjectByApiKey(appKey)
 		if err != nil {
@@ -92,7 +92,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//查询缓存
+	// 查询缓存
 	var chainInfo entity.Chain
 	err = initialize.RedisClient.GetObject(fmt.Sprintf("%s%d", constant.KeyChain, projectInfo.ChainId), &chainInfo)
 	if err != nil {
@@ -237,7 +237,7 @@ func (h authHandler) Signature(r *http.Request, apiSecret string, timestamp stri
 		params[k] = v
 	}
 	// sort params
-	//sortParams := sortMapParams(params)
+	// sortParams := sortMapParams(params)
 	sortParams := params
 	if sortParams != nil {
 		bf := bytes.NewBuffer([]byte{})

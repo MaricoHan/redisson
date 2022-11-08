@@ -16,8 +16,8 @@ import (
 )
 
 type INFTTransfer interface {
-	TransferNFTClass(params dto.TransferNftClassById) (*dto.TxRes, error) // 转让NFTClass
-	TransferNFT(params dto.TransferNftByNftId) (*dto.TxRes, error)
+	TransferNFTClass(ctx context.Context, params dto.TransferNftClassById) (*dto.TxRes, error) // 转让NFTClass
+	TransferNFT(ctx context.Context, params dto.TransferNftByNftId) (*dto.TxRes, error)
 }
 
 type nftTransfer struct {
@@ -28,7 +28,7 @@ func NewNFTTransfer(logger *log.Logger) *nftTransfer {
 	return &nftTransfer{logger: logger}
 }
 
-func (s *nftTransfer) TransferNFTClass(params dto.TransferNftClassById) (*dto.TxRes, error) {
+func (s *nftTransfer) TransferNFTClass(ctx context.Context, params dto.TransferNftClassById) (*dto.TxRes, error) {
 	logger := s.logger.WithField("params", params).WithField("func", "TransferNFTClass")
 
 	// 非托管模式不支持
@@ -36,7 +36,7 @@ func (s *nftTransfer) TransferNFTClass(params dto.TransferNftClassById) (*dto.Tx
 		return nil, errors2.ErrNotImplemented
 	}
 
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 
 	req := pb.ClassTransferRequest{
@@ -67,7 +67,7 @@ func (s *nftTransfer) TransferNFTClass(params dto.TransferNftClassById) (*dto.Tx
 
 }
 
-func (s *nftTransfer) TransferNFT(params dto.TransferNftByNftId) (*dto.TxRes, error) {
+func (s *nftTransfer) TransferNFT(ctx context.Context, params dto.TransferNftByNftId) (*dto.TxRes, error) {
 	logger := s.logger.WithField("params", params).WithField("func", "TransferNFT")
 
 	// 非托管模式不支持
@@ -75,7 +75,7 @@ func (s *nftTransfer) TransferNFT(params dto.TransferNftByNftId) (*dto.TxRes, er
 		return nil, errors2.ErrNotImplemented
 	}
 
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	req := pb2.NFTTransferRequest{
 		ClassId:     params.ClassID,

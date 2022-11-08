@@ -16,10 +16,10 @@ import (
 )
 
 type IBusiness interface {
-	GetOrderInfo(params dto.GetOrder) (*dto.OrderInfo, error)
-	GetAllOrders(params dto.GetAllOrder) (*dto.OrderOperationRes, error)
-	BuildOrder(params dto.BuildOrderInfo) (*dto.BuyResponse, error)
-	BatchBuyGas(params dto.BatchBuyGas) (*dto.BuyResponse, error)
+	GetOrderInfo(ctx context.Context, params dto.GetOrder) (*dto.OrderInfo, error)
+	GetAllOrders(ctx context.Context, params dto.GetAllOrder) (*dto.OrderOperationRes, error)
+	BuildOrder(ctx context.Context, params dto.BuildOrderInfo) (*dto.BuyResponse, error)
+	BatchBuyGas(ctx context.Context, params dto.BatchBuyGas) (*dto.BuyResponse, error)
 }
 
 type business struct {
@@ -30,7 +30,7 @@ func NewBusiness(logger *log.Logger) *business {
 	return &business{logger: logger}
 }
 
-func (s *business) GetOrderInfo(params dto.GetOrder) (*dto.OrderInfo, error) {
+func (s *business) GetOrderInfo(ctx context.Context, params dto.GetOrder) (*dto.OrderInfo, error) {
 	logger := s.logger.WithField("params", params).WithField("func", "GetOrderInfo")
 
 	req := pb.OrderShowRequest{
@@ -49,7 +49,7 @@ func (s *business) GetOrderInfo(params dto.GetOrder) (*dto.OrderInfo, error) {
 		logger.Error(errors2.ErrGrpc)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.Show(ctx, &req)
 	if err != nil {
@@ -74,7 +74,7 @@ func (s *business) GetOrderInfo(params dto.GetOrder) (*dto.OrderInfo, error) {
 
 }
 
-func (s *business) GetAllOrders(params dto.GetAllOrder) (*dto.OrderOperationRes, error) {
+func (s *business) GetAllOrders(ctx context.Context, params dto.GetAllOrder) (*dto.OrderOperationRes, error) {
 	logger := s.logger.WithField("params", params).WithField("func", "GetAllOrders")
 	sorts := strings.Split(params.SortBy, "_")
 
@@ -111,7 +111,7 @@ func (s *business) GetAllOrders(params dto.GetAllOrder) (*dto.OrderOperationRes,
 		SortBy:    sort,
 		SortRule:  rule,
 		Address:   params.Account,
-		//Status: pb.Status(status),
+		// Status: pb.Status(status),
 
 	}
 	if params.Status != "" {
@@ -137,7 +137,7 @@ func (s *business) GetAllOrders(params dto.GetAllOrder) (*dto.OrderOperationRes,
 		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.List(ctx, &req)
 	if err != nil {
@@ -179,7 +179,7 @@ func (s *business) GetAllOrders(params dto.GetAllOrder) (*dto.OrderOperationRes,
 
 }
 
-func (s *business) BuildOrder(params dto.BuildOrderInfo) (*dto.BuyResponse, error) {
+func (s *business) BuildOrder(ctx context.Context, params dto.BuildOrderInfo) (*dto.BuyResponse, error) {
 	logger := s.logger.WithField("params", params).WithField("func", "BuildOrder")
 
 	req := pb.BuyRequest{
@@ -203,7 +203,7 @@ func (s *business) BuildOrder(params dto.BuildOrderInfo) (*dto.BuyResponse, erro
 		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	switch params.OrderType {
 	case constant.OrderTypeGas:
@@ -231,7 +231,7 @@ func (s *business) BuildOrder(params dto.BuildOrderInfo) (*dto.BuyResponse, erro
 
 }
 
-func (s *business) BatchBuyGas(params dto.BatchBuyGas) (*dto.BuyResponse, error) {
+func (s *business) BatchBuyGas(ctx context.Context, params dto.BatchBuyGas) (*dto.BuyResponse, error) {
 	logger := s.logger.WithFields(map[string]interface{}{
 		"func":   "BatchBuyGas",
 		"params": params,
@@ -254,7 +254,7 @@ func (s *business) BatchBuyGas(params dto.BatchBuyGas) (*dto.BuyResponse, error)
 		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.BatchBuyGas(ctx, &req)
 	if err != nil {

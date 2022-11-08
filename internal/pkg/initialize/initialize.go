@@ -6,6 +6,13 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/balancer/roundrobin"
+	"google.golang.org/grpc/keepalive"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
+
 	pb_account "gitlab.bianjie.ai/avata/chains/api/pb/account"
 	pb_business "gitlab.bianjie.ai/avata/chains/api/pb/buy"
 	pb_class "gitlab.bianjie.ai/avata/chains/api/pb/class"
@@ -18,14 +25,9 @@ import (
 	pb_tx_queue "gitlab.bianjie.ai/avata/chains/api/pb/tx_queue"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/middleware"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/redis"
 	"gitlab.bianjie.ai/avata/open-api/pkg/logs"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/balancer/roundrobin"
-	"google.golang.org/grpc/keepalive"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-	"gorm.io/gorm/schema"
 )
 
 var RedisClient *redis.RedisClient
@@ -105,7 +107,14 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 
 	GrpcConnMap = make(map[string]*grpc.ClientConn)
 	logger.Info("connecting wenchangchain-native ...")
-	wenNativeConn, err := grpc.DialContext(context.Background(), cfg.GrpcClient.WenchangchainNativeAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp), grpc.WithBlock(), grpc.WithBalancerName(roundrobin.Name))
+	wenNativeConn, err := grpc.DialContext(
+		context.Background(),
+		cfg.GrpcClient.WenchangchainNativeAddr,
+		grpc.WithInsecure(),
+		grpc.WithKeepaliveParams(kacp),
+		grpc.WithBlock(),
+		grpc.WithBalancerName(roundrobin.Name),
+		grpc.WithUnaryInterceptor(middleware.NewGrpcInterceptorMiddleware().Interceptor()))
 	if err != nil {
 		logger.Fatal("get wenchangchain-native grpc connect failed, err: ", err.Error())
 	}

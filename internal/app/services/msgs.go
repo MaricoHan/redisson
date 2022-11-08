@@ -17,9 +17,9 @@ import (
 )
 
 type IMsgs interface {
-	GetNFTHistory(params dto.NftOperationHistoryByNftId) (*dto.NftOperationHistoryByNftIdRes, error)
-	GetAccountHistory(params dto.AccountsInfo) (*dto.AccountOperationRecordRes, error)
-	GetMTHistory(params dto.MTOperationHistoryByMTId) (*dto.MTOperationHistoryByMTIdRes, error)
+	GetNFTHistory(ctx context.Context, params dto.NftOperationHistoryByNftId) (*dto.NftOperationHistoryByNftIdRes, error)
+	GetAccountHistory(ctx context.Context, params dto.AccountsInfo) (*dto.AccountOperationRecordRes, error)
+	GetMTHistory(ctx context.Context, params dto.MTOperationHistoryByMTId) (*dto.MTOperationHistoryByMTIdRes, error)
 }
 
 type msgs struct {
@@ -31,7 +31,7 @@ func NewMsgs(logger *log.Logger) *msgs {
 	return &msgs{logger: logger}
 }
 
-func (s *msgs) GetNFTHistory(params dto.NftOperationHistoryByNftId) (*dto.NftOperationHistoryByNftIdRes, error) {
+func (s *msgs) GetNFTHistory(ctx context.Context, params dto.NftOperationHistoryByNftId) (*dto.NftOperationHistoryByNftIdRes, error) {
 	logger := s.logger.WithField("params", params).WithField("func", "GetNFTHistory")
 
 	// 非托管模式不支持
@@ -45,7 +45,7 @@ func (s *msgs) GetNFTHistory(params dto.NftOperationHistoryByNftId) (*dto.NftOpe
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrSortBy)
 	}
 
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	req := pb.NFTHistoryRequest{
 		ProjectId: params.ProjectID,
@@ -103,7 +103,7 @@ func (s *msgs) GetNFTHistory(params dto.NftOperationHistoryByNftId) (*dto.NftOpe
 	return result, nil
 }
 
-func (s *msgs) GetAccountHistory(params dto.AccountsInfo) (*dto.AccountOperationRecordRes, error) {
+func (s *msgs) GetAccountHistory(ctx context.Context, params dto.AccountsInfo) (*dto.AccountOperationRecordRes, error) {
 	logger := s.logger.WithField("params", params).WithField("func", "GetAccountHistory")
 
 	// 非托管模式不支持
@@ -111,7 +111,7 @@ func (s *msgs) GetAccountHistory(params dto.AccountsInfo) (*dto.AccountOperation
 		return nil, errors2.ErrNotImplemented
 	}
 
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 
 	sort, ok := pb.SORTS_value[params.SortBy]
@@ -197,7 +197,7 @@ func (s *msgs) GetAccountHistory(params dto.AccountsInfo) (*dto.AccountOperation
 	return result, nil
 }
 
-func (s *msgs) GetMTHistory(params dto.MTOperationHistoryByMTId) (*dto.MTOperationHistoryByMTIdRes, error) {
+func (s *msgs) GetMTHistory(ctx context.Context, params dto.MTOperationHistoryByMTId) (*dto.MTOperationHistoryByMTIdRes, error) {
 	logger := s.logger.WithField("params", params).WithField("func", "GetMTHistory")
 
 	// 非托管模式不支持
@@ -211,7 +211,7 @@ func (s *msgs) GetMTHistory(params dto.MTOperationHistoryByMTId) (*dto.MTOperati
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrSortBy)
 	}
 
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	req := pb.MTHistoryRequest{
 		ProjectId: params.ProjectID,

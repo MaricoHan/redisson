@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
-	"gitlab.bianjie.ai/avata/open-api/internal/pkg/metric"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -275,14 +273,7 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 		errMesg, ok := errors2.StrToCode[respErr.Code()]
 
 		log.Debugf("code: %s, string: %s, details: %s , err: %s, message:%s, ErrMesg:%s \n", respErr.Code(), respErr.String(), respErr.Details(), respErr.Err(), respErr.Message(), errMesg)
-		// 获取微服务信息
-		project := vo.AuthData{}
-		var status string
-		xAuthData := ctx.Value("X-Auth-Data")
-		authData := xAuthData.([]string)
-		if err := json.Unmarshal([]byte(authData[0]), &project); err != nil {
-			log.WithError(err).Error("json unmarshal project")
-		}
+
 		if strings.Contains(respErr.String(), "produced zero addresses") {
 			response = constant.Response{
 				ErrorResp: &constant.ErrorResp{
@@ -294,7 +285,6 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 		}
 
 		if errMesg != "" && respErr.Message() != "" {
-			status = respErr.Code().String()
 			switch respErr.Code() {
 			case errors2.ClientParams, errors2.StatusFailed, errors2.ChainFailed, errors2.DuplicateRequest, errors2.OrderFailed, errors2.StateGatewayFailed:
 				// metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "400"}...).Add(1)
@@ -320,7 +310,6 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 			}
 		}
 		if (respErr.Code().String() == "Unknown" || respErr.Code().String() == "Unavailable" || respErr.Code().String() == "DeadlineExceeded") && respErr.Message() != "" {
-			status = "500"
 			// metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "500"}...).Add(1)
 			w.WriteHeader(http.StatusInternalServerError) // 500
 			response = constant.Response{
@@ -334,7 +323,6 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 
 		appErr, ok := err.(constant.IError)
 		if ok {
-			status = appErr.Code()
 			switch appErr.Code() {
 			case constant.ClientParamsError, constant.FrequentRequestsNotSupports, constant.NftStatusAbnormal,
 				constant.NftClassStatusAbnormal, constant.MaximumLimitExceeded, constant.ErrOutOfGas, constant.ModuleFailed, constant.AccountFailed:
@@ -357,8 +345,6 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 				Message:   appErr.Error(),
 			}}
 		}
-		metric.NewPrometheus().ApiServiceRequests.With([]string{"method", url[2], "name",
-			fmt.Sprintf("%s-%s", project.Code, project.Module), "status", status}...).Add(1)
 		bz, _ := json.Marshal(response)
 		_, _ = w.Write(bz)
 	}
