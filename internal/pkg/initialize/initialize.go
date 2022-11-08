@@ -3,7 +3,6 @@ package initialize
 import (
 	"context"
 	"fmt"
-	"gitlab.bianjie.ai/avata/services/api/pb/rights"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -29,6 +28,7 @@ import (
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/middleware"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/redis"
 	"gitlab.bianjie.ai/avata/open-api/pkg/logs"
+	"gitlab.bianjie.ai/avata/services/api/pb/rights"
 )
 
 var RedisClient *redis.RedisClient
