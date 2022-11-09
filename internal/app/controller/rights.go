@@ -58,5 +58,19 @@ func (r RightsController) GetEndpoints() []kit.Endpoint {
 			Method:  http.MethodGet,
 			Handler: r.makeHandler(r.handler.Region, nil),
 		},
+
+		{
+			URI:     "/rights/post-cert",
+			Method:  http.MethodPost,
+			Handler: r.makeHandler(r.handler.Region, &vo.PostCertRequest{}),
+		}, {
+			URI:     "/rights/post-cert/{operation_id}",
+			Method:  http.MethodPatch,
+			Handler: r.makeHandler(r.handler.Region, &vo.EditPostCertRequest{}),
+		}, {
+			URI:     "/rights/post-cert",
+			Method:  http.MethodGet,
+			Handler: r.makeHandler(r.handler.Region, nil),
+		},
 	}
 }

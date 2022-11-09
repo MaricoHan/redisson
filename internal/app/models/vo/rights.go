@@ -69,22 +69,6 @@ type Individual struct {
 	IsApplicant uint32 `json:"is_applicant"`
 	RealName    string `json:"real_name"`
 	AuthNum     string `json:"auth_num"`
-	//IDCardNum       string `json:"idcard_num"`
-	//IDCardFimg      string `json:"idcard_fimg"`
-	//IDCardBimg      string `json:"idcard_bimg"`
-	//IDCardHimg      string `json:"idcard_himg"`
-	//IDCardStartDate string `json:"idcard_start_date"`
-	//IDCardEndDate   string `json:"idcard_end_date"`
-	//IDCardProvince  string `json:"idcard_province"`
-	//IDCardCity      string `json:"idcard_city"`
-	//IDCardArea      string `json:"idcard_area"`
-	//ContactNum      string `json:"contact_num"`
-	//ContactAddr     string `json:"contact_addr"`
-	//Postcode        string `json:"postcode"`
-	//Contact         string `json:"contact"`
-	//Email           string `json:"email"`
-	//IndustryCode    string `json:"industry_code"`
-	//IndustryName    string `json:"industry_name"`
 }
 
 type Corporate struct {
@@ -92,19 +76,6 @@ type Corporate struct {
 	CardType    string `json:"card_type"`
 	CompanyName string `json:"company_name"`
 	AuthNum     string `json:"auth_num"`
-	//BusLicNum       string `json:"bus_lic_num"`
-	//CompanyAddr     string `json:"company_addr"`
-	//BusLicImg       string `json:"bus_lic_img"`
-	//BusLicStartDate string `json:"bus_lic_start_date"`
-	//BusLicEndDate   string `json:"bus_lic_end_date"`
-	//BusLicProvince  string `json:"bus_lic_province"`
-	//BusLicCity      string `json:"bus_lic_city"`
-	//BusLicArea      string `json:"bus_lic_area"`
-	//Postcode        string `json:"postcode"`
-	//Contact         string `json:"contact"`
-	//Email           string `json:"email"`
-	//IndustryCode    string `json:"industry_code"`
-	//IndustryName    string `json:"industry_name"`
 }
 
 type UserAuthRequest struct {
@@ -161,4 +132,25 @@ type EditUserAuthRequest struct {
 	AuthInfoIndividual AuthInfoIndividual `json:"auth_info_individual"`
 	AuthInfoCorporate  AuthInfoCorporate  `json:"auth_info_corporate"`
 	CallbackUrl        string             `json:"callback_url"`
+}
+
+type PostCertRequest struct {
+	RegisterType   uint64 `json:"register_type"`
+	OperationID    string `json:"operation_id"`
+	ProductID      string `json:"product_id"`
+	CertificateNum string `json:"certificate_num"`
+	Addr           string `json:"addr"`
+	Postcode       string `json:"postcode"`
+	Recipient      string `json:"recipient"`
+	PhoneNum       string `json:"phone_num"`
+}
+
+type EditPostCertRequest struct {
+	RegisterType   uint64 `json:"register_type"`
+	ProductID      string `json:"product_id"`
+	CertificateNum string `json:"certificate_num"`
+	Addr           string `json:"addr"`
+	Postcode       string `json:"postcode"`
+	Recipient      string `json:"recipient"`
+	PhoneNum       string `json:"phone_num"`
 }
