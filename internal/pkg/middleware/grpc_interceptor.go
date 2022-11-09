@@ -75,7 +75,7 @@ func (g *grpcInterceptorMiddleware) authData(ctx context.Context) (vo.AuthData, 
 func (g *grpcInterceptorMiddleware) handleErrorCodeToString(err error) string {
 	respErr := errors2.Convert(err)
 	if (respErr.Code().String() == "Unknown" || respErr.Code().String() == "Unavailable" || respErr.Code().String() == "DeadlineExceeded") && respErr.Message() != "" {
-		return "500"
+		return "400"
 	}
 	return respErr.Code().String()[5:8]
 }
