@@ -12,15 +12,15 @@ import (
 )
 
 type IRights interface {
-	Register(params *dto.RegisterRequest) (*dto.RegisterResponse, error)
-	EditRegister(params *dto.EditRegisterRequest) (*dto.EditRegisterResponse, error)
-	QueryRegister(params *dto.QueryRegisterRequest) (*dto.QueryRegisterResponse, error)
-	UserAuth(params *dto.UserAuthRequest) (*dto.UserAuthResponse, error)
-	EditUserAuth(params *dto.EditUserAuthRequest) (*dto.EditUserAuthResponse, error)
-	QueryUserAuth(params *dto.QueryUserAuthRequest) (*dto.QueryUserAuthResponse, error)
+	Register(ctx context.Context, params *dto.RegisterRequest) (*dto.RegisterResponse, error)
+	EditRegister(ctx context.Context, params *dto.EditRegisterRequest) (*dto.EditRegisterResponse, error)
+	QueryRegister(ctx context.Context, params *dto.QueryRegisterRequest) (*dto.QueryRegisterResponse, error)
+	UserAuth(ctx context.Context, params *dto.UserAuthRequest) (*dto.UserAuthResponse, error)
+	EditUserAuth(ctx context.Context, params *dto.EditUserAuthRequest) (*dto.EditUserAuthResponse, error)
+	QueryUserAuth(ctx context.Context, params *dto.QueryUserAuthRequest) (*dto.QueryUserAuthResponse, error)
 
-	Dict(params *dto.DictRequest) (*dto.DictResponse, error)
-	Region(params *dto.RegionRequest) (*dto.RegionResponse, error)
+	Dict(ctx context.Context, params *dto.DictRequest) (*dto.DictResponse, error)
+	Region(ctx context.Context, params *dto.RegionRequest) (*dto.RegionResponse, error)
 }
 
 type Rights struct {
@@ -33,8 +33,10 @@ func NewRights(logger *log.Logger) *Rights {
 	}
 }
 
-func (r Rights) Register(params *dto.RegisterRequest) (*dto.RegisterResponse, error) {
+func (r Rights) Register(ctx context.Context, params *dto.RegisterRequest) (*dto.RegisterResponse, error) {
 	logger := r.logger.WithField("params", params).WithField("func", "Register")
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
 
 	var authorsIndividual []*rights.Person
 	var authorsCorporate []*rights.Company
@@ -119,8 +121,6 @@ func (r Rights) Register(params *dto.RegisterRequest) (*dto.RegisterResponse, er
 		logger.Error(errors2.ErrService)
 		return nil, errors2.ErrInternal
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
-	defer cancel()
 	resp, err := grpcClient.Register(ctx, &req)
 	if err != nil {
 		logger.Error("grpc request failed")
@@ -130,8 +130,10 @@ func (r Rights) Register(params *dto.RegisterRequest) (*dto.RegisterResponse, er
 	return &dto.RegisterResponse{OperationID: resp.OperationId}, nil
 }
 
-func (r Rights) EditRegister(params *dto.EditRegisterRequest) (*dto.EditRegisterResponse, error) {
+func (r Rights) EditRegister(ctx context.Context, params *dto.EditRegisterRequest) (*dto.EditRegisterResponse, error) {
 	logger := r.logger.WithField("params", params).WithField("func", "EditRegister")
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
 
 	var authorsIndividual []*rights.Person
 	var authorsCorporate []*rights.Company
@@ -216,8 +218,6 @@ func (r Rights) EditRegister(params *dto.EditRegisterRequest) (*dto.EditRegister
 		logger.Error(errors2.ErrService)
 		return nil, errors2.ErrInternal
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
-	defer cancel()
 	resp, err := grpcClient.EditRegister(ctx, &req)
 	if err != nil {
 		logger.Error("grpc request failed")
@@ -227,8 +227,10 @@ func (r Rights) EditRegister(params *dto.EditRegisterRequest) (*dto.EditRegister
 	return &dto.EditRegisterResponse{OperationID: resp.OperationId}, nil
 }
 
-func (r Rights) QueryRegister(params *dto.QueryRegisterRequest) (*dto.QueryRegisterResponse, error) {
+func (r Rights) QueryRegister(ctx context.Context, params *dto.QueryRegisterRequest) (*dto.QueryRegisterResponse, error) {
 	logger := r.logger.WithField("params", params).WithField("func", "QueryRegister")
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
 
 	req := rights.RegisterInfoRequest{OperationId: params.OperationID, ProjectId: params.ProjectID}
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
@@ -236,8 +238,6 @@ func (r Rights) QueryRegister(params *dto.QueryRegisterRequest) (*dto.QueryRegis
 		logger.Error(errors2.ErrService)
 		return nil, errors2.ErrInternal
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
-	defer cancel()
 	resp, err := grpcClient.RegisterInfo(ctx, &req)
 	if err != nil {
 		logger.Error("grpc request failed")
@@ -256,8 +256,10 @@ func (r Rights) QueryRegister(params *dto.QueryRegisterRequest) (*dto.QueryRegis
 	return result, nil
 }
 
-func (r Rights) UserAuth(params *dto.UserAuthRequest) (*dto.UserAuthResponse, error) {
+func (r Rights) UserAuth(ctx context.Context, params *dto.UserAuthRequest) (*dto.UserAuthResponse, error) {
 	logger := r.logger.WithField("params", params).WithField("func", "UserAuth")
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
 
 	req := rights.UserAuthRequest{
 		Code:        "",
@@ -309,8 +311,6 @@ func (r Rights) UserAuth(params *dto.UserAuthRequest) (*dto.UserAuthResponse, er
 		logger.Error(errors2.ErrService)
 		return nil, errors2.ErrInternal
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
-	defer cancel()
 	resp, err := grpcClient.UserAuth(ctx, &req)
 	if err != nil {
 		logger.Error("grpc request failed")
@@ -325,8 +325,10 @@ func (r Rights) UserAuth(params *dto.UserAuthRequest) (*dto.UserAuthResponse, er
 	return result, nil
 }
 
-func (r Rights) EditUserAuth(params *dto.EditUserAuthRequest) (*dto.EditUserAuthResponse, error) {
+func (r Rights) EditUserAuth(ctx context.Context, params *dto.EditUserAuthRequest) (*dto.EditUserAuthResponse, error) {
 	logger := r.logger.WithField("params", params).WithField("func", "EditUserAuth")
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
 
 	req := rights.UserAuthRequest{
 		Code:        "",
@@ -378,8 +380,6 @@ func (r Rights) EditUserAuth(params *dto.EditUserAuthRequest) (*dto.EditUserAuth
 		logger.Error(errors2.ErrService)
 		return nil, errors2.ErrInternal
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
-	defer cancel()
 	resp, err := grpcClient.EditUserAuth(ctx, &req)
 	if err != nil {
 		logger.Error("grpc request failed")
@@ -391,8 +391,10 @@ func (r Rights) EditUserAuth(params *dto.EditUserAuthRequest) (*dto.EditUserAuth
 	return result, nil
 }
 
-func (r Rights) QueryUserAuth(params *dto.QueryUserAuthRequest) (*dto.QueryUserAuthResponse, error) {
+func (r Rights) QueryUserAuth(ctx context.Context, params *dto.QueryUserAuthRequest) (*dto.QueryUserAuthResponse, error) {
 	logger := r.logger.WithField("params", params).WithField("func", "QueryUserAuth")
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
 
 	req := rights.UserAuthInfoRequest{
 		AuthType: params.AuthType,
@@ -403,8 +405,6 @@ func (r Rights) QueryUserAuth(params *dto.QueryUserAuthRequest) (*dto.QueryUserA
 		logger.Error(errors2.ErrService)
 		return nil, errors2.ErrInternal
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
-	defer cancel()
 	resp, err := grpcClient.UserAuthInfo(ctx, &req)
 	if err != nil {
 		logger.Error("grpc request failed")
@@ -418,8 +418,11 @@ func (r Rights) QueryUserAuth(params *dto.QueryUserAuthRequest) (*dto.QueryUserA
 	return result, nil
 }
 
-func (r Rights) Dict(params *dto.DictRequest) (*dto.DictResponse, error) {
+func (r Rights) Dict(ctx context.Context, params *dto.DictRequest) (*dto.DictResponse, error) {
 	logger := r.logger.WithField("params", params).WithField("func", "Dict")
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+
 	req := rights.DictRequest{}
 
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
@@ -427,8 +430,6 @@ func (r Rights) Dict(params *dto.DictRequest) (*dto.DictResponse, error) {
 		logger.Error(errors2.ErrService)
 		return nil, errors2.ErrInternal
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
-	defer cancel()
 	resp, err := grpcClient.Dict(ctx, &req)
 	if err != nil {
 		logger.Error("grpc request failed")
@@ -471,8 +472,10 @@ func (r Rights) Dict(params *dto.DictRequest) (*dto.DictResponse, error) {
 	return result, nil
 }
 
-func (r Rights) Region(params *dto.RegionRequest) (*dto.RegionResponse, error) {
+func (r Rights) Region(ctx context.Context, params *dto.RegionRequest) (*dto.RegionResponse, error) {
 	logger := r.logger.WithField("params", params).WithField("func", "Region")
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
 
 	req := rights.RegionRequest{ParentId: params.ParentID}
 
@@ -481,8 +484,6 @@ func (r Rights) Region(params *dto.RegionRequest) (*dto.RegionResponse, error) {
 		logger.Error(errors2.ErrService)
 		return nil, errors2.ErrInternal
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
-	defer cancel()
 	resp, err := grpcClient.Region(ctx, &req)
 	if err != nil {
 		logger.Error("grpc request failed")
