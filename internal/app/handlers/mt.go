@@ -67,7 +67,7 @@ func (h MT) Issue(ctx context.Context, request interface{}) (response interface{
 		AccessMode:  authData.AccessMode,
 	}
 
-	return h.svc.Issue(&param)
+	return h.svc.Issue(ctx, &param)
 }
 
 func (h MT) Mint(ctx context.Context, request interface{}) (response interface{}, err error) {
@@ -99,7 +99,7 @@ func (h MT) Mint(ctx context.Context, request interface{}) (response interface{}
 		AccessMode:  authData.AccessMode,
 	}
 
-	return h.svc.Mint(&param)
+	return h.svc.Mint(ctx, &param)
 }
 
 func (h MT) BatchMint(ctx context.Context, request interface{}) (response interface{}, err error) {
@@ -130,7 +130,7 @@ func (h MT) BatchMint(ctx context.Context, request interface{}) (response interf
 		AccessMode:  authData.AccessMode,
 	}
 
-	return h.svc.BatchMint(&param)
+	return h.svc.BatchMint(ctx, &param)
 }
 
 func (h MT) Edit(ctx context.Context, request interface{}) (response interface{}, err error) {
@@ -162,7 +162,7 @@ func (h MT) Edit(ctx context.Context, request interface{}) (response interface{}
 		AccessMode:  authData.AccessMode,
 	}
 
-	return h.svc.Edit(&param)
+	return h.svc.Edit(ctx, &param)
 }
 
 func (h MT) Burn(ctx context.Context, request interface{}) (response interface{}, err error) {
@@ -194,7 +194,7 @@ func (h MT) Burn(ctx context.Context, request interface{}) (response interface{}
 		AccessMode:  authData.AccessMode,
 	}
 
-	return h.svc.Burn(&param)
+	return h.svc.Burn(ctx, &param)
 }
 
 func (h MT) BatchBurn(ctx context.Context, request interface{}) (response interface{}, err error) {
@@ -224,7 +224,7 @@ func (h MT) BatchBurn(ctx context.Context, request interface{}) (response interf
 		AccessMode:  authData.AccessMode,
 	}
 
-	return h.svc.BatchBurn(&param)
+	return h.svc.BatchBurn(ctx, &param)
 }
 
 func (h MT) Transfer(ctx context.Context, request interface{}) (response interface{}, err error) {
@@ -257,7 +257,7 @@ func (h MT) Transfer(ctx context.Context, request interface{}) (response interfa
 		AccessMode:  authData.AccessMode,
 	}
 
-	return h.svc.Transfer(&param)
+	return h.svc.Transfer(ctx, &param)
 }
 
 func (h MT) BatchTransfer(ctx context.Context, request interface{}) (response interface{}, err error) {
@@ -287,7 +287,7 @@ func (h MT) BatchTransfer(ctx context.Context, request interface{}) (response in
 		AccessMode:  authData.AccessMode,
 	}
 
-	return h.svc.BatchTransfer(&param)
+	return h.svc.BatchTransfer(ctx, &param)
 }
 
 func (h MT) Show(ctx context.Context, request interface{}) (response interface{}, err error) {
@@ -302,7 +302,7 @@ func (h MT) Show(ctx context.Context, request interface{}) (response interface{}
 		AccessMode: authData.AccessMode,
 	}
 
-	return h.svc.Show(&param)
+	return h.svc.Show(ctx, &param)
 }
 
 func (h MT) List(ctx context.Context, request interface{}) (response interface{}, err error) {
@@ -346,7 +346,7 @@ func (h MT) List(ctx context.Context, request interface{}) (response interface{}
 	}
 
 	params.SortBy = h.SortBy(ctx)
-	return h.svc.List(&params)
+	return h.svc.List(ctx, &params)
 }
 
 func (h MT) Balances(ctx context.Context, request interface{}) (response interface{}, err error) {
@@ -377,7 +377,7 @@ func (h MT) Balances(ctx context.Context, request interface{}) (response interfa
 		params.Limit = 10
 	}
 
-	return h.svc.Balances(&params)
+	return h.svc.Balances(ctx, &params)
 }
 
 func (MT) ClassID(ctx context.Context) string {

@@ -19,8 +19,8 @@ import (
 )
 
 type ITx interface {
-	TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHashRes, error)
-	TxQueueInfo(params dto.TxQueueInfo) (*dto.TxQueueInfoRes, error)
+	TxResultByTxHash(ctx context.Context, params dto.TxResultByTxHash) (*dto.TxResultByTxHashRes, error)
+	TxQueueInfo(ctx context.Context, params dto.TxQueueInfo) (*dto.TxQueueInfoRes, error)
 }
 
 type tx struct {
@@ -31,14 +31,14 @@ func NewTx(logger *log.Logger) *tx {
 	return &tx{logger: logger.WithField("model", "tx")}
 }
 
-func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHashRes, error) {
+func (t *tx) TxResultByTxHash(ctx context.Context, params dto.TxResultByTxHash) (*dto.TxResultByTxHashRes, error) {
 	logger := t.logger.WithField("params", params).WithField("func", "TxResultByTxHash")
 	// 非托管模式不支持
 	if params.AccessMode == entity.UNMANAGED {
 		return nil, errors2.ErrNotImplemented
 	}
 
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	req := pb.TxShowRequest{
 		ProjectId:   params.ProjectID,
@@ -106,10 +106,10 @@ func (t *tx) TxResultByTxHash(params dto.TxResultByTxHash) (*dto.TxResultByTxHas
 	return result, nil
 }
 
-func (t *tx) TxQueueInfo(params dto.TxQueueInfo) (*dto.TxQueueInfoRes, error) {
+func (t *tx) TxQueueInfo(ctx context.Context, params dto.TxQueueInfo) (*dto.TxQueueInfoRes, error) {
 	logger := t.logger.WithField("params", params).WithField("func", "TxQueueInfo")
 
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	req := pb_queue.TxQueueShowRequest{
 		ProjectId:   params.ProjectID,

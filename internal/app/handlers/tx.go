@@ -35,7 +35,7 @@ func (h *Tx) TxResultByTxHash(ctx context.Context, _ interface{}) (interface{}, 
 	}
 	// 校验参数 end
 	// 业务数据入库的地方
-	return h.svc.TxResultByTxHash(params)
+	return h.svc.TxResultByTxHash(ctx, params)
 }
 
 func (h *Tx) TaskId(ctx context.Context) string {
@@ -56,7 +56,7 @@ func (h *Tx) TxQueueInfo(ctx context.Context, _ interface{}) (interface{}, error
 		Code:        authData.Code,
 	}
 	// 校验参数 end
-	return h.svc.TxQueueInfo(params)
+	return h.svc.TxQueueInfo(ctx, params)
 }
 
 func (h *Tx) OperationID(ctx context.Context) string {

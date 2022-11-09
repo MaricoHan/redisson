@@ -46,7 +46,7 @@ func (h *NFTTransfer) TransferNftClassByID(ctx context.Context, request interfac
 		return nil, err
 	}
 
-	//校验参数 end
+	// 校验参数 end
 	authData := h.AuthData(ctx)
 	params := dto.TransferNftClassById{
 		ClassID:     h.ClassID(ctx),
@@ -61,7 +61,7 @@ func (h *NFTTransfer) TransferNftClassByID(ctx context.Context, request interfac
 		OperationId: operationId,
 		AccessMode:  authData.AccessMode,
 	}
-	return h.svc.TransferNFTClass(params)
+	return h.svc.TransferNFTClass(ctx, params)
 }
 
 // TransferNftByNftId transfer an nft class by index
@@ -102,13 +102,13 @@ func (h *NFTTransfer) TransferNftByNftId(ctx context.Context, request interface{
 		OperationId: operationId,
 		AccessMode:  authData.AccessMode,
 	}
-	//不能自己转让给自己
-	//400
+	// 不能自己转让给自己
+	// 400
 	if params.Recipient == params.Sender {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrSelfTransfer)
 	}
 
-	return h.svc.TransferNFT(params)
+	return h.svc.TransferNFT(ctx, params)
 }
 
 func (h *NFTTransfer) ClassID(ctx context.Context) string {

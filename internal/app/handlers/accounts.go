@@ -57,7 +57,7 @@ func (h *Account) BatchCreateAccount(ctx context.Context, request interface{}) (
 	if params.Count == 0 {
 		params.Count = 1
 	}
-	return h.svc.BatchCreateAccount(params)
+	return h.svc.BatchCreateAccount(ctx, params)
 }
 
 // CreateAccount 单个创建链账户
@@ -92,7 +92,7 @@ func (h *Account) CreateAccount(ctx context.Context, request interface{}) (inter
 		AccessMode:  authData.AccessMode,
 	}
 
-	return h.svc.CreateAccount(params)
+	return h.svc.CreateAccount(ctx, params)
 }
 
 func (h *Account) GetAccounts(ctx context.Context, _ interface{}) (interface{}, error) {
@@ -139,7 +139,7 @@ func (h *Account) GetAccounts(ctx context.Context, _ interface{}) (interface{}, 
 
 	params.SortBy = h.SortBy(ctx)
 
-	return h.svc.GetAccounts(params)
+	return h.svc.GetAccounts(ctx, params)
 }
 
 func (h *Account) Account(ctx context.Context) string {

@@ -3,10 +3,16 @@ package initialize
 import (
 	"context"
 	"fmt"
-	"gitlab.bianjie.ai/avata/services/api/pb/rights"
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/balancer/roundrobin"
+	"google.golang.org/grpc/keepalive"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
+
 	pb_account "gitlab.bianjie.ai/avata/chains/api/pb/account"
 	pb_business "gitlab.bianjie.ai/avata/chains/api/pb/buy"
 	pb_class "gitlab.bianjie.ai/avata/chains/api/pb/class"
@@ -19,14 +25,10 @@ import (
 	pb_tx_queue "gitlab.bianjie.ai/avata/chains/api/pb/tx_queue"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/middleware"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/redis"
 	"gitlab.bianjie.ai/avata/open-api/pkg/logs"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/balancer/roundrobin"
-	"google.golang.org/grpc/keepalive"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-	"gorm.io/gorm/schema"
+	"gitlab.bianjie.ai/avata/services/api/pb/rights"
 )
 
 var RedisClient *redis.RedisClient
@@ -109,28 +111,56 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 
 	GrpcConnMap = make(map[string]*grpc.ClientConn)
 	logger.Info("connecting wenchangchain-native ...")
-	wenNativeConn, err := grpc.DialContext(context.Background(), cfg.GrpcClient.WenchangchainNativeAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp), grpc.WithBlock(), grpc.WithBalancerName(roundrobin.Name))
+	wenNativeConn, err := grpc.DialContext(
+		context.Background(),
+		cfg.GrpcClient.WenchangchainNativeAddr,
+		grpc.WithInsecure(),
+		grpc.WithKeepaliveParams(kacp),
+		grpc.WithBlock(),
+		grpc.WithBalancerName(roundrobin.Name),
+		grpc.WithUnaryInterceptor(middleware.NewGrpcInterceptorMiddleware().Interceptor()))
 	if err != nil {
 		logger.Fatal("get wenchangchain-native grpc connect failed, err: ", err.Error())
 	}
 	GrpcConnMap[constant.WenchangNative] = wenNativeConn
 
 	logger.Info("connecting wenchangchain-ddc ...")
-	wenDDcConn, err := grpc.DialContext(context.Background(), cfg.GrpcClient.WenchangchainDDCAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp), grpc.WithBlock(), grpc.WithBalancerName(roundrobin.Name))
+	wenDDcConn, err := grpc.DialContext(
+		context.Background(),
+		cfg.GrpcClient.WenchangchainDDCAddr,
+		grpc.WithInsecure(),
+		grpc.WithKeepaliveParams(kacp),
+		grpc.WithBlock(),
+		grpc.WithBalancerName(roundrobin.Name),
+		grpc.WithUnaryInterceptor(middleware.NewGrpcInterceptorMiddleware().Interceptor()))
 	if err != nil {
 		logger.Fatal("get wenchangchain-ddc grpc connect failed, err: ", err.Error())
 	}
 	GrpcConnMap[constant.WenchangDDC] = wenDDcConn
 
 	logger.Info("connecting irita-opb-native ...")
-	IritaOPBNativeConn, err := grpc.DialContext(context.Background(), cfg.GrpcClient.IritaOPBNativeAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp), grpc.WithBlock(), grpc.WithBalancerName(roundrobin.Name))
+	IritaOPBNativeConn, err := grpc.DialContext(
+		context.Background(),
+		cfg.GrpcClient.IritaOPBNativeAddr,
+		grpc.WithInsecure(),
+		grpc.WithKeepaliveParams(kacp),
+		grpc.WithBlock(),
+		grpc.WithBalancerName(roundrobin.Name),
+		grpc.WithUnaryInterceptor(middleware.NewGrpcInterceptorMiddleware().Interceptor()))
 	if err != nil {
 		logger.Fatal("get irita-opb-native grpc connect failed, err: ", err.Error())
 	}
 	GrpcConnMap[constant.IritaOPBNative] = IritaOPBNativeConn
 
 	logger.Info("connecting state-gateway-server ...")
-	StateGatewayServer, err = grpc.DialContext(context.Background(), cfg.GrpcClient.StateGatewayAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp), grpc.WithBlock(), grpc.WithBalancerName(roundrobin.Name))
+	StateGatewayServer, err = grpc.DialContext(
+		context.Background(),
+		cfg.GrpcClient.StateGatewayAddr,
+		grpc.WithInsecure(),
+		grpc.WithKeepaliveParams(kacp),
+		grpc.WithBlock(),
+		grpc.WithBalancerName(roundrobin.Name),
+		grpc.WithUnaryInterceptor(middleware.NewGrpcInterceptorMiddleware().Interceptor()))
 	if err != nil {
 		logger.Fatal("get state-gateway-server grpc connect failed, err: ", err.Error())
 	}
@@ -139,7 +169,14 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	GrpcConnRightsMap = make(map[string]*grpc.ClientConn)
 
 	logger.Info("connecting rights_jiangsu server ...")
-	RightsConn, err := grpc.DialContext(context.Background(), cfg.GrpcClient.RightsJiangSu, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp), grpc.WithBlock(), grpc.WithBalancerName(roundrobin.Name))
+	RightsConn, err := grpc.DialContext(
+		context.Background(),
+		cfg.GrpcClient.RightsJiangSu,
+		grpc.WithInsecure(),
+		grpc.WithKeepaliveParams(kacp),
+		grpc.WithBlock(),
+		grpc.WithBalancerName(roundrobin.Name),
+		grpc.WithUnaryInterceptor(middleware.NewGrpcInterceptorMiddleware().Interceptor()))
 	if err != nil {
 		logger.Fatal("get rights_jiangsu grpc connect failed, err: ", err.Error())
 	}

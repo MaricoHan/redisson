@@ -15,9 +15,9 @@ import (
 )
 
 type INFTClass interface {
-	GetAllNFTClasses(params dto.NftClasses) (*dto.NftClassesRes, error) // 列表
-	GetNFTClass(params dto.NftClasses) (*dto.NftClassRes, error)        // 详情
-	CreateNFTClass(params dto.CreateNftClass) (*dto.TxRes, error)       // 创建
+	GetAllNFTClasses(ctx context.Context, params dto.NftClasses) (*dto.NftClassesRes, error) // 列表
+	GetNFTClass(ctx context.Context, params dto.NftClasses) (*dto.NftClassRes, error)        // 详情
+	CreateNFTClass(ctx context.Context, params dto.CreateNftClass) (*dto.TxRes, error)       // 创建
 }
 
 type nftClass struct {
@@ -28,7 +28,7 @@ func NewNFTClass(logger *log.Logger) *nftClass {
 	return &nftClass{logger: logger}
 }
 
-func (n *nftClass) GetAllNFTClasses(params dto.NftClasses) (*dto.NftClassesRes, error) {
+func (n *nftClass) GetAllNFTClasses(ctx context.Context, params dto.NftClasses) (*dto.NftClassesRes, error) {
 	logger := n.logger.WithField("params", params).WithField("func", "NFTClassList")
 
 	// 非托管模式不支持
@@ -36,7 +36,7 @@ func (n *nftClass) GetAllNFTClasses(params dto.NftClasses) (*dto.NftClassesRes, 
 		return nil, errors2.ErrNotImplemented
 	}
 
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	sort, ok := pb.SORTS_value[params.SortBy]
 	if !ok {
@@ -102,7 +102,7 @@ func (n *nftClass) GetAllNFTClasses(params dto.NftClasses) (*dto.NftClassesRes, 
 	return result, nil
 }
 
-func (n *nftClass) GetNFTClass(params dto.NftClasses) (*dto.NftClassRes, error) {
+func (n *nftClass) GetNFTClass(ctx context.Context, params dto.NftClasses) (*dto.NftClassRes, error) {
 	logger := n.logger.WithField("params", params).WithField("func", "GetNFTClass")
 
 	// 非托管模式不支持
@@ -110,12 +110,12 @@ func (n *nftClass) GetNFTClass(params dto.NftClasses) (*dto.NftClassRes, error) 
 		return nil, errors2.ErrNotImplemented
 	}
 
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	req := pb.ClassShowRequest{
 		ProjectId: params.ProjectID,
 		Id:        params.Id,
-		Status:    pb.STATUS_Active, //todo
+		Status:    pb.STATUS_Active, // todo
 	}
 	resp := &pb.ClassShowResponse{}
 	var err error
@@ -148,7 +148,7 @@ func (n *nftClass) GetNFTClass(params dto.NftClasses) (*dto.NftClassRes, error) 
 	return result, nil
 }
 
-func (n *nftClass) CreateNFTClass(params dto.CreateNftClass) (*dto.TxRes, error) {
+func (n *nftClass) CreateNFTClass(ctx context.Context, params dto.CreateNftClass) (*dto.TxRes, error) {
 	logger := n.logger.WithField("params", params).WithField("func", "CreateNFTClass")
 
 	// 非托管模式不支持
@@ -156,7 +156,7 @@ func (n *nftClass) CreateNFTClass(params dto.CreateNftClass) (*dto.TxRes, error)
 		return nil, errors2.ErrNotImplemented
 	}
 
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	req := pb.ClassCreateRequest{
 		Name:        params.Name,

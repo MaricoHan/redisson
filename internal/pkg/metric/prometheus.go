@@ -72,7 +72,7 @@ func (p *prometheusModel) InitPrometheus() {
 		Subsystem: "api",
 		Name:      "service_requests",
 		Help:      "api service request",
-	}, []string{"status", "method", "name"})
+	}, []string{"name", "method", "status"})
 
 	apiMysqlException.With([]string{}...).Set(0)
 	apiRedisException.With([]string{}...).Set(0)

@@ -77,7 +77,7 @@ func (h *NFT) CreateNft(ctx context.Context, request interface{}) (interface{}, 
 		Uri:        uri,
 		UriHash:    uriHash,
 		Data:       data,
-		//Amount:    req.Amount,
+		// Amount:    req.Amount,
 		Recipient:   recipient,
 		Tag:         tagBytes,
 		Code:        authData.Code,
@@ -87,7 +87,7 @@ func (h *NFT) CreateNft(ctx context.Context, request interface{}) (interface{}, 
 
 	params.Amount = 1
 
-	return h.svc.Create(params)
+	return h.svc.Create(ctx, params)
 }
 
 func (h *NFT) BatchCreateNft(ctx context.Context, request interface{}) (interface{}, error) {
@@ -139,12 +139,11 @@ func (h *NFT) BatchCreateNft(ctx context.Context, request interface{}) (interfac
 		AccessMode:  authData.AccessMode,
 	}
 
-	return h.svc.BatchCreate(params)
+	return h.svc.BatchCreate(ctx, params)
 }
 
 // EditNftByNftId Edit a nft and return the edited result
 func (h *NFT) EditNftByNftId(ctx context.Context, request interface{}) (interface{}, error) {
-
 	req := request.(*vo.EditNftByIndexRequest)
 
 	name := strings.TrimSpace(req.Name)
@@ -163,7 +162,7 @@ func (h *NFT) EditNftByNftId(ctx context.Context, request interface{}) (interfac
 	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
 	}
-	//check start
+	// check start
 	if name == "" {
 		return nil, errors2.New(errors2.ClientParams, constant.ErrName)
 	}
@@ -172,7 +171,7 @@ func (h *NFT) EditNftByNftId(ctx context.Context, request interface{}) (interfac
 		return nil, err
 	}
 
-	//check end
+	// check end
 	authData := h.AuthData(ctx)
 	params := dto.EditNftByNftId{
 		ChainID:     authData.ChainId,
@@ -191,7 +190,7 @@ func (h *NFT) EditNftByNftId(ctx context.Context, request interface{}) (interfac
 		AccessMode:  authData.AccessMode,
 	}
 
-	return h.svc.Update(params)
+	return h.svc.Update(ctx, params)
 }
 
 // DeleteNftByNftId Delete a nft and return the edited result
@@ -228,7 +227,7 @@ func (h *NFT) DeleteNftByNftId(ctx context.Context, request interface{}) (interf
 		AccessMode:  authData.AccessMode,
 	}
 
-	return h.svc.Delete(params)
+	return h.svc.Delete(ctx, params)
 }
 
 // Nfts return nft list
@@ -284,7 +283,7 @@ func (h *NFT) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 	// 校验参数 end
 	// 业务数据入库的地方
 
-	return h.svc.List(params)
+	return h.svc.List(ctx, params)
 }
 
 // NftByNftId return class details
@@ -301,7 +300,7 @@ func (h *NFT) NftByNftId(ctx context.Context, _ interface{}) (interface{}, error
 		AccessMode: authData.AccessMode,
 	}
 
-	return h.svc.Show(params)
+	return h.svc.Show(ctx, params)
 
 }
 
@@ -338,7 +337,7 @@ func (h *NFT) BatchTransfer(ctx context.Context, request interface{}) (interface
 		AccessMode:  authData.AccessMode,
 	}
 
-	return h.svc.BatchTransfer(&params)
+	return h.svc.BatchTransfer(ctx, &params)
 }
 
 func (h *NFT) BatchEdit(ctx context.Context, request interface{}) (interface{}, error) {
@@ -374,7 +373,7 @@ func (h *NFT) BatchEdit(ctx context.Context, request interface{}) (interface{}, 
 		AccessMode:  authData.AccessMode,
 	}
 
-	return h.svc.BatchEdit(&params)
+	return h.svc.BatchEdit(ctx, &params)
 }
 
 func (h *NFT) BatchDelete(ctx context.Context, request interface{}) (interface{}, error) {
@@ -410,7 +409,7 @@ func (h *NFT) BatchDelete(ctx context.Context, request interface{}) (interface{}
 		AccessMode:  authData.AccessMode,
 	}
 
-	return h.svc.BatchDelete(&params)
+	return h.svc.BatchDelete(ctx, &params)
 }
 
 func (h *NFT) Signer(ctx context.Context) string {
