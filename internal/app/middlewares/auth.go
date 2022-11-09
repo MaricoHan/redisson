@@ -20,6 +20,7 @@ import (
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/metric"
 	"gitlab.bianjie.ai/avata/utils/commons/aes"
 )
 
@@ -195,6 +196,11 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if !h.Signature(r, secret, reqTimestampStr, reqSignature) {
+			metric.NewPrometheus().ApiServiceRequests.With([]string{
+				"name", "open-api",
+				"method", "/api.project.v1beta1.Project/Auth",
+				"status", "401",
+			}...).Add(1)
 			writeForbiddenResp(w, "")
 			return
 		}
