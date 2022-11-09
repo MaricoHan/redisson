@@ -147,7 +147,7 @@ func (r Rights) Register(ctx context.Context, request interface{}) (response int
 		Metadata:    nil,
 	}
 
-	return r.svc.Register(&params)
+	return r.svc.Register(ctx, &params)
 }
 
 func (r Rights) EditRegister(ctx context.Context, request interface{}) (response interface{}, err error) {
@@ -248,7 +248,7 @@ func (r Rights) EditRegister(ctx context.Context, request interface{}) (response
 		Metadata:    nil,
 	}
 
-	return r.svc.EditRegister(&params)
+	return r.svc.EditRegister(ctx, &params)
 }
 
 func (r Rights) QueryRegister(ctx context.Context, request interface{}) (response interface{}, err error) {
@@ -260,7 +260,7 @@ func (r Rights) QueryRegister(ctx context.Context, request interface{}) (respons
 		OperationID:  r.OperationID(ctx),
 	}
 
-	return r.svc.QueryRegister(&param)
+	return r.svc.QueryRegister(ctx, &param)
 }
 
 func (r Rights) UserAuth(ctx context.Context, request interface{}) (response interface{}, err error) {
@@ -326,7 +326,7 @@ func (r Rights) UserAuth(ctx context.Context, request interface{}) (response int
 		CallbackUrl: req.CallbackUrl,
 	}
 
-	return r.svc.UserAuth(&params)
+	return r.svc.UserAuth(ctx, &params)
 }
 
 func (r Rights) EditUserAuth(ctx context.Context, request interface{}) (response interface{}, err error) {
@@ -392,7 +392,7 @@ func (r Rights) EditUserAuth(ctx context.Context, request interface{}) (response
 		CallbackUrl: req.CallbackUrl,
 	}
 
-	return r.svc.EditUserAuth(&params)
+	return r.svc.EditUserAuth(ctx, &params)
 }
 
 func (r Rights) QueryUserAuth(ctx context.Context, request interface{}) (response interface{}, err error) {
@@ -405,7 +405,7 @@ func (r Rights) QueryUserAuth(ctx context.Context, request interface{}) (respons
 		AuthNum:      r.AuthNum(ctx),
 	}
 
-	return r.svc.QueryUserAuth(&param)
+	return r.svc.QueryUserAuth(ctx, &param)
 }
 
 func (r Rights) Dict(ctx context.Context, request interface{}) (response interface{}, err error) {
@@ -415,7 +415,7 @@ func (r Rights) Dict(ctx context.Context, request interface{}) (response interfa
 		ProjectID:    authData.ProjectId,
 		RegisterType: r.RegisterType(ctx),
 	}
-	return r.svc.Dict(&param)
+	return r.svc.Dict(ctx, &param)
 }
 
 func (r Rights) Region(ctx context.Context, request interface{}) (response interface{}, err error) {
@@ -426,7 +426,7 @@ func (r Rights) Region(ctx context.Context, request interface{}) (response inter
 		ParentID:     r.ParentID(ctx),
 		RegisterType: r.RegisterType(ctx),
 	}
-	return r.svc.Region(&param)
+	return r.svc.Region(ctx, &param)
 }
 
 func (Rights) RegisterType(ctx context.Context) uint64 {
