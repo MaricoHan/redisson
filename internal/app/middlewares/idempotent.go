@@ -53,7 +53,7 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		h.next.ServeHTTP(w, r)
 		return
 	}
-	//if len(req.OperationID) >= 65 {
+	//if len(req.ProductID) >= 65 {
 	//	writeBadRequestResp(w, constant.NewAppError(constant.RootCodeSpace, errors2.StrToCode[errors2.DuplicateRequest], "operation_id does not comply with the rules"))
 	//	return
 	//}

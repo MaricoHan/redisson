@@ -21,6 +21,10 @@ type IRights interface {
 
 	Dict(params *dto.DictRequest) (*dto.DictResponse, error)
 	Region(params *dto.RegionRequest) (*dto.RegionResponse, error)
+
+	PostCert(params *dto.PostCertRequest) (*dto.PostCertResponse, error)
+	EditPostCert(params *dto.EditPostCertRequest) (*dto.EditPostCertResponse, error)
+	PostCertInfo(params *dto.PostCertInfoRequest) (*dto.PostCertInfoResponse, error)
 }
 
 type Rights struct {
@@ -72,8 +76,8 @@ func (r Rights) Register(params *dto.RegisterRequest) (*dto.RegisterResponse, er
 	}
 
 	req := rights.RegisterRequest{
-		Code:        "",
-		Module:      "",
+		Code:        params.Code,
+		Module:      params.Module,
 		ProjectId:   params.ProjectID,
 		OperationId: params.OperationID,
 		AuthUserId:  params.UserID,
@@ -169,8 +173,8 @@ func (r Rights) EditRegister(params *dto.EditRegisterRequest) (*dto.EditRegister
 	}
 
 	req := rights.RegisterRequest{
-		Code:        "",
-		Module:      "",
+		Code:        params.Code,
+		Module:      params.Module,
 		ProjectId:   params.ProjectID,
 		OperationId: params.OperationID,
 		AuthUserId:  params.UserID,
@@ -504,4 +508,103 @@ func (r Rights) Region(params *dto.RegionRequest) (*dto.RegionResponse, error) {
 	}
 
 	return result, nil
+}
+
+func (r Rights) PostCert(params *dto.PostCertRequest) (*dto.PostCertResponse, error) {
+	logger := r.logger.WithField("params", params).WithField("func", "PostCert")
+
+	req := rights.PostCertRequest{
+		Code:           params.Code,
+		Module:         params.Module,
+		ProjectId:      params.ProjectID,
+		OperationId:    params.OperationID,
+		ProductId:      params.ProductID,
+		CertificateNum: params.CertificateNum,
+		Addr:           params.Addr,
+		Postcode:       params.Postcode,
+		Recipient:      params.Recipient,
+		PhoneNum:       params.PhoneNum,
+	}
+	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
+	if !ok {
+		//logger.Error("no rights service was found")
+		logger.Error(errors2.ErrService)
+		return nil, errors2.ErrInternal
+	}
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+	resp, err := grpcClient.PostCert(ctx, &req)
+	if err != nil {
+		logger.Error("grpc request failed")
+		return nil, err
+	}
+
+	return &dto.PostCertResponse{OperationID: resp.OperationId}, nil
+}
+
+func (r Rights) EditPostCert(params *dto.EditPostCertRequest) (*dto.EditPostCertResponse, error) {
+	logger := r.logger.WithField("params", params).WithField("func", "EditPostCert")
+
+	req := rights.PostCertRequest{
+		Code:           params.Code,
+		Module:         params.Module,
+		ProjectId:      params.ProjectID,
+		OperationId:    params.OperationID,
+		ProductId:      params.ProductID,
+		CertificateNum: params.CertificateNum,
+		Addr:           params.Addr,
+		Postcode:       params.Postcode,
+		Recipient:      params.Recipient,
+		PhoneNum:       params.PhoneNum,
+	}
+	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
+	if !ok {
+		//logger.Error("no rights service was found")
+		logger.Error(errors2.ErrService)
+		return nil, errors2.ErrInternal
+	}
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+	resp, err := grpcClient.EditPostCert(ctx, &req)
+	if err != nil {
+		logger.Error("grpc request failed")
+		return nil, err
+	}
+
+	return &dto.EditPostCertResponse{OperationID: resp.OperationId}, nil
+}
+
+func (r Rights) PostCertInfo(params *dto.PostCertInfoRequest) (*dto.PostCertInfoResponse, error) {
+	logger := r.logger.WithField("params", params).WithField("func", "PostCertInfo")
+
+	req := rights.PostCertInfoRequest{
+		Code:           params.Code,
+		Module:         params.Module,
+		ProjectId:      params.ProjectID,
+		ProductId:      params.ProductID,
+		CertificateNum: params.CertificateNum,
+	}
+	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
+	if !ok {
+		//logger.Error("no rights service was found")
+		logger.Error(errors2.ErrService)
+		return nil, errors2.ErrInternal
+	}
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+	resp, err := grpcClient.PostCertInfo(ctx, &req)
+	if err != nil {
+		logger.Error("grpc request failed")
+		return nil, err
+	}
+
+	return &dto.PostCertInfoResponse{
+		ProductID:      resp.ProductId,
+		CertificateNum: resp.CertificateNum,
+		Addr:           resp.Addr,
+		Postcode:       resp.Postcode,
+		Recipient:      resp.Recipient,
+		PhoneNum:       resp.PhoneNum,
+		ExpressNum:     resp.ExpressNum,
+	}, nil
 }
