@@ -91,11 +91,11 @@ func (a *account) CreateAccount(ctx context.Context, params dto.CreateAccount) (
 		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.Create(ctx, &req)
 	if err != nil {
-		logger.Error("request err:", err.Error())
+		logger.WithError(err).Error("request err")
 		return nil, err
 	}
 	if resp == nil {
@@ -144,7 +144,7 @@ func (a *account) GetAccounts(ctx context.Context, params dto.AccountsInfo) (*dt
 			return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 		}
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.Show(ctx, &req)
 	if err != nil {
