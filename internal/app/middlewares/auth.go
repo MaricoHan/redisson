@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"gitlab.bianjie.ai/avata/open-api/internal/pkg/metric"
 	"io/ioutil"
 	"net/http"
 	"sort"
@@ -21,6 +20,7 @@ import (
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/metric"
 	"gitlab.bianjie.ai/avata/utils/commons/aes"
 )
 
