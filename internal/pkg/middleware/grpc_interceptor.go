@@ -77,5 +77,6 @@ func (g *grpcInterceptorMiddleware) handleErrorCodeToString(err error) string {
 	if (respErr.Code().String() == "Unknown" || respErr.Code().String() == "Unavailable" || respErr.Code().String() == "DeadlineExceeded") && respErr.Message() != "" {
 		return "500"
 	}
+	// TODO 后期优化
 	return respErr.Code().String()[5:8]
 }

@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/metric"
 	"io/ioutil"
 	"net/http"
 	"sort"
@@ -195,6 +196,11 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if !h.Signature(r, secret, reqTimestampStr, reqSignature) {
+			metric.NewPrometheus().ApiServiceRequests.With([]string{
+				"name", "open-api",
+				"method", "/api.project.v1beta1.Project/Auth",
+				"status", "401",
+			}...).Add(1)
 			writeForbiddenResp(w, "")
 			return
 		}
