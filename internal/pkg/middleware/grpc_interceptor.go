@@ -4,14 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	"gitlab.bianjie.ai/avata/open-api/utils"
-	errors2 "gitlab.bianjie.ai/avata/utils/errors"
-	"google.golang.org/grpc"
 	"sync"
+
+	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/metric"
+	"gitlab.bianjie.ai/avata/open-api/utils"
+	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 )
 
 type grpcInterceptorMiddleware struct {
