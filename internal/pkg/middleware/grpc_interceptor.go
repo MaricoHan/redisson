@@ -7,11 +7,12 @@ import (
 	"sync"
 
 	log "github.com/sirupsen/logrus"
-	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 	"google.golang.org/grpc"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/metric"
+	"gitlab.bianjie.ai/avata/open-api/utils"
+	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 )
 
 type grpcInterceptorMiddleware struct {
@@ -74,9 +75,9 @@ func (g *grpcInterceptorMiddleware) authData(ctx context.Context) (vo.AuthData, 
 // handleErrorCodeToString 解析异常中的Code
 func (g *grpcInterceptorMiddleware) handleErrorCodeToString(err error) string {
 	respErr := errors2.Convert(err)
-	if (respErr.Code().String() == "Unknown" || respErr.Code().String() == "Unavailable" || respErr.Code().String() == "DeadlineExceeded") && respErr.Message() != "" {
-		return "500"
+	code := "500"
+	if utils.IsNumeric(respErr.Code().String()[5:8]) {
+		code = respErr.Code().String()[5:8]
 	}
-	// TODO 后期优化
-	return respErr.Code().String()[5:8]
+	return code
 }
