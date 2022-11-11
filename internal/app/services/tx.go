@@ -103,6 +103,9 @@ func (t *tx) TxResultByTxHash(ctx context.Context, params dto.TxResultByTxHash) 
 		}
 	}
 
+	if resp.Detail.Record != new(pb.Record) {
+		result.Record = resp.Detail.Record
+	}
 	return result, nil
 }
 

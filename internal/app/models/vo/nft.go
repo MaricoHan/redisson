@@ -3,7 +3,7 @@ package vo
 import pb "gitlab.bianjie.ai/avata/chains/api/pb/nft"
 
 type CreateNftClassRequest struct {
-	//Base
+	// Base
 	OperationID string                 `json:"operation_id"`
 	Name        string                 `json:"name" validate:"required"`
 	Symbol      string                 `json:"symbol"`
@@ -17,34 +17,34 @@ type CreateNftClassRequest struct {
 }
 
 type TransferNftClassByIDRequest struct {
-	//Base
+	// Base
 	OperationID string                 `json:"operation_id"`
 	Recipient   string                 `json:"recipient" validate:"required"`
 	Tag         map[string]interface{} `json:"tag"`
 }
 
 type TransferNftByNftIdRequest struct {
-	//Base
+	// Base
 	OperationID string                 `json:"operation_id"`
 	Recipient   string                 `json:"recipient" validate:"required"`
 	Tag         map[string]interface{} `json:"tag"`
 }
 
 type CreateNftsRequest struct {
-	//Base
+	// Base
 	OperationID string `json:"operation_id"`
 	Name        string `json:"name" validate:"required"`
 	Uri         string `json:"uri"`
 	UriHash     string `json:"uri_hash"`
 	Data        string `json:"data"`
-	//关闭批量发行
-	//Amount    int    `json:"amount"`
+	// 关闭批量发行
+	// Amount    int    `json:"amount"`
 	Recipient string                 `json:"recipient"`
 	Tag       map[string]interface{} `json:"tag"`
 }
 
 type BatchCreateNftsRequest struct {
-	//Base
+	// Base
 	OperationID string                         `json:"operation_id"`
 	Name        string                         `json:"name" validate:"required"`
 	Uri         string                         `json:"uri"`
