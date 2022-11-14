@@ -21,6 +21,10 @@ type IRights interface {
 
 	Dict(ctx context.Context, request interface{}) (response interface{}, err error)
 	Region(ctx context.Context, request interface{}) (response interface{}, err error)
+
+	PostCert(ctx context.Context, request interface{}) (response interface{}, err error)
+	EditPostCert(ctx context.Context, request interface{}) (response interface{}, err error)
+	PostCertInfo(ctx context.Context, request interface{}) (response interface{}, err error)
 }
 
 type Rights struct {
@@ -97,6 +101,8 @@ func (r Rights) Register(ctx context.Context, request interface{}) (response int
 		})
 	}
 	params := dto.RegisterRequest{
+		Code:         authData.Code,
+		Module:       authData.Module,
 		ProjectID:    authData.ProjectId,
 		RegisterType: req.RegisterType,
 		OperationID:  operationId,
@@ -195,6 +201,8 @@ func (r Rights) EditRegister(ctx context.Context, request interface{}) (response
 		})
 	}
 	params := dto.EditRegisterRequest{
+		Code:         authData.Code,
+		Module:       authData.Module,
 		ProjectID:    authData.ProjectId,
 		RegisterType: req.RegisterType,
 		OperationID:  operationId,
@@ -243,6 +251,8 @@ func (r Rights) QueryRegister(ctx context.Context, request interface{}) (respons
 	// 获取账户基本信息
 	authData := r.AuthData(ctx)
 	param := dto.QueryRegisterRequest{
+		Code:         authData.Code,
+		Module:       authData.Module,
 		ProjectID:    authData.ProjectId,
 		RegisterType: r.RegisterType(ctx),
 		OperationID:  r.OperationID(ctx),
@@ -271,6 +281,8 @@ func (r Rights) UserAuth(ctx context.Context, request interface{}) (response int
 
 	authData := r.AuthData(ctx)
 	params := dto.UserAuthRequest{
+		Code:         authData.Code,
+		Module:       authData.Module,
 		ProjectID:    authData.ProjectId,
 		RegisterType: req.RegisterType,
 		OperationID:  operationId,
@@ -337,6 +349,8 @@ func (r Rights) EditUserAuth(ctx context.Context, request interface{}) (response
 
 	authData := r.AuthData(ctx)
 	params := dto.EditUserAuthRequest{
+		Code:         authData.Code,
+		Module:       authData.Module,
 		ProjectID:    authData.ProjectId,
 		RegisterType: req.RegisterType,
 		OperationID:  operationId,
@@ -387,6 +401,8 @@ func (r Rights) QueryUserAuth(ctx context.Context, request interface{}) (respons
 	// 获取账户基本信息
 	authData := r.AuthData(ctx)
 	param := dto.QueryUserAuthRequest{
+		Code:         authData.Code,
+		Module:       authData.Module,
 		ProjectID:    authData.ProjectId,
 		RegisterType: r.RegisterType(ctx),
 		AuthType:     r.AuthType(ctx),
@@ -400,6 +416,8 @@ func (r Rights) Dict(ctx context.Context, request interface{}) (response interfa
 	// 获取账户基本信息
 	authData := r.AuthData(ctx)
 	param := dto.DictRequest{
+		Code:         authData.Code,
+		Module:       authData.Module,
 		ProjectID:    authData.ProjectId,
 		RegisterType: r.RegisterType(ctx),
 	}
@@ -410,11 +428,77 @@ func (r Rights) Region(ctx context.Context, request interface{}) (response inter
 	// 获取账户基本信息
 	authData := r.AuthData(ctx)
 	param := dto.RegionRequest{
+		Code:         authData.Code,
+		Module:       authData.Module,
 		ProjectID:    authData.ProjectId,
 		ParentID:     r.ParentID(ctx),
 		RegisterType: r.RegisterType(ctx),
 	}
 	return r.svc.Region(ctx, &param)
+}
+
+func (r Rights) PostCert(ctx context.Context, request interface{}) (response interface{}, err error) {
+	req, ok := request.(*vo.PostCertRequest)
+	if !ok {
+		log.Debugf("failed to assert : %v", request)
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	}
+
+	// 获取账户基本信息
+	authData := r.AuthData(ctx)
+	param := dto.PostCertRequest{
+		Code:           authData.Code,
+		Module:         authData.Module,
+		ProjectID:      authData.ProjectId,
+		RegisterType:   req.RegisterType,
+		OperationID:    req.OperationID,
+		ProductID:      req.ProductID,
+		CertificateNum: req.CertificateNum,
+		Addr:           req.Addr,
+		Postcode:       req.Postcode,
+		Recipient:      req.Recipient,
+		PhoneNum:       req.PhoneNum,
+	}
+	return r.svc.PostCert(ctx, &param)
+}
+
+func (r Rights) EditPostCert(ctx context.Context, request interface{}) (response interface{}, err error) {
+	req, ok := request.(*vo.EditPostCertRequest)
+	if !ok {
+		log.Debugf("failed to assert : %v", request)
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	}
+
+	// 获取账户基本信息
+	authData := r.AuthData(ctx)
+	param := dto.EditPostCertRequest{
+		Code:           authData.Code,
+		Module:         authData.Module,
+		ProjectID:      authData.ProjectId,
+		RegisterType:   req.RegisterType,
+		OperationID:    r.OperationID(ctx),
+		ProductID:      req.ProductID,
+		CertificateNum: req.CertificateNum,
+		Addr:           req.Addr,
+		Postcode:       req.Postcode,
+		Recipient:      req.Recipient,
+		PhoneNum:       req.PhoneNum,
+	}
+	return r.svc.EditPostCert(ctx, &param)
+}
+
+func (r Rights) PostCertInfo(ctx context.Context, request interface{}) (response interface{}, err error) {
+	// 获取账户基本信息
+	authData := r.AuthData(ctx)
+	param := dto.PostCertInfoRequest{
+		Code:           authData.Code,
+		Module:         authData.Module,
+		ProjectID:      authData.ProjectId,
+		RegisterType:   r.RegisterType(ctx),
+		ProductID:      r.ProductID(ctx),
+		CertificateNum: r.CertificateNum(ctx),
+	}
+	return r.svc.PostCertInfo(ctx, &param)
 }
 
 func (Rights) RegisterType(ctx context.Context) uint64 {
@@ -466,4 +550,22 @@ func (Rights) AuthNum(ctx context.Context) string {
 		return ""
 	}
 	return authNum.(string)
+}
+
+func (Rights) CertificateNum(ctx context.Context) string {
+	certificateNum := ctx.Value("certificate_num")
+
+	if certificateNum == nil {
+		return ""
+	}
+	return certificateNum.(string)
+}
+
+func (Rights) ProductID(ctx context.Context) string {
+	productID := ctx.Value("product_id")
+
+	if productID == nil {
+		return ""
+	}
+	return productID.(string)
 }
