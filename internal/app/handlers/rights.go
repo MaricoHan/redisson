@@ -459,7 +459,7 @@ func (r Rights) PostCert(ctx context.Context, request interface{}) (response int
 		Recipient:      req.Recipient,
 		PhoneNum:       req.PhoneNum,
 	}
-	return r.svc.PostCert(&param)
+	return r.svc.PostCert(ctx, &param)
 }
 
 func (r Rights) EditPostCert(ctx context.Context, request interface{}) (response interface{}, err error) {
@@ -484,7 +484,7 @@ func (r Rights) EditPostCert(ctx context.Context, request interface{}) (response
 		Recipient:      req.Recipient,
 		PhoneNum:       req.PhoneNum,
 	}
-	return r.svc.EditPostCert(&param)
+	return r.svc.EditPostCert(ctx, &param)
 }
 
 func (r Rights) PostCertInfo(ctx context.Context, request interface{}) (response interface{}, err error) {
@@ -498,7 +498,7 @@ func (r Rights) PostCertInfo(ctx context.Context, request interface{}) (response
 		ProductID:      r.ProductID(ctx),
 		CertificateNum: r.CertificateNum(ctx),
 	}
-	return r.svc.PostCertInfo(&param)
+	return r.svc.PostCertInfo(ctx, &param)
 }
 
 func (Rights) RegisterType(ctx context.Context) uint64 {

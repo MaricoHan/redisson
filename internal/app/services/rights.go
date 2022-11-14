@@ -511,7 +511,7 @@ func (r Rights) Region(ctx context.Context, params *dto.RegionRequest) (*dto.Reg
 	return result, nil
 }
 
-func (r Rights) PostCert(params *dto.PostCertRequest) (*dto.PostCertResponse, error) {
+func (r Rights) PostCert(ctx context.Context, params *dto.PostCertRequest) (*dto.PostCertResponse, error) {
 	logger := r.logger.WithField("params", params).WithField("func", "PostCert")
 
 	req := rights.PostCertRequest{
@@ -532,7 +532,7 @@ func (r Rights) PostCert(params *dto.PostCertRequest) (*dto.PostCertResponse, er
 		logger.Error(errors2.ErrService)
 		return nil, errors2.ErrInternal
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err := grpcClient.PostCert(ctx, &req)
 	if err != nil {
@@ -543,7 +543,7 @@ func (r Rights) PostCert(params *dto.PostCertRequest) (*dto.PostCertResponse, er
 	return &dto.PostCertResponse{OperationID: resp.OperationId}, nil
 }
 
-func (r Rights) EditPostCert(params *dto.EditPostCertRequest) (*dto.EditPostCertResponse, error) {
+func (r Rights) EditPostCert(ctx context.Context, params *dto.EditPostCertRequest) (*dto.EditPostCertResponse, error) {
 	logger := r.logger.WithField("params", params).WithField("func", "EditPostCert")
 
 	req := rights.PostCertRequest{
@@ -564,7 +564,7 @@ func (r Rights) EditPostCert(params *dto.EditPostCertRequest) (*dto.EditPostCert
 		logger.Error(errors2.ErrService)
 		return nil, errors2.ErrInternal
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err := grpcClient.EditPostCert(ctx, &req)
 	if err != nil {
@@ -575,7 +575,7 @@ func (r Rights) EditPostCert(params *dto.EditPostCertRequest) (*dto.EditPostCert
 	return &dto.EditPostCertResponse{OperationID: resp.OperationId}, nil
 }
 
-func (r Rights) PostCertInfo(params *dto.PostCertInfoRequest) (*dto.PostCertInfoResponse, error) {
+func (r Rights) PostCertInfo(ctx context.Context, params *dto.PostCertInfoRequest) (*dto.PostCertInfoResponse, error) {
 	logger := r.logger.WithField("params", params).WithField("func", "PostCertInfo")
 
 	req := rights.PostCertInfoRequest{
@@ -591,7 +591,7 @@ func (r Rights) PostCertInfo(params *dto.PostCertInfoRequest) (*dto.PostCertInfo
 		logger.Error(errors2.ErrService)
 		return nil, errors2.ErrInternal
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err := grpcClient.PostCertInfo(ctx, &req)
 	if err != nil {
