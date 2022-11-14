@@ -21,6 +21,7 @@ import (
 	pb_mt_class "gitlab.bianjie.ai/avata/chains/api/pb/mt_class"
 	pb_mt_msgs "gitlab.bianjie.ai/avata/chains/api/pb/mt_msgs"
 	pb_nft "gitlab.bianjie.ai/avata/chains/api/pb/nft"
+	pb_record "gitlab.bianjie.ai/avata/chains/api/pb/record"
 	pb_tx "gitlab.bianjie.ai/avata/chains/api/pb/tx"
 	pb_tx_queue "gitlab.bianjie.ai/avata/chains/api/pb/tx_queue"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
@@ -38,6 +39,7 @@ var AccountClientMap map[string]pb_account.AccountClient
 var BusineessClientMap map[string]pb_business.BuyClient
 var MsgsClientMap map[string]pb_msgs.MSGSClient
 var NftClientMap map[string]pb_nft.NFTClient
+var RecordClientMap map[string]pb_record.RecordClient
 var ClassClientMap map[string]pb_class.ClassClient
 var TxClientMap map[string]pb_tx.TxClient
 var MTClientMap map[string]pb_mt.MTClient
@@ -233,6 +235,11 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	RightsClientMap = make(map[string]rights.RightsClient)
 	RightsClientMap[constant.JiangSu] = rights.NewRightsClient(GrpcConnRightsMap[constant.JiangSu])
 
+	// 初始化record grpc client
+	RecordClientMap = make(map[string]pb_record.RecordClient)
+	RecordClientMap[constant.WenchangDDC] = pb_record.NewRecordClient(GrpcConnMap[constant.WenchangDDC])
+	RecordClientMap[constant.WenchangNative] = pb_record.NewRecordClient(GrpcConnMap[constant.WenchangNative])
+	RecordClientMap[constant.IritaOPBNative] = pb_record.NewRecordClient(GrpcConnMap[constant.IritaOPBNative])
 }
 
 func InitRedisClient(cfg *configs.Config, logger *log.Logger) {
