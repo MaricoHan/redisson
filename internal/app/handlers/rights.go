@@ -50,15 +50,6 @@ func (r Rights) Register(ctx context.Context, request interface{}) (response int
 	if req.RegisterType == 0 {
 		return nil, errors2.New(errors2.ClientParams, "register_type can not be nil")
 	}
-	if req.UserID == "" {
-		return nil, errors2.New(errors2.ClientParams, "user_id can not be nil")
-	}
-	if req.ContactNum == "" {
-		return nil, errors2.New(errors2.ClientParams, "contact_num can not be nil")
-	}
-	if req.CallbackURL == "" {
-		return nil, errors2.New(errors2.ClientParams, "callback_url can not be nil")
-	}
 
 	// todo 仿照tag处理metadata
 	//tagBytes, err := r.ValidateTag(req.Metadata)
@@ -166,9 +157,6 @@ func (r Rights) EditRegister(ctx context.Context, request interface{}) (response
 	}
 	if req.RegisterType == 0 {
 		return nil, errors2.New(errors2.ClientParams, "register_type can not be nil")
-	}
-	if req.UserID == "" {
-		return nil, errors2.New(errors2.ClientParams, "user_id can not be nil")
 	}
 
 	authData := r.AuthData(ctx)
