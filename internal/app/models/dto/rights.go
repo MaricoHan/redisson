@@ -1,6 +1,8 @@
 package dto
 
 type RegisterRequest struct {
+	Code         string      `json:"code"`
+	Module       string      `json:"module"`
 	ProjectID    uint64      `json:"project_id"`
 	RegisterType uint64      `json:"register_type"`
 	OperationID  string      `json:"operation_id"`
@@ -18,6 +20,8 @@ type RegisterRequest struct {
 }
 
 type EditRegisterRequest struct {
+	Code         string      `json:"code"`
+	Module       string      `json:"module"`
 	ProjectID    uint64      `json:"project_id"`
 	RegisterType uint64      `json:"register_type"`
 	OperationID  string      `json:"operation_id"`
@@ -89,6 +93,8 @@ type EditRegisterResponse struct {
 }
 
 type QueryRegisterRequest struct {
+	Code         string `json:"code"`
+	Module       string `json:"module"`
 	ProjectID    uint64 `json:"project_id"`
 	RegisterType uint64 `json:"register_type"`
 	OperationID  string `json:"operation_id"`
@@ -106,6 +112,8 @@ type QueryRegisterResponse struct {
 }
 
 type DictRequest struct {
+	Code         string `json:"code"`
+	Module       string `json:"module"`
 	ProjectID    uint64 `json:"project_id"`
 	RegisterType uint64 `json:"register_type"`
 }
@@ -118,6 +126,8 @@ type DictResponse struct {
 }
 
 type RegionRequest struct {
+	Code         string `json:"code"`
+	Module       string `json:"module"`
 	ProjectID    uint64 `json:"project_id"`
 	ParentID     uint64 `json:"parent_id"`
 	RegisterType uint64 `json:"register_type"`
@@ -148,6 +158,8 @@ type Region struct {
 }
 
 type UserAuthRequest struct {
+	Code               string             `json:"code"`
+	Module             string             `json:"module"`
 	ProjectID          uint64             `json:"project_id"`
 	RegisterType       uint64             `json:"register_type"`
 	OperationID        string             `json:"operation_id"`
@@ -203,6 +215,8 @@ type AuthInfoCorporate struct {
 }
 
 type EditUserAuthRequest struct {
+	Code               string             `json:"code"`
+	Module             string             `json:"module"`
 	ProjectID          uint64             `json:"project_id"`
 	RegisterType       uint64             `json:"register_type"`
 	OperationID        string             `json:"operation_id"`
@@ -217,6 +231,8 @@ type EditUserAuthResponse struct {
 }
 
 type QueryUserAuthRequest struct {
+	Code         string `json:"code"`
+	Module       string `json:"module"`
 	ProjectID    uint64 `json:"project_id"`
 	RegisterType uint64 `json:"register_type"`
 	AuthType     uint32 `json:"auth_type"`
@@ -227,4 +243,59 @@ type QueryUserAuthResponse struct {
 	UserID           string `json:"user_id"`
 	AuditStatus      uint32 `json:"audit_status"`
 	AuditInstruction string `json:"audit_instruction"`
+}
+
+type PostCertRequest struct {
+	Code           string `json:"code"`
+	Module         string `json:"module"`
+	ProjectID      uint64 `json:"project_id"`
+	RegisterType   uint64 `json:"register_type"`
+	OperationID    string `json:"operation_id"`
+	ProductID      string `json:"product_id"`
+	CertificateNum string `json:"certificate_num"`
+	Addr           string `json:"addr"`
+	Postcode       string `json:"postcode"`
+	Recipient      string `json:"recipient"`
+	PhoneNum       string `json:"phone_num"`
+}
+
+type PostCertResponse struct {
+	OperationID string `json:"operation_id"`
+}
+
+type EditPostCertRequest struct {
+	Code           string `json:"code"`
+	Module         string `json:"module"`
+	ProjectID      uint64 `json:"project_id"`
+	RegisterType   uint64 `json:"register_type"`
+	OperationID    string `json:"operation_id"`
+	ProductID      string `json:"product_id"`
+	CertificateNum string `json:"certificate_num"`
+	Addr           string `json:"addr"`
+	Postcode       string `json:"postcode"`
+	Recipient      string `json:"recipient"`
+	PhoneNum       string `json:"phone_num"`
+}
+
+type EditPostCertResponse struct {
+	OperationID string `json:"operation_id"`
+}
+
+type PostCertInfoRequest struct {
+	Code           string `json:"code"`
+	Module         string `json:"module"`
+	ProjectID      uint64 `json:"project_id"`
+	RegisterType   uint64 `json:"register_type"`
+	ProductID      string `json:"product_id"`
+	CertificateNum string `json:"certificate_num"`
+}
+
+type PostCertInfoResponse struct {
+	ProductID      string `json:"product_id"`
+	CertificateNum string `json:"certificate_num"`
+	Addr           string `json:"addr"`
+	Postcode       string `json:"postcode"`
+	Recipient      string `json:"recipient"`
+	PhoneNum       string `json:"phone_num"`
+	ExpressNum     string `json:"express_num"`
 }
