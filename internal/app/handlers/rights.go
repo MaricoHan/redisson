@@ -331,6 +331,7 @@ func (r Rights) UserAuth(ctx context.Context, request interface{}) (response int
 			BusLicArea:      req.AuthInfoCorporate.BusLicArea,
 			Postcode:        req.AuthInfoCorporate.Postcode,
 			Contact:         req.AuthInfoCorporate.Contact,
+			ContactNum:      req.AuthInfoCorporate.ContactNum,
 			Email:           req.AuthInfoCorporate.Email,
 			IndustryCode:    req.AuthInfoCorporate.IndustryCode,
 			IndustryName:    req.AuthInfoCorporate.IndustryName,
