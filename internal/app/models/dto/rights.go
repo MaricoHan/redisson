@@ -209,6 +209,7 @@ type AuthInfoCorporate struct {
 	BusLicArea      string `json:"bus_lic_area"`
 	Postcode        string `json:"postcode"`
 	Contact         string `json:"contact"`
+	ContactNum      string `json:"contact_num"`
 	Email           string `json:"email"`
 	IndustryCode    string `json:"industry_code"`
 	IndustryName    string `json:"industry_name"`
