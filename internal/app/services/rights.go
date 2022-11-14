@@ -303,7 +303,7 @@ func (r Rights) UserAuth(ctx context.Context, params *dto.UserAuthRequest) (*dto
 			BusLicArea:      params.AuthInfoCorporate.BusLicArea,
 			Postcode:        params.AuthInfoCorporate.Postcode,
 			Contact:         params.AuthInfoCorporate.Contact,
-			ContactNum:      params.AuthInfoCorporate.Contact,
+			ContactNum:      params.AuthInfoCorporate.ContactNum,
 			Email:           params.AuthInfoCorporate.Email,
 			IndustryCode:    params.AuthInfoCorporate.IndustryCode,
 			IndustryName:    params.AuthInfoCorporate.IndustryName,
