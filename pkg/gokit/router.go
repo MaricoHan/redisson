@@ -37,15 +37,15 @@ type (
 	RequestFunc        = httptransport.RequestFunc
 	ServerResponseFunc = httptransport.ServerResponseFunc
 
-	//IController define a interface for all http Controller
+	// IController define a interface for all http Controller
 	IController interface {
 		GetEndpoints() []Endpoint
 	}
 
 	Application interface {
 		IController
-		//Initialize()
-		//Stop()
+		// Initialize()
+		// Stop()
 	}
 
 	Controller struct {
@@ -133,20 +133,20 @@ func (c Controller) GetPagation(ctx context.Context) (int, int) {
 	return page, size
 }
 
-//深度克隆，可以克隆任意数据类型
+// 深度克隆，可以克隆任意数据类型
 func DeepClone(src interface{}) interface{} {
 	typ := reflect.TypeOf(src)
-	if typ.Kind() == reflect.Ptr { //如果是指针类型
-		typ = typ.Elem()                          //获取源实际类型(否则为指针类型)
-		dst := reflect.New(typ).Elem()            //创建对象
-		b, _ := json.Marshal(src)                 //导出json
-		json.Unmarshal(b, dst.Addr().Interface()) //json序列化
-		return dst.Addr().Interface()             //返回指针
+	if typ.Kind() == reflect.Ptr { // 如果是指针类型
+		typ = typ.Elem()                          // 获取源实际类型(否则为指针类型)
+		dst := reflect.New(typ).Elem()            // 创建对象
+		b, _ := json.Marshal(src)                 // 导出json
+		json.Unmarshal(b, dst.Addr().Interface()) // json序列化
+		return dst.Addr().Interface()             // 返回指针
 	} else {
-		dst := reflect.New(typ).Elem()            //创建对象
-		b, _ := json.Marshal(src)                 //导出json
-		json.Unmarshal(b, dst.Addr().Interface()) //json序列化
-		return dst.Interface()                    //返回值
+		dst := reflect.New(typ).Elem()            // 创建对象
+		b, _ := json.Marshal(src)                 // 导出json
+		json.Unmarshal(b, dst.Addr().Interface()) // json序列化
+		return dst.Interface()                    // 返回值
 	}
 }
 
@@ -174,7 +174,7 @@ func (c Controller) decodeRequest(req interface{}) httptransport.DecodeRequestFu
 
 		switch p.Type().Kind() {
 		case reflect.Struct:
-			//validate request
+			// validate request
 			if err := c.validate.Struct(tmpReq); err != nil {
 				log.Error("Execute decode request failed,", "validate struct", err.Error(), "req:", req)
 				return nil, errors2.New(errors2.ClientParams, Translate(err))
@@ -208,14 +208,14 @@ func (c Controller) encodeResponse(ctx context.Context, w http.ResponseWriter, r
 			}
 		}
 	}
-	//uri := ctx.Value(httptransport.ContextKeyRequestURI)
-	//metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "200"}...).Add(1)
+	// uri := ctx.Value(httptransport.ContextKeyRequestURI)
+	// metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "200"}...).Add(1)
 
 	return httptransport.EncodeJSONResponse(ctx, w, response)
 }
 
 func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []httptransport.ServerOption, after []httptransport.ServerResponseFunc) []httptransport.ServerOption {
-	//copy params from Form,PostForm to Context
+	// copy params from Form,PostForm to Context
 	copyParams := func(ctx context.Context, request *http.Request) context.Context {
 		log.Debug("Merge request params to Context,", "method,", "serverBefore")
 		if err := request.ParseForm(); err != nil {
@@ -246,7 +246,7 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 		return ctx
 	}
 
-	//format error
+	// format error
 	errorEncoderOption := func(ctx context.Context, err error, w http.ResponseWriter) {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
@@ -264,7 +264,7 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 				}
 			}
 		}
-		//uri := ctx.Value(httptransport.ContextKeyRequestURI)
+		// uri := ctx.Value(httptransport.ContextKeyRequestURI)
 		urlPath := ctx.Value(httptransport.ContextKeyRequestPath)
 		url := strings.SplitN(urlPath.(string)[1:], "/", 3)
 		codeSpace := strings.ToUpper(url[1])
@@ -287,19 +287,19 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 		if errMesg != "" && respErr.Message() != "" {
 			switch respErr.Code() {
 			case errors2.ClientParams, errors2.StatusFailed, errors2.ChainFailed, errors2.DuplicateRequest, errors2.OrderFailed, errors2.StateGatewayFailed:
-				//metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "400"}...).Add(1)
-				w.WriteHeader(http.StatusBadRequest) //400
+				// metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "400"}...).Add(1)
+				w.WriteHeader(http.StatusBadRequest) // 400
 			case errors2.Authentication:
-				//metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "403"}...).Add(1)
-				w.WriteHeader(http.StatusForbidden) //401
+				// metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "403"}...).Add(1)
+				w.WriteHeader(http.StatusForbidden) // 401
 			case errors2.NotFound:
-				//metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "404"}...).Add(1)
-				w.WriteHeader(http.StatusNotFound) //404
+				// metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "404"}...).Add(1)
+				w.WriteHeader(http.StatusNotFound) // 404
 			case errors2.NotImplemented:
-				w.WriteHeader(http.StatusNotImplemented) //501
+				w.WriteHeader(http.StatusNotImplemented) // 501
 			default:
-				//metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "500"}...).Add(1)
-				w.WriteHeader(http.StatusInternalServerError) //500
+				// metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "500"}...).Add(1)
+				w.WriteHeader(http.StatusInternalServerError) // 500
 			}
 			response = constant.Response{
 				ErrorResp: &constant.ErrorResp{
@@ -310,8 +310,8 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 			}
 		}
 		if (respErr.Code().String() == "Unknown" || respErr.Code().String() == "Unavailable" || respErr.Code().String() == "DeadlineExceeded") && respErr.Message() != "" {
-			//metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "500"}...).Add(1)
-			w.WriteHeader(http.StatusInternalServerError) //500
+			// metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "500"}...).Add(1)
+			w.WriteHeader(http.StatusInternalServerError) // 500
 			response = constant.Response{
 				ErrorResp: &constant.ErrorResp{
 					CodeSpace: codeSpace,
@@ -326,17 +326,21 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 			switch appErr.Code() {
 			case constant.ClientParamsError, constant.FrequentRequestsNotSupports, constant.NftStatusAbnormal,
 				constant.NftClassStatusAbnormal, constant.MaximumLimitExceeded, constant.ErrOutOfGas, constant.ModuleFailed, constant.AccountFailed:
-				//metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "400"}...).Add(1)
-				w.WriteHeader(http.StatusBadRequest) //400
+				// metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "400"}...).Add(1)
+				w.WriteHeader(http.StatusBadRequest) // 400
 			case constant.AuthenticationFailed, constant.StructureSignTransactionFailed:
-				//metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "403"}...).Add(1)
-				w.WriteHeader(http.StatusForbidden) //403
+				// metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "403"}...).Add(1)
+				w.WriteHeader(http.StatusForbidden) // 403
 			case constant.NotFound:
-				//metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "404"}...).Add(1)
-				w.WriteHeader(http.StatusNotFound) //404
+				// metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "404"}...).Add(1)
+				w.WriteHeader(http.StatusNotFound) // 404
+			case constant.UpstreamInternalFailed:
+				// 服务器作为网关或代理，从上游服务器收到无效响应
+				// metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "404"}...).Add(1)
+				w.WriteHeader(http.StatusBadGateway) // 502
 			default:
-				//metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "500"}...).Add(1)
-				w.WriteHeader(http.StatusInternalServerError) //500
+				// metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "500"}...).Add(1)
+				w.WriteHeader(http.StatusInternalServerError) // 500
 				appErr = constant.ErrInternal
 			}
 			response = constant.Response{ErrorResp: &constant.ErrorResp{

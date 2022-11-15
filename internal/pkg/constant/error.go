@@ -5,11 +5,13 @@ import "fmt"
 const (
 	RootCodeSpace = "NFTP-OPEN-API"
 	MtCodeSpace   = "MT"
+	AuthCodeSpace = "Auth"
 )
 
 const (
 	// InternalFailed		error code
 	InternalFailed                 = "INTERNAL_ERROR"
+	UpstreamInternalFailed         = "UPSTREAM_INTERNAL_ERROR"
 	AuthenticationFailed           = "FORBIDDEN"
 	ClientParamsError              = "PARAMS_ERROR"
 	FrequentRequestsNotSupports    = "FREQUENT_REQUESTS_NOT_SUPPORTS"
@@ -35,18 +37,28 @@ const (
 	ErrOrderType    = "order_type is invalid"
 
 	ErrInternalFailed = "internal error"
+
+	ErrUpstreamEntity = "returned entity does not conform to the rule"
+	ErrNotFound       = "not found"
 )
 
 var (
-	ErrInternal             = Register(RootCodeSpace, InternalFailed, "internal")
-	ErrAuthenticate         = Register(RootCodeSpace, AuthenticationFailed, "authentication failed")
-	ErrParams               = Register(RootCodeSpace, ClientParamsError, ErrClientParams)
-	ErrIdempotent           = Register(RootCodeSpace, FrequentRequestsNotSupports, "frequent requests not supports")
-	ErrNftStatus            = Register(RootCodeSpace, NftStatusAbnormal, ErrNftStatusMsg)
-	ErrTimestamp            = Register(RootCodeSpace, TimestampTimeout, "timestamp is timeout")
-	ErrDuplicate            = Register(RootCodeSpace, DuplicateRequest, "duplicate request")
-	ErrUnSupported          = Register(MtCodeSpace, UnSupported, "not implemented")
-	ErrUnmanagedUnSupported = Register(RootCodeSpace, UnSupported, "not implemented")
+	ErrInternal                   = Register(RootCodeSpace, InternalFailed, "internal")
+	ErrAuthenticate               = Register(RootCodeSpace, AuthenticationFailed, "authentication failed")
+	ErrParams                     = Register(RootCodeSpace, ClientParamsError, ErrClientParams)
+	ErrIdempotent                 = Register(RootCodeSpace, FrequentRequestsNotSupports, "frequent requests not supports")
+	ErrNftStatus                  = Register(RootCodeSpace, NftStatusAbnormal, ErrNftStatusMsg)
+	ErrTimestamp                  = Register(RootCodeSpace, TimestampTimeout, "timestamp is timeout")
+	ErrDuplicate                  = Register(RootCodeSpace, DuplicateRequest, "duplicate request")
+	ErrUnSupported                = Register(MtCodeSpace, UnSupported, "not implemented")
+	ErrUnmanagedUnSupported       = Register(RootCodeSpace, UnSupported, "not implemented")
+	ErrProjectOrUserNotFound      = Register(AuthCodeSpace, NotFound, "user or project not exists")
+	ErrServiceRedirectUrlNotFound = Register(AuthCodeSpace, NotFound, "service redirect address is not configured")
+	ErrUpstreamInternal           = Register(AuthCodeSpace, UpstreamInternalFailed, "upstream service is abnormal")
+	ErrUpstreamInternalEntity     = Register(AuthCodeSpace, UpstreamInternalFailed, ErrUpstreamEntity)
+	ErrAuthVerifyExists           = Register(AuthCodeSpace, UpstreamInternalFailed, "invalid exists value")
+	ErrAuthUserAddress            = Register(AuthCodeSpace, UpstreamInternalFailed, "invalid address value")
+	ErrAuthUserChainName          = Register(AuthCodeSpace, UpstreamInternalFailed, "invalid chain_name value")
 )
 
 var usedErrorCodes = map[string]*AppError{}
@@ -92,9 +104,9 @@ func (e AppError) CodeSpace() string {
 }
 
 func Register(codeSpace string, code string, description string) *AppError {
-	if e := getUsedErrorCodes(codeSpace, code); e != nil {
-		panic(fmt.Sprintf("error with code %s is already registered: %q", code, e.desc))
-	}
+	// if e := getUsedErrorCodes(codeSpace, code); e != nil {
+	// 	panic(fmt.Sprintf("error with code %s is already registered: %q", code, e.desc))
+	// }
 
 	err := NewAppError(codeSpace, code, description)
 	setUsedErrorCodes(err)

@@ -24,6 +24,7 @@ type (
 		DefaultKeyPassword string `mapstructure:"default_key_password"`
 		PrometheusAddr     string `mapstructure:"prometheus_addr"`
 		GprcTimeout        int    `mapstructure:"grpc_timeout"`
+		HttpTimeout        int    `mapstructure:"http_timeout"`
 	}
 
 	Mysql struct {
