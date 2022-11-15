@@ -7,13 +7,13 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	mapset "github.com/deckarep/golang-set"
 	"gorm.io/gorm"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
 
+	mapset "github.com/deckarep/golang-set"
 	httptransport "github.com/go-kit/kit/transport/http"
 	log "github.com/sirupsen/logrus"
 

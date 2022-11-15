@@ -1,8 +1,9 @@
 package service_redirect_url
 
 import (
-	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gorm.io/gorm"
+
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 )
 
 type IServiceRedirectUrlRepo interface {
