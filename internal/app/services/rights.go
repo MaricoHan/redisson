@@ -121,7 +121,7 @@ func (r Rights) Register(params *dto.RegisterRequest) (*dto.RegisterResponse, er
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
 		logger.Error(errors2.ErrService)
-		return nil, errors2.ErrInternal
+		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
@@ -130,7 +130,9 @@ func (r Rights) Register(params *dto.RegisterRequest) (*dto.RegisterResponse, er
 		logger.Error("grpc request failed")
 		return nil, err
 	}
-
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+	}
 	return &dto.RegisterResponse{OperationID: resp.OperationId}, nil
 }
 
@@ -218,7 +220,7 @@ func (r Rights) EditRegister(params *dto.EditRegisterRequest) (*dto.EditRegister
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
 		logger.Error(errors2.ErrService)
-		return nil, errors2.ErrInternal
+		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
@@ -226,6 +228,9 @@ func (r Rights) EditRegister(params *dto.EditRegisterRequest) (*dto.EditRegister
 	if err != nil {
 		logger.Error("grpc request failed")
 		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
 
 	return &dto.EditRegisterResponse{OperationID: resp.OperationId}, nil
@@ -238,7 +243,7 @@ func (r Rights) QueryRegister(params *dto.QueryRegisterRequest) (*dto.QueryRegis
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
 		logger.Error(errors2.ErrService)
-		return nil, errors2.ErrInternal
+		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
@@ -246,6 +251,9 @@ func (r Rights) QueryRegister(params *dto.QueryRegisterRequest) (*dto.QueryRegis
 	if err != nil {
 		logger.Error("grpc request failed")
 		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
 	result := &dto.QueryRegisterResponse{
 		OperationID:       resp.OperationId,
@@ -311,7 +319,7 @@ func (r Rights) UserAuth(params *dto.UserAuthRequest) (*dto.UserAuthResponse, er
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
 		logger.Error(errors2.ErrService)
-		return nil, errors2.ErrInternal
+		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
@@ -319,6 +327,9 @@ func (r Rights) UserAuth(params *dto.UserAuthRequest) (*dto.UserAuthResponse, er
 	if err != nil {
 		logger.Error("grpc request failed")
 		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
 	result := &dto.UserAuthResponse{
 		OperationID:      resp.OperationId,
@@ -380,7 +391,7 @@ func (r Rights) EditUserAuth(params *dto.EditUserAuthRequest) (*dto.EditUserAuth
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
 		logger.Error(errors2.ErrService)
-		return nil, errors2.ErrInternal
+		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
@@ -388,6 +399,9 @@ func (r Rights) EditUserAuth(params *dto.EditUserAuthRequest) (*dto.EditUserAuth
 	if err != nil {
 		logger.Error("grpc request failed")
 		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
 	result := &dto.EditUserAuthResponse{
 		Data: resp.Data,
@@ -405,7 +419,7 @@ func (r Rights) QueryUserAuth(params *dto.QueryUserAuthRequest) (*dto.QueryUserA
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
 		logger.Error(errors2.ErrService)
-		return nil, errors2.ErrInternal
+		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
@@ -413,6 +427,9 @@ func (r Rights) QueryUserAuth(params *dto.QueryUserAuthRequest) (*dto.QueryUserA
 	if err != nil {
 		logger.Error("grpc request failed")
 		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
 	result := &dto.QueryUserAuthResponse{
 		UserID:           resp.AuthUserId,
@@ -429,7 +446,7 @@ func (r Rights) Dict(params *dto.DictRequest) (*dto.DictResponse, error) {
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
 		logger.Error(errors2.ErrService)
-		return nil, errors2.ErrInternal
+		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
@@ -437,6 +454,9 @@ func (r Rights) Dict(params *dto.DictRequest) (*dto.DictResponse, error) {
 	if err != nil {
 		logger.Error("grpc request failed")
 		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
 
 	result := &dto.DictResponse{
@@ -483,7 +503,7 @@ func (r Rights) Region(params *dto.RegionRequest) (*dto.RegionResponse, error) {
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
 		logger.Error(errors2.ErrService)
-		return nil, errors2.ErrInternal
+		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
@@ -491,6 +511,9 @@ func (r Rights) Region(params *dto.RegionRequest) (*dto.RegionResponse, error) {
 	if err != nil {
 		logger.Error("grpc request failed")
 		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
 
 	result := &dto.RegionResponse{
@@ -538,6 +561,9 @@ func (r Rights) PostCert(params *dto.PostCertRequest) (*dto.PostCertResponse, er
 		logger.Error("grpc request failed")
 		return nil, err
 	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+	}
 
 	return &dto.PostCertResponse{OperationID: resp.OperationId}, nil
 }
@@ -570,6 +596,9 @@ func (r Rights) EditPostCert(params *dto.EditPostCertRequest) (*dto.EditPostCert
 		logger.Error("grpc request failed")
 		return nil, err
 	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+	}
 
 	return &dto.EditPostCertResponse{OperationID: resp.OperationId}, nil
 }
@@ -596,6 +625,9 @@ func (r Rights) PostCertInfo(params *dto.PostCertInfoRequest) (*dto.PostCertInfo
 	if err != nil {
 		logger.Error("grpc request failed")
 		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
 
 	return &dto.PostCertInfoResponse{
