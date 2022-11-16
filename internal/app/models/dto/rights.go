@@ -107,6 +107,7 @@ type QueryRegisterResponse struct {
 	AuditOpinion      string   `json:"audit_opinion"`
 	CertificateStatus uint32   `json:"certificate_status"`
 	CertificateNum    string   `json:"certificate_num"`
+	ProductID         string   `json:"product_id"`
 	CertificateURL    []string `json:"certificate_url"`
 	BackTag           string   `json:"back_tag"`
 }
@@ -246,7 +247,7 @@ type QueryUserAuthResponse struct {
 	AuditInstruction string `json:"audit_instruction"`
 }
 
-type PostCertRequest struct {
+type DeliveryRequest struct {
 	Code           string `json:"code"`
 	Module         string `json:"module"`
 	ProjectID      uint64 `json:"project_id"`
@@ -260,11 +261,11 @@ type PostCertRequest struct {
 	PhoneNum       string `json:"phone_num"`
 }
 
-type PostCertResponse struct {
+type DeliveryResponse struct {
 	OperationID string `json:"operation_id"`
 }
 
-type EditPostCertRequest struct {
+type EditDeliveryRequest struct {
 	Code           string `json:"code"`
 	Module         string `json:"module"`
 	ProjectID      uint64 `json:"project_id"`
@@ -278,11 +279,11 @@ type EditPostCertRequest struct {
 	PhoneNum       string `json:"phone_num"`
 }
 
-type EditPostCertResponse struct {
+type EditDeliveryResponse struct {
 	OperationID string `json:"operation_id"`
 }
 
-type PostCertInfoRequest struct {
+type DeliveryInfoRequest struct {
 	Code           string `json:"code"`
 	Module         string `json:"module"`
 	ProjectID      uint64 `json:"project_id"`
@@ -291,7 +292,7 @@ type PostCertInfoRequest struct {
 	CertificateNum string `json:"certificate_num"`
 }
 
-type PostCertInfoResponse struct {
+type DeliveryInfoResponse struct {
 	ProductID      string `json:"product_id"`
 	CertificateNum string `json:"certificate_num"`
 	Addr           string `json:"addr"`
@@ -299,4 +300,5 @@ type PostCertInfoResponse struct {
 	Recipient      string `json:"recipient"`
 	PhoneNum       string `json:"phone_num"`
 	ExpressNum     string `json:"express_num"`
+	Status         string `json:"status"`
 }

@@ -22,9 +22,9 @@ type IRights interface {
 	Dict(ctx context.Context, request interface{}) (response interface{}, err error)
 	Region(ctx context.Context, request interface{}) (response interface{}, err error)
 
-	PostCert(ctx context.Context, request interface{}) (response interface{}, err error)
-	EditPostCert(ctx context.Context, request interface{}) (response interface{}, err error)
-	PostCertInfo(ctx context.Context, request interface{}) (response interface{}, err error)
+	Delivery(ctx context.Context, request interface{}) (response interface{}, err error)
+	EditDelivery(ctx context.Context, request interface{}) (response interface{}, err error)
+	DeliveryInfo(ctx context.Context, request interface{}) (response interface{}, err error)
 }
 
 type Rights struct {
@@ -450,8 +450,8 @@ func (r Rights) Region(ctx context.Context, request interface{}) (response inter
 	return r.svc.Region(&param)
 }
 
-func (r Rights) PostCert(ctx context.Context, request interface{}) (response interface{}, err error) {
-	req, ok := request.(*vo.PostCertRequest)
+func (r Rights) Delivery(ctx context.Context, request interface{}) (response interface{}, err error) {
+	req, ok := request.(*vo.DeliveryRequest)
 	if !ok {
 		log.Debugf("failed to assert : %v", request)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
@@ -459,7 +459,7 @@ func (r Rights) PostCert(ctx context.Context, request interface{}) (response int
 
 	// 获取账户基本信息
 	authData := r.AuthData(ctx)
-	param := dto.PostCertRequest{
+	param := dto.DeliveryRequest{
 		Code:           authData.Code,
 		Module:         authData.Module,
 		ProjectID:      authData.ProjectId,
@@ -472,11 +472,11 @@ func (r Rights) PostCert(ctx context.Context, request interface{}) (response int
 		Recipient:      req.Recipient,
 		PhoneNum:       req.PhoneNum,
 	}
-	return r.svc.PostCert(&param)
+	return r.svc.Delivery(&param)
 }
 
-func (r Rights) EditPostCert(ctx context.Context, request interface{}) (response interface{}, err error) {
-	req, ok := request.(*vo.EditPostCertRequest)
+func (r Rights) EditDelivery(ctx context.Context, request interface{}) (response interface{}, err error) {
+	req, ok := request.(*vo.EditDeliveryRequest)
 	if !ok {
 		log.Debugf("failed to assert : %v", request)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
@@ -484,7 +484,7 @@ func (r Rights) EditPostCert(ctx context.Context, request interface{}) (response
 
 	// 获取账户基本信息
 	authData := r.AuthData(ctx)
-	param := dto.EditPostCertRequest{
+	param := dto.EditDeliveryRequest{
 		Code:           authData.Code,
 		Module:         authData.Module,
 		ProjectID:      authData.ProjectId,
@@ -497,13 +497,13 @@ func (r Rights) EditPostCert(ctx context.Context, request interface{}) (response
 		Recipient:      req.Recipient,
 		PhoneNum:       req.PhoneNum,
 	}
-	return r.svc.EditPostCert(&param)
+	return r.svc.EditDelivery(&param)
 }
 
-func (r Rights) PostCertInfo(ctx context.Context, request interface{}) (response interface{}, err error) {
+func (r Rights) DeliveryInfo(ctx context.Context, request interface{}) (response interface{}, err error) {
 	// 获取账户基本信息
 	authData := r.AuthData(ctx)
-	param := dto.PostCertInfoRequest{
+	param := dto.DeliveryInfoRequest{
 		Code:           authData.Code,
 		Module:         authData.Module,
 		ProjectID:      authData.ProjectId,
@@ -511,7 +511,7 @@ func (r Rights) PostCertInfo(ctx context.Context, request interface{}) (response
 		ProductID:      r.ProductID(ctx),
 		CertificateNum: r.CertificateNum(ctx),
 	}
-	return r.svc.PostCertInfo(&param)
+	return r.svc.DeliveryInfo(&param)
 }
 
 func (Rights) RegisterType(ctx context.Context) uint64 {
