@@ -46,7 +46,7 @@ func NewAuth(logger *log.Logger) *auth {
 
 func (a *auth) Verify(ctx context.Context, params *vo.AuthVerify) (*dto.AuthVerify, error) {
 	logger := a.logger.WithField("params", params).WithField("func", "verify")
-	path := strings.Replace(ctx.Value(httptransport.ContextKeyRequestPath).(string), "/"+configs.Cfg.App.RouterPrefix, "", -1)
+	path := ctx.Value(httptransport.ContextKeyRequestPath).(string)[len(configs.Cfg.App.RouterPrefix)+1:]
 	res := &dto.AuthVerify{}
 	project, err := a.getProject(params.ProjectID)
 	if err != nil {
@@ -87,7 +87,7 @@ func (a *auth) Verify(ctx context.Context, params *vo.AuthVerify) (*dto.AuthVeri
 
 func (a *auth) GetUser(ctx context.Context, params *vo.AuthGetUser) (*dto.AuthGetUser, error) {
 	logger := a.logger.WithField("params", params).WithField("func", "get user")
-	path := strings.Replace(ctx.Value(httptransport.ContextKeyRequestPath).(string), "/"+configs.Cfg.App.RouterPrefix, "", -1)
+	path := ctx.Value(httptransport.ContextKeyRequestPath).(string)[len(configs.Cfg.App.RouterPrefix)+1:]
 	res := &dto.AuthGetUser{}
 	project, err := a.getProject(params.ProjectID)
 	if err != nil {
@@ -183,7 +183,7 @@ func (a *auth) request(ctx context.Context, url, apikey, hash, code string, requ
 
 	results, err := utils.Get(ctx, url, apikey, hash, code, request)
 	if err != nil {
-		logger.WithError(err).Error("post")
+		logger.WithError(err).Error("get")
 		return nil, constant.ErrInternal
 	}
 	defer results.Body.Close()
@@ -194,7 +194,12 @@ func (a *auth) request(ctx context.Context, url, apikey, hash, code string, requ
 	}
 	if results.StatusCode == http.StatusNotFound {
 		logger.WithError(fmt.Errorf(string(body))).Error("not found")
-		return nil, constant.Register(constant.AuthCodeSpace, constant.NotFound, string(body))
+		var resp constant.ErrorResp
+		if err := json.Unmarshal(body, &resp); err != nil {
+			logger.WithError(fmt.Errorf(string(body))).Error("not found json un marshal")
+			return nil, constant.ErrInternal
+		}
+		return nil, constant.Register(constant.AuthCodeSpace, constant.NotFound, resp.Message)
 	}
 	return body, nil
 }

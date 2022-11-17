@@ -195,7 +195,6 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if !h.Signature(r, secret, reqTimestampStr, reqSignature) {
-
 			writeForbiddenResp(w, "")
 			return
 		}

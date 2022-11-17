@@ -27,24 +27,48 @@ func NewAuth(svc services.IAuth) *Auth {
 
 // Verify 身份信息验证
 func (a *Auth) Verify(ctx context.Context, request interface{}) (interface{}, error) {
-	params := request.(*vo.AuthVerify)
-	if params.Hash == "" {
+	hash := a.hash(ctx)
+	projectID := a.projectID(ctx)
+	if hash == "" {
 		return nil, errors.New(errors.ClientParams, fmt.Sprintf(errors.ErrRequired, "hash"))
 	}
-	if params.ProjectID == "" {
+	if projectID == "" {
 		return nil, errors.New(errors.ClientParams, fmt.Sprintf(errors.ErrRequired, "project_id"))
 	}
-	return a.svc.Verify(ctx, params)
+	return a.svc.Verify(ctx, &vo.AuthVerify{
+		Hash:      hash,
+		ProjectID: projectID,
+	})
 }
 
 // GetUser 身份信息查询
 func (a *Auth) GetUser(ctx context.Context, request interface{}) (interface{}, error) {
-	params := request.(*vo.AuthGetUser)
-	if params.Hash == "" {
+	hash := a.hash(ctx)
+	projectID := a.projectID(ctx)
+	if hash == "" {
 		return nil, errors.New(errors.ClientParams, fmt.Sprintf(errors.ErrRequired, "hash"))
 	}
-	if params.ProjectID == "" {
+	if projectID == "" {
 		return nil, errors.New(errors.ClientParams, fmt.Sprintf(errors.ErrRequired, "project_id"))
 	}
-	return a.svc.GetUser(ctx, params)
+	return a.svc.GetUser(ctx, &vo.AuthGetUser{
+		Hash:      hash,
+		ProjectID: projectID,
+	})
+}
+
+func (a *Auth) hash(ctx context.Context) string {
+	hash := ctx.Value("hash")
+	if hash == nil {
+		return ""
+	}
+	return hash.(string)
+}
+
+func (a *Auth) projectID(ctx context.Context) string {
+	projectID := ctx.Value("project_id")
+	if projectID == nil {
+		return ""
+	}
+	return projectID.(string)
 }
