@@ -519,8 +519,8 @@ gitlab.bianjie.ai/avata/chains/api.git v0.8.1-0.20221111020124-5b7946de77c5 h1:8
 gitlab.bianjie.ai/avata/chains/api.git v0.8.1-0.20221111020124-5b7946de77c5/go.mod h1:lcdtaR68PfIyq2/hWI3JGXV8m/zukqF5STGFLcFRWRI=
 gitlab.bianjie.ai/avata/chains/api.git v0.9.0 h1:36EpFghDpWvxFDGKsAUNG4gZYfSmj9G+GX+mauJbJqg=
 gitlab.bianjie.ai/avata/chains/api.git v0.9.0/go.mod h1:lcdtaR68PfIyq2/hWI3JGXV8m/zukqF5STGFLcFRWRI=
-gitlab.bianjie.ai/avata/services/api.git v0.0.0-20221109102226-896006a5e3a0 h1:4paXY+J4UEDTWDab9fGq+TauKxMj+nPykFKZovK4oJ0=
-gitlab.bianjie.ai/avata/services/api.git v0.0.0-20221109102226-896006a5e3a0/go.mod h1:p+WJ9Bjc2U8bdiIdKwGWh2XfzRngRH+qPTxLRRb83SY=
+gitlab.bianjie.ai/avata/services/api.git v0.0.0-20221117054611-326915fd7cb9 h1:JRd2KYGAw0p9sIe+rrEnO35DhulScMgjRbVkICoy7Ek=
+gitlab.bianjie.ai/avata/services/api.git v0.0.0-20221117054611-326915fd7cb9/go.mod h1:p+WJ9Bjc2U8bdiIdKwGWh2XfzRngRH+qPTxLRRb83SY=
 gitlab.bianjie.ai/avata/utils/commons.git v0.1.0 h1:se9upXFUsjoWfxhI961dMtqdZm6jYamwok70KvwUq9M=
 gitlab.bianjie.ai/avata/utils/commons.git v0.1.0/go.mod h1:rs9lQ/MOF87O2POteMreuyTZRDa7ylGsiLSavbBsPrY=
 gitlab.bianjie.ai/avata/utils/errors.git v0.1.7-0.20221110063838-43d9408fe1b7 h1:H8NJyeEeiElRp4Pu5+vE8AGKxqXGcK2uNGNaPR+lPvI=
