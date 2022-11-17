@@ -135,7 +135,7 @@ type EditUserAuthRequest struct {
 	CallbackUrl        string             `json:"callback_url"`
 }
 
-type PostCertRequest struct {
+type DeliveryRequest struct {
 	RegisterType   uint64 `json:"register_type"`
 	OperationID    string `json:"operation_id"`
 	ProductID      string `json:"product_id"`
@@ -146,7 +146,7 @@ type PostCertRequest struct {
 	PhoneNum       string `json:"phone_num"`
 }
 
-type EditPostCertRequest struct {
+type EditDeliveryRequest struct {
 	RegisterType   uint64 `json:"register_type"`
 	ProductID      string `json:"product_id"`
 	CertificateNum string `json:"certificate_num"`

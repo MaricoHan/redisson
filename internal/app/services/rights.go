@@ -22,9 +22,9 @@ type IRights interface {
 	Dict(params *dto.DictRequest) (*dto.DictResponse, error)
 	Region(params *dto.RegionRequest) (*dto.RegionResponse, error)
 
-	PostCert(params *dto.PostCertRequest) (*dto.PostCertResponse, error)
-	EditPostCert(params *dto.EditPostCertRequest) (*dto.EditPostCertResponse, error)
-	PostCertInfo(params *dto.PostCertInfoRequest) (*dto.PostCertInfoResponse, error)
+	Delivery(params *dto.DeliveryRequest) (*dto.DeliveryResponse, error)
+	EditDelivery(params *dto.EditDeliveryRequest) (*dto.EditDeliveryResponse, error)
+	DeliveryInfo(params *dto.DeliveryInfoRequest) (*dto.DeliveryInfoResponse, error)
 }
 
 type Rights struct {
@@ -262,6 +262,7 @@ func (r Rights) QueryRegister(params *dto.QueryRegisterRequest) (*dto.QueryRegis
 		AuditOpinion:      resp.AuditOpinion,
 		CertificateStatus: resp.CertificateStatus,
 		CertificateNum:    resp.CertificateNum,
+		ProductID:         resp.ProductId,
 		CertificateURL:    resp.CertificateUrl,
 		BackTag:           resp.BackTag,
 	}
@@ -533,10 +534,10 @@ func (r Rights) Region(params *dto.RegionRequest) (*dto.RegionResponse, error) {
 	return result, nil
 }
 
-func (r Rights) PostCert(params *dto.PostCertRequest) (*dto.PostCertResponse, error) {
-	logger := r.logger.WithField("params", params).WithField("func", "PostCert")
+func (r Rights) Delivery(params *dto.DeliveryRequest) (*dto.DeliveryResponse, error) {
+	logger := r.logger.WithField("params", params).WithField("func", "Delivery")
 
-	req := rights.PostCertRequest{
+	req := rights.DeliveryRequest{
 		Code:           params.Code,
 		Module:         params.Module,
 		ProjectId:      params.ProjectID,
@@ -556,7 +557,7 @@ func (r Rights) PostCert(params *dto.PostCertRequest) (*dto.PostCertResponse, er
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
-	resp, err := grpcClient.PostCert(ctx, &req)
+	resp, err := grpcClient.Delivery(ctx, &req)
 	if err != nil {
 		logger.Error("grpc request failed")
 		return nil, err
@@ -565,13 +566,13 @@ func (r Rights) PostCert(params *dto.PostCertRequest) (*dto.PostCertResponse, er
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
 
-	return &dto.PostCertResponse{OperationID: resp.OperationId}, nil
+	return &dto.DeliveryResponse{OperationID: resp.OperationId}, nil
 }
 
-func (r Rights) EditPostCert(params *dto.EditPostCertRequest) (*dto.EditPostCertResponse, error) {
-	logger := r.logger.WithField("params", params).WithField("func", "EditPostCert")
+func (r Rights) EditDelivery(params *dto.EditDeliveryRequest) (*dto.EditDeliveryResponse, error) {
+	logger := r.logger.WithField("params", params).WithField("func", "EditDelivery")
 
-	req := rights.PostCertRequest{
+	req := rights.DeliveryRequest{
 		Code:           params.Code,
 		Module:         params.Module,
 		ProjectId:      params.ProjectID,
@@ -591,7 +592,7 @@ func (r Rights) EditPostCert(params *dto.EditPostCertRequest) (*dto.EditPostCert
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
-	resp, err := grpcClient.EditPostCert(ctx, &req)
+	resp, err := grpcClient.EditDelivery(ctx, &req)
 	if err != nil {
 		logger.Error("grpc request failed")
 		return nil, err
@@ -600,13 +601,13 @@ func (r Rights) EditPostCert(params *dto.EditPostCertRequest) (*dto.EditPostCert
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
 
-	return &dto.EditPostCertResponse{OperationID: resp.OperationId}, nil
+	return &dto.EditDeliveryResponse{OperationID: resp.OperationId}, nil
 }
 
-func (r Rights) PostCertInfo(params *dto.PostCertInfoRequest) (*dto.PostCertInfoResponse, error) {
-	logger := r.logger.WithField("params", params).WithField("func", "PostCertInfo")
+func (r Rights) DeliveryInfo(params *dto.DeliveryInfoRequest) (*dto.DeliveryInfoResponse, error) {
+	logger := r.logger.WithField("params", params).WithField("func", "DeliveryInfo")
 
-	req := rights.PostCertInfoRequest{
+	req := rights.DeliveryInfoRequest{
 		Code:           params.Code,
 		Module:         params.Module,
 		ProjectId:      params.ProjectID,
@@ -621,7 +622,7 @@ func (r Rights) PostCertInfo(params *dto.PostCertInfoRequest) (*dto.PostCertInfo
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
-	resp, err := grpcClient.PostCertInfo(ctx, &req)
+	resp, err := grpcClient.DeliveryInfo(ctx, &req)
 	if err != nil {
 		logger.Error("grpc request failed")
 		return nil, err
@@ -630,7 +631,7 @@ func (r Rights) PostCertInfo(params *dto.PostCertInfoRequest) (*dto.PostCertInfo
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
 
-	return &dto.PostCertInfoResponse{
+	return &dto.DeliveryInfoResponse{
 		ProductID:      resp.ProductId,
 		CertificateNum: resp.CertificateNum,
 		Addr:           resp.Addr,
@@ -638,5 +639,6 @@ func (r Rights) PostCertInfo(params *dto.PostCertInfoRequest) (*dto.PostCertInfo
 		Recipient:      resp.Recipient,
 		PhoneNum:       resp.PhoneNum,
 		ExpressNum:     resp.ExpressNum,
+		Status:         resp.Status,
 	}, nil
 }
