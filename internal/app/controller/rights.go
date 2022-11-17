@@ -29,7 +29,7 @@ func (r RightsController) GetEndpoints() []kit.Endpoint {
 			Handler: r.makeHandler(r.handler.EditRegister, &vo.EditRegisterRequest{}),
 		},
 		{
-			URI:     "/rights/register/{register_type}/{operation_id}",
+			URI:     "/rights/register/{operation_id}",
 			Method:  http.MethodGet,
 			Handler: r.makeHandler(r.handler.QueryRegister, nil),
 		},
@@ -60,17 +60,17 @@ func (r RightsController) GetEndpoints() []kit.Endpoint {
 		},
 
 		{
-			URI:     "/rights/post-cert",
+			URI:     "/rights/delivery",
 			Method:  http.MethodPost,
-			Handler: r.makeHandler(r.handler.Region, &vo.PostCertRequest{}),
+			Handler: r.makeHandler(r.handler.Delivery, &vo.DeliveryRequest{}),
 		}, {
-			URI:     "/rights/post-cert/{operation_id}",
+			URI:     "/rights/delivery/{operation_id}",
 			Method:  http.MethodPatch,
-			Handler: r.makeHandler(r.handler.Region, &vo.EditPostCertRequest{}),
+			Handler: r.makeHandler(r.handler.EditDelivery, &vo.EditDeliveryRequest{}),
 		}, {
-			URI:     "/rights/post-cert",
+			URI:     "/rights/delivery",
 			Method:  http.MethodGet,
-			Handler: r.makeHandler(r.handler.Region, nil),
+			Handler: r.makeHandler(r.handler.DeliveryInfo, nil),
 		},
 	}
 }
