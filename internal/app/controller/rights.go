@@ -29,7 +29,7 @@ func (r RightsController) GetEndpoints() []kit.Endpoint {
 			Handler: r.makeHandler(r.handler.EditRegister, &vo.EditRegisterRequest{}),
 		},
 		{
-			URI:     "/rights/register/{register_type}/{operation_id}",
+			URI:     "/rights/register/{operation_id}",
 			Method:  http.MethodGet,
 			Handler: r.makeHandler(r.handler.QueryRegister, nil),
 		},
