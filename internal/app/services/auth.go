@@ -69,7 +69,7 @@ func (a *auth) Verify(ctx context.Context, params *vo.AuthVerify) (*dto.AuthVeri
 		return res, errors.ErrInternal
 	}
 	hash, err := a.hash(request, &project)
-	body, err := a.request(ctx, fmt.Sprintf("%s%s", url.Url, path), project.ApiKey, hash, user.Code, request)
+	body, err := a.request(ctx, fmt.Sprintf("%s%s?hash=%s&project_id=%s", url.Url, path, params.Hash, params.ProjectID), project.ApiKey, hash, user.Code, nil)
 	if err != nil {
 		return res, err
 	}
@@ -110,7 +110,7 @@ func (a *auth) GetUser(ctx context.Context, params *vo.AuthGetUser) (*dto.AuthGe
 		return res, errors.ErrInternal
 	}
 	hash, err := a.hash(request, &project)
-	body, err := a.request(ctx, fmt.Sprintf("%s%s", url.Url, path), project.ApiKey, hash, user.Code, request)
+	body, err := a.request(ctx, fmt.Sprintf("%s%s?hash=%s&project_id=%s", url.Url, path, params.Hash, params.ProjectID), project.ApiKey, hash, user.Code, nil)
 	if err != nil {
 		return res, err
 	}
