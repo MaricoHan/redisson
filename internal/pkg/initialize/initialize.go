@@ -124,11 +124,11 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	}
 	GrpcConnMap[constant.IritaOPBNative] = IritaOPBNativeConn
 
-	// logger.Info("connecting state-gateway-server ...")
-	// StateGatewayServer, err = grpc.DialContext(context.Background(), cfg.GrpcClient.StateGatewayAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp), grpc.WithBlock(), grpc.WithBalancerName(roundrobin.Name))
-	// if err != nil {
-	// 	logger.Fatal("get state-gateway-server grpc connect failed, err: ", err.Error())
-	// }
+	logger.Info("connecting state-gateway-server ...")
+	StateGatewayServer, err = grpc.DialContext(context.Background(), cfg.GrpcClient.StateGatewayAddr, grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp), grpc.WithBlock(), grpc.WithBalancerName(roundrobin.Name))
+	if err != nil {
+		logger.Fatal("get state-gateway-server grpc connect failed, err: ", err.Error())
+	}
 
 	// 初始化Account grpc client
 	AccountClientMap = make(map[string]pb_account.AccountClient)
@@ -176,7 +176,7 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	MTMsgsClientMap[constant.IritaOPBNative] = pb_mt_msgs.NewMTMSGSClient(GrpcConnMap[constant.IritaOPBNative])
 
 	// 初始化tx_queue
-	// TxQueueClient = pb_tx_queue.NewTxQueueClient(StateGatewayServer)
+	TxQueueClient = pb_tx_queue.NewTxQueueClient(StateGatewayServer)
 }
 
 func InitRedisClient(cfg *configs.Config, logger *log.Logger) {
