@@ -5,7 +5,7 @@ import "fmt"
 const (
 	RootCodeSpace = "NFTP-OPEN-API"
 	MtCodeSpace   = "MT"
-	AuthCodeSpace = "Auth"
+	AuthCodeSpace = "AUTH"
 )
 
 const (
