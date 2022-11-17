@@ -382,7 +382,7 @@ func (r Rights) EditUserAuth(params *dto.EditUserAuthRequest) (*dto.EditUserAuth
 			BusLicArea:      params.AuthInfoCorporate.BusLicArea,
 			Postcode:        params.AuthInfoCorporate.Postcode,
 			Contact:         params.AuthInfoCorporate.Contact,
-			ContactNum:      params.AuthInfoCorporate.Contact,
+			ContactNum:      params.AuthInfoCorporate.ContactNum,
 			Email:           params.AuthInfoCorporate.Email,
 			IndustryCode:    params.AuthInfoCorporate.IndustryCode,
 			IndustryName:    params.AuthInfoCorporate.IndustryName,
