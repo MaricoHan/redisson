@@ -20,6 +20,7 @@ type AuthVerify struct {
 // AuthGetUser auth模块下获取账户信息
 type AuthGetUser struct {
 	Hash      string `json:"hash"`
+	PhoneHash string `json:"phone_hash"`
 	ProjectID string `json:"project_id"`
 }
 

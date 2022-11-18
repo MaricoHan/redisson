@@ -45,15 +45,20 @@ func (a *Auth) Verify(ctx context.Context, request interface{}) (interface{}, er
 func (a *Auth) GetUser(ctx context.Context, request interface{}) (interface{}, error) {
 	hash := a.hash(ctx)
 	projectID := a.projectID(ctx)
+	phoneHash := a.phoneHash(ctx)
 	if hash == "" {
 		return nil, errors.New(errors.ClientParams, fmt.Sprintf(errors.ErrRequired, "hash"))
 	}
 	if projectID == "" {
 		return nil, errors.New(errors.ClientParams, fmt.Sprintf(errors.ErrRequired, "project_id"))
 	}
+	if phoneHash == "" {
+		return nil, errors.New(errors.ClientParams, fmt.Sprintf(errors.ErrRequired, "phone_hash"))
+	}
 	return a.svc.GetUser(ctx, &vo.AuthGetUser{
 		Hash:      hash,
 		ProjectID: projectID,
+		PhoneHash: phoneHash,
 	})
 }
 
@@ -71,4 +76,12 @@ func (a *Auth) projectID(ctx context.Context) string {
 		return ""
 	}
 	return projectID.(string)
+}
+
+func (a *Auth) phoneHash(ctx context.Context) string {
+	phoneHash := ctx.Value("phone_hash")
+	if phoneHash == nil {
+		return ""
+	}
+	return phoneHash.(string)
 }

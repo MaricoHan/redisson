@@ -110,7 +110,7 @@ func (a *auth) GetUser(ctx context.Context, params *vo.AuthGetUser) (*dto.AuthGe
 		return res, errors.ErrInternal
 	}
 	hash, err := a.hash(request, &project)
-	body, err := a.request(ctx, fmt.Sprintf("%s%s?hash=%s&project_id=%s", url.Url, path, params.Hash, params.ProjectID), project.ApiKey, hash, user.Code, nil)
+	body, err := a.request(ctx, fmt.Sprintf("%s%s?hash=%s&project_id=%s&phone_hash=%s", url.Url, path, params.Hash, params.ProjectID, params.PhoneHash), project.ApiKey, hash, user.Code, nil)
 	if err != nil {
 		return res, err
 	}
