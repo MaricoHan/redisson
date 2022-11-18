@@ -276,8 +276,8 @@ func (r Rights) UserAuth(ctx context.Context, params *dto.UserAuthRequest) (*dto
 	defer cancel()
 
 	req := rights.UserAuthRequest{
-		Code:        "",
-		Module:      "",
+		Code:        params.Code,
+		Module:      params.Module,
 		ProjectId:   params.ProjectID,
 		OperationId: params.OperationID,
 		AuthType:    params.AuthType,
@@ -348,8 +348,8 @@ func (r Rights) EditUserAuth(ctx context.Context, params *dto.EditUserAuthReques
 	defer cancel()
 
 	req := rights.UserAuthRequest{
-		Code:        "",
-		Module:      "",
+		Code:        params.Code,
+		Module:      params.Module,
 		ProjectId:   params.ProjectID,
 		OperationId: params.OperationID,
 		AuthType:    params.AuthType,
