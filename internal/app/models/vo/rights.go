@@ -46,6 +46,7 @@ type ProductInfo struct {
 	PubTime       string `json:"pub_time"`
 	PubChannel    uint32 `json:"pub_channel"`
 	PubAnnex      string `json:"pub_annex"`
+	Hash          string `json:"hash"`
 }
 
 type RightsInfo struct {
