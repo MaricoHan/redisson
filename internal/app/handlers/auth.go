@@ -3,11 +3,17 @@ package handlers
 import (
 	"context"
 	"fmt"
-
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/utils/errors"
+	"strconv"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
+)
+
+const (
+	AUTHTYPEID = iota + 1
+	AUTHTYPEPHONE
 )
 
 type IAuth interface {
@@ -29,15 +35,23 @@ func NewAuth(svc services.IAuth) *Auth {
 func (a *Auth) Verify(ctx context.Context, request interface{}) (interface{}, error) {
 	hash := a.hash(ctx)
 	projectID := a.projectID(ctx)
+	hashType := a.hashType(ctx)
 	if hash == "" {
 		return nil, errors.New(errors.ClientParams, fmt.Sprintf(errors.ErrRequired, "hash"))
 	}
 	if projectID == "" {
 		return nil, errors.New(errors.ClientParams, fmt.Sprintf(errors.ErrRequired, "project_id"))
 	}
+	if hashType == 0 {
+		return nil, errors.New(errors.ClientParams, fmt.Sprintf(errors.ErrRequired, "type"))
+	}
+	if hashType != AUTHTYPEID && hashType != AUTHTYPEPHONE {
+		return nil, errors.New(errors.ClientParams, fmt.Sprintf(constant.ErrInvalidValue, "type"))
+	}
 	return a.svc.Verify(ctx, &vo.AuthVerify{
 		Hash:      hash,
 		ProjectID: projectID,
+		Type:      hashType,
 	})
 }
 
@@ -45,20 +59,23 @@ func (a *Auth) Verify(ctx context.Context, request interface{}) (interface{}, er
 func (a *Auth) GetUser(ctx context.Context, request interface{}) (interface{}, error) {
 	hash := a.hash(ctx)
 	projectID := a.projectID(ctx)
-	phoneHash := a.phoneHash(ctx)
+	hashType := a.hashType(ctx)
 	if hash == "" {
 		return nil, errors.New(errors.ClientParams, fmt.Sprintf(errors.ErrRequired, "hash"))
 	}
 	if projectID == "" {
 		return nil, errors.New(errors.ClientParams, fmt.Sprintf(errors.ErrRequired, "project_id"))
 	}
-	if phoneHash == "" {
-		return nil, errors.New(errors.ClientParams, fmt.Sprintf(errors.ErrRequired, "phone_hash"))
+	if hashType == 0 {
+		return nil, errors.New(errors.ClientParams, fmt.Sprintf(errors.ErrRequired, "type"))
+	}
+	if hashType != AUTHTYPEID && hashType != AUTHTYPEPHONE {
+		return nil, errors.New(errors.ClientParams, fmt.Sprintf(constant.ErrInvalidValue, "type"))
 	}
 	return a.svc.GetUser(ctx, &vo.AuthGetUser{
 		Hash:      hash,
 		ProjectID: projectID,
-		PhoneHash: phoneHash,
+		Type:      hashType,
 	})
 }
 
@@ -78,10 +95,11 @@ func (a *Auth) projectID(ctx context.Context) string {
 	return projectID.(string)
 }
 
-func (a *Auth) phoneHash(ctx context.Context) string {
-	phoneHash := ctx.Value("phone_hash")
-	if phoneHash == nil {
-		return ""
+func (a *Auth) hashType(ctx context.Context) int {
+	hashType := ctx.Value("type")
+	if hashType == nil {
+		return AUTHTYPEID
 	}
-	return phoneHash.(string)
+	hashTypeInt, _ := strconv.Atoi(hashType.(string))
+	return hashTypeInt
 }

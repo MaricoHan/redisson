@@ -7,13 +7,13 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	mapset "github.com/deckarep/golang-set"
 	"gorm.io/gorm"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
 
-	mapset "github.com/deckarep/golang-set"
 	httptransport "github.com/go-kit/kit/transport/http"
 	log "github.com/sirupsen/logrus"
 
@@ -33,7 +33,7 @@ import (
 
 type IAuth interface {
 	Verify(ctx context.Context, verify *vo.AuthVerify) (*dto.AuthVerify, error)
-	GetUser(ctx context.Context, user *vo.AuthGetUser) (*dto.AuthGetUser, error)
+	GetUser(ctx context.Context, user *vo.AuthGetUser) ([]*dto.AuthGetUser, error)
 }
 
 type auth struct {
@@ -69,7 +69,7 @@ func (a *auth) Verify(ctx context.Context, params *vo.AuthVerify) (*dto.AuthVeri
 		return res, errors.ErrInternal
 	}
 	hash, err := a.hash(request, &project)
-	body, err := a.request(ctx, fmt.Sprintf("%s%s?hash=%s&project_id=%s", url.Url, path, params.Hash, params.ProjectID), project.ApiKey, hash, user.Code, nil)
+	body, err := a.request(ctx, fmt.Sprintf("%s%s?hash=%s&project_id=%s&type=%d", url.Url, path, params.Hash, params.ProjectID, params.Type), project.ApiKey, hash, user.Code, nil)
 	if err != nil {
 		return res, err
 	}
@@ -85,10 +85,10 @@ func (a *auth) Verify(ctx context.Context, params *vo.AuthVerify) (*dto.AuthVeri
 	return res, nil
 }
 
-func (a *auth) GetUser(ctx context.Context, params *vo.AuthGetUser) (*dto.AuthGetUser, error) {
+func (a *auth) GetUser(ctx context.Context, params *vo.AuthGetUser) ([]*dto.AuthGetUser, error) {
 	logger := a.logger.WithField("params", params).WithField("func", "get user")
 	path := ctx.Value(httptransport.ContextKeyRequestPath).(string)[len(configs.Cfg.App.RouterPrefix)+1:]
-	res := &dto.AuthGetUser{}
+	var res []*dto.AuthGetUser
 	project, err := a.getProject(params.ProjectID)
 	if err != nil {
 		logger.WithError(err).Error("query project")
@@ -110,7 +110,7 @@ func (a *auth) GetUser(ctx context.Context, params *vo.AuthGetUser) (*dto.AuthGe
 		return res, errors.ErrInternal
 	}
 	hash, err := a.hash(request, &project)
-	body, err := a.request(ctx, fmt.Sprintf("%s%s?hash=%s&project_id=%s&phone_hash=%s", url.Url, path, params.Hash, params.ProjectID, params.PhoneHash), project.ApiKey, hash, user.Code, nil)
+	body, err := a.request(ctx, fmt.Sprintf("%s%s?hash=%s&project_id=%s&type=%d", url.Url, path, params.Hash, params.ProjectID, params.Type), project.ApiKey, hash, user.Code, nil)
 	if err != nil {
 		return res, err
 	}
@@ -119,15 +119,20 @@ func (a *auth) GetUser(ctx context.Context, params *vo.AuthGetUser) (*dto.AuthGe
 		logger.WithError(err).Error("body un marshal")
 		return res, constant.ErrUpstreamInternalEntity
 	}
-	if service.Data.Address == "" {
-		return res, constant.ErrAuthUserAddress
+	for _, v := range service.Data {
+		if v.Address == "" {
+			return res, constant.ErrAuthUserAddress
+		}
+		chainName := mapset.NewSetFromSlice(dto.AuthChainName)
+		if !chainName.Contains(v.ChainName) {
+			return res, constant.ErrAuthUserChainName
+		}
+
+		res = append(res, &dto.AuthGetUser{
+			Address:   v.Address,
+			ChainName: v.ChainName,
+		})
 	}
-	chainName := mapset.NewSetFromSlice(dto.AuthChainName)
-	if !chainName.Contains(service.Data.ChainName) {
-		return res, constant.ErrAuthUserChainName
-	}
-	res.Address = service.Data.Address
-	res.ChainName = service.Data.ChainName
 	return res, nil
 }
 

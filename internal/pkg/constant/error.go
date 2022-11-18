@@ -40,6 +40,7 @@ const (
 
 	ErrUpstreamEntity = "returned entity does not conform to the rule"
 	ErrNotFound       = "not found"
+	ErrInvalidValue   = "invalid %s value"
 )
 
 var (

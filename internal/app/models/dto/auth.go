@@ -15,8 +15,15 @@ type AuthUpstreamVerify struct {
 	} `json:"data"`
 }
 
+// type AuthUpstreamGetUser struct {
+// 	Data struct {
+// 		Address   string `json:"address"`
+// 		ChainName string `json:"chain_name"`
+// 	} `json:"data"`
+// }
+
 type AuthUpstreamGetUser struct {
-	Data struct {
+	Data []struct {
 		Address   string `json:"address"`
 		ChainName string `json:"chain_name"`
 	} `json:"data"`
