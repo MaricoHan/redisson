@@ -275,8 +275,8 @@ func (r Rights) UserAuth(params *dto.UserAuthRequest) (*dto.UserAuthResponse, er
 	logger := r.logger.WithField("params", params).WithField("func", "UserAuth")
 
 	req := rights.UserAuthRequest{
-		Code:        "",
-		Module:      "",
+		Code:        params.Code,
+		Module:      params.Module,
 		ProjectId:   params.ProjectID,
 		OperationId: params.OperationID,
 		AuthType:    params.AuthType,
@@ -347,8 +347,8 @@ func (r Rights) EditUserAuth(params *dto.EditUserAuthRequest) (*dto.EditUserAuth
 	logger := r.logger.WithField("params", params).WithField("func", "EditUserAuth")
 
 	req := rights.UserAuthRequest{
-		Code:        "",
-		Module:      "",
+		Code:        params.Code,
+		Module:      params.Module,
 		ProjectId:   params.ProjectID,
 		OperationId: params.OperationID,
 		AuthType:    params.AuthType,
