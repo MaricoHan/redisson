@@ -130,6 +130,7 @@ func (r Rights) Register(ctx context.Context, request interface{}) (response int
 			PubTime:       req.ProductInfo.PubTime,
 			PubChannel:    req.ProductInfo.PubChannel,
 			PubAnnex:      req.ProductInfo.PubAnnex,
+			Hash:          req.ProductInfo.Hash,
 		},
 		RightsInfo: dto.RightsInfo{
 			Hold:          req.RightsInfo.Hold,
@@ -233,6 +234,7 @@ func (r Rights) EditRegister(ctx context.Context, request interface{}) (response
 			PubTime:       req.ProductInfo.PubTime,
 			PubChannel:    req.ProductInfo.PubChannel,
 			PubAnnex:      req.ProductInfo.PubAnnex,
+			Hash:          req.ProductInfo.Hash,
 		},
 		RightsInfo: dto.RightsInfo{
 			Hold:          req.RightsInfo.Hold,
