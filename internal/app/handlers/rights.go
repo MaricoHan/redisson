@@ -520,8 +520,8 @@ func (r Rights) DeliveryInfo(ctx context.Context, request interface{}) (response
 func (Rights) RegisterType(ctx context.Context) uint64 {
 	registerType := ctx.Value("register_type")
 
-	if registerType == 0 {
-		return 1
+	if registerType == nil {
+		return 0
 	}
 	r := registerType.(string)
 	parseUint, _ := strconv.ParseUint(r, 10, 64)
