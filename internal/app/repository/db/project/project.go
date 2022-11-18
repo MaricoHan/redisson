@@ -24,6 +24,6 @@ func (p *ProjectRepo) GetProjectByApiKey(apiKey string) (project entity.Project,
 }
 
 func (p *ProjectRepo) GetProjectByCode(code string) (project entity.Project, err error) {
-	err = p.db.Select("id,chain_id,user_id,api_secret,api_key,access_mode").Where("code=?", code).Find(&project).Error
+	err = p.db.Select("id,chain_id,user_id,api_secret,api_key,access_mode").Where("code=?", code).First(&project).Error
 	return project, err
 }

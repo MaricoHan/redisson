@@ -127,7 +127,6 @@ func (a *auth) GetUser(ctx context.Context, params *vo.AuthGetUser) ([]*dto.Auth
 		if !chainName.Contains(v.ChainName) {
 			return res, constant.ErrAuthUserChainName
 		}
-
 		res = append(res, &dto.AuthGetUser{
 			Address:   v.Address,
 			ChainName: v.ChainName,
@@ -185,7 +184,6 @@ func (a *auth) request(ctx context.Context, url, apikey, hash, code string, requ
 	}).WithField("func", "request")
 	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(configs.Cfg.App.HttpTimeout))
 	defer cancel()
-
 	results, err := utils.Get(ctx, url, apikey, hash, code, request)
 	if err != nil {
 		logger.WithError(err).Error("get")
