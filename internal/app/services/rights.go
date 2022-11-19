@@ -124,7 +124,7 @@ func (r Rights) Register(ctx context.Context, params *dto.RegisterRequest) (*dto
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
 		logger.Error(errors2.ErrService)
-		return nil, errors2.New(errors2.ClientParams, "register_type error")
+		return nil, errors2.New(errors2.ClientParams, "invalid register_type")
 	}
 	resp, err := grpcClient.Register(ctx, &req)
 	if err != nil {
@@ -225,7 +225,7 @@ func (r Rights) EditRegister(ctx context.Context, params *dto.EditRegisterReques
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
 		logger.Error(errors2.ErrService)
-		return nil, errors2.New(errors2.ClientParams, "register_type error")
+		return nil, errors2.New(errors2.ClientParams, "invalid register_type")
 	}
 	resp, err := grpcClient.EditRegister(ctx, &req)
 	if err != nil {
@@ -248,7 +248,7 @@ func (r Rights) QueryRegister(ctx context.Context, params *dto.QueryRegisterRequ
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
 		logger.Error(errors2.ErrService)
-		return nil, errors2.New(errors2.ClientParams, "register_type error")
+		return nil, errors2.New(errors2.ClientParams, "invalid register_type")
 	}
 	resp, err := grpcClient.RegisterInfo(ctx, &req)
 	if err != nil {
@@ -325,7 +325,7 @@ func (r Rights) UserAuth(ctx context.Context, params *dto.UserAuthRequest) (*dto
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
 		logger.Error(errors2.ErrService)
-		return nil, errors2.New(errors2.ClientParams, "register_type error")
+		return nil, errors2.New(errors2.ClientParams, "invalid register_type")
 	}
 	resp, err := grpcClient.UserAuth(ctx, &req)
 	if err != nil {
@@ -397,7 +397,7 @@ func (r Rights) EditUserAuth(ctx context.Context, params *dto.EditUserAuthReques
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
 		logger.Error(errors2.ErrService)
-		return nil, errors2.New(errors2.ClientParams, "register_type error")
+		return nil, errors2.New(errors2.ClientParams, "invalid register_type")
 	}
 	resp, err := grpcClient.EditUserAuth(ctx, &req)
 	if err != nil {
@@ -425,7 +425,7 @@ func (r Rights) QueryUserAuth(ctx context.Context, params *dto.QueryUserAuthRequ
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
 		logger.Error(errors2.ErrService)
-		return nil, errors2.New(errors2.ClientParams, "register_type error")
+		return nil, errors2.New(errors2.ClientParams, "invalid register_type")
 	}
 	resp, err := grpcClient.UserAuthInfo(ctx, &req)
 	if err != nil {
@@ -453,7 +453,7 @@ func (r Rights) Dict(ctx context.Context, params *dto.DictRequest) (*dto.DictRes
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
 		logger.Error(errors2.ErrService)
-		return nil, errors2.New(errors2.ClientParams, "register_type error")
+		return nil, errors2.New(errors2.ClientParams, "invalid register_type")
 	}
 	resp, err := grpcClient.Dict(ctx, &req)
 	if err != nil {
@@ -510,7 +510,7 @@ func (r Rights) Region(ctx context.Context, params *dto.RegionRequest) (*dto.Reg
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
 		logger.Error(errors2.ErrService)
-		return nil, errors2.New(errors2.ClientParams, "register_type error")
+		return nil, errors2.New(errors2.ClientParams, "invalid register_type")
 	}
 	resp, err := grpcClient.Region(ctx, &req)
 	if err != nil {
@@ -556,7 +556,7 @@ func (r Rights) Delivery(ctx context.Context, params *dto.DeliveryRequest) (*dto
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
 		logger.Error(errors2.ErrService)
-		return nil, errors2.New(errors2.ClientParams, "register_type error")
+		return nil, errors2.New(errors2.ClientParams, "invalid register_type")
 	}
 	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
@@ -590,7 +590,7 @@ func (r Rights) EditDelivery(ctx context.Context, params *dto.EditDeliveryReques
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
 		logger.Error(errors2.ErrService)
-		return nil, errors2.New(errors2.ClientParams, "register_type error")
+		return nil, errors2.New(errors2.ClientParams, "invalid register_type")
 	}
 	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
@@ -619,7 +619,7 @@ func (r Rights) DeliveryInfo(ctx context.Context, params *dto.DeliveryInfoReques
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
 		logger.Error(errors2.ErrService)
-		return nil, errors2.New(errors2.ClientParams, "register_type error")
+		return nil, errors2.New(errors2.ClientParams, "invalid register_type")
 	}
 	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
