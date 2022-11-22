@@ -603,7 +603,7 @@ func (r Rights) EditDelivery(ctx context.Context, params *dto.EditDeliveryReques
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
 
-	return &dto.EditDeliveryResponse{OperationID: resp.OperationId}, nil
+	return &dto.EditDeliveryResponse{}, nil
 }
 
 func (r Rights) DeliveryInfo(ctx context.Context, params *dto.DeliveryInfoRequest) (*dto.DeliveryInfoResponse, error) {
