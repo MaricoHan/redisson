@@ -2,20 +2,17 @@ package constant
 
 import (
 	"fmt"
-	"google.golang.org/grpc/codes"
 )
 
 const (
-	RootCodeSpace                     = "NFTP-OPEN-API"
-	MtCodeSpace                       = "MT"
-	AuthCodeSpace                     = "AUTH"
-	UpstreamInternalFailed codes.Code = 10086
+	RootCodeSpace = "NFTP-OPEN-API"
+	MtCodeSpace   = "MT"
+	AuthCodeSpace = "AUTH"
 )
 
 const (
 	// InternalFailed		error code
 	InternalFailed                 = "INTERNAL_ERROR"
-	UpstreamInternalFaileds        = "UPSTREAM_INTERNAL_ERROR"
 	AuthenticationFailed           = "FORBIDDEN"
 	ClientParamsError              = "PARAMS_ERROR"
 	FrequentRequestsNotSupports    = "FREQUENT_REQUESTS_NOT_SUPPORTS"
@@ -44,14 +41,6 @@ const (
 
 	ErrNotFound     = "not found"
 	ErrInvalidValue = "invalid %s value"
-
-	ErrProjectOrUserNotFound      = "user or project not exists"
-	ErrServiceRedirectUrlNotFound = "service redirect address is not configured"
-	ErrUpstreamInternal           = "upstream service is abnormal"
-	ErrUpstreamForbidden          = "customer has no right to access this api"
-	ErrAuthVerifyExists           = "invalid exists value"
-	ErrAuthUserAddress            = "invalid address value"
-	ErrAuthUserChainName          = "invalid chain_name value"
 )
 
 var (
