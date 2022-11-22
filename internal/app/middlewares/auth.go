@@ -146,7 +146,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if projectInfo.AccessMode == entity.UNMANAGED {
 			if fmt.Sprintf("%s-%s", chainInfo.Code, chainInfo.Module) == constant.IritaOPBNative {
 				// 文昌链-天舟除 orders 都不支持
-				if !strings.Contains(r.RequestURI, "/orders") || !strings.Contains(r.RequestURI, "/auth") {
+				if !strings.Contains(r.RequestURI, "/orders") && !strings.Contains(r.RequestURI, "/auth") {
 					writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
 					return
 				}

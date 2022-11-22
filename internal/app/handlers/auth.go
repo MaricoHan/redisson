@@ -98,7 +98,7 @@ func (a *Auth) projectID(ctx context.Context) string {
 func (a *Auth) hashType(ctx context.Context) int {
 	hashType := ctx.Value("type")
 	if hashType == nil {
-		return AUTHTYPEID
+		return AUTHTYPEID - 1
 	}
 	hashTypeInt, err := strconv.Atoi(hashType.(string))
 	if err != nil {
