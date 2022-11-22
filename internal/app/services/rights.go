@@ -601,7 +601,7 @@ func (r Rights) EditDelivery(params *dto.EditDeliveryRequest) (*dto.EditDelivery
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
 
-	return &dto.EditDeliveryResponse{OperationID: resp.OperationId}, nil
+	return &dto.EditDeliveryResponse{}, nil
 }
 
 func (r Rights) DeliveryInfo(params *dto.DeliveryInfoRequest) (*dto.DeliveryInfoResponse, error) {
