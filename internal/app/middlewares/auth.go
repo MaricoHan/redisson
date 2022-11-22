@@ -134,9 +134,9 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		AccessMode: projectInfo.AccessMode,
 	}
 
-	// DDC 不支持 NFT-批量、orders-批量、MT
+	// DDC 不支持 NFT-批量、orders-批量、MT、版权服务
 	if fmt.Sprintf("%s-%s", chainInfo.Code, chainInfo.Module) == constant.WenchangDDC {
-		if strings.Contains(r.RequestURI, "/mt/") || strings.Contains(r.RequestURI, "/nft/batch/") || strings.Contains(r.RequestURI, "/orders/batch") {
+		if strings.Contains(r.RequestURI, "/mt/") || strings.Contains(r.RequestURI, "/nft/batch/") || strings.Contains(r.RequestURI, "/orders/batch") || strings.Contains(r.RequestURI, "/rights/") {
 			writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
 			return
 		}
