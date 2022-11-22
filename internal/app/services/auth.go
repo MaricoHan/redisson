@@ -16,6 +16,9 @@ import (
 	mapset "github.com/deckarep/golang-set"
 	httptransport "github.com/go-kit/kit/transport/http"
 	log "github.com/sirupsen/logrus"
+	"gitlab.bianjie.ai/avata/utils/commons/aes"
+	"gitlab.bianjie.ai/avata/utils/errors"
+	authErr "gitlab.bianjie.ai/avata/utils/errors/auth"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
@@ -27,8 +30,6 @@ import (
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
 	"gitlab.bianjie.ai/avata/open-api/utils"
-	"gitlab.bianjie.ai/avata/utils/commons/aes"
-	"gitlab.bianjie.ai/avata/utils/errors"
 )
 
 type IAuth interface {
@@ -75,6 +76,10 @@ func (a *auth) Verify(ctx context.Context, params *vo.AuthVerify) (*dto.AuthVeri
 	}
 	timestamp := utils.TimeToUnix(time.Now())
 	hash, err := a.hash(request, path, timestamp, &project)
+	if err != nil {
+		logger.WithError(err).Error("hash")
+		return res, errors.ErrInternal
+	}
 	body, err := a.request(context.Background(), fmt.Sprintf("%s%s?hash=%s&project_id=%s&type=%d", url.Url, path, params.Hash, params.ProjectID, params.Type), project.ApiKey, hash, user.Code, timestamp, nil)
 	if err != nil {
 		return res, err
@@ -82,10 +87,10 @@ func (a *auth) Verify(ctx context.Context, params *vo.AuthVerify) (*dto.AuthVeri
 	var service dto.AuthUpstreamVerify
 	if err := json.Unmarshal(body, &service); err != nil {
 		logger.WithError(err).Error("body un marshal")
-		return res, errors.New(constant.UpstreamInternalFailed, constant.ErrUpstreamInternal)
+		return res, errors.New(errors.UpstreamInternalFailed, authErr.ErrUpstreamInternal)
 	}
 	if service.Data.Exists != dto.AuthVerifyExists {
-		return res, errors.New(constant.UpstreamInternalFailed, constant.ErrAuthVerifyExists)
+		return res, errors.New(errors.UpstreamInternalFailed, authErr.ErrAuthVerifyExists)
 	}
 	res.Exists = service.Data.Exists
 	return res, nil
@@ -122,6 +127,10 @@ func (a *auth) GetUser(ctx context.Context, params *vo.AuthGetUser) ([]*dto.Auth
 	}
 	timestamp := utils.TimeToUnix(time.Now())
 	hash, err := a.hash(request, path, timestamp, &project)
+	if err != nil {
+		logger.WithError(err).Error("hash")
+		return res, errors.ErrInternal
+	}
 	body, err := a.request(context.Background(), fmt.Sprintf("%s%s?hash=%s&project_id=%s&type=%d", url.Url, path, params.Hash, params.ProjectID, params.Type), project.ApiKey, hash, user.Code, timestamp, nil)
 	if err != nil {
 		return res, err
@@ -129,18 +138,18 @@ func (a *auth) GetUser(ctx context.Context, params *vo.AuthGetUser) ([]*dto.Auth
 	var service dto.AuthUpstreamGetUser
 	if err := json.Unmarshal(body, &service); err != nil {
 		logger.WithError(err).Error("body un marshal")
-		return res, errors.New(constant.UpstreamInternalFailed, constant.ErrUpstreamInternal)
+		return res, errors.New(errors.UpstreamInternalFailed, authErr.ErrUpstreamInternal)
 	}
 	if len(service.Data) == 0 {
-		return res, nil
+		return []*dto.AuthGetUser{}, nil
 	}
 	for _, v := range service.Data {
 		if v.Address == "" {
-			return res, errors.New(constant.UpstreamInternalFailed, constant.ErrAuthUserAddress)
+			return res, errors.New(errors.UpstreamInternalFailed, authErr.ErrAuthUserAddress)
 		}
 		chainName := mapset.NewSetFromSlice(dto.AuthChainName)
 		if !chainName.Contains(v.ChainName) {
-			return res, errors.New(constant.UpstreamInternalFailed, constant.ErrAuthUserChainName)
+			return res, errors.New(errors.UpstreamInternalFailed, authErr.ErrAuthUserChainName)
 		}
 		res = append(res, &dto.AuthGetUser{
 			Address:   v.Address,
@@ -156,7 +165,7 @@ func (a *auth) getProject(projectCode string) (entity.Project, error) {
 	project, err := projectRepo.GetProjectByCode(projectCode)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return project, errors.New(errors.NotFound, constant.ErrProjectOrUserNotFound)
+			return project, errors.New(errors.NotFound, authErr.ErrProjectOrUserNotFound)
 		}
 		return project, err
 	}
@@ -169,7 +178,7 @@ func (a *auth) getUser(userID uint64) (entity.User, error) {
 	user, err := userRepo.GetUser(userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return user, errors.New(errors.NotFound, constant.ErrProjectOrUserNotFound)
+			return user, errors.New(errors.NotFound, authErr.ErrProjectOrUserNotFound)
 		}
 		return user, err
 	}
@@ -182,12 +191,12 @@ func (a *auth) getServiceRedirectUrl(projectID uint64) (entity.ServiceRedirectUr
 	sru, err := serviceRedirectUrlRepo.GetServiceRedirectUrlByProjectID(projectID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return sru, errors.New(errors.NotFound, constant.ErrServiceRedirectUrlNotFound)
+			return sru, errors.New(errors.NotFound, authErr.ErrServiceRedirectUrlNotFound)
 		}
 		return sru, err
 	}
 	if sru.Url == "" {
-		return sru, errors.New(errors.NotFound, constant.ErrServiceRedirectUrlNotFound)
+		return sru, errors.New(errors.NotFound, authErr.ErrServiceRedirectUrlNotFound)
 	}
 	return sru, nil
 }
@@ -207,7 +216,7 @@ func (a *auth) request(ctx context.Context, url, apikey, hash, code, timestamp s
 	results, err := utils.Get(ctx, url, apikey, hash, code, timestamp, request)
 	if err != nil {
 		logger.WithError(err).Error("get")
-		return nil, errors.New(constant.UpstreamInternalFailed, constant.ErrUpstreamInternal)
+		return nil, errors.New(errors.UpstreamInternalFailed, authErr.ErrUpstreamInternal)
 	}
 	defer results.Body.Close()
 	body, err := ioutil.ReadAll(results.Body)
@@ -221,14 +230,14 @@ func (a *auth) request(ctx context.Context, url, apikey, hash, code, timestamp s
 		var resp constant.ErrorResp
 		if err := json.Unmarshal(body, &resp); err != nil {
 			logger.WithError(fmt.Errorf(string(body))).Error("not found json un marshal")
-			return nil, errors.New(constant.UpstreamInternalFailed, constant.ErrUpstreamInternal)
+			return nil, errors.New(errors.UpstreamInternalFailed, authErr.ErrUpstreamInternal)
 		}
 		return nil, errors.New(errors.NotFound, resp.Message)
 	}
 	// 403
 	if results.StatusCode == http.StatusForbidden {
 		logger.WithError(fmt.Errorf(string(body))).Error("forbidden")
-		return nil, errors.New(errors.Authentication, constant.ErrUpstreamForbidden)
+		return nil, errors.New(errors.Authentication, authErr.ErrUpstreamForbidden)
 	}
 	return body, nil
 }

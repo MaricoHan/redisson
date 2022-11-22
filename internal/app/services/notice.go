@@ -16,6 +16,7 @@ import (
 	httptransport "github.com/go-kit/kit/transport/http"
 	log "github.com/sirupsen/logrus"
 	pb_notice "gitlab.bianjie.ai/avata/chains/api/pb/notice"
+	authErr "gitlab.bianjie.ai/avata/utils/errors/auth"
 
 	noticeResp "gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/notice"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
@@ -99,6 +100,10 @@ func (a *notice) TransferNFTS(ctx context.Context, params *notice2.TransferNFTS)
 	// 组合签名
 	timestamp := utils.TimeToUnix(time.Now())
 	hash, err := a.hash(request, path, timestamp, &project)
+	if err != nil {
+		logger.WithError(err).Error("hash")
+		return res, errors.ErrInternal
+	}
 	_, err = a.request(context.Background(), fmt.Sprintf("%s%s", url.Url, path), project.ApiKey, hash, user.Code, timestamp, request)
 	if err != nil {
 		return res, err
@@ -158,6 +163,10 @@ func (a *notice) TransferClasses(ctx context.Context, params *notice2.TransferCl
 	}
 	timestamp := utils.TimeToUnix(time.Now())
 	hash, err := a.hash(request, path, timestamp, &project)
+	if err != nil {
+		logger.WithError(err).Error("hash")
+		return res, errors.ErrInternal
+	}
 	_, err = a.request(context.Background(), fmt.Sprintf("%s%s", url.Url, path), project.ApiKey, hash, user.Code, timestamp, request)
 	if err != nil {
 		return res, err
@@ -171,7 +180,7 @@ func (a *notice) getProject(projectCode string) (entity.Project, error) {
 	project, err := projectRepo.GetProjectByCode(projectCode)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return project, errors.New(errors.NotFound, constant.ErrProjectOrUserNotFound)
+			return project, errors.New(errors.NotFound, authErr.ErrProjectOrUserNotFound)
 		}
 		return project, err
 	}
@@ -184,7 +193,7 @@ func (a *notice) getUser(userID uint64) (entity.User, error) {
 	user, err := userRepo.GetUser(userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return user, errors.New(errors.NotFound, constant.ErrProjectOrUserNotFound)
+			return user, errors.New(errors.NotFound, authErr.ErrProjectOrUserNotFound)
 		}
 		return user, err
 	}
@@ -197,12 +206,12 @@ func (a *notice) getServiceRedirectUrl(projectID uint64) (entity.ServiceRedirect
 	sru, err := serviceRedirectUrlRepo.GetServiceRedirectUrlByProjectID(projectID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return sru, errors.New(errors.NotFound, constant.ErrProjectOrUserNotFound)
+			return sru, errors.New(errors.NotFound, authErr.ErrProjectOrUserNotFound)
 		}
 		return sru, err
 	}
 	if sru.Url == "" {
-		return sru, errors.New(errors.NotFound, constant.ErrProjectOrUserNotFound)
+		return sru, errors.New(errors.NotFound, authErr.ErrProjectOrUserNotFound)
 	}
 	return sru, nil
 }
@@ -222,7 +231,7 @@ func (a *notice) request(ctx context.Context, url, apikey, hash, code, timestamp
 	results, err := utils.Post(ctx, url, apikey, hash, code, timestamp, request)
 	if err != nil {
 		logger.WithError(err).Error("post")
-		return nil, errors.New(constant.UpstreamInternalFailed, constant.ErrUpstreamInternal)
+		return nil, errors.New(errors.UpstreamInternalFailed, authErr.ErrUpstreamInternal)
 	}
 	defer results.Body.Close()
 	body, err := ioutil.ReadAll(results.Body)
@@ -236,14 +245,14 @@ func (a *notice) request(ctx context.Context, url, apikey, hash, code, timestamp
 		var resp constant.ErrorResp
 		if err := json.Unmarshal(body, &resp); err != nil {
 			logger.WithError(fmt.Errorf(string(body))).Error("not found json un marshal")
-			return nil, errors.New(constant.UpstreamInternalFailed, constant.ErrUpstreamInternal)
+			return nil, errors.New(errors.UpstreamInternalFailed, authErr.ErrUpstreamInternal)
 		}
-		return nil, constant.Register(constant.AuthCodeSpace, constant.NotFound, resp.Message)
+		return nil, errors.New(errors.NotFound, resp.Message)
 	}
 	// 403
 	if results.StatusCode == http.StatusForbidden {
 		logger.WithError(fmt.Errorf(string(body))).Error("forbidden")
-		return nil, errors.New(constant.UpstreamInternalFailed, constant.ErrUpstreamInternal)
+		return nil, errors.New(errors.UpstreamInternalFailed, authErr.ErrUpstreamInternal)
 	}
 	return body, nil
 }

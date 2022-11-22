@@ -42,18 +42,16 @@ const (
 
 	ErrInternalFailed = "internal error"
 
-	ErrUpstreamEntity = "returned entity does not conform to the rule"
-	ErrNotFound       = "not found"
-	ErrInvalidValue   = "invalid %s value"
+	ErrNotFound     = "not found"
+	ErrInvalidValue = "invalid %s value"
 
 	ErrProjectOrUserNotFound      = "user or project not exists"
 	ErrServiceRedirectUrlNotFound = "service redirect address is not configured"
 	ErrUpstreamInternal           = "upstream service is abnormal"
 	ErrUpstreamForbidden          = "customer has no right to access this api"
-	// ErrUpstreamInternalEntity     = Register(AuthCodeSpace, UpstreamInternalFaileds, ErrUpstreamEntity)
-	ErrAuthVerifyExists  = "invalid exists value"
-	ErrAuthUserAddress   = "invalid address value"
-	ErrAuthUserChainName = "invalid chain_name value"
+	ErrAuthVerifyExists           = "invalid exists value"
+	ErrAuthUserAddress            = "invalid address value"
+	ErrAuthUserChainName          = "invalid chain_name value"
 )
 
 var (

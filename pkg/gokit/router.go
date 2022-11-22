@@ -297,9 +297,8 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 				w.WriteHeader(http.StatusNotFound) // 404
 			case errors2.NotImplemented:
 				w.WriteHeader(http.StatusNotImplemented) // 501
-			case constant.UpstreamInternalFailed:
+			case errors2.UpstreamInternalFailed:
 				// 调用上游服务异常
-				errMesg = constant.UpstreamInternalFaileds
 				w.WriteHeader(http.StatusNotFound) // 502
 			default:
 				// metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "500"}...).Add(1)
