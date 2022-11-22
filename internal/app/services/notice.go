@@ -7,7 +7,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gorm.io/gorm"
 	"io/ioutil"
 	"net/http"
@@ -55,7 +54,12 @@ func (a *notice) TransferNFTS(ctx context.Context, params *notice2.TransferNFTS)
 		logger.WithError(err).Error("query project")
 		return res, err
 	}
-	user, err := a.getUser(uint64(project.UserId))
+	authData, err := utils.AuthData(ctx)
+	if err != nil {
+		logger.WithError(err).Error("auth data")
+		return res, errors.ErrInternal
+	}
+	user, err := a.getUser(authData.UserId)
 	if err != nil {
 		logger.WithError(err).Error("query project")
 		return res, err
@@ -64,11 +68,6 @@ func (a *notice) TransferNFTS(ctx context.Context, params *notice2.TransferNFTS)
 	if err != nil {
 		logger.WithError(err).Error("query service redirect url")
 		return res, err
-	}
-	authData, err := a.authData(ctx)
-	if err != nil {
-		logger.WithError(err).Error("auth data")
-		return res, errors.ErrInternal
 	}
 	mapKey := fmt.Sprintf("%s-%s", authData.Code, authData.Module)
 	grpcClient, ok := initialize.NoticeClientMap[mapKey]
@@ -98,8 +97,9 @@ func (a *notice) TransferNFTS(ctx context.Context, params *notice2.TransferNFTS)
 		"timestamp":    resp.Timestamp,
 	}
 	// 组合签名
-	hash, err := a.hash(request, &project)
-	_, err = a.request(ctx, fmt.Sprintf("%s%s", url.Url, path), project.ApiKey, hash, user.Code, request)
+	timestamp := utils.TimeToUnix(time.Now())
+	hash, err := a.hash(request, path, timestamp, &project)
+	_, err = a.request(context.Background(), fmt.Sprintf("%s%s", url.Url, path), project.ApiKey, hash, user.Code, timestamp, request)
 	if err != nil {
 		return res, err
 	}
@@ -116,7 +116,12 @@ func (a *notice) TransferClasses(ctx context.Context, params *notice2.TransferCl
 		logger.WithError(err).Error("query project")
 		return res, err
 	}
-	user, err := a.getUser(uint64(project.UserId))
+	authData, err := utils.AuthData(ctx)
+	if err != nil {
+		logger.WithError(err).Error("auth data")
+		return res, errors.ErrInternal
+	}
+	user, err := a.getUser(authData.UserId)
 	if err != nil {
 		logger.WithError(err).Error("query project")
 		return res, err
@@ -125,11 +130,6 @@ func (a *notice) TransferClasses(ctx context.Context, params *notice2.TransferCl
 	if err != nil {
 		logger.WithError(err).Error("query service redirect url")
 		return res, err
-	}
-	authData, err := a.authData(ctx)
-	if err != nil {
-		logger.WithError(err).Error("auth data")
-		return res, errors.ErrInternal
 	}
 	mapKey := fmt.Sprintf("%s-%s", authData.Code, authData.Module)
 	grpcClient, ok := initialize.NoticeClientMap[mapKey]
@@ -156,8 +156,9 @@ func (a *notice) TransferClasses(ctx context.Context, params *notice2.TransferCl
 		"block_height": resp.BlockHeight,
 		"timestamp":    resp.Timestamp,
 	}
-	hash, err := a.hash(request, &project)
-	_, err = a.request(ctx, fmt.Sprintf("%s%s", url.Url, path), project.ApiKey, hash, user.Code, request)
+	timestamp := utils.TimeToUnix(time.Now())
+	hash, err := a.hash(request, path, timestamp, &project)
+	_, err = a.request(context.Background(), fmt.Sprintf("%s%s", url.Url, path), project.ApiKey, hash, user.Code, timestamp, request)
 	if err != nil {
 		return res, err
 	}
@@ -170,7 +171,7 @@ func (a *notice) getProject(projectCode string) (entity.Project, error) {
 	project, err := projectRepo.GetProjectByCode(projectCode)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return project, constant.ErrProjectOrUserNotFound
+			return project, errors.New(errors.NotFound, constant.ErrProjectOrUserNotFound)
 		}
 		return project, err
 	}
@@ -183,7 +184,7 @@ func (a *notice) getUser(userID uint64) (entity.User, error) {
 	user, err := userRepo.GetUser(userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return user, constant.ErrProjectOrUserNotFound
+			return user, errors.New(errors.NotFound, constant.ErrProjectOrUserNotFound)
 		}
 		return user, err
 	}
@@ -196,9 +197,12 @@ func (a *notice) getServiceRedirectUrl(projectID uint64) (entity.ServiceRedirect
 	sru, err := serviceRedirectUrlRepo.GetServiceRedirectUrlByProjectID(projectID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return sru, constant.ErrServiceRedirectUrlNotFound
+			return sru, errors.New(errors.NotFound, constant.ErrProjectOrUserNotFound)
 		}
 		return sru, err
+	}
+	if sru.Url == "" {
+		return sru, errors.New(errors.NotFound, constant.ErrProjectOrUserNotFound)
 	}
 	return sru, nil
 }
@@ -206,17 +210,19 @@ func (a *notice) getServiceRedirectUrl(projectID uint64) (entity.ServiceRedirect
 // request 服务请求
 // 1.向上游服务方发起请求, err不等于nil说明存在异常返回服务错误
 // 2.当请求成功，返回的状态码为404时, 则返回NOT_FOUNT
-func (a *notice) request(ctx context.Context, url, apikey, hash, code string, request map[string]interface{}) ([]byte, error) {
+func (a *notice) request(ctx context.Context, url, apikey, hash, code, timestamp string, request map[string]interface{}) ([]byte, error) {
 	logger := a.logger.WithFields(map[string]interface{}{
 		"url":  url,
 		"code": code,
+		"hash": hash,
 	}).WithField("func", "request")
+	logger.Info("start request")
 	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(configs.Cfg.App.HttpTimeout))
 	defer cancel()
-	results, err := utils.Post(ctx, url, apikey, hash, code, request)
+	results, err := utils.Post(ctx, url, apikey, hash, code, timestamp, request)
 	if err != nil {
 		logger.WithError(err).Error("post")
-		return nil, constant.ErrInternal
+		return nil, errors.New(constant.UpstreamInternalFailed, constant.ErrUpstreamInternal)
 	}
 	defer results.Body.Close()
 	body, err := ioutil.ReadAll(results.Body)
@@ -224,44 +230,40 @@ func (a *notice) request(ctx context.Context, url, apikey, hash, code string, re
 		logger.WithError(err).Error("read body")
 		return nil, constant.ErrInternal
 	}
+	// 404
 	if results.StatusCode == http.StatusNotFound {
 		logger.WithError(fmt.Errorf(string(body))).Error("not found")
 		var resp constant.ErrorResp
 		if err := json.Unmarshal(body, &resp); err != nil {
 			logger.WithError(fmt.Errorf(string(body))).Error("not found json un marshal")
-			return nil, constant.ErrInternal
+			return nil, errors.New(constant.UpstreamInternalFailed, constant.ErrUpstreamInternal)
 		}
 		return nil, constant.Register(constant.AuthCodeSpace, constant.NotFound, resp.Message)
+	}
+	// 403
+	if results.StatusCode == http.StatusForbidden {
+		logger.WithError(fmt.Errorf(string(body))).Error("forbidden")
+		return nil, errors.New(constant.UpstreamInternalFailed, constant.ErrUpstreamInternal)
 	}
 	return body, nil
 }
 
 // hash 生成签名
-func (a *notice) hash(str map[string]interface{}, project *entity.Project) (string, error) {
+func (a *notice) hash(str map[string]interface{}, path, timestamp string, project *entity.Project) (string, error) {
+	hashStr := make(map[string]interface{}, len(str))
+	for k, v := range str {
+		hashStr[fmt.Sprintf("body_%s", k)] = v
+	}
+	hashStr["path_url"] = path
 	bf := bytes.NewBuffer([]byte{})
 	jsonEncoder := json.NewEncoder(bf)
 	jsonEncoder.SetEscapeHTML(false)
-	jsonEncoder.Encode(str)
+	jsonEncoder.Encode(hashStr)
 
 	apiSecret, err := aes.Decode(project.ApiSecret, configs.Cfg.Project.SecretPwd)
 	if err != nil {
 		return "", err
 	}
-	oriTextHashBytes := sha256.Sum256([]byte(strings.TrimRight(bf.String(), "\n") + apiSecret))
+	oriTextHashBytes := sha256.Sum256([]byte(strings.TrimRight(bf.String(), "\n") + timestamp + apiSecret))
 	return hex.EncodeToString(oriTextHashBytes[:]), nil
-}
-
-// AuthData 获取请求头中的项目信息
-func (a *notice) authData(ctx context.Context) (vo.AuthData, error) {
-	authDataString := ctx.Value("X-Auth-Data")
-	authDataSlice, ok := authDataString.([]string)
-	if !ok {
-		return vo.AuthData{}, fmt.Errorf("missing project parameters")
-	}
-	var authData vo.AuthData
-	err := json.Unmarshal([]byte(authDataSlice[0]), &authData)
-	if err != nil {
-		return vo.AuthData{}, err
-	}
-	return authData, nil
 }

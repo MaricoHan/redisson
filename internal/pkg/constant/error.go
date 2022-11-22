@@ -1,17 +1,21 @@
 package constant
 
-import "fmt"
+import (
+	"fmt"
+	"google.golang.org/grpc/codes"
+)
 
 const (
-	RootCodeSpace = "NFTP-OPEN-API"
-	MtCodeSpace   = "MT"
-	AuthCodeSpace = "AUTH"
+	RootCodeSpace                     = "NFTP-OPEN-API"
+	MtCodeSpace                       = "MT"
+	AuthCodeSpace                     = "AUTH"
+	UpstreamInternalFailed codes.Code = 10086
 )
 
 const (
 	// InternalFailed		error code
 	InternalFailed                 = "INTERNAL_ERROR"
-	UpstreamInternalFailed         = "UPSTREAM_INTERNAL_ERROR"
+	UpstreamInternalFaileds        = "UPSTREAM_INTERNAL_ERROR"
 	AuthenticationFailed           = "FORBIDDEN"
 	ClientParamsError              = "PARAMS_ERROR"
 	FrequentRequestsNotSupports    = "FREQUENT_REQUESTS_NOT_SUPPORTS"
@@ -41,25 +45,27 @@ const (
 	ErrUpstreamEntity = "returned entity does not conform to the rule"
 	ErrNotFound       = "not found"
 	ErrInvalidValue   = "invalid %s value"
+
+	ErrProjectOrUserNotFound      = "user or project not exists"
+	ErrServiceRedirectUrlNotFound = "service redirect address is not configured"
+	ErrUpstreamInternal           = "upstream service is abnormal"
+	ErrUpstreamForbidden          = "customer has no right to access this api"
+	// ErrUpstreamInternalEntity     = Register(AuthCodeSpace, UpstreamInternalFaileds, ErrUpstreamEntity)
+	ErrAuthVerifyExists  = "invalid exists value"
+	ErrAuthUserAddress   = "invalid address value"
+	ErrAuthUserChainName = "invalid chain_name value"
 )
 
 var (
-	ErrInternal                   = Register(RootCodeSpace, InternalFailed, "internal")
-	ErrAuthenticate               = Register(RootCodeSpace, AuthenticationFailed, "authentication failed")
-	ErrParams                     = Register(RootCodeSpace, ClientParamsError, ErrClientParams)
-	ErrIdempotent                 = Register(RootCodeSpace, FrequentRequestsNotSupports, "frequent requests not supports")
-	ErrNftStatus                  = Register(RootCodeSpace, NftStatusAbnormal, ErrNftStatusMsg)
-	ErrTimestamp                  = Register(RootCodeSpace, TimestampTimeout, "timestamp is timeout")
-	ErrDuplicate                  = Register(RootCodeSpace, DuplicateRequest, "duplicate request")
-	ErrUnSupported                = Register(MtCodeSpace, UnSupported, "not implemented")
-	ErrUnmanagedUnSupported       = Register(RootCodeSpace, UnSupported, "not implemented")
-	ErrProjectOrUserNotFound      = Register(AuthCodeSpace, NotFound, "user or project not exists")
-	ErrServiceRedirectUrlNotFound = Register(AuthCodeSpace, NotFound, "service redirect address is not configured")
-	ErrUpstreamInternal           = Register(AuthCodeSpace, UpstreamInternalFailed, "upstream service is abnormal")
-	ErrUpstreamInternalEntity     = Register(AuthCodeSpace, UpstreamInternalFailed, ErrUpstreamEntity)
-	ErrAuthVerifyExists           = Register(AuthCodeSpace, UpstreamInternalFailed, "invalid exists value")
-	ErrAuthUserAddress            = Register(AuthCodeSpace, UpstreamInternalFailed, "invalid address value")
-	ErrAuthUserChainName          = Register(AuthCodeSpace, UpstreamInternalFailed, "invalid chain_name value")
+	ErrInternal             = Register(RootCodeSpace, InternalFailed, "internal")
+	ErrAuthenticate         = Register(RootCodeSpace, AuthenticationFailed, "authentication failed")
+	ErrParams               = Register(RootCodeSpace, ClientParamsError, ErrClientParams)
+	ErrIdempotent           = Register(RootCodeSpace, FrequentRequestsNotSupports, "frequent requests not supports")
+	ErrNftStatus            = Register(RootCodeSpace, NftStatusAbnormal, ErrNftStatusMsg)
+	ErrTimestamp            = Register(RootCodeSpace, TimestampTimeout, "timestamp is timeout")
+	ErrDuplicate            = Register(RootCodeSpace, DuplicateRequest, "duplicate request")
+	ErrUnSupported          = Register(MtCodeSpace, UnSupported, "not implemented")
+	ErrUnmanagedUnSupported = Register(RootCodeSpace, UnSupported, "not implemented")
 )
 
 var usedErrorCodes = map[string]*AppError{}

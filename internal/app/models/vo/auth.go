@@ -9,6 +9,7 @@ type AuthData struct {
 	Module     string `json:"module"`
 	Code       string `json:"code"`
 	AccessMode int    `json:"access_mode"`
+	UserId     uint64 `json:"user_id"`
 }
 
 // AuthVerify auth模块下验证

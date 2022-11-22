@@ -100,6 +100,9 @@ func (a *Auth) hashType(ctx context.Context) int {
 	if hashType == nil {
 		return AUTHTYPEID
 	}
-	hashTypeInt, _ := strconv.Atoi(hashType.(string))
+	hashTypeInt, err := strconv.Atoi(hashType.(string))
+	if err != nil {
+		return AUTHTYPEPHONE + 1
+	}
 	return hashTypeInt
 }

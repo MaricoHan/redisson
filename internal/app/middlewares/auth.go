@@ -132,6 +132,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Module:     chainInfo.Module,
 		Code:       chainInfo.Code,
 		AccessMode: projectInfo.AccessMode,
+		UserId:     uint64(projectInfo.UserId),
 	}
 
 	// DDC 不支持 NFT-批量、orders-批量、MT

@@ -297,6 +297,10 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 				w.WriteHeader(http.StatusNotFound) // 404
 			case errors2.NotImplemented:
 				w.WriteHeader(http.StatusNotImplemented) // 501
+			case constant.UpstreamInternalFailed:
+				// 调用上游服务异常
+				errMesg = constant.UpstreamInternalFaileds
+				w.WriteHeader(http.StatusNotFound) // 502
 			default:
 				// metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "500"}...).Add(1)
 				w.WriteHeader(http.StatusInternalServerError) // 500
@@ -334,7 +338,7 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 			case constant.NotFound:
 				// metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "404"}...).Add(1)
 				w.WriteHeader(http.StatusNotFound) // 404
-			case constant.UpstreamInternalFailed:
+			case constant.UpstreamInternalFaileds:
 				// 服务器作为网关或代理，从上游服务器收到无效响应
 				// metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "404"}...).Add(1)
 				w.WriteHeader(http.StatusBadGateway) // 502
@@ -349,7 +353,6 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 				Message:   appErr.Error(),
 			}}
 		}
-
 		bz, _ := json.Marshal(response)
 		_, _ = w.Write(bz)
 	}
