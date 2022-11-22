@@ -281,7 +281,7 @@ type EditDeliveryRequest struct {
 }
 
 type EditDeliveryResponse struct {
-	OperationID string `json:"operation_id"`
+	Data string `json:"data"`
 }
 
 type DeliveryInfoRequest struct {
