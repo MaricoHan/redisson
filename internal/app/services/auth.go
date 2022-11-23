@@ -245,7 +245,7 @@ func (a *auth) request(ctx context.Context, url, apikey, hash, code, timestamp s
 // hash 生成签名
 func (a *auth) hash(str map[string]interface{}, path, timestamp string, project *entity.Project) (string, error) {
 	hashStr := make(map[string]interface{}, len(str))
-	for k, v := r	ange str {
+	for k, v := range str {
 		hashStr[fmt.Sprintf("query_%s", k)] = v
 	}
 	hashStr["path_url"] = path
