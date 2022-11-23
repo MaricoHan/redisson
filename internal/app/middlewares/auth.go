@@ -6,7 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"sort"
 	"strconv"
@@ -221,11 +221,11 @@ func (h authHandler) Signature(r *http.Request, apiSecret string, timestamp stri
 	// 把request的内容读取出来
 	var bodyBytes []byte
 	if r.Body != nil {
-		bodyBytes, _ = ioutil.ReadAll(r.Body)
+		bodyBytes, _ = io.ReadAll(r.Body)
 	}
 	// 把刚刚读出来的再写进去
 	if bodyBytes != nil {
-		r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+		r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 	}
 	paramsBody := map[string]interface{}{}
 	_ = json.Unmarshal(bodyBytes, &paramsBody)
