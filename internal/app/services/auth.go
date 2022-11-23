@@ -80,7 +80,7 @@ func (a *auth) Verify(ctx context.Context, params *vo.AuthVerify) (*dto.AuthVeri
 		logger.WithError(err).Error("hash")
 		return res, errors.ErrInternal
 	}
-	body, err := a.request(context.Background(), fmt.Sprintf("%s%s?hash=%s&project_id=%s&type=%d", url.Url, path, params.Hash, params.ProjectID, params.Type), project.ApiKey, hash, user.Code, timestamp, nil)
+	body, err := a.request(context.Background(), fmt.Sprintf("%s%s?hash=%s&project_id=%s&type=%s", url.Url, path, params.Hash, params.ProjectID, params.Type), project.ApiKey, hash, user.Code, timestamp, nil)
 	if err != nil {
 		return res, err
 	}
@@ -131,7 +131,7 @@ func (a *auth) GetUser(ctx context.Context, params *vo.AuthGetUser) ([]*dto.Auth
 		logger.WithError(err).Error("hash")
 		return res, errors.ErrInternal
 	}
-	body, err := a.request(context.Background(), fmt.Sprintf("%s%s?hash=%s&project_id=%s&type=%d", url.Url, path, params.Hash, params.ProjectID, params.Type), project.ApiKey, hash, user.Code, timestamp, nil)
+	body, err := a.request(context.Background(), fmt.Sprintf("%s%s?hash=%s&project_id=%s&type=%s", url.Url, path, params.Hash, params.ProjectID, params.Type), project.ApiKey, hash, user.Code, timestamp, nil)
 	if err != nil {
 		return res, err
 	}
