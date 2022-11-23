@@ -207,7 +207,6 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h authHandler) Signature(r *http.Request, apiSecret string, timestamp string, signature string) bool {
-
 	// 获取 path params
 	params := map[string]interface{}{}
 	params["path_url"] = r.URL.Path
@@ -230,28 +229,21 @@ func (h authHandler) Signature(r *http.Request, apiSecret string, timestamp stri
 	}
 	paramsBody := map[string]interface{}{}
 	_ = json.Unmarshal(bodyBytes, &paramsBody)
-	hexHash := hash(timestamp + apiSecret)
 
 	for k, v := range paramsBody {
 		k = "body_" + k
 		params[k] = v
 	}
-	// sort params
-	// sortParams := sortMapParams(params)
-	sortParams := params
-	if sortParams != nil {
-		bf := bytes.NewBuffer([]byte{})
-		jsonEncoder := json.NewEncoder(bf)
-		jsonEncoder.SetEscapeHTML(false)
-		jsonEncoder.Encode(sortParams)
 
-		hexHash = hash(strings.TrimRight(bf.String(), "\n") + timestamp + apiSecret)
-	}
+	bf := bytes.NewBuffer([]byte{})
+	jsonEncoder := json.NewEncoder(bf)
+	jsonEncoder.SetEscapeHTML(false)
+	jsonEncoder.Encode(params)
+	hexHash := hash(strings.TrimRight(bf.String(), "\n") + timestamp + apiSecret)
 	if hexHash != signature {
 		return false
 	}
 	return true
-
 }
 
 func hash(oriText string) string {
