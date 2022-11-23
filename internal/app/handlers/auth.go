@@ -4,16 +4,14 @@ import (
 	"context"
 	"fmt"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/utils/errors"
-	"strconv"
-
-	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
 )
 
 const (
-	AUTHTYPEID = iota + 1
-	AUTHTYPEPHONE
+	AUTHTYPEID    = "1"
+	AUTHTYPEPHONE = "2"
 )
 
 type IAuth interface {
@@ -42,7 +40,7 @@ func (a *Auth) Verify(ctx context.Context, request interface{}) (interface{}, er
 	if projectID == "" {
 		return nil, errors.New(errors.ClientParams, fmt.Sprintf(errors.ErrRequired, "project_id"))
 	}
-	if hashType == 0 {
+	if hashType == "" {
 		return nil, errors.New(errors.ClientParams, fmt.Sprintf(errors.ErrRequired, "type"))
 	}
 	if hashType != AUTHTYPEID && hashType != AUTHTYPEPHONE {
@@ -66,7 +64,7 @@ func (a *Auth) GetUser(ctx context.Context, request interface{}) (interface{}, e
 	if projectID == "" {
 		return nil, errors.New(errors.ClientParams, fmt.Sprintf(errors.ErrRequired, "project_id"))
 	}
-	if hashType == 0 {
+	if hashType == "" {
 		return nil, errors.New(errors.ClientParams, fmt.Sprintf(errors.ErrRequired, "type"))
 	}
 	if hashType != AUTHTYPEID && hashType != AUTHTYPEPHONE {
@@ -95,14 +93,10 @@ func (a *Auth) projectID(ctx context.Context) string {
 	return projectID.(string)
 }
 
-func (a *Auth) hashType(ctx context.Context) int {
+func (a *Auth) hashType(ctx context.Context) string {
 	hashType := ctx.Value("type")
 	if hashType == nil {
-		return AUTHTYPEID - 1
+		return ""
 	}
-	hashTypeInt, err := strconv.Atoi(hashType.(string))
-	if err != nil {
-		return AUTHTYPEPHONE + 1
-	}
-	return hashTypeInt
+	return hashType.(string)
 }

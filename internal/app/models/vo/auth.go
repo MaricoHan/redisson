@@ -15,14 +15,14 @@ type AuthData struct {
 // AuthVerify auth模块下验证
 type AuthVerify struct {
 	Hash      string `json:"hash"`
-	Type      int    `json:"type"`
+	Type      string `json:"type"`
 	ProjectID string `json:"project_id"`
 }
 
 // AuthGetUser auth模块下获取账户信息
 type AuthGetUser struct {
 	Hash      string `json:"hash"`
-	Type      int    `json:"type"`
+	Type      string `json:"type"`
 	ProjectID string `json:"project_id"`
 }
 
