@@ -6,10 +6,11 @@ log_level = "debug"
 log_format = "text"
 addr = ":8096"
 prometheus_addr = "0.0.0.0:9090"
-signature_auth = false
+signature_auth = true
 timestamp_auth = false
 router_prefix = "v1beta1"
 grpc_timeout = 1000000
+http_timeout = 1000000
 
 [mysql]
 host = "192.168.150.40"
@@ -33,7 +34,7 @@ db = 11
 
 [grpc_client]
 wenchangchain_ddc_addr = "192.168.150.41:10000"
-wenchangchain_native_addr = "192.168.150.42:10000"
+wenchangchain_native_addr = ":10000"
 irita_opb_native_addr = "192.168.150.43:10000"
 state_gateway_addr = "192.168.150.44:10000"
 

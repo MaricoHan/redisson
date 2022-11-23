@@ -1,10 +1,13 @@
 package constant
 
-import "fmt"
+import (
+	"fmt"
+)
 
 const (
 	RootCodeSpace = "NFTP-OPEN-API"
 	MtCodeSpace   = "MT"
+	AuthCodeSpace = "AUTH"
 )
 
 const (
@@ -35,6 +38,9 @@ const (
 	ErrOrderType    = "order_type is invalid"
 
 	ErrInternalFailed = "internal error"
+
+	ErrNotFound     = "not found"
+	ErrInvalidValue = "invalid %s value"
 )
 
 var (
@@ -92,9 +98,9 @@ func (e AppError) CodeSpace() string {
 }
 
 func Register(codeSpace string, code string, description string) *AppError {
-	if e := getUsedErrorCodes(codeSpace, code); e != nil {
-		panic(fmt.Sprintf("error with code %s is already registered: %q", code, e.desc))
-	}
+	// if e := getUsedErrorCodes(codeSpace, code); e != nil {
+	// 	panic(fmt.Sprintf("error with code %s is already registered: %q", code, e.desc))
+	// }
 
 	err := NewAppError(codeSpace, code, description)
 	setUsedErrorCodes(err)

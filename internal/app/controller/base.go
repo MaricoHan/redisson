@@ -8,7 +8,7 @@ import (
 	kit "gitlab.bianjie.ai/avata/open-api/pkg/gokit"
 )
 
-//BaseController define a base controller for all http Controller
+// BaseController define a base controller for all http Controller
 type BaseController struct {
 	Controller kit.Controller
 }
@@ -27,7 +27,9 @@ func GetAllControllers(logger *log.Logger) []kit.IController {
 		NewEmptionController(baseController, handlers.NewBusiness(services.NewBusiness(logger))),
 		NewMTClassController(baseController, handlers.NewMTClass(services.NewMTClass(logger))),
 		NewMTController(baseController, handlers.NewMT(services.NewMT(logger))),
-		//NewMTMsgsController(baseController, handlers.NewMTMsgs(services.NewMTMsgs(logger))),
+		NewAuthController(baseController, handlers.NewAuth(services.NewAuth(logger))),
+		NewNoticeController(baseController, handlers.NewNotice(services.NewNotice(logger))),
+		// NewMTMsgsController(baseController, handlers.NewMTMsgs(services.NewMTMsgs(logger))),
 	}
 
 	return controllers
@@ -49,7 +51,7 @@ func (bc BaseController) wrapHandler(h kit.Handler) kit.Handler {
 		log.Debug("Execute handler logic ", "method", "wrapHandler", "params", request)
 		resp, err := h(ctx, request)
 		if err != nil {
-			//log.Error("Execute handler logic failed", "error", err.Error())
+			// log.Error("Execute handler logic failed", "error", err.Error())
 			return nil, err
 		}
 		return resp, nil
