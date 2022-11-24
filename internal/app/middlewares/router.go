@@ -28,7 +28,7 @@ func (router routerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	})
 	authData, err := utils.HeaderAuthData(&r.Header)
 	if err != nil {
-		log.WithError(err).Error("project from cache")
+		log.WithError(err).Error("get auth data")
 		writeInternalResp(w)
 		return
 	}
