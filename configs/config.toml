@@ -9,7 +9,8 @@ prometheus_addr = "0.0.0.0:9092"
 signature_auth = false
 timestamp_auth = false
 router_prefix = "v1beta1"
-grpc_timeout = 1
+grpc_timeout = 1000000
+http_timeout = 1000000
 
 [mysql]
 host = "192.168.150.40"

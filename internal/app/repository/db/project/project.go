@@ -7,6 +7,7 @@ import (
 
 type IProjectRepo interface {
 	GetProjectByApiKey(apiKey string) (project entity.Project, err error)
+	GetProjectByCode(code string) (project entity.Project, err error)
 }
 
 type ProjectRepo struct {
@@ -19,5 +20,10 @@ func NewProjectRepo(db *gorm.DB) *ProjectRepo {
 
 func (p *ProjectRepo) GetProjectByApiKey(apiKey string) (project entity.Project, err error) {
 	err = p.db.Select("id,chain_id,user_id,api_secret,api_key,access_mode").Where("api_key=?", apiKey).Find(&project).Error
+	return project, err
+}
+
+func (p *ProjectRepo) GetProjectByCode(code string) (project entity.Project, err error) {
+	err = p.db.Select("id,chain_id,user_id,api_secret,api_key,access_mode").Where("code=?", code).First(&project).Error
 	return project, err
 }

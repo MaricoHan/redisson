@@ -139,10 +139,8 @@ func (a *account) GetAccounts(ctx context.Context, params dto.AccountsInfo) (*dt
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.AccountClientMap[mapKey]
 	if !ok {
-		if !ok {
-			logger.Error(errors2.ErrService)
-			return nil, errors2.New(errors2.InternalError, errors2.ErrService)
-		}
+		logger.Error(errors2.ErrService)
+		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
 	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()

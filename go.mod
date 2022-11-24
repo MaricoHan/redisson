@@ -22,6 +22,7 @@ require (
 )
 
 require (
+	github.com/deckarep/golang-set v1.8.0
 	gitlab.bianjie.ai/avata/chains/api v0.7.2-0.20220830014600-0360685e7537
 	gitlab.bianjie.ai/avata/services/api v0.0.0-00010101000000-000000000000
 	gitlab.bianjie.ai/avata/utils/commons v0.0.0-00010101000000-000000000000
@@ -75,11 +76,11 @@ require (
 replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.4
 
-	gitlab.bianjie.ai/avata/chains/api => gitlab.bianjie.ai/avata/chains/api.git v0.8.1-0.20221115054445-c4a4b7ad42db
+	gitlab.bianjie.ai/avata/chains/api => gitlab.bianjie.ai/avata/chains/api.git v0.11.0
 
-	gitlab.bianjie.ai/avata/services/api => gitlab.bianjie.ai/avata/services/api.git v0.0.0-20221124090655-e4e28ee38b38
+	gitlab.bianjie.ai/avata/services/api => gitlab.bianjie.ai/avata/services/api.git v0.1.0
 
-	gitlab.bianjie.ai/avata/utils/commons => gitlab.bianjie.ai/avata/utils/commons.git v0.1.0
+	gitlab.bianjie.ai/avata/utils/commons => gitlab.bianjie.ai/avata/utils/commons.git v0.2.0
 
-	gitlab.bianjie.ai/avata/utils/errors => gitlab.bianjie.ai/avata/utils/errors.git v0.1.7-0.20221110063838-43d9408fe1b7
+	gitlab.bianjie.ai/avata/utils/errors => gitlab.bianjie.ai/avata/utils/errors.git v0.1.9
 )
