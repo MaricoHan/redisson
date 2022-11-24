@@ -2,11 +2,11 @@ package middlewares
 
 import (
 	"fmt"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
-	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"net/http"
 	"strings"
 
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
 	"gitlab.bianjie.ai/avata/open-api/utils"
 )
