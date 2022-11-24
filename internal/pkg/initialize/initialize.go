@@ -21,6 +21,7 @@ import (
 	pb_mt_class "gitlab.bianjie.ai/avata/chains/api/pb/mt_class"
 	pb_mt_msgs "gitlab.bianjie.ai/avata/chains/api/pb/mt_msgs"
 	pb_nft "gitlab.bianjie.ai/avata/chains/api/pb/nft"
+	pb_notice "gitlab.bianjie.ai/avata/chains/api/pb/notice"
 	pb_record "gitlab.bianjie.ai/avata/chains/api/pb/record"
 	pb_tx "gitlab.bianjie.ai/avata/chains/api/pb/tx"
 	pb_tx_queue "gitlab.bianjie.ai/avata/chains/api/pb/tx_queue"
@@ -36,6 +37,7 @@ var RedisClient *redis.RedisClient
 var MysqlDB *gorm.DB
 var GrpcConnMap map[string]*grpc.ClientConn
 var AccountClientMap map[string]pb_account.AccountClient
+var NoticeClientMap map[string]pb_notice.NoticeClient
 var BusineessClientMap map[string]pb_business.BuyClient
 var MsgsClientMap map[string]pb_msgs.MSGSClient
 var NftClientMap map[string]pb_nft.NFTClient
@@ -240,6 +242,11 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	RecordClientMap[constant.WenchangDDC] = pb_record.NewRecordClient(GrpcConnMap[constant.WenchangDDC])
 	RecordClientMap[constant.WenchangNative] = pb_record.NewRecordClient(GrpcConnMap[constant.WenchangNative])
 	RecordClientMap[constant.IritaOPBNative] = pb_record.NewRecordClient(GrpcConnMap[constant.IritaOPBNative])
+
+	// 初始化notice
+	NoticeClientMap = make(map[string]pb_notice.NoticeClient)
+	NoticeClientMap[constant.WenchangNative] = pb_notice.NewNoticeClient(GrpcConnMap[constant.WenchangNative])
+	NoticeClientMap[constant.IritaOPBNative] = pb_notice.NewNoticeClient(GrpcConnMap[constant.IritaOPBNative])
 }
 
 func InitRedisClient(cfg *configs.Config, logger *log.Logger) {

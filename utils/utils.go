@@ -6,9 +6,12 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"strconv"
 	"strings"
+	"time"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 )
 
 func AuthData(ctx context.Context) (vo.AuthData, error) {
@@ -91,4 +94,50 @@ func IsNumeric(val interface{}) bool {
 	}
 
 	return false
+}
+func Post(ctx context.Context, url, apiKey, apiSignature, customerID, timestamp string, body map[string]interface{}) (*http.Response, error) {
+	bodys, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(string(bodys)))
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Add("content-type", "application/json")
+	request.Header.Add("X-Api-Key", apiKey)
+	request.Header.Add("X-Signature", apiSignature)
+	request.Header.Add("X-Timestamp", timestamp)
+	request.Header.Add("X-Customer-ID", customerID)
+	return http.DefaultClient.Do(request)
+}
+
+func Get(ctx context.Context, url, apiKey, apiSignature, customerID, timestamp string, body map[string]interface{}) (*http.Response, error) {
+	var bodys []byte
+	var err error
+	var request *http.Request
+	if body != nil {
+		bodys, err = json.Marshal(body)
+		if err != nil {
+			return nil, err
+		}
+		request, err = http.NewRequestWithContext(ctx, http.MethodGet, url, strings.NewReader(string(bodys)))
+	} else {
+		request, err = http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	}
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Add("content-type", "application/json")
+	request.Header.Add("X-Api-Key", apiKey)
+	request.Header.Add("X-Signature", apiSignature)
+	request.Header.Add("X-Timestamp", timestamp)
+	request.Header.Add("X-Customer-ID", customerID)
+	return http.DefaultClient.Do(request)
+}
+
+func TimeToUnix(e time.Time) string {
+	timeUnix, _ := time.Parse(constant.TimeLayout, e.Format(constant.TimeLayout))
+	timeUnixString := strconv.FormatInt(timeUnix.UnixNano()/1e6, 10)
+	return timeUnixString
 }

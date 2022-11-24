@@ -5,6 +5,8 @@ export GOPRIVATE="gitlab.bianjie.ai"
 export GONOPROXY="gitlab.bianjie.ai"
 export GONOSUMDB="gitlab.bianjie.ai"
 
+export GOPROXY=https://goproxy.cn,direct
+
 build: go.sum
 ifeq ($(OS),Windows_NT)
 	go build  -o build/open-api.exe .
