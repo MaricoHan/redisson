@@ -267,17 +267,15 @@ type DeliveryResponse struct {
 }
 
 type EditDeliveryRequest struct {
-	Code           string `json:"code"`
-	Module         string `json:"module"`
-	ProjectID      uint64 `json:"project_id"`
-	RegisterType   uint64 `json:"register_type"`
-	OperationID    string `json:"operation_id"`
-	ProductID      string `json:"product_id"`
-	CertificateNum string `json:"certificate_num"`
-	Addr           string `json:"addr"`
-	Postcode       string `json:"postcode"`
-	Recipient      string `json:"recipient"`
-	PhoneNum       string `json:"phone_num"`
+	Code         string `json:"code"`
+	Module       string `json:"module"`
+	ProjectID    uint64 `json:"project_id"`
+	RegisterType uint64 `json:"register_type"`
+	OperationID  string `json:"operation_id"`
+	Addr         string `json:"addr"`
+	Postcode     string `json:"postcode"`
+	Recipient    string `json:"recipient"`
+	PhoneNum     string `json:"phone_num"`
 }
 
 type EditDeliveryResponse struct {

@@ -488,17 +488,15 @@ func (r Rights) EditDelivery(ctx context.Context, request interface{}) (response
 	// 获取账户基本信息
 	authData := r.AuthData(ctx)
 	param := dto.EditDeliveryRequest{
-		Code:           authData.Code,
-		Module:         authData.Module,
-		ProjectID:      authData.ProjectId,
-		RegisterType:   req.RegisterType,
-		OperationID:    r.OperationID(ctx),
-		ProductID:      req.ProductID,
-		CertificateNum: req.CertificateNum,
-		Addr:           req.Addr,
-		Postcode:       req.Postcode,
-		Recipient:      req.Recipient,
-		PhoneNum:       req.PhoneNum,
+		Code:         authData.Code,
+		Module:       authData.Module,
+		ProjectID:    authData.ProjectId,
+		RegisterType: req.RegisterType,
+		OperationID:  r.OperationID(ctx),
+		Addr:         req.Addr,
+		Postcode:     req.Postcode,
+		Recipient:    req.Recipient,
+		PhoneNum:     req.PhoneNum,
 	}
 	return r.svc.EditDelivery(&param)
 }

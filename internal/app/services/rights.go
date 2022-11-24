@@ -573,17 +573,15 @@ func (r Rights) Delivery(params *dto.DeliveryRequest) (*dto.DeliveryResponse, er
 func (r Rights) EditDelivery(params *dto.EditDeliveryRequest) (*dto.EditDeliveryResponse, error) {
 	logger := r.logger.WithField("params", params).WithField("func", "EditDelivery")
 
-	req := rights.DeliveryRequest{
-		Code:           params.Code,
-		Module:         params.Module,
-		ProjectId:      params.ProjectID,
-		OperationId:    params.OperationID,
-		ProductId:      params.ProductID,
-		CertificateNum: params.CertificateNum,
-		Addr:           params.Addr,
-		Postcode:       params.Postcode,
-		Recipient:      params.Recipient,
-		PhoneNum:       params.PhoneNum,
+	req := rights.EditDeliveryRequest{
+		Code:        params.Code,
+		Module:      params.Module,
+		ProjectId:   params.ProjectID,
+		OperationId: params.OperationID,
+		Addr:        params.Addr,
+		Postcode:    params.Postcode,
+		Recipient:   params.Recipient,
+		PhoneNum:    params.PhoneNum,
 	}
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
