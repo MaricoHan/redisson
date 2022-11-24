@@ -148,11 +148,9 @@ type DeliveryRequest struct {
 }
 
 type EditDeliveryRequest struct {
-	RegisterType   uint64 `json:"register_type"`
-	ProductID      string `json:"product_id"`
-	CertificateNum string `json:"certificate_num"`
-	Addr           string `json:"addr"`
-	Postcode       string `json:"postcode"`
-	Recipient      string `json:"recipient"`
-	PhoneNum       string `json:"phone_num"`
+	RegisterType uint64 `json:"register_type"`
+	Addr         string `json:"addr"`
+	Postcode     string `json:"postcode"`
+	Recipient    string `json:"recipient"`
+	PhoneNum     string `json:"phone_num"`
 }
