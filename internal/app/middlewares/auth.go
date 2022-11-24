@@ -155,6 +155,10 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
 				return
 			}
+			if !strings.Contains(r.RequestURI, "/rights/") {
+				writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
+				return
+			}
 
 		} else {
 			// 托管不支持 orders
