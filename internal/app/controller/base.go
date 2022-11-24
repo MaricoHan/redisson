@@ -30,6 +30,7 @@ func GetAllControllers(logger *log.Logger) []kit.IController {
 		// NewMTMsgsController(baseController, handlers.NewMTMsgs(services.NewMTMsgs(logger))),
 		NewRightsController(baseController, handlers.NewRights(services.NewRights(logger))),
 		NewRecordController(baseController, handlers.NewRecord(services.NewRecord(logger))),
+
 		NewAuthController(baseController, handlers.NewAuth(services.NewAuth(logger))),
 		NewNoticeController(baseController, handlers.NewNotice(services.NewNotice(logger))),
 		// NewMTMsgsController(baseController, handlers.NewMTMsgs(services.NewMTMsgs(logger))),

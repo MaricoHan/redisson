@@ -95,6 +95,7 @@ func IsNumeric(val interface{}) bool {
 
 	return false
 }
+
 func Post(ctx context.Context, url, apiKey, apiSignature, customerID, timestamp string, body map[string]interface{}) (*http.Response, error) {
 	bodys, err := json.Marshal(body)
 	if err != nil {
