@@ -3,27 +3,36 @@ package utils
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"net/http"
 	"regexp"
 	"strings"
-
-	log "github.com/sirupsen/logrus"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 )
 
-func AuthData(ctx context.Context) vo.AuthData {
+func AuthData(ctx context.Context) (vo.AuthData, error) {
 	authDataString := ctx.Value("X-Auth-Data")
 	authDataSlice, ok := authDataString.([]string)
 	if !ok {
-		return vo.AuthData{}
+		return vo.AuthData{}, fmt.Errorf("missing project parameters")
 	}
 	var authData vo.AuthData
 	err := json.Unmarshal([]byte(authDataSlice[0]), &authData)
 	if err != nil {
-		log.Error("auth data Error: ", err)
-		return vo.AuthData{}
+		return vo.AuthData{}, err
 	}
-	return authData
+	return authData, nil
+}
+
+func HeaderAuthData(header *http.Header) (vo.AuthData, error) {
+	authDataString := header.Get("X-Auth-Data")
+	var authData vo.AuthData
+	err := json.Unmarshal([]byte(authDataString), &authData)
+	if err != nil {
+		return vo.AuthData{}, err
+	}
+	return authData, nil
 }
 
 func StrNameCheck(str string) bool {

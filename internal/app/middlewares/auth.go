@@ -13,10 +13,8 @@ import (
 	"strings"
 	"time"
 
-	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/chain"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/project"
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/cache"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
@@ -46,45 +44,12 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"api-key":  appKey,
 	})
 
-	// createTime := time.Now()
-	// defer func(createTime time.Time) {
-	//	//监控响应时间
-	//	interval := time.Now().Sub(createTime)
-	//	metric.NewPrometheus().ApiHttpRequestRtSeconds.With([]string{
-	//		"method",
-	//		r.Method,
-	//		"uri",
-	//		r.RequestURI,
-	//	}...).Observe(float64(interval))
-	// }(createTime)
-
 	// 查询缓存
-	var projectInfo entity.Project
-	err := initialize.RedisClient.GetObject(fmt.Sprintf("%s%s", constant.KeyProjectApikey, appKey), &projectInfo)
+	projectInfo, err := cache.NewCache().Project(appKey)
 	if err != nil {
-		log.WithError(err).Error("get project from cache ")
+		log.WithError(err).Error("project from cache")
 		writeInternalResp(w)
 		return
-	}
-	if projectInfo.Id < 1 {
-		// 查询project信息
-		projectRepo := project.NewProjectRepo(initialize.MysqlDB)
-		projectInfo, err = projectRepo.GetProjectByApiKey(appKey)
-		if err != nil {
-			log.WithError(err).Error("get project from cache")
-			writeInternalResp(w)
-			return
-		}
-
-		if projectInfo.Id > 0 {
-			// save cache
-			if err := initialize.RedisClient.SetObject(fmt.Sprintf("%s%s", constant.KeyProjectApikey, appKey), projectInfo, time.Minute*5); err != nil {
-				log.WithError(err).Error("save project cache")
-				writeInternalResp(w)
-				return
-			}
-		}
-
 	}
 
 	if projectInfo.Id == 0 {
@@ -94,30 +59,11 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 查询缓存
-	var chainInfo entity.Chain
-	err = initialize.RedisClient.GetObject(fmt.Sprintf("%s%d", constant.KeyChain, projectInfo.ChainId), &chainInfo)
+	chainInfo, err := cache.NewCache().Chain(projectInfo.ChainId)
 	if err != nil {
-		log.WithError(err).Error("get chain from cache")
+		log.WithError(err).Error("chain from cache")
 		writeInternalResp(w)
 		return
-	}
-	if chainInfo.Id < 1 {
-		// 获取链信息
-		chainRepo := chain.NewChainRepo(initialize.MysqlDB)
-		chainInfo, err = chainRepo.QueryChainById(uint64(projectInfo.ChainId))
-		if err != nil {
-			log.WithError(err).Error("query chain from db by id")
-			writeInternalResp(w)
-			return
-		}
-		if chainInfo.Id > 0 {
-			// save cache
-			if err := initialize.RedisClient.SetObject(fmt.Sprintf("%s%d", constant.KeyChain, projectInfo.ChainId), chainInfo, time.Minute*5); err != nil {
-				log.WithError(err).Error("save project to cache")
-				writeInternalResp(w)
-				return
-			}
-		}
 	}
 
 	if chainInfo.Id == 0 {
@@ -133,40 +79,6 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Module:     chainInfo.Module,
 		Code:       chainInfo.Code,
 		AccessMode: projectInfo.AccessMode,
-	}
-
-	// DDC 不支持 NFT-批量、orders-批量、MT、版权服务
-	if fmt.Sprintf("%s-%s", chainInfo.Code, chainInfo.Module) == constant.WenchangDDC {
-		if strings.Contains(r.RequestURI, "/mt/") || strings.Contains(r.RequestURI, "/nft/batch/") || strings.Contains(r.RequestURI, "/orders/batch") || strings.Contains(r.RequestURI, "/rights/") {
-			writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
-			return
-		}
-	} else { // native
-		// 非托管模式
-		if projectInfo.AccessMode == entity.UNMANAGED {
-			if strings.Contains(r.RequestURI, "/rights/") {
-				writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
-				return
-			}
-			if fmt.Sprintf("%s-%s", chainInfo.Code, chainInfo.Module) == constant.IritaOPBNative {
-				// 文昌链-天舟除 orders 都不支持
-				if !strings.Contains(r.RequestURI, "/orders") {
-					writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
-					return
-				}
-			} else {
-				// 文昌链-天和都不支持
-				writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
-				return
-			}
-
-		} else {
-			// 托管不支持 orders
-			if strings.Contains(r.RequestURI, "/orders") {
-				writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
-				return
-			}
-		}
 	}
 
 	authDataBytes, _ := json.Marshal(authData)
