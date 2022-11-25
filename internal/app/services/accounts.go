@@ -16,9 +16,9 @@ import (
 )
 
 type IAccount interface {
-	BatchCreateAccount(account dto.BatchCreateAccount) (*dto.BatchAccountRes, error)
-	CreateAccount(account dto.CreateAccount) (*dto.AccountRes, error)
-	GetAccounts(account dto.AccountsInfo) (*dto.AccountsRes, error)
+	BatchCreateAccount(ctx context.Context, account dto.BatchCreateAccount) (*dto.BatchAccountRes, error)
+	CreateAccount(ctx context.Context, account dto.CreateAccount) (*dto.AccountRes, error)
+	GetAccounts(ctx context.Context, account dto.AccountsInfo) (*dto.AccountsRes, error)
 }
 
 type account struct {
@@ -30,7 +30,7 @@ func NewAccount(logger *log.Logger) *account {
 }
 
 // BatchCreateAccount 批量创建链账户
-func (a *account) BatchCreateAccount(params dto.BatchCreateAccount) (*dto.BatchAccountRes, error) {
+func (a *account) BatchCreateAccount(ctx context.Context, params dto.BatchCreateAccount) (*dto.BatchAccountRes, error) {
 	logger := a.logger.WithField("params", params).WithField("func", "BatchCreateAccount")
 
 	// 非托管模式不支持
@@ -52,7 +52,7 @@ func (a *account) BatchCreateAccount(params dto.BatchCreateAccount) (*dto.BatchA
 		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.BatchCreate(ctx, &req)
 	if err != nil {
@@ -69,7 +69,7 @@ func (a *account) BatchCreateAccount(params dto.BatchCreateAccount) (*dto.BatchA
 }
 
 // CreateAccount 单个创建链账户
-func (a *account) CreateAccount(params dto.CreateAccount) (*dto.AccountRes, error) {
+func (a *account) CreateAccount(ctx context.Context, params dto.CreateAccount) (*dto.AccountRes, error) {
 	logger := a.logger.WithField("params", params).WithField("func", "CreateAccount")
 
 	// 非托管模式不支持
@@ -91,11 +91,11 @@ func (a *account) CreateAccount(params dto.CreateAccount) (*dto.AccountRes, erro
 		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.Create(ctx, &req)
 	if err != nil {
-		logger.Error("request err:", err.Error())
+		logger.WithError(err).Error("request err")
 		return nil, err
 	}
 	if resp == nil {
@@ -108,7 +108,7 @@ func (a *account) CreateAccount(params dto.CreateAccount) (*dto.AccountRes, erro
 	return result, nil
 }
 
-func (a *account) GetAccounts(params dto.AccountsInfo) (*dto.AccountsRes, error) {
+func (a *account) GetAccounts(ctx context.Context, params dto.AccountsInfo) (*dto.AccountsRes, error) {
 	logger := a.logger.WithField("params", params).WithField("func", "GetAccounts")
 
 	// 非托管模式不支持
@@ -142,7 +142,7 @@ func (a *account) GetAccounts(params dto.AccountsInfo) (*dto.AccountsRes, error)
 		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*time.Duration(constant.GrpcTimeout))
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.Show(ctx, &req)
 	if err != nil {

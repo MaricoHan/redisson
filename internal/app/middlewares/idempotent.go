@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
-	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
 	"io/ioutil"
 	"net/http"
 	"time"
+
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
 
 	log "github.com/sirupsen/logrus"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
@@ -32,13 +33,14 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		h.next.ServeHTTP(w, r)
 		return
 	}
-	//if r.Method != http.MethodPost {
+	// if r.Method != http.MethodPost {
 	//	h.next.ServeHTTP(w, r)
 	//	return
-	//}
+	// }
 
 	// 把刚刚读出来的再写进去
 	r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+
 	req := &vo.Base{}
 	err := json.Unmarshal(bodyBytes, req)
 	if err != nil {
@@ -48,15 +50,25 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 	}
 
 	if len(req.OperationID) < 1 {
-		// 部分接口operation_id 不是必填
-		// 不存在operation_id请求，具体验证规则由目标微服务处理
-		h.next.ServeHTTP(w, r)
-		return
+		order := &vo.Order{}
+		err = json.Unmarshal(bodyBytes, order)
+		if err != nil {
+			log.Error("server http", "params error:", err)
+			writeBadRequestResp(w, constant.ErrParams)
+			return
+		}
+		if len(order.OperationID) < 1 {
+			// 部分接口 operation_id 不是必填
+			// 不存在 operation_id 请求，具体验证规则由目标微服务处理
+			h.next.ServeHTTP(w, r)
+			return
+		}
+		req.OperationID = order.OperationID
 	}
-	//if len(req.OperationID) >= 65 {
+	// if len(req.OperationID) >= 65 {
 	//	writeBadRequestResp(w, constant.NewAppError(constant.RootCodeSpace, errors2.StrToCode[errors2.DuplicateRequest], "operation_id does not comply with the rules"))
 	//	return
-	//}
+	// }
 
 	appID := r.Header.Get("X-App-Id")
 	key := fmt.Sprintf("%s:%s", appID, req.OperationID)
@@ -65,8 +77,7 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		writeBadRequestResp(w, constant.ErrDuplicate)
 		return
 	}
-
-	if err := initialize.RedisClient.Expire(key, time.Second*11); err != nil {
+	if err := initialize.RedisClient.Expire(key, time.Second*time.Duration(constant.GrpcTimeout)); err != nil {
 		// 自动过期时间设置大于open-api超时时间
 		log.Error("redis error", "redis set error:", err)
 		writeBadRequestResp(w, constant.ErrInternal)

@@ -86,7 +86,7 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 		ClassId:     classId,
 		AccessMode:  authData.AccessMode,
 	}
-	return h.svc.CreateNFTClass(params)
+	return h.svc.CreateNFTClass(ctx, params)
 }
 
 // Classes return class list
@@ -128,18 +128,18 @@ func (h NftClass) Classes(ctx context.Context, _ interface{}) (interface{}, erro
 	}
 
 	params.SortBy = h.SortBy(ctx)
-	//switch h.SortBy(ctx) {
-	//case "DATE_ASC":
+	// switch h.SortBy(ctx) {
+	// case "DATE_ASC":
 	//	params.SortBy = "DATE_ASC"
-	//case "DATE_DESC":
+	// case "DATE_DESC":
 	//	params.SortBy = "DATE_DESC"
-	//default:
+	// default:
 	//	return nil, constant.NewAppError(constant.RootCodeSpace, constant.ClientParamsError, constant.ErrSortBy)
-	//}
+	// }
 
 	// 校验参数 end
 	// 业务数据入库的地方
-	return h.svc.GetAllNFTClasses(params)
+	return h.svc.GetAllNFTClasses(ctx, params)
 }
 
 // ClassByID return class
@@ -158,7 +158,7 @@ func (h NftClass) ClassByID(ctx context.Context, _ interface{}) (interface{}, er
 
 	// 校验参数 end
 	// 业务数据入库的地方
-	return h.svc.GetNFTClass(params)
+	return h.svc.GetNFTClass(ctx, params)
 }
 
 func (h NftClass) Id(ctx context.Context) string {

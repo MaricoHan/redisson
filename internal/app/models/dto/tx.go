@@ -1,6 +1,9 @@
 package dto
 
-import "github.com/volatiletech/sqlboiler/types"
+import (
+	"github.com/volatiletech/sqlboiler/types"
+	"gitlab.bianjie.ai/avata/chains/api/pb/tx"
+)
 
 type TxResultByTxHash struct {
 	OperationId string `json:"operation_id"`
@@ -21,6 +24,7 @@ type TxResultByTxHashRes struct {
 	NftID       string                 `json:"nft_id"`
 	Nft         *types.JSON            `json:"nft"`
 	Mt          *types.JSON            `json:"mt"`
+	Record      *tx.Record             `json:"record"`
 	Message     string                 `json:"message"`
 	BlockHeight uint64                 `json:"block_height"`
 	Timestamp   string                 `json:"timestamp"`

@@ -195,16 +195,13 @@ func (c Controller) encodeResponse(ctx context.Context, w http.ResponseWriter, r
 	response := constant.Response{
 		Data: resp,
 	}
-	method := ctx.Value(httptransport.ContextKeyRequestMethod)
-	if method == "POST" {
-		operationIdKey := ctx.Value("X-App-Operation-Key")
-		if operationIdKey != nil {
-			operationIdKey = operationIdKey.([]string)[0]
-			if operationIdKey != "" {
-				// 清除operation缓存
-				if err := initialize.RedisClient.Delete(operationIdKey.(string)); err != nil {
-					log.Infof("del operation id key：%s,err:%s", operationIdKey, err)
-				}
+	operationIdKey := ctx.Value("X-App-Operation-Key")
+	if operationIdKey != nil {
+		operationIdKey = operationIdKey.([]string)[0]
+		if operationIdKey != "" {
+			// 清除operation缓存
+			if err := initialize.RedisClient.Delete(operationIdKey.(string)); err != nil {
+				log.Infof("del operation id key：%s,err:%s", operationIdKey, err)
 			}
 		}
 	}
@@ -273,7 +270,6 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 		errMesg, ok := errors2.StrToCode[respErr.Code()]
 
 		log.Debugf("code: %s, string: %s, details: %s , err: %s, message:%s, ErrMesg:%s \n", respErr.Code(), respErr.String(), respErr.Details(), respErr.Err(), respErr.Message(), errMesg)
-
 		if strings.Contains(respErr.String(), "produced zero addresses") {
 			response = constant.Response{
 				ErrorResp: &constant.ErrorResp{

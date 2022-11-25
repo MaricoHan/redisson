@@ -10,9 +10,10 @@ WORKDIR $GOPATH/src
 COPY . .
 
 # Install minimum necessary dependencies, build binary
-RUN apk add --no-cache $PACKAGES && \
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories && \
+    apk add --no-cache $PACKAGES && \
     git config --global url."https://bamboo:FS_Q5LmxwExwK6hFN9Fs@gitlab.bianjie.ai".insteadOf "https://gitlab.bianjie.ai" && \
-    make install
+make install
 
 FROM alpine:3.12
 

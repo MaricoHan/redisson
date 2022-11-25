@@ -11,7 +11,7 @@ import (
 	"net/http"
 )
 
-//Server define a http Server
+// Server define a http Server
 type Server struct {
 	Svr         *http.Server
 	router      *mux.Router
@@ -21,9 +21,10 @@ type Server struct {
 func NewServer(ctx *configs.Context) Server {
 	ctx.Logger.Info("init server router ...")
 	middlewares := []func(http.Handler) http.Handler{
-		//should be last one
+		// should be last one
 		middlewares.RecoverMiddleware,
 		middlewares.IdempotentMiddleware,
+		middlewares.RouterMiddleware,
 		middlewares.AuthMiddleware,
 	}
 
@@ -38,7 +39,7 @@ func NewServer(ctx *configs.Context) Server {
 	}
 }
 
-//RegisterEndpoint registers the handler for the given pattern.
+// RegisterEndpoint registers the handler for the given pattern.
 func (s *Server) RegisterEndpoint(end kit.Endpoint) {
 	var h = end.Handler
 	for _, m := range s.middlewares {

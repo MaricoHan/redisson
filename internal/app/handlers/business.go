@@ -38,7 +38,7 @@ func (h *Business) GetOrderInfo(ctx context.Context, _ interface{}) (interface{}
 		AccessMode: authData.AccessMode,
 	}
 
-	return h.svc.GetOrderInfo(params)
+	return h.svc.GetOrderInfo(ctx, params)
 }
 
 func (h *Business) GetAllOrders(ctx context.Context, _ interface{}) (interface{}, error) {
@@ -72,7 +72,7 @@ func (h *Business) GetAllOrders(ctx context.Context, _ interface{}) (interface{}
 	params.StartDate = h.StartDate(ctx)
 	params.EndDate = h.EndDate(ctx)
 	params.SortBy = h.SortBy(ctx)
-	return h.svc.GetAllOrders(params)
+	return h.svc.GetAllOrders(ctx, params)
 }
 
 func (h *Business) BuildOrder(ctx context.Context, request interface{}) (interface{}, error) {
@@ -127,7 +127,7 @@ func (h *Business) BuildOrder(ctx context.Context, request interface{}) (interfa
 		Code:       authData.Code,
 		AccessMode: authData.AccessMode,
 	}
-	return h.svc.BuildOrder(params)
+	return h.svc.BuildOrder(ctx, params)
 }
 
 func (h *Business) BatchBuyGas(ctx context.Context, request interface{}) (interface{}, error) {
@@ -174,7 +174,7 @@ func (h *Business) BatchBuyGas(ctx context.Context, request interface{}) (interf
 		Code:       authData.Code,
 		AccessMode: authData.AccessMode,
 	}
-	return h.svc.BatchBuyGas(params)
+	return h.svc.BatchBuyGas(ctx, params)
 }
 
 func (h *Business) GetAddress(ctx context.Context) string {

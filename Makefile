@@ -1,6 +1,9 @@
 #!/usr/bin/make -f
-
+export GO111MODULE = on
 export GOPROXY=https://goproxy.cn,direct
+export GOPRIVATE="gitlab.bianjie.ai"
+export GONOPROXY="gitlab.bianjie.ai"
+export GONOSUMDB="gitlab.bianjie.ai"
 
 build: go.sum
 ifeq ($(OS),Windows_NT)

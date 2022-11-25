@@ -66,7 +66,7 @@ func (h MTClass) CreateMTClass(ctx context.Context, request interface{}) (interf
 		OperationId: operationId,
 		AccessMode:  authData.AccessMode,
 	}
-	return h.svc.CreateMTClass(params)
+	return h.svc.CreateMTClass(ctx, params)
 }
 
 func (h MTClass) TransferMTClass(ctx context.Context, request interface{}) (interface{}, error) {
@@ -90,7 +90,7 @@ func (h MTClass) TransferMTClass(ctx context.Context, request interface{}) (inte
 		return nil, err
 	}
 
-	//校验参数 end
+	// 校验参数 end
 	authData := h.AuthData(ctx)
 	params := dto.TransferMTClass{
 		ClassID:     h.Id(ctx),
@@ -105,7 +105,7 @@ func (h MTClass) TransferMTClass(ctx context.Context, request interface{}) (inte
 		OperationId: operationId,
 		AccessMode:  authData.AccessMode,
 	}
-	return h.svc.TransferMTClass(params)
+	return h.svc.TransferMTClass(ctx, params)
 }
 
 // List return class list
@@ -150,7 +150,7 @@ func (h MTClass) List(ctx context.Context, _ interface{}) (interface{}, error) {
 
 	// 校验参数 end
 	// 业务数据入库的地方
-	return h.svc.List(&params)
+	return h.svc.List(ctx, &params)
 }
 
 // Show return class
@@ -168,7 +168,7 @@ func (h MTClass) Show(ctx context.Context, _ interface{}) (interface{}, error) {
 
 	// 校验参数 end
 	// 业务数据入库的地方
-	return h.svc.Show(&params)
+	return h.svc.Show(ctx, &params)
 }
 
 func (h MTClass) Id(ctx context.Context) string {

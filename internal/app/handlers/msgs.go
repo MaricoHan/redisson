@@ -69,7 +69,7 @@ func (h *Msgs) GetNFTHistory(ctx context.Context, _ interface{}) (interface{}, e
 
 	params.Operation = h.Operation(ctx)
 
-	return h.svc.GetNFTHistory(params)
+	return h.svc.GetNFTHistory(ctx, params)
 }
 
 func (h *Msgs) GetAccountHistory(ctx context.Context, _ interface{}) (interface{}, error) {
@@ -117,7 +117,7 @@ func (h *Msgs) GetAccountHistory(ctx context.Context, _ interface{}) (interface{
 	params.Operation = h.operation(ctx)
 	params.TxHash = h.Txhash(ctx)
 
-	return h.svc.GetAccountHistory(params)
+	return h.svc.GetAccountHistory(ctx, params)
 }
 
 func (h *Msgs) GetMTHistory(ctx context.Context, _ interface{}) (interface{}, error) {
@@ -164,7 +164,7 @@ func (h *Msgs) GetMTHistory(ctx context.Context, _ interface{}) (interface{}, er
 	params.Txhash = h.Txhash(ctx)
 	params.Operation = h.Operation(ctx)
 
-	return h.svc.GetMTHistory(params)
+	return h.svc.GetMTHistory(ctx, params)
 }
 
 func (h *Msgs) MTId(ctx context.Context) string {
