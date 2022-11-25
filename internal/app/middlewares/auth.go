@@ -46,6 +46,11 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// 查询缓存
 	projectInfo, err := cache.NewCache().Project(appKey)
+	if err != nil {
+		log.WithError(err).Error("project from cache")
+		writeInternalResp(w)
+		return
+	}
 	if projectInfo.Id == 0 {
 		log.Error(constant.ErrApikey)
 		writeForbiddenResp(w, constant.ErrApikey)
