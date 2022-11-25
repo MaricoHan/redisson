@@ -185,7 +185,6 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 		logger.Fatal("get rights_jiangsu grpc connect failed, err: ", err.Error())
 	}
 	GrpcConnRightsMap[constant.JiangSu] = RightsConn
-
 	AccountClientMap = make(map[string]pb_account.AccountClient)
 	AccountClientMap[constant.WenchangDDC] = pb_account.NewAccountClient(GrpcConnMap[constant.WenchangDDC])
 	AccountClientMap[constant.WenchangNative] = pb_account.NewAccountClient(GrpcConnMap[constant.WenchangNative])

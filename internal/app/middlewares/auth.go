@@ -6,7 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"sort"
 	"strconv"
@@ -46,12 +46,6 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// 查询缓存
 	projectInfo, err := cache.NewCache().Project(appKey)
-	if err != nil {
-		log.WithError(err).Error("project from cache")
-		writeInternalResp(w)
-		return
-	}
-
 	if projectInfo.Id == 0 {
 		log.Error(constant.ErrApikey)
 		writeForbiddenResp(w, constant.ErrApikey)
@@ -79,8 +73,8 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Module:     chainInfo.Module,
 		Code:       chainInfo.Code,
 		AccessMode: projectInfo.AccessMode,
+		UserId:     uint64(projectInfo.UserId),
 	}
-
 	authDataBytes, _ := json.Marshal(authData)
 	// 1. 判断时间误差
 	if configs.Cfg.App.TimestampAuth {
@@ -128,7 +122,6 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h authHandler) Signature(r *http.Request, apiSecret string, timestamp string, signature string) bool {
-
 	// 获取 path params
 	params := map[string]interface{}{}
 	params["path_url"] = r.URL.Path
@@ -143,36 +136,29 @@ func (h authHandler) Signature(r *http.Request, apiSecret string, timestamp stri
 	// 把request的内容读取出来
 	var bodyBytes []byte
 	if r.Body != nil {
-		bodyBytes, _ = ioutil.ReadAll(r.Body)
+		bodyBytes, _ = io.ReadAll(r.Body)
 	}
 	// 把刚刚读出来的再写进去
 	if bodyBytes != nil {
-		r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+		r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 	}
 	paramsBody := map[string]interface{}{}
 	_ = json.Unmarshal(bodyBytes, &paramsBody)
-	hexHash := hash(timestamp + apiSecret)
 
 	for k, v := range paramsBody {
 		k = "body_" + k
 		params[k] = v
 	}
-	// sort params
-	// sortParams := sortMapParams(params)
-	sortParams := params
-	if sortParams != nil {
-		bf := bytes.NewBuffer([]byte{})
-		jsonEncoder := json.NewEncoder(bf)
-		jsonEncoder.SetEscapeHTML(false)
-		jsonEncoder.Encode(sortParams)
 
-		hexHash = hash(strings.TrimRight(bf.String(), "\n") + timestamp + apiSecret)
-	}
+	bf := bytes.NewBuffer([]byte{})
+	jsonEncoder := json.NewEncoder(bf)
+	jsonEncoder.SetEscapeHTML(false)
+	jsonEncoder.Encode(params)
+	hexHash := hash(strings.TrimRight(bf.String(), "\n") + timestamp + apiSecret)
 	if hexHash != signature {
 		return false
 	}
 	return true
-
 }
 
 func hash(oriText string) string {
