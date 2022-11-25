@@ -51,6 +51,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		writeInternalResp(w)
 		return
 	}
+
 	if projectInfo.Id == 0 {
 		log.Error(constant.ErrApikey)
 		writeForbiddenResp(w, constant.ErrApikey)
