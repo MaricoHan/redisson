@@ -206,12 +206,12 @@ func (a *notice) getServiceRedirectUrl(projectID uint64) (entity.ServiceRedirect
 	sru, err := serviceRedirectUrlRepo.GetServiceRedirectUrlByProjectID(projectID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return sru, errors.New(errors.NotFound, authErr.ErrProjectOrUserNotFound)
+			return sru, errors.New(errors.NotFound, authErr.ErrServiceRedirectUrlNotFound)
 		}
 		return sru, err
 	}
 	if sru.Url == "" {
-		return sru, errors.New(errors.NotFound, authErr.ErrProjectOrUserNotFound)
+		return sru, errors.New(errors.NotFound, authErr.ErrServiceRedirectUrlNotFound)
 	}
 	return sru, nil
 }
