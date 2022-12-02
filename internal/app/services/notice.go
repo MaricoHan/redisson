@@ -252,7 +252,7 @@ func (a *notice) request(ctx context.Context, url, apikey, hash, code, timestamp
 	// 403
 	if results.StatusCode == http.StatusForbidden {
 		logger.WithError(fmt.Errorf(string(body))).Error("forbidden")
-		return nil, errors.New(errors.UpstreamInternalFailed, authErr.ErrUpstreamInternal)
+		return nil, errors.New(errors.Authentication, authErr.ErrUpstreamForbidden)
 	}
 	return body, nil
 }

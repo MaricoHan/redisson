@@ -14,9 +14,7 @@ http_timeout = 1000000
 
 [mysql]
 host = "192.168.150.40"
-#host = "192.168.0.136"
 port = 23306
-#port = 3306
 username = "root"
 password = "rootPassword"
 # host = "192.168.150.40"
