@@ -115,7 +115,7 @@ func (a *notice) TransferNFTS(ctx context.Context, params *notice2.TransferNFTS)
 func (a *notice) TransferClasses(ctx context.Context, params *notice2.TransferClasses) (*noticeResp.TransferClasses, error) {
 	logger := a.logger.WithField("params", params).WithField("func", "transfer class")
 	path := ctx.Value(httptransport.ContextKeyRequestPath).(string)[len(configs.Cfg.App.RouterPrefix)+1:]
-	var res *noticeResp.TransferClasses
+	res := &noticeResp.TransferClasses{}
 	project, err := a.getProject(params.ProjectID)
 	if err != nil {
 		logger.WithError(err).Error("query project")
@@ -206,12 +206,12 @@ func (a *notice) getServiceRedirectUrl(projectID uint64) (entity.ServiceRedirect
 	sru, err := serviceRedirectUrlRepo.GetServiceRedirectUrlByProjectID(projectID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return sru, errors.New(errors.NotFound, authErr.ErrProjectOrUserNotFound)
+			return sru, errors.New(errors.NotFound, authErr.ErrServiceRedirectUrlNotFound)
 		}
 		return sru, err
 	}
 	if sru.Url == "" {
-		return sru, errors.New(errors.NotFound, authErr.ErrProjectOrUserNotFound)
+		return sru, errors.New(errors.NotFound, authErr.ErrServiceRedirectUrlNotFound)
 	}
 	return sru, nil
 }
@@ -252,7 +252,7 @@ func (a *notice) request(ctx context.Context, url, apikey, hash, code, timestamp
 	// 403
 	if results.StatusCode == http.StatusForbidden {
 		logger.WithError(fmt.Errorf(string(body))).Error("forbidden")
-		return nil, errors.New(errors.UpstreamInternalFailed, authErr.ErrUpstreamInternal)
+		return nil, errors.New(errors.Authentication, authErr.ErrUpstreamForbidden)
 	}
 	return body, nil
 }
