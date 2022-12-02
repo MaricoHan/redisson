@@ -7,6 +7,7 @@ FROM golang:1.17.5-alpine3.15 as builder
 ARG GITUSER
 ARG GITPASS
 ENV PACKAGES make git libc-dev bash gcc
+ENV GOPRIVATE gitlab.bianjie.ai
 ENV GOPROXY http://192.168.0.60:8081/repository/go-bianjie/,http://nexus.bianjie.ai/repository/golang-group,https://goproxy.cn,direct
 ENV GOPRIVATE gitlab.bianjie.ai
 ENV APKPROXY http://192.168.0.60:8081/repository/apk-ustc
