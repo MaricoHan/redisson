@@ -115,7 +115,7 @@ func (a *notice) TransferNFTS(ctx context.Context, params *notice2.TransferNFTS)
 func (a *notice) TransferClasses(ctx context.Context, params *notice2.TransferClasses) (*noticeResp.TransferClasses, error) {
 	logger := a.logger.WithField("params", params).WithField("func", "transfer class")
 	path := ctx.Value(httptransport.ContextKeyRequestPath).(string)[len(configs.Cfg.App.RouterPrefix)+1:]
-	var res *noticeResp.TransferClasses
+	res := &noticeResp.TransferClasses{}
 	project, err := a.getProject(params.ProjectID)
 	if err != nil {
 		logger.WithError(err).Error("query project")
