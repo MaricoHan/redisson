@@ -25,6 +25,18 @@ type IRights interface {
 	Delivery(ctx context.Context, request interface{}) (response interface{}, err error)
 	EditDelivery(ctx context.Context, request interface{}) (response interface{}, err error)
 	DeliveryInfo(ctx context.Context, request interface{}) (response interface{}, err error)
+
+	Change(ctx context.Context, request interface{}) (response interface{}, err error)
+	EditChange(ctx context.Context, request interface{}) (response interface{}, err error)
+	ChangeInfo(ctx context.Context, request interface{}) (response interface{}, err error)
+
+	Transfer(ctx context.Context, request interface{}) (response interface{}, err error)
+	EditTransfer(ctx context.Context, request interface{}) (response interface{}, err error)
+	TransferInfo(ctx context.Context, request interface{}) (response interface{}, err error)
+
+	Revoke(ctx context.Context, request interface{}) (response interface{}, err error)
+	EditRevoke(ctx context.Context, request interface{}) (response interface{}, err error)
+	RevokeInfo(ctx context.Context, request interface{}) (response interface{}, err error)
 }
 
 type Rights struct {
@@ -501,6 +513,105 @@ func (r Rights) DeliveryInfo(ctx context.Context, request interface{}) (response
 		CertificateNum: r.CertificateNum(ctx),
 	}
 	return r.svc.DeliveryInfo(ctx, &param)
+}
+
+func (r Rights) Change(ctx context.Context, request interface{}) (response interface{}, err error) {
+	//req, ok := request.(*vo.ChangeRequest)
+	//if !ok {
+	//	log.Debugf("failed to assert : %v", request)
+	//	return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	//}
+	//
+	//// 获取账户基本信息
+	//authData := r.AuthData(ctx)
+	param := dto.ChangeRequest{}
+	return r.svc.Change(ctx, &param)
+}
+
+func (r Rights) EditChange(ctx context.Context, request interface{}) (response interface{}, err error) {
+	//req, ok := request.(*vo.EditChangeRequest)
+	//if !ok {
+	//	log.Debugf("failed to assert : %v", request)
+	//	return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	//}
+	//
+	//// 获取账户基本信息
+	//authData := r.AuthData(ctx)
+	param := dto.EditChangeRequest{}
+	return r.svc.EditChange(ctx, &param)
+}
+
+func (r Rights) ChangeInfo(ctx context.Context, request interface{}) (response interface{}, err error) {
+	// 获取账户基本信息
+	//authData := r.AuthData(ctx)
+	param := dto.ChangeInfoRequest{}
+	return r.svc.ChangeInfo(ctx, &param)
+}
+
+func (r Rights) Transfer(ctx context.Context, request interface{}) (response interface{}, err error) {
+	//req, ok := request.(*vo.TransferRequest)
+	//if !ok {
+	//	log.Debugf("failed to assert : %v", request)
+	//	return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	//}
+	//
+	//// 获取账户基本信息
+	//authData := r.AuthData(ctx)
+	param := dto.TransferRequest{}
+	return r.svc.Transfer(ctx, &param)
+}
+
+func (r Rights) EditTransfer(ctx context.Context, request interface{}) (response interface{}, err error) {
+	//req, ok := request.(*vo.EditTransferRequest)
+	//if !ok {
+	//	log.Debugf("failed to assert : %v", request)
+	//	return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	//}
+	//
+	//// 获取账户基本信息
+	//authData := r.AuthData(ctx)
+	param := dto.EditTransferRequest{}
+	return r.svc.EditTransfer(ctx, &param)
+}
+
+func (r Rights) TransferInfo(ctx context.Context, request interface{}) (response interface{}, err error) {
+	// 获取账户基本信息
+	//authData := r.AuthData(ctx)
+	param := dto.TransferInfoRequest{}
+	return r.svc.TransferInfo(ctx, &param)
+}
+
+func (r Rights) Revoke(ctx context.Context, request interface{}) (response interface{}, err error) {
+	//req, ok := request.(*vo.RevokeRequest)
+	//if !ok {
+	//	log.Debugf("failed to assert : %v", request)
+	//	return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	//}
+	//
+	//// 获取账户基本信息
+	//authData := r.AuthData(ctx)
+	param := dto.RevokeRequest{}
+	return r.svc.Revoke(ctx, &param)
+}
+
+func (r Rights) EditRevoke(ctx context.Context, request interface{}) (response interface{}, err error) {
+	//req, ok := request.(*vo.EditRevokeRequest)
+	//if !ok {
+	//	log.Debugf("failed to assert : %v", request)
+	//	return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	//}
+	//
+	//// 获取账户基本信息
+	//authData := r.AuthData(ctx)
+	param := dto.EditRevokeRequest{}
+	return r.svc.EditRevoke(ctx, &param)
+}
+
+func (r Rights) RevokeInfo(ctx context.Context, request interface{}) (response interface{}, err error) {
+	// 获取账户基本信息
+	//authData := r.AuthData(ctx)
+	param := dto.RevokeInfoRequest{}
+	return r.svc.RevokeInfo(ctx, &param)
 }
 
 func (Rights) RegisterType(ctx context.Context) uint64 {

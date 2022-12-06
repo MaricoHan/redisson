@@ -300,3 +300,60 @@ type DeliveryInfoResponse struct {
 	ExpressNum     string `json:"express_num"`
 	Status         string `json:"status"`
 }
+
+type ChangeRequest struct {
+}
+
+type ChangeResponse struct {
+	OperationID string `json:"operation_id"`
+}
+
+type EditChangeRequest struct {
+}
+
+type EditChangeResponse struct {
+}
+
+type ChangeInfoRequest struct {
+}
+
+type ChangeInfoResponse struct {
+}
+
+type TransferRequest struct {
+}
+
+type TransferResponse struct {
+	OperationID string `json:"operation_id"`
+}
+
+type EditTransferRequest struct {
+}
+
+type EditTransferResponse struct {
+}
+
+type TransferInfoRequest struct {
+}
+
+type TransferInfoResponse struct {
+}
+
+type RevokeRequest struct {
+}
+
+type RevokeResponse struct {
+	OperationID string `json:"operation_id"`
+}
+
+type EditRevokeRequest struct {
+}
+
+type EditRevokeResponse struct {
+}
+
+type RevokeInfoRequest struct {
+}
+
+type RevokeInfoResponse struct {
+}
