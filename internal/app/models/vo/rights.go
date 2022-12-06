@@ -154,3 +154,21 @@ type EditDeliveryRequest struct {
 	Recipient    string `json:"recipient"`
 	PhoneNum     string `json:"phone_num"`
 }
+
+type ChangeRequest struct {
+}
+
+type EditChangeRequest struct {
+}
+
+type TransferRequest struct {
+}
+
+type EditTransferRequest struct {
+}
+
+type RevokeRequest struct {
+}
+
+type EditRevokeRequest struct {
+}

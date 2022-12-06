@@ -25,6 +25,18 @@ type IRights interface {
 	Delivery(ctx context.Context, params *dto.DeliveryRequest) (*dto.DeliveryResponse, error)
 	EditDelivery(ctx context.Context, params *dto.EditDeliveryRequest) (*dto.EditDeliveryResponse, error)
 	DeliveryInfo(ctx context.Context, params *dto.DeliveryInfoRequest) (*dto.DeliveryInfoResponse, error)
+
+	Change(ctx context.Context, params *dto.ChangeRequest) (*dto.ChangeResponse, error)
+	EditChange(ctx context.Context, params *dto.EditChangeRequest) (*dto.EditChangeResponse, error)
+	ChangeInfo(ctx context.Context, params *dto.ChangeInfoRequest) (*dto.ChangeInfoResponse, error)
+
+	Transfer(ctx context.Context, params *dto.TransferRequest) (*dto.TransferResponse, error)
+	EditTransfer(ctx context.Context, params *dto.EditTransferRequest) (*dto.EditTransferResponse, error)
+	TransferInfo(ctx context.Context, params *dto.TransferInfoRequest) (*dto.TransferInfoResponse, error)
+
+	Revoke(ctx context.Context, params *dto.RevokeRequest) (*dto.RevokeResponse, error)
+	EditRevoke(ctx context.Context, params *dto.EditRevokeRequest) (*dto.EditRevokeResponse, error)
+	RevokeInfo(ctx context.Context, params *dto.RevokeInfoRequest) (*dto.RevokeInfoResponse, error)
 }
 
 type Rights struct {
@@ -640,4 +652,34 @@ func (r Rights) DeliveryInfo(ctx context.Context, params *dto.DeliveryInfoReques
 		ExpressNum:     resp.ExpressNum,
 		Status:         resp.Status,
 	}, nil
+}
+
+func (r Rights) Change(ctx context.Context, params *dto.ChangeRequest) (*dto.ChangeResponse, error) {
+	return nil, nil
+}
+func (r Rights) EditChange(ctx context.Context, params *dto.EditChangeRequest) (*dto.EditChangeResponse, error) {
+	return nil, nil
+}
+func (r Rights) ChangeInfo(ctx context.Context, params *dto.ChangeInfoRequest) (*dto.ChangeInfoResponse, error) {
+	return nil, nil
+}
+
+func (r Rights) Transfer(ctx context.Context, params *dto.TransferRequest) (*dto.TransferResponse, error) {
+	return nil, nil
+}
+func (r Rights) EditTransfer(ctx context.Context, params *dto.EditTransferRequest) (*dto.EditTransferResponse, error) {
+	return nil, nil
+}
+func (r Rights) TransferInfo(ctx context.Context, params *dto.TransferInfoRequest) (*dto.TransferInfoResponse, error) {
+	return nil, nil
+}
+
+func (r Rights) Revoke(ctx context.Context, params *dto.RevokeRequest) (*dto.RevokeResponse, error) {
+	return nil, nil
+}
+func (r Rights) EditRevoke(ctx context.Context, params *dto.EditRevokeRequest) (*dto.EditRevokeResponse, error) {
+	return nil, nil
+}
+func (r Rights) RevokeInfo(ctx context.Context, params *dto.RevokeInfoRequest) (*dto.RevokeInfoResponse, error) {
+	return nil, nil
 }
