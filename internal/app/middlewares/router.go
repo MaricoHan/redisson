@@ -41,6 +41,10 @@ func (router routerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else { // native
 		// 非托管模式
 		if authData.AccessMode == entity.UNMANAGED {
+			if strings.Contains(r.RequestURI, "/rights/") {
+				writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
+				return
+			}
 			if fmt.Sprintf("%s-%s", authData.Code, authData.Module) == constant.IritaOPBNative {
 				// 文昌链-天舟除 orders 都不支持
 				if !strings.Contains(r.RequestURI, "/orders") && !strings.Contains(r.RequestURI, "/auth") {
