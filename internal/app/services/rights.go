@@ -655,31 +655,309 @@ func (r Rights) DeliveryInfo(ctx context.Context, params *dto.DeliveryInfoReques
 }
 
 func (r Rights) Change(ctx context.Context, params *dto.ChangeRequest) (*dto.ChangeResponse, error) {
-	return nil, nil
+	logger := r.logger.WithField("params", params).WithField("func", "Change")
+
+	req := rights.ChangeRequest{
+		Code:            params.Code,
+		Module:          params.Module,
+		ProjectId:       params.ProjectID,
+		OperationId:     params.OperationID,
+		ProductId:       params.ProductID,
+		CertificateNum:  params.CertificateNum,
+		Name:            params.Name,
+		CatName:         params.CatName,
+		CopyrighterType: params.CopyrighterType,
+		CopyrighterName: params.CopyrighterName,
+		CardImg1:        params.CardImg1,
+		CardImg2:        params.CardImg2,
+		CardImg3:        params.CardImg3,
+		ProofFiles:      params.ProofFiles,
+		UrgentTime:      params.UrgentTime,
+	}
+	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
+	if !ok {
+		logger.Error(errors2.ErrService)
+		return nil, errors2.New(errors2.ClientParams, "invalid register_type")
+	}
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+	resp, err := grpcClient.Change(ctx, &req)
+	if err != nil {
+		logger.Error("grpc request failed")
+		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+	}
+	return &dto.ChangeResponse{OperationID: resp.OperationId}, nil
 }
 func (r Rights) EditChange(ctx context.Context, params *dto.EditChangeRequest) (*dto.EditChangeResponse, error) {
-	return nil, nil
+	logger := r.logger.WithField("params", params).WithField("func", "EditChange")
+
+	req := rights.EditChangeRequest{
+		Code:            params.Code,
+		Module:          params.Module,
+		ProjectId:       params.ProjectID,
+		OperationId:     params.OperationID,
+		Name:            params.Name,
+		CatName:         params.CatName,
+		CopyrighterType: params.CopyrighterType,
+		CopyrighterName: params.CopyrighterName,
+		CardImg1:        params.CardImg1,
+		CardImg2:        params.CardImg2,
+		CardImg3:        params.CardImg3,
+		ProofFiles:      params.ProofFiles,
+	}
+	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
+	if !ok {
+		logger.Error(errors2.ErrService)
+		return nil, errors2.New(errors2.ClientParams, "invalid register_type")
+	}
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+	resp, err := grpcClient.EditChange(ctx, &req)
+	if err != nil {
+		logger.Error("grpc request failed")
+		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+	}
+	return &dto.EditChangeResponse{}, nil
 }
 func (r Rights) ChangeInfo(ctx context.Context, params *dto.ChangeInfoRequest) (*dto.ChangeInfoResponse, error) {
-	return nil, nil
+	logger := r.logger.WithField("params", params).WithField("func", "ChangeInfo")
+
+	req := rights.ChangeInfoRequest{
+		Code:        params.Code,
+		Module:      params.Module,
+		ProjectId:   params.ProjectID,
+		OperationId: params.OperationID,
+	}
+	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
+	if !ok {
+		logger.Error(errors2.ErrService)
+		return nil, errors2.New(errors2.ClientParams, "invalid register_type")
+	}
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+	resp, err := grpcClient.ChangeInfo(ctx, &req)
+	if err != nil {
+		logger.Error("grpc request failed")
+		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+	}
+
+	return &dto.ChangeInfoResponse{
+		ProductId:            resp.ProductId,
+		CertificateNum:       resp.CertificateNum,
+		Status:               resp.Status,
+		ChangeCertificateUrl: resp.ChangeCertificateUrl,
+		ErrorMessage:         resp.ErrorMessage,
+		ChangeCertificateNum: resp.ChangeCertificateNum,
+	}, nil
 }
 
 func (r Rights) Transfer(ctx context.Context, params *dto.TransferRequest) (*dto.TransferResponse, error) {
-	return nil, nil
+	logger := r.logger.WithField("params", params).WithField("func", "Transfer")
+
+	req := rights.TransferRequest{
+		Code:             params.Code,
+		Module:           params.Module,
+		ProjectId:        params.ProjectID,
+		OperationId:      params.OperationID,
+		ProductId:        params.ProductID,
+		CertificateNum:   params.CertificateNum,
+		AuthorityName:    params.AuthorityName,
+		AuthorityIdType:  params.AuthorityIDType,
+		AuthorityIdNum:   params.AuthorityIDNum,
+		AuthoritedName:   params.AuthoritedName,
+		AuthoritedIdType: params.AuthoritedIDType,
+		AuthoritedIdNum:  params.AuthoritedIDNum,
+		AuthInstructions: params.AuthInstructions,
+		StartTime:        params.StartTime,
+		EndTime:          params.EndTime,
+		Scope:            params.Scope,
+		ContractAmount:   params.ContractAmount,
+		ContractFiles:    params.ContractFiles,
+		UrgentTime:       params.UrgentTime,
+	}
+	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
+	if !ok {
+		logger.Error(errors2.ErrService)
+		return nil, errors2.New(errors2.ClientParams, "invalid register_type")
+	}
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+	resp, err := grpcClient.Transfer(ctx, &req)
+	if err != nil {
+		logger.Error("grpc request failed")
+		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+	}
+	return &dto.TransferResponse{OperationID: resp.OperationId}, nil
 }
 func (r Rights) EditTransfer(ctx context.Context, params *dto.EditTransferRequest) (*dto.EditTransferResponse, error) {
-	return nil, nil
+	logger := r.logger.WithField("params", params).WithField("func", "EditTransfer")
+
+	req := rights.EditTransferRequest{
+		Code:             params.Code,
+		Module:           params.Module,
+		ProjectId:        params.ProjectID,
+		OperationId:      params.OperationID,
+		AuthorityName:    params.AuthorityName,
+		AuthorityIdType:  params.AuthorityIDType,
+		AuthorityIdNum:   params.AuthorityIDNum,
+		AuthoritedName:   params.AuthoritedName,
+		AuthoritedIdType: params.AuthoritedIDType,
+		AuthoritedIdNum:  params.AuthoritedIDNum,
+		AuthInstructions: params.AuthInstructions,
+		StartTime:        params.StartTime,
+		EndTime:          params.EndTime,
+		Scope:            params.Scope,
+		ContractAmount:   params.ContractAmount,
+		ContractFiles:    params.ContractFiles,
+	}
+	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
+	if !ok {
+		logger.Error(errors2.ErrService)
+		return nil, errors2.New(errors2.ClientParams, "invalid register_type")
+	}
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+	resp, err := grpcClient.EditTransfer(ctx, &req)
+	if err != nil {
+		logger.Error("grpc request failed")
+		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+	}
+	return &dto.EditTransferResponse{}, nil
 }
 func (r Rights) TransferInfo(ctx context.Context, params *dto.TransferInfoRequest) (*dto.TransferInfoResponse, error) {
-	return nil, nil
+	logger := r.logger.WithField("params", params).WithField("func", "TransferInfo")
+
+	req := rights.TransferInfoRequest{
+		Code:        params.Code,
+		Module:      params.Module,
+		ProjectId:   params.ProjectID,
+		OperationId: params.OperationID,
+	}
+	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
+	if !ok {
+		logger.Error(errors2.ErrService)
+		return nil, errors2.New(errors2.ClientParams, "invalid register_type")
+	}
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+	resp, err := grpcClient.TransferInfo(ctx, &req)
+	if err != nil {
+		logger.Error("grpc request failed")
+		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+	}
+
+	return &dto.TransferInfoResponse{
+		ProductId:              resp.ProductId,
+		CertificateNum:         resp.CertificateNum,
+		Status:                 resp.Status,
+		ErrorMessage:           resp.ErrorMessage,
+		TransferCertificateNum: resp.TransferCertificateNum,
+		TransferCertificateUrl: resp.TransferCertificateUrl,
+	}, nil
 }
 
 func (r Rights) Revoke(ctx context.Context, params *dto.RevokeRequest) (*dto.RevokeResponse, error) {
-	return nil, nil
+	logger := r.logger.WithField("params", params).WithField("func", "Revoke")
+
+	req := rights.RevokeRequest{
+		Code:           params.Code,
+		Module:         params.Module,
+		ProjectId:      params.ProjectID,
+		OperationId:    params.OperationID,
+		ProductId:      params.ProductID,
+		CertificateNum: params.CertificateNum,
+	}
+	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
+	if !ok {
+		logger.Error(errors2.ErrService)
+		return nil, errors2.New(errors2.ClientParams, "invalid register_type")
+	}
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+	resp, err := grpcClient.Revoke(ctx, &req)
+	if err != nil {
+		logger.Error("grpc request failed")
+		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+	}
+	return &dto.RevokeResponse{OperationID: resp.OperationId}, nil
 }
 func (r Rights) EditRevoke(ctx context.Context, params *dto.EditRevokeRequest) (*dto.EditRevokeResponse, error) {
-	return nil, nil
+	logger := r.logger.WithField("params", params).WithField("func", "EditRevoke")
+
+	req := rights.EditRevokeRequest{
+		Code:        params.Code,
+		Module:      params.Module,
+		ProjectId:   params.ProjectID,
+		OperationId: params.OperationID,
+	}
+	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
+	if !ok {
+		logger.Error(errors2.ErrService)
+		return nil, errors2.New(errors2.ClientParams, "invalid register_type")
+	}
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+	resp, err := grpcClient.EditRevoke(ctx, &req)
+	if err != nil {
+		logger.Error("grpc request failed")
+		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+	}
+	return &dto.EditRevokeResponse{}, nil
 }
 func (r Rights) RevokeInfo(ctx context.Context, params *dto.RevokeInfoRequest) (*dto.RevokeInfoResponse, error) {
-	return nil, nil
+	logger := r.logger.WithField("params", params).WithField("func", "RevokeInfo")
+
+	req := rights.RevokeInfoRequest{
+		Code:        params.Code,
+		Module:      params.Module,
+		ProjectId:   params.ProjectID,
+		OperationId: params.OperationID,
+	}
+	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
+	if !ok {
+		logger.Error(errors2.ErrService)
+		return nil, errors2.New(errors2.ClientParams, "invalid register_type")
+	}
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+	resp, err := grpcClient.RevokeInfo(ctx, &req)
+	if err != nil {
+		logger.Error("grpc request failed")
+		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+	}
+
+	return &dto.RevokeInfoResponse{
+		ProductId:            resp.ProductId,
+		CertificateNum:       resp.CertificateNum,
+		Status:               resp.Status,
+		ErrMessage:           resp.ErrorMessage,
+		RevokeCertificateNum: resp.RevokeCertificateNum,
+	}, nil
 }

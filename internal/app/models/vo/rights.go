@@ -156,19 +156,76 @@ type EditDeliveryRequest struct {
 }
 
 type ChangeRequest struct {
+	RegisterType    uint64 `json:"register_type"`
+	OperationID     string `json:"operation_id"`
+	ProductID       string `json:"product_id"`
+	CertificateNum  string `json:"certificate_num"`
+	Name            string `json:"name"`
+	CatName         string `json:"cat_name"`
+	CopyrighterType uint32 `json:"copyrighter_type"`
+	CopyrighterNmae string `json:"copyrighter_name"`
+	CardImg1        string `json:"card_img1"`
+	CardImg2        string `json:"card_img2"`
+	CardImg3        string `json:"card_img3"`
+	ProofFiles      string `json:"proof_files"`
+	UrgentTime      uint32 `json:"urgent_time"`
 }
 
 type EditChangeRequest struct {
+	RegisterType    uint64 `json:"register_type"`
+	Name            string `json:"name"`
+	CatName         string `json:"cat_name"`
+	CopyrighterType uint32 `json:"copyrighter_type"`
+	CopyrighterName string `json:"copyrighter_name"`
+	CardImg1        string `json:"card_img1"`
+	CardImg2        string `json:"card_img2"`
+	CardImg3        string `json:"card_img3"`
+	ProofFiles      string `json:"proof_files"`
 }
 
 type TransferRequest struct {
+	RegisterType     uint64 `json:"register_type"`
+	OperationID      string `json:"operation_id"`
+	CertificateNum   string `json:"certificate_num"`
+	ProductID        string `json:"product_id"`
+	AuthorityName    string `json:"authority_name"`
+	AuthorityIDType  uint32 `json:"authority_id_type"`
+	AuthorityIDNum   string `json:"authority_id_num"`
+	AuthoritedIDName string `json:"authorited_name"`
+	AuthoritedIDType uint32 `json:"authorited_id_type"`
+	AuthoritedIDNum  string `json:"authorited_id_num"`
+	AuthInstructions string `json:"auth_instructions"`
+	StartTime        string `json:"start_time"`
+	EndTime          string `json:"end_time"`
+	Scope            string `json:"scope"`
+	ContractAmount   string `json:"contract_amount"`
+	ContractFiles    string `json:"contract_files"`
+	UrgentTime       uint32 `json:"urgent_time"`
 }
 
 type EditTransferRequest struct {
+	RegisterType     uint64 `json:"register_type"`
+	AuthorityName    string `json:"authority_name"`
+	AuthorityIDType  uint32 `json:"authority_id_type"`
+	AuthorityIDNum   string `json:"authority_id_num"`
+	AuthoritedIDName string `json:"authorited_name"`
+	AuthoritedIDType uint32 `json:"authorited_id_type"`
+	AuthoritedIDNum  string `json:"authorited_id_num"`
+	AuthInstructions string `json:"auth_instructions"`
+	StartTime        string `json:"start_time"`
+	EndTime          string `json:"end_time"`
+	Scope            string `json:"scope"`
+	ContractAmount   string `json:"contract_amount"`
+	ContractFiles    string `json:"contract_files"`
 }
 
 type RevokeRequest struct {
+	RegisterType   uint64 `json:"register_type"`
+	OperationID    string `json:"operation_id"`
+	CertificateNum string `json:"certificate_num"`
+	ProductID      string `json:"product_id"`
 }
 
 type EditRevokeRequest struct {
+	RegisterType uint64 `json:"register_type"`
 }

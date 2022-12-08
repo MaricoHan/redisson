@@ -516,101 +516,311 @@ func (r Rights) DeliveryInfo(ctx context.Context, request interface{}) (response
 }
 
 func (r Rights) Change(ctx context.Context, request interface{}) (response interface{}, err error) {
-	//req, ok := request.(*vo.ChangeRequest)
-	//if !ok {
-	//	log.Debugf("failed to assert : %v", request)
-	//	return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
-	//}
-	//
-	//// 获取账户基本信息
-	//authData := r.AuthData(ctx)
-	param := dto.ChangeRequest{}
+	req, ok := request.(*vo.ChangeRequest)
+	if !ok {
+		log.Debugf("failed to assert : %v", request)
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	}
+
+	// 校验参数
+	operationId := strings.TrimSpace(req.OperationID)
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
+	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
+	}
+	if req.RegisterType == 0 {
+		return nil, errors2.New(errors2.ClientParams, "register_type can not be nil")
+	}
+
+	// 获取账户基本信息
+	authData := r.AuthData(ctx)
+	param := dto.ChangeRequest{
+		Code:            authData.Code,
+		Module:          authData.Module,
+		ProjectID:       authData.ProjectId,
+		RegisterType:    req.RegisterType,
+		OperationID:     operationId,
+		ProductID:       req.ProductID,
+		CertificateNum:  req.CertificateNum,
+		Name:            req.Name,
+		CatName:         req.CatName,
+		CopyrighterType: req.CopyrighterType,
+		CopyrighterName: req.CopyrighterNmae,
+		CardImg1:        req.CardImg1,
+		CardImg2:        req.CardImg2,
+		CardImg3:        req.CardImg3,
+		ProofFiles:      req.ProofFiles,
+		UrgentTime:      req.UrgentTime,
+	}
 	return r.svc.Change(ctx, &param)
 }
 
 func (r Rights) EditChange(ctx context.Context, request interface{}) (response interface{}, err error) {
-	//req, ok := request.(*vo.EditChangeRequest)
-	//if !ok {
-	//	log.Debugf("failed to assert : %v", request)
-	//	return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
-	//}
-	//
-	//// 获取账户基本信息
-	//authData := r.AuthData(ctx)
-	param := dto.EditChangeRequest{}
+	req, ok := request.(*vo.EditChangeRequest)
+	if !ok {
+		log.Debugf("failed to assert : %v", request)
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	}
+
+	// 校验参数
+	operationId := strings.TrimSpace(r.OperationID(ctx))
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
+	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
+	}
+	if req.RegisterType == 0 {
+		return nil, errors2.New(errors2.ClientParams, "register_type can not be nil")
+	}
+
+	// 获取账户基本信息
+	authData := r.AuthData(ctx)
+	param := dto.EditChangeRequest{
+		Code:            authData.Code,
+		Module:          authData.Module,
+		ProjectID:       authData.ProjectId,
+		RegisterType:    req.RegisterType,
+		OperationID:     operationId,
+		Name:            req.Name,
+		CatName:         req.CatName,
+		CopyrighterType: req.CopyrighterType,
+		CopyrighterName: req.CopyrighterName,
+		CardImg1:        req.CardImg1,
+		CardImg2:        req.CardImg2,
+		CardImg3:        req.CardImg3,
+		ProofFiles:      req.ProofFiles,
+	}
 	return r.svc.EditChange(ctx, &param)
 }
 
 func (r Rights) ChangeInfo(ctx context.Context, request interface{}) (response interface{}, err error) {
+	// 校验参数
+	operationId := strings.TrimSpace(r.OperationID(ctx))
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
+	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
+	}
+	if r.RegisterType(ctx) == 0 {
+		return nil, errors2.New(errors2.ClientParams, "register_type can not be nil")
+	}
+
 	// 获取账户基本信息
-	//authData := r.AuthData(ctx)
-	param := dto.ChangeInfoRequest{}
+	authData := r.AuthData(ctx)
+	param := dto.ChangeInfoRequest{
+		Code:         authData.Code,
+		Module:       authData.Module,
+		ProjectID:    authData.ProjectId,
+		RegisterType: r.RegisterType(ctx),
+		OperationID:  operationId,
+	}
 	return r.svc.ChangeInfo(ctx, &param)
 }
 
 func (r Rights) Transfer(ctx context.Context, request interface{}) (response interface{}, err error) {
-	//req, ok := request.(*vo.TransferRequest)
-	//if !ok {
-	//	log.Debugf("failed to assert : %v", request)
-	//	return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
-	//}
-	//
-	//// 获取账户基本信息
-	//authData := r.AuthData(ctx)
-	param := dto.TransferRequest{}
+	req, ok := request.(*vo.TransferRequest)
+	if !ok {
+		log.Debugf("failed to assert : %v", request)
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	}
+
+	// 校验参数
+	operationId := strings.TrimSpace(req.OperationID)
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
+	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
+	}
+	if req.RegisterType == 0 {
+		return nil, errors2.New(errors2.ClientParams, "register_type can not be nil")
+	}
+
+	// 获取账户基本信息
+	authData := r.AuthData(ctx)
+	param := dto.TransferRequest{
+		Code:             authData.Code,
+		Module:           authData.Module,
+		ProjectID:        authData.ProjectId,
+		RegisterType:     req.RegisterType,
+		OperationID:      operationId,
+		CertificateNum:   req.CertificateNum,
+		ProductID:        req.ProductID,
+		AuthorityName:    req.AuthorityName,
+		AuthorityIDType:  req.AuthorityIDType,
+		AuthorityIDNum:   req.AuthorityIDNum,
+		AuthoritedName:   req.AuthoritedIDName,
+		AuthoritedIDType: req.AuthoritedIDType,
+		AuthoritedIDNum:  req.AuthoritedIDNum,
+		AuthInstructions: req.AuthInstructions,
+		StartTime:        req.StartTime,
+		EndTime:          req.EndTime,
+		Scope:            req.Scope,
+		ContractAmount:   req.ContractAmount,
+		ContractFiles:    req.ContractFiles,
+		UrgentTime:       req.UrgentTime,
+	}
 	return r.svc.Transfer(ctx, &param)
 }
 
 func (r Rights) EditTransfer(ctx context.Context, request interface{}) (response interface{}, err error) {
-	//req, ok := request.(*vo.EditTransferRequest)
-	//if !ok {
-	//	log.Debugf("failed to assert : %v", request)
-	//	return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
-	//}
-	//
-	//// 获取账户基本信息
-	//authData := r.AuthData(ctx)
-	param := dto.EditTransferRequest{}
+	req, ok := request.(*vo.EditTransferRequest)
+	if !ok {
+		log.Debugf("failed to assert : %v", request)
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	}
+
+	// 校验参数
+	operationId := strings.TrimSpace(r.OperationID(ctx))
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
+	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
+	}
+	if req.RegisterType == 0 {
+		return nil, errors2.New(errors2.ClientParams, "register_type can not be nil")
+	}
+
+	// 获取账户基本信息
+	authData := r.AuthData(ctx)
+	param := dto.EditTransferRequest{
+		Code:             authData.Code,
+		Module:           authData.Module,
+		ProjectID:        authData.ProjectId,
+		RegisterType:     req.RegisterType,
+		OperationID:      operationId,
+		AuthorityName:    req.AuthorityName,
+		AuthorityIDType:  req.AuthorityIDType,
+		AuthorityIDNum:   req.AuthorityIDNum,
+		AuthoritedName:   req.AuthoritedIDName,
+		AuthoritedIDType: req.AuthoritedIDType,
+		AuthoritedIDNum:  req.AuthoritedIDNum,
+		AuthInstructions: req.AuthInstructions,
+		StartTime:        req.StartTime,
+		EndTime:          req.EndTime,
+		Scope:            req.Scope,
+		ContractAmount:   req.ContractAmount,
+		ContractFiles:    req.ContractFiles,
+	}
 	return r.svc.EditTransfer(ctx, &param)
 }
 
 func (r Rights) TransferInfo(ctx context.Context, request interface{}) (response interface{}, err error) {
+	// 校验参数
+	operationId := strings.TrimSpace(r.OperationID(ctx))
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
+	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
+	}
+	if r.RegisterType(ctx) == 0 {
+		return nil, errors2.New(errors2.ClientParams, "register_type can not be nil")
+	}
+
 	// 获取账户基本信息
-	//authData := r.AuthData(ctx)
-	param := dto.TransferInfoRequest{}
+	authData := r.AuthData(ctx)
+	param := dto.TransferInfoRequest{
+		Code:         authData.Code,
+		Module:       authData.Module,
+		ProjectID:    authData.ProjectId,
+		RegisterType: r.RegisterType(ctx),
+		OperationID:  operationId,
+	}
 	return r.svc.TransferInfo(ctx, &param)
 }
 
 func (r Rights) Revoke(ctx context.Context, request interface{}) (response interface{}, err error) {
-	//req, ok := request.(*vo.RevokeRequest)
-	//if !ok {
-	//	log.Debugf("failed to assert : %v", request)
-	//	return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
-	//}
-	//
-	//// 获取账户基本信息
-	//authData := r.AuthData(ctx)
-	param := dto.RevokeRequest{}
+	req, ok := request.(*vo.RevokeRequest)
+	if !ok {
+		log.Debugf("failed to assert : %v", request)
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	}
+
+	// 校验参数
+	operationId := strings.TrimSpace(req.OperationID)
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
+	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
+	}
+	if req.RegisterType == 0 {
+		return nil, errors2.New(errors2.ClientParams, "register_type can not be nil")
+	}
+
+	// 获取账户基本信息
+	authData := r.AuthData(ctx)
+	param := dto.RevokeRequest{
+		Code:           authData.Code,
+		Module:         authData.Module,
+		ProjectID:      authData.ProjectId,
+		RegisterType:   req.RegisterType,
+		OperationID:    operationId,
+		ProductID:      req.ProductID,
+		CertificateNum: req.CertificateNum,
+	}
 	return r.svc.Revoke(ctx, &param)
 }
 
 func (r Rights) EditRevoke(ctx context.Context, request interface{}) (response interface{}, err error) {
-	//req, ok := request.(*vo.EditRevokeRequest)
-	//if !ok {
-	//	log.Debugf("failed to assert : %v", request)
-	//	return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
-	//}
-	//
-	//// 获取账户基本信息
-	//authData := r.AuthData(ctx)
-	param := dto.EditRevokeRequest{}
+	req, ok := request.(*vo.EditTransferRequest)
+	if !ok {
+		log.Debugf("failed to assert : %v", request)
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
+	}
+
+	// 校验参数
+	operationId := strings.TrimSpace(r.OperationID(ctx))
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
+	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
+	}
+	if req.RegisterType == 0 {
+		return nil, errors2.New(errors2.ClientParams, "register_type can not be nil")
+	}
+
+	// 获取账户基本信息
+	authData := r.AuthData(ctx)
+	param := dto.EditRevokeRequest{
+		Code:         authData.Code,
+		Module:       authData.Module,
+		ProjectID:    authData.ProjectId,
+		RegisterType: req.RegisterType,
+		OperationID:  operationId,
+	}
 	return r.svc.EditRevoke(ctx, &param)
 }
 
 func (r Rights) RevokeInfo(ctx context.Context, request interface{}) (response interface{}, err error) {
+	// 校验参数
+	operationId := strings.TrimSpace(r.OperationID(ctx))
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
+	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
+	}
+	if r.RegisterType(ctx) == 0 {
+		return nil, errors2.New(errors2.ClientParams, "register_type can not be nil")
+	}
+
 	// 获取账户基本信息
-	//authData := r.AuthData(ctx)
-	param := dto.RevokeInfoRequest{}
+	authData := r.AuthData(ctx)
+	param := dto.RevokeInfoRequest{
+		Code:         authData.Code,
+		Module:       authData.Module,
+		ProjectID:    authData.ProjectId,
+		RegisterType: r.RegisterType(ctx),
+		OperationID:  operationId,
+	}
 	return r.svc.RevokeInfo(ctx, &param)
 }
 
