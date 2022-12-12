@@ -537,8 +537,9 @@ func (r Rights) Change(ctx context.Context, request interface{}) (response inter
 	// 获取账户基本信息
 	authData := r.AuthData(ctx)
 	copyrighterCorporate := dto.CopyrighterCorporate{
-		CompanyName: req.CopyrighterCorporate.CompanyName,
-		BusLicImg:   req.CopyrighterCorporate.BusLicImg,
+		CopyrighterType: req.CopyrighterCorporate.CopyrighterType,
+		CompanyName:     req.CopyrighterCorporate.CompanyName,
+		BusLicImg:       req.CopyrighterCorporate.BusLicImg,
 	}
 
 	copyrighterIndividual := dto.CopyrighterIndividual{
@@ -588,8 +589,9 @@ func (r Rights) EditChange(ctx context.Context, request interface{}) (response i
 	authData := r.AuthData(ctx)
 
 	copyrighterCorporate := dto.CopyrighterCorporate{
-		CompanyName: req.CopyrighterCorporate.CompanyName,
-		BusLicImg:   req.CopyrighterCorporate.BusLicImg,
+		CopyrighterType: req.CopyrighterCorporate.CopyrighterType,
+		CompanyName:     req.CopyrighterCorporate.CompanyName,
+		BusLicImg:       req.CopyrighterCorporate.BusLicImg,
 	}
 
 	copyrighterIndividual := dto.CopyrighterIndividual{

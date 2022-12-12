@@ -169,8 +169,9 @@ type ChangeRequest struct {
 }
 
 type CopyrighterCorporate struct {
-	CompanyName string `json:"company_name"`
-	BusLicImg   string `json:"bus_lic_img"`
+	CopyrighterType uint32 `json:"copyrighter_type"`
+	CompanyName     string `json:"company_name"`
+	BusLicImg       string `json:"bus_lic_img"`
 }
 
 type CopyrighterIndividual struct {
