@@ -536,23 +536,31 @@ func (r Rights) Change(ctx context.Context, request interface{}) (response inter
 
 	// 获取账户基本信息
 	authData := r.AuthData(ctx)
+	copyrighterCorporate := dto.CopyrighterCorporate{
+		CompanyName: req.CopyrighterCorporate.CompanyName,
+		BusLicImg:   req.CopyrighterCorporate.BusLicImg,
+	}
+
+	copyrighterIndividual := dto.CopyrighterIndividual{
+		RealName:   req.CopyrighterIndividual.RealName,
+		IDCardFimg: req.CopyrighterIndividual.IDCardFimg,
+		IDCardBimg: req.CopyrighterIndividual.IDCardBimg,
+		IDCardHimg: req.CopyrighterIndividual.IDCardHimg,
+	}
 	param := dto.ChangeRequest{
-		Code:            authData.Code,
-		Module:          authData.Module,
-		ProjectID:       authData.ProjectId,
-		RegisterType:    req.RegisterType,
-		OperationID:     operationId,
-		ProductID:       req.ProductID,
-		CertificateNum:  req.CertificateNum,
-		Name:            req.Name,
-		CatName:         req.CatName,
-		CopyrighterType: req.CopyrighterType,
-		CopyrighterName: req.CopyrighterNmae,
-		CardImg1:        req.CardImg1,
-		CardImg2:        req.CardImg2,
-		CardImg3:        req.CardImg3,
-		ProofFiles:      req.ProofFiles,
-		UrgentTime:      req.UrgentTime,
+		Code:                  authData.Code,
+		Module:                authData.Module,
+		ProjectID:             authData.ProjectId,
+		RegisterType:          req.RegisterType,
+		OperationID:           operationId,
+		ProductID:             req.ProductID,
+		CertificateNum:        req.CertificateNum,
+		Name:                  req.Name,
+		CatName:               req.CatName,
+		CopyrighterCorporate:  copyrighterCorporate,
+		CopyrighterIndividual: copyrighterIndividual,
+		ProofFiles:            req.ProofFiles,
+		UrgentTime:            req.UrgentTime,
 	}
 	return r.svc.Change(ctx, &param)
 }
@@ -578,20 +586,29 @@ func (r Rights) EditChange(ctx context.Context, request interface{}) (response i
 
 	// 获取账户基本信息
 	authData := r.AuthData(ctx)
+
+	copyrighterCorporate := dto.CopyrighterCorporate{
+		CompanyName: req.CopyrighterCorporate.CompanyName,
+		BusLicImg:   req.CopyrighterCorporate.BusLicImg,
+	}
+
+	copyrighterIndividual := dto.CopyrighterIndividual{
+		RealName:   req.CopyrighterIndividual.RealName,
+		IDCardFimg: req.CopyrighterIndividual.IDCardFimg,
+		IDCardBimg: req.CopyrighterIndividual.IDCardBimg,
+		IDCardHimg: req.CopyrighterIndividual.IDCardHimg,
+	}
 	param := dto.EditChangeRequest{
-		Code:            authData.Code,
-		Module:          authData.Module,
-		ProjectID:       authData.ProjectId,
-		RegisterType:    req.RegisterType,
-		OperationID:     operationId,
-		Name:            req.Name,
-		CatName:         req.CatName,
-		CopyrighterType: req.CopyrighterType,
-		CopyrighterName: req.CopyrighterName,
-		CardImg1:        req.CardImg1,
-		CardImg2:        req.CardImg2,
-		CardImg3:        req.CardImg3,
-		ProofFiles:      req.ProofFiles,
+		Code:                  authData.Code,
+		Module:                authData.Module,
+		ProjectID:             authData.ProjectId,
+		RegisterType:          req.RegisterType,
+		OperationID:           operationId,
+		Name:                  req.Name,
+		CatName:               req.CatName,
+		CopyrighterCorporate:  copyrighterCorporate,
+		CopyrighterIndividual: copyrighterIndividual,
+		ProofFiles:            req.ProofFiles,
 	}
 	return r.svc.EditChange(ctx, &param)
 }

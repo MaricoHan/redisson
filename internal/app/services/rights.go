@@ -657,22 +657,30 @@ func (r Rights) DeliveryInfo(ctx context.Context, params *dto.DeliveryInfoReques
 func (r Rights) Change(ctx context.Context, params *dto.ChangeRequest) (*dto.ChangeResponse, error) {
 	logger := r.logger.WithField("params", params).WithField("func", "Change")
 
+	corporate := &rights.CopyrighterInfoCorporate{
+		CompanyName: params.CopyrighterCorporate.CompanyName,
+		BusLicImg:   params.CopyrighterCorporate.BusLicImg,
+	}
+
+	individual := &rights.CopyrighterInfoIndividual{
+		RealName:   params.CopyrighterIndividual.RealName,
+		IdcardFimg: params.CopyrighterIndividual.IDCardFimg,
+		IdcardBimg: params.CopyrighterIndividual.IDCardBimg,
+		IdcardHimg: params.CopyrighterIndividual.IDCardHimg,
+	}
 	req := rights.ChangeRequest{
-		Code:            params.Code,
-		Module:          params.Module,
-		ProjectId:       params.ProjectID,
-		OperationId:     params.OperationID,
-		ProductId:       params.ProductID,
-		CertificateNum:  params.CertificateNum,
-		Name:            params.Name,
-		CatName:         params.CatName,
-		CopyrighterType: params.CopyrighterType,
-		CopyrighterName: params.CopyrighterName,
-		CardImg1:        params.CardImg1,
-		CardImg2:        params.CardImg2,
-		CardImg3:        params.CardImg3,
-		ProofFiles:      params.ProofFiles,
-		UrgentTime:      params.UrgentTime,
+		Code:                      params.Code,
+		Module:                    params.Module,
+		ProjectId:                 params.ProjectID,
+		OperationId:               params.OperationID,
+		ProductId:                 params.ProductID,
+		CertificateNum:            params.CertificateNum,
+		Name:                      params.Name,
+		CatName:                   params.CatName,
+		CopyrighterInfoCorporate:  corporate,
+		CopyrighterInfoIndividual: individual,
+		ProofFiles:                params.ProofFiles,
+		UrgentTime:                params.UrgentTime,
 	}
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {
@@ -694,19 +702,27 @@ func (r Rights) Change(ctx context.Context, params *dto.ChangeRequest) (*dto.Cha
 func (r Rights) EditChange(ctx context.Context, params *dto.EditChangeRequest) (*dto.EditChangeResponse, error) {
 	logger := r.logger.WithField("params", params).WithField("func", "EditChange")
 
+	corporate := &rights.CopyrighterInfoCorporate{
+		CompanyName: params.CopyrighterCorporate.CompanyName,
+		BusLicImg:   params.CopyrighterCorporate.BusLicImg,
+	}
+
+	individual := &rights.CopyrighterInfoIndividual{
+		RealName:   params.CopyrighterIndividual.RealName,
+		IdcardFimg: params.CopyrighterIndividual.IDCardFimg,
+		IdcardBimg: params.CopyrighterIndividual.IDCardBimg,
+		IdcardHimg: params.CopyrighterIndividual.IDCardHimg,
+	}
 	req := rights.EditChangeRequest{
-		Code:            params.Code,
-		Module:          params.Module,
-		ProjectId:       params.ProjectID,
-		OperationId:     params.OperationID,
-		Name:            params.Name,
-		CatName:         params.CatName,
-		CopyrighterType: params.CopyrighterType,
-		CopyrighterName: params.CopyrighterName,
-		CardImg1:        params.CardImg1,
-		CardImg2:        params.CardImg2,
-		CardImg3:        params.CardImg3,
-		ProofFiles:      params.ProofFiles,
+		Code:                      params.Code,
+		Module:                    params.Module,
+		ProjectId:                 params.ProjectID,
+		OperationId:               params.OperationID,
+		Name:                      params.Name,
+		CatName:                   params.CatName,
+		CopyrighterInfoCorporate:  corporate,
+		CopyrighterInfoIndividual: individual,
+		ProofFiles:                params.ProofFiles,
 	}
 	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
 	if !ok {

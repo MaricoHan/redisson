@@ -156,31 +156,37 @@ type EditDeliveryRequest struct {
 }
 
 type ChangeRequest struct {
-	RegisterType    uint64 `json:"register_type"`
-	OperationID     string `json:"operation_id"`
-	ProductID       string `json:"product_id"`
-	CertificateNum  string `json:"certificate_num"`
-	Name            string `json:"name"`
-	CatName         string `json:"cat_name"`
-	CopyrighterType uint32 `json:"copyrighter_type"`
-	CopyrighterNmae string `json:"copyrighter_name"`
-	CardImg1        string `json:"card_img1"`
-	CardImg2        string `json:"card_img2"`
-	CardImg3        string `json:"card_img3"`
-	ProofFiles      string `json:"proof_files"`
-	UrgentTime      uint32 `json:"urgent_time"`
+	RegisterType          uint64                `json:"register_type"`
+	OperationID           string                `json:"operation_id"`
+	ProductID             string                `json:"product_id"`
+	CertificateNum        string                `json:"certificate_num"`
+	Name                  string                `json:"name"`
+	CatName               string                `json:"cat_name"`
+	CopyrighterCorporate  CopyrighterCorporate  `json:"copyrighter_info_corporate"`
+	CopyrighterIndividual CopyrighterIndividual `json:"copyrighter_info_individual"`
+	ProofFiles            string                `json:"proof_files"`
+	UrgentTime            uint32                `json:"urgent_time"`
+}
+
+type CopyrighterCorporate struct {
+	CompanyName string `json:"company_name"`
+	BusLicImg   string `json:"bus_lic_img"`
+}
+
+type CopyrighterIndividual struct {
+	RealName   string `json:"real_name"`
+	IDCardFimg string `json:"idcard_fimg"`
+	IDCardBimg string `json:"idcard_bimg"`
+	IDCardHimg string `json:"idcard_himg"`
 }
 
 type EditChangeRequest struct {
-	RegisterType    uint64 `json:"register_type"`
-	Name            string `json:"name"`
-	CatName         string `json:"cat_name"`
-	CopyrighterType uint32 `json:"copyrighter_type"`
-	CopyrighterName string `json:"copyrighter_name"`
-	CardImg1        string `json:"card_img1"`
-	CardImg2        string `json:"card_img2"`
-	CardImg3        string `json:"card_img3"`
-	ProofFiles      string `json:"proof_files"`
+	RegisterType          uint64                `json:"register_type"`
+	Name                  string                `json:"name"`
+	CatName               string                `json:"cat_name"`
+	CopyrighterCorporate  CopyrighterCorporate  `json:"copyrighter_info_corporate"`
+	CopyrighterIndividual CopyrighterIndividual `json:"copyrighter_info_individual"`
+	ProofFiles            string                `json:"proof_files"`
 }
 
 type TransferRequest struct {
