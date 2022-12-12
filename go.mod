@@ -78,7 +78,7 @@ replace (
 
 	gitlab.bianjie.ai/avata/chains/api => gitlab.bianjie.ai/avata/chains/api.git v0.11.0
 
-	gitlab.bianjie.ai/avata/services/api => gitlab.bianjie.ai/avata/services/api.git v0.1.1-0.20221208071808-082cabc5f0f8
+	gitlab.bianjie.ai/avata/services/api => gitlab.bianjie.ai/avata/services/api.git v0.1.1-0.20221212034840-f4b9047b038e
 
 	gitlab.bianjie.ai/avata/utils/commons => gitlab.bianjie.ai/avata/utils/commons.git v0.2.0
 

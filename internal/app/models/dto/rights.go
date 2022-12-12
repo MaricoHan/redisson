@@ -302,22 +302,32 @@ type DeliveryInfoResponse struct {
 }
 
 type ChangeRequest struct {
-	Code            string `json:"code"`
-	Module          string `json:"module"`
-	ProjectID       uint64 `json:"project_id"`
-	RegisterType    uint64 `json:"register_type"`
-	OperationID     string `json:"operation_id"`
-	ProductID       string `json:"product_id"`
-	CertificateNum  string `json:"certificate_num"`
-	Name            string `json:"name"`
-	CatName         string `json:"cat_name"`
+	Code                  string                `json:"code"`
+	Module                string                `json:"module"`
+	ProjectID             uint64                `json:"project_id"`
+	RegisterType          uint64                `json:"register_type"`
+	OperationID           string                `json:"operation_id"`
+	ProductID             string                `json:"product_id"`
+	CertificateNum        string                `json:"certificate_num"`
+	Name                  string                `json:"name"`
+	CatName               string                `json:"cat_name"`
+	CopyrighterCorporate  CopyrighterCorporate  `json:"copyrighter_info_corporate"`
+	CopyrighterIndividual CopyrighterIndividual `json:"copyrighter_info_individual"`
+	ProofFiles            string                `json:"proof_files"`
+	UrgentTime            uint32                `json:"urgent_time"`
+}
+
+type CopyrighterCorporate struct {
 	CopyrighterType uint32 `json:"copyrighter_type"`
-	CopyrighterName string `json:"copyrighter_name"`
-	CardImg1        string `json:"card_img1"`
-	CardImg2        string `json:"card_img2"`
-	CardImg3        string `json:"card_img3"`
-	ProofFiles      string `json:"proof_files"`
-	UrgentTime      uint32 `json:"urgent_time"`
+	CompanyName     string `json:"company_name"`
+	BusLicImg       string `json:"bus_lic_img"`
+}
+
+type CopyrighterIndividual struct {
+	RealName   string `json:"real_name"`
+	IDCardFimg string `json:"idcard_fimg"`
+	IDCardBimg string `json:"idcard_bimg"`
+	IDCardHimg string `json:"idcard_himg"`
 }
 
 type ChangeResponse struct {
@@ -325,19 +335,16 @@ type ChangeResponse struct {
 }
 
 type EditChangeRequest struct {
-	Code            string `json:"code"`
-	Module          string `json:"module"`
-	ProjectID       uint64 `json:"project_id"`
-	RegisterType    uint64 `json:"register_type"`
-	OperationID     string `json:"operation_id"`
-	Name            string `json:"name"`
-	CatName         string `json:"cat_name"`
-	CopyrighterType uint32 `json:"copyrighter_type"`
-	CopyrighterName string `json:"copyrighter_name"`
-	CardImg1        string `json:"card_img1"`
-	CardImg2        string `json:"card_img2"`
-	CardImg3        string `json:"card_img3"`
-	ProofFiles      string `json:"proof_files"`
+	Code                  string                `json:"code"`
+	Module                string                `json:"module"`
+	ProjectID             uint64                `json:"project_id"`
+	RegisterType          uint64                `json:"register_type"`
+	OperationID           string                `json:"operation_id"`
+	Name                  string                `json:"name"`
+	CatName               string                `json:"cat_name"`
+	CopyrighterCorporate  CopyrighterCorporate  `json:"copyrighter_info_corporate"`
+	CopyrighterIndividual CopyrighterIndividual `json:"copyrighter_info_individual"`
+	ProofFiles            string                `json:"proof_files"`
 }
 
 type EditChangeResponse struct {
