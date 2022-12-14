@@ -163,6 +163,7 @@ type ChangeRequest struct {
 	Name                  string                `json:"name"`
 	CatName               string                `json:"cat_name"`
 	CopyrighterNum        string                `json:"copyrighter_num"`
+	CopyrighterType       uint32                `json:"copyrighter_type"`
 	CopyrighterCorporate  CopyrighterCorporate  `json:"copyrighter_info_corporate"`
 	CopyrighterIndividual CopyrighterIndividual `json:"copyrighter_info_individual"`
 	ProofFiles            string                `json:"proof_files"`
@@ -170,9 +171,8 @@ type ChangeRequest struct {
 }
 
 type CopyrighterCorporate struct {
-	CopyrighterType uint32 `json:"copyrighter_type"`
-	CompanyName     string `json:"company_name"`
-	BusLicImg       string `json:"bus_lic_img"`
+	CompanyName string `json:"company_name"`
+	BusLicImg   string `json:"bus_lic_img"`
 }
 
 type CopyrighterIndividual struct {
@@ -187,6 +187,7 @@ type EditChangeRequest struct {
 	Name                  string                `json:"name"`
 	CatName               string                `json:"cat_name"`
 	CopyrighterNum        string                `json:"copyrighter_num"`
+	CopyrighterType       uint32                `json:"copyrighter_type"`
 	CopyrighterCorporate  CopyrighterCorporate  `json:"copyrighter_info_corporate"`
 	CopyrighterIndividual CopyrighterIndividual `json:"copyrighter_info_individual"`
 	ProofFiles            string                `json:"proof_files"`
