@@ -73,7 +73,7 @@ func writeInternalResp(w http.ResponseWriter) {
 
 func writeNotEnoughAmount(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.WriteHeader(http.StatusInternalServerError)
+	w.WriteHeader(http.StatusBadRequest)
 	response := constant.Response{
 		ErrorResp: &constant.ErrorResp{
 			CodeSpace: constant.RootCodeSpace,
