@@ -660,9 +660,8 @@ func (r Rights) Change(ctx context.Context, params *dto.ChangeRequest) (*dto.Cha
 	logger := r.logger.WithField("params", params).WithField("func", "Change")
 
 	corporate := &rights.CopyrighterInfoCorporate{
-		CopyrighterType: params.CopyrighterCorporate.CopyrighterType,
-		CompanyName:     params.CopyrighterCorporate.CompanyName,
-		BusLicImg:       params.CopyrighterCorporate.BusLicImg,
+		CompanyName: params.CopyrighterCorporate.CompanyName,
+		BusLicImg:   params.CopyrighterCorporate.BusLicImg,
 	}
 
 	individual := &rights.CopyrighterInfoIndividual{
@@ -681,6 +680,7 @@ func (r Rights) Change(ctx context.Context, params *dto.ChangeRequest) (*dto.Cha
 		Name:                      params.Name,
 		CatName:                   params.CatName,
 		CopyrighterNum:            params.CopyrighterNum,
+		CopyrighterType:           params.CopyrighterType,
 		CopyrighterInfoCorporate:  corporate,
 		CopyrighterInfoIndividual: individual,
 		ProofFiles:                params.ProofFiles,
@@ -707,9 +707,8 @@ func (r Rights) EditChange(ctx context.Context, params *dto.EditChangeRequest) (
 	logger := r.logger.WithField("params", params).WithField("func", "EditChange")
 
 	corporate := &rights.CopyrighterInfoCorporate{
-		CopyrighterType: params.CopyrighterCorporate.CopyrighterType,
-		CompanyName:     params.CopyrighterCorporate.CompanyName,
-		BusLicImg:       params.CopyrighterCorporate.BusLicImg,
+		CompanyName: params.CopyrighterCorporate.CompanyName,
+		BusLicImg:   params.CopyrighterCorporate.BusLicImg,
 	}
 
 	individual := &rights.CopyrighterInfoIndividual{
@@ -726,6 +725,7 @@ func (r Rights) EditChange(ctx context.Context, params *dto.EditChangeRequest) (
 		Name:                      params.Name,
 		CatName:                   params.CatName,
 		CopyrighterNum:            params.CopyrighterNum,
+		CopyrighterType:           params.CopyrighterType,
 		CopyrighterInfoCorporate:  corporate,
 		CopyrighterInfoIndividual: individual,
 		ProofFiles:                params.ProofFiles,
