@@ -478,3 +478,16 @@ type RevokeInfoResponse struct {
 	ErrMessage           string `json:"err_message"`
 	RevokeCertificateNum string `json:"revoke_certificate_num"`
 }
+
+type ProductInfoRequest struct {
+	Code         string `json:"code"`
+	Module       string `json:"module"`
+	ProjectID    uint64 `json:"project_id"`
+	RegisterType uint64 `json:"register_type"`
+	ProductID    string `json:"product_id"`
+}
+
+type ProductInfoResponse struct {
+	CertificateNum string `json:"certificate_num"`
+	CertificateUrl string `json:"certificate_url"`
+}
