@@ -58,6 +58,17 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	key := fmt.Sprintf("balance:%d", projectInfo.Id)
+	exists, err := initialize.RedisClient.Exists(key)
+	if err != nil {
+		log.WithError(err).Error("redis exists")
+		writeInternalResp(w)
+		return
+	}
+	if exists {
+		writeNotEnoughAmount(w)
+		return
+	}
 	// 查询缓存
 	chainInfo, err := cache.NewCache().Chain(projectInfo.ChainId)
 	if err != nil {

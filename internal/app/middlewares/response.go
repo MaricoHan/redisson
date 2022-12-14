@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"encoding/json"
+	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 	"net/http"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
@@ -63,6 +64,21 @@ func writeInternalResp(w http.ResponseWriter) {
 			CodeSpace: constant.ErrInternal.CodeSpace(),
 			Code:      constant.ErrInternal.Code(),
 			Message:   constant.ErrInternal.Error(),
+		},
+	}
+	bz, _ := json.Marshal(response)
+	_, _ = w.Write(bz)
+	return
+}
+
+func writeNotEnoughAmount(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(http.StatusBadRequest)
+	response := constant.Response{
+		ErrorResp: &constant.ErrorResp{
+			CodeSpace: constant.RootCodeSpace,
+			Code:      errors2.StrToCode[errors2.ClientParams],
+			Message:   errors2.ErrNotEnoughAmount,
 		},
 	}
 	bz, _ := json.Marshal(response)
