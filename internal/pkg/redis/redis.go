@@ -92,3 +92,14 @@ func (r *RedisClient) GetObject(key string, value interface{}) error {
 func (r *RedisClient) Expire(key string, expiration time.Duration) error {
 	return r.client.Expire(context.Background(), keyPrefix(key), expiration).Err()
 }
+
+func (r *RedisClient) Exists(key string) (bool, error) {
+	n, err := r.client.Exists(context.Background(), keyPrefix(key)).Result()
+	if err != nil {
+		return false, err
+	}
+	if n == 0 || n < 0 {
+		return false, nil
+	}
+	return true, nil
+}

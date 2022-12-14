@@ -344,6 +344,9 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 				Message:   appErr.Error(),
 			}}
 		}
+		if response.ErrorResp.Message == errors2.ErrNotEnoughAmount {
+			frequencyControl(ctx)
+		}
 		bz, _ := json.Marshal(response)
 		_, _ = w.Write(bz)
 	}
@@ -366,4 +369,12 @@ func Translate(err error) (errMsg string) {
 		errMsg = strings.ToLower(err.Translate(trans))
 	}
 	return
+}
+
+func frequencyControl(ctx context.Context) {
+	appID := ctx.Value("X-App-Id")
+	key := fmt.Sprintf("balance:%s", appID.([]string)[0])
+	if err := initialize.RedisClient.SetObject(key, "", time.Minute*1); err != nil {
+		log.Error("redis error", "balance redis set error:", err)
+	}
 }
