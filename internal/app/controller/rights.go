@@ -114,5 +114,11 @@ func (r RightsController) GetEndpoints() []kit.Endpoint {
 			Method:  http.MethodGet,
 			Handler: r.makeHandler(r.handler.RevokeInfo, nil),
 		},
+
+		{
+			URI:     "/rights/product/{product_id}",
+			Method:  http.MethodGet,
+			Handler: r.makeHandler(r.handler.ProductInfo, nil),
+		},
 	}
 }

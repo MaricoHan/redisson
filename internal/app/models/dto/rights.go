@@ -311,6 +311,7 @@ type ChangeRequest struct {
 	CertificateNum        string                `json:"certificate_num"`
 	Name                  string                `json:"name"`
 	CatName               string                `json:"cat_name"`
+	CopyrighterNum        string                `json:"copyrighter_num"`
 	CopyrighterCorporate  CopyrighterCorporate  `json:"copyrighter_info_corporate"`
 	CopyrighterIndividual CopyrighterIndividual `json:"copyrighter_info_individual"`
 	ProofFiles            string                `json:"proof_files"`
@@ -342,6 +343,7 @@ type EditChangeRequest struct {
 	OperationID           string                `json:"operation_id"`
 	Name                  string                `json:"name"`
 	CatName               string                `json:"cat_name"`
+	CopyrighterNum        string                `json:"copyrighter_num"`
 	CopyrighterCorporate  CopyrighterCorporate  `json:"copyrighter_info_corporate"`
 	CopyrighterIndividual CopyrighterIndividual `json:"copyrighter_info_individual"`
 	ProofFiles            string                `json:"proof_files"`
@@ -475,4 +477,17 @@ type RevokeInfoResponse struct {
 	Status               uint32 `json:"status"`
 	ErrMessage           string `json:"err_message"`
 	RevokeCertificateNum string `json:"revoke_certificate_num"`
+}
+
+type ProductInfoRequest struct {
+	Code         string `json:"code"`
+	Module       string `json:"module"`
+	ProjectID    uint64 `json:"project_id"`
+	RegisterType uint64 `json:"register_type"`
+	ProductID    string `json:"product_id"`
+}
+
+type ProductInfoResponse struct {
+	CertificateNum string `json:"certificate_num"`
+	CertificateUrl string `json:"certificate_url"`
 }

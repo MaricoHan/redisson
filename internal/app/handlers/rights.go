@@ -37,6 +37,8 @@ type IRights interface {
 	Revoke(ctx context.Context, request interface{}) (response interface{}, err error)
 	EditRevoke(ctx context.Context, request interface{}) (response interface{}, err error)
 	RevokeInfo(ctx context.Context, request interface{}) (response interface{}, err error)
+
+	ProductInfo(ctx context.Context, request interface{}) (response interface{}, err error)
 }
 
 type Rights struct {
@@ -558,6 +560,7 @@ func (r Rights) Change(ctx context.Context, request interface{}) (response inter
 		CertificateNum:        req.CertificateNum,
 		Name:                  req.Name,
 		CatName:               req.CatName,
+		CopyrighterNum:        req.CopyrighterNum,
 		CopyrighterCorporate:  copyrighterCorporate,
 		CopyrighterIndividual: copyrighterIndividual,
 		ProofFiles:            req.ProofFiles,
@@ -608,6 +611,7 @@ func (r Rights) EditChange(ctx context.Context, request interface{}) (response i
 		OperationID:           operationId,
 		Name:                  req.Name,
 		CatName:               req.CatName,
+		CopyrighterNum:        req.CopyrighterNum,
 		CopyrighterCorporate:  copyrighterCorporate,
 		CopyrighterIndividual: copyrighterIndividual,
 		ProofFiles:            req.ProofFiles,
@@ -841,6 +845,31 @@ func (r Rights) RevokeInfo(ctx context.Context, request interface{}) (response i
 		OperationID:  operationId,
 	}
 	return r.svc.RevokeInfo(ctx, &param)
+}
+
+func (r Rights) ProductInfo(ctx context.Context, request interface{}) (response interface{}, err error) {
+	// 校验参数
+	productID := strings.TrimSpace(r.ProductID(ctx))
+	if productID == "" {
+		return nil, errors2.New(errors2.ClientParams, "product_id is a required param")
+	}
+	//if len([]rune(productID)) == 0 || len([]rune(productID)) >= 33 {
+	//	return nil, errors2.New(errors2.ClientParams, "invalid product_id length, should between 1 and 32")
+	//}
+	if r.RegisterType(ctx) == 0 {
+		return nil, errors2.New(errors2.ClientParams, "register_type can not be nil")
+	}
+
+	// 获取账户基本信息
+	authData := r.AuthData(ctx)
+	param := dto.ProductInfoRequest{
+		Code:         authData.Code,
+		Module:       authData.Module,
+		ProjectID:    authData.ProjectId,
+		RegisterType: r.RegisterType(ctx),
+		ProductID:    productID,
+	}
+	return r.svc.ProductInfo(ctx, &param)
 }
 
 func (Rights) RegisterType(ctx context.Context) uint64 {

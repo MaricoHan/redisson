@@ -37,6 +37,8 @@ type IRights interface {
 	Revoke(ctx context.Context, params *dto.RevokeRequest) (*dto.RevokeResponse, error)
 	EditRevoke(ctx context.Context, params *dto.EditRevokeRequest) (*dto.EditRevokeResponse, error)
 	RevokeInfo(ctx context.Context, params *dto.RevokeInfoRequest) (*dto.RevokeInfoResponse, error)
+
+	ProductInfo(ctx context.Context, params *dto.ProductInfoRequest) (*dto.ProductInfoResponse, error)
 }
 
 type Rights struct {
@@ -678,6 +680,7 @@ func (r Rights) Change(ctx context.Context, params *dto.ChangeRequest) (*dto.Cha
 		CertificateNum:            params.CertificateNum,
 		Name:                      params.Name,
 		CatName:                   params.CatName,
+		CopyrighterNum:            params.CopyrighterNum,
 		CopyrighterInfoCorporate:  corporate,
 		CopyrighterInfoIndividual: individual,
 		ProofFiles:                params.ProofFiles,
@@ -722,6 +725,7 @@ func (r Rights) EditChange(ctx context.Context, params *dto.EditChangeRequest) (
 		OperationId:               params.OperationID,
 		Name:                      params.Name,
 		CatName:                   params.CatName,
+		CopyrighterNum:            params.CopyrighterNum,
 		CopyrighterInfoCorporate:  corporate,
 		CopyrighterInfoIndividual: individual,
 		ProofFiles:                params.ProofFiles,
@@ -977,5 +981,36 @@ func (r Rights) RevokeInfo(ctx context.Context, params *dto.RevokeInfoRequest) (
 		Status:               resp.Status,
 		ErrMessage:           resp.ErrorMessage,
 		RevokeCertificateNum: resp.RevokeCertificateNum,
+	}, nil
+}
+
+func (r Rights) ProductInfo(ctx context.Context, params *dto.ProductInfoRequest) (*dto.ProductInfoResponse, error) {
+	logger := r.logger.WithField("params", params).WithField("func", "ProductInfo")
+
+	req := rights.ProductInfoRequest{
+		Code:      params.Code,
+		Module:    params.Module,
+		ProjectId: params.ProjectID,
+		ProductId: params.ProductID,
+	}
+	grpcClient, ok := initialize.RightsClientMap[constant.RightsMap[params.RegisterType]]
+	if !ok {
+		logger.Error(errors2.ErrService)
+		return nil, errors2.New(errors2.ClientParams, "invalid register_type")
+	}
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+	resp, err := grpcClient.ProductInfo(ctx, &req)
+	if err != nil {
+		logger.Error("grpc request failed")
+		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+	}
+
+	return &dto.ProductInfoResponse{
+		CertificateNum: resp.CertificateNum,
+		CertificateUrl: resp.CertificateUrl,
 	}, nil
 }
