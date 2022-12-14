@@ -311,6 +311,7 @@ type ChangeRequest struct {
 	CertificateNum        string                `json:"certificate_num"`
 	Name                  string                `json:"name"`
 	CatName               string                `json:"cat_name"`
+	CopyrighterNum        string                `json:"copyrighter_num"`
 	CopyrighterCorporate  CopyrighterCorporate  `json:"copyrighter_info_corporate"`
 	CopyrighterIndividual CopyrighterIndividual `json:"copyrighter_info_individual"`
 	ProofFiles            string                `json:"proof_files"`
@@ -342,6 +343,7 @@ type EditChangeRequest struct {
 	OperationID           string                `json:"operation_id"`
 	Name                  string                `json:"name"`
 	CatName               string                `json:"cat_name"`
+	CopyrighterNum        string                `json:"copyrighter_num"`
 	CopyrighterCorporate  CopyrighterCorporate  `json:"copyrighter_info_corporate"`
 	CopyrighterIndividual CopyrighterIndividual `json:"copyrighter_info_individual"`
 	ProofFiles            string                `json:"proof_files"`
