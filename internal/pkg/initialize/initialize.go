@@ -246,6 +246,7 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	NoticeClientMap = make(map[string]pb_notice.NoticeClient)
 	NoticeClientMap[constant.WenchangNative] = pb_notice.NewNoticeClient(GrpcConnMap[constant.WenchangNative])
 	NoticeClientMap[constant.IritaOPBNative] = pb_notice.NewNoticeClient(GrpcConnMap[constant.IritaOPBNative])
+	NoticeClientMap[constant.WenchangDDC] = pb_notice.NewNoticeClient(GrpcConnMap[constant.WenchangDDC])
 }
 
 func InitRedisClient(cfg *configs.Config, logger *log.Logger) {

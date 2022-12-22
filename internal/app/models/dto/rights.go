@@ -300,3 +300,195 @@ type DeliveryInfoResponse struct {
 	ExpressNum     string `json:"express_num"`
 	Status         string `json:"status"`
 }
+
+type ChangeRequest struct {
+	Code                  string                `json:"code"`
+	Module                string                `json:"module"`
+	ProjectID             uint64                `json:"project_id"`
+	RegisterType          uint64                `json:"register_type"`
+	OperationID           string                `json:"operation_id"`
+	ProductID             string                `json:"product_id"`
+	CertificateNum        string                `json:"certificate_num"`
+	Name                  string                `json:"name"`
+	CatName               string                `json:"cat_name"`
+	CopyrighterNum        string                `json:"copyrighter_num"`
+	CopyrighterType       uint32                `json:"copyrighter_type"`
+	CopyrighterCorporate  CopyrighterCorporate  `json:"copyrighter_info_corporate"`
+	CopyrighterIndividual CopyrighterIndividual `json:"copyrighter_info_individual"`
+	ProofFiles            string                `json:"proof_files"`
+	UrgentTime            uint32                `json:"urgent_time"`
+}
+
+type CopyrighterCorporate struct {
+	CompanyName string `json:"company_name"`
+	BusLicImg   string `json:"bus_lic_img"`
+}
+
+type CopyrighterIndividual struct {
+	RealName   string `json:"real_name"`
+	IDCardFimg string `json:"idcard_fimg"`
+	IDCardBimg string `json:"idcard_bimg"`
+	IDCardHimg string `json:"idcard_himg"`
+}
+
+type ChangeResponse struct {
+	OperationID string `json:"operation_id"`
+}
+
+type EditChangeRequest struct {
+	Code                  string                `json:"code"`
+	Module                string                `json:"module"`
+	ProjectID             uint64                `json:"project_id"`
+	RegisterType          uint64                `json:"register_type"`
+	OperationID           string                `json:"operation_id"`
+	Name                  string                `json:"name"`
+	CatName               string                `json:"cat_name"`
+	CopyrighterNum        string                `json:"copyrighter_num"`
+	CopyrighterType       uint32                `json:"copyrighter_type"`
+	CopyrighterCorporate  CopyrighterCorporate  `json:"copyrighter_info_corporate"`
+	CopyrighterIndividual CopyrighterIndividual `json:"copyrighter_info_individual"`
+	ProofFiles            string                `json:"proof_files"`
+}
+
+type EditChangeResponse struct {
+}
+
+type ChangeInfoRequest struct {
+	Code         string `json:"code"`
+	Module       string `json:"module"`
+	ProjectID    uint64 `json:"project_id"`
+	RegisterType uint64 `json:"register_type"`
+	OperationID  string `json:"operation_id"`
+}
+
+type ChangeInfoResponse struct {
+	ProductId            string `json:"product_id"`             // 作品编号
+	CertificateNum       string `json:"certificate_num"`        // 版权登记号
+	Status               uint32 `json:"status"`                 // 版权变更状态，0：待审核; 1：登记成功; 2：登记失败; 3：复审核中
+	ChangeCertificateUrl string `json:"change_certificate_url"` // 变更登记证书
+	ErrorMessage         string `json:"error_message"`          // 登记失败时显示失败原因
+	ChangeCertificateNum string `json:"change_certificate_num"` // 变更成功后返回的登记号
+
+}
+
+type TransferRequest struct {
+	Code             string `json:"code"`
+	Module           string `json:"module"`
+	ProjectID        uint64 `json:"project_id"`
+	RegisterType     uint64 `json:"register_type"`
+	OperationID      string `json:"operation_id"`
+	CertificateNum   string `json:"certificate_num"`
+	ProductID        string `json:"product_id"`
+	AuthorityName    string `json:"authority_name"`
+	AuthorityIDType  uint32 `json:"authority_id_type"`
+	AuthorityIDNum   string `json:"authority_id_num"`
+	AuthoritedName   string `json:"authorited_name"`
+	AuthoritedIDType uint32 `json:"authorited_id_type"`
+	AuthoritedIDNum  string `json:"authorited_id_num"`
+	AuthInstructions string `json:"auth_instructions"`
+	StartTime        string `json:"start_time"`
+	EndTime          string `json:"end_time"`
+	Scope            string `json:"scope"`
+	ContractAmount   string `json:"contract_amount"`
+	ContractFiles    string `json:"contract_files"`
+	UrgentTime       uint32 `json:"urgent_time"`
+}
+
+type TransferResponse struct {
+	OperationID string `json:"operation_id"`
+}
+
+type EditTransferRequest struct {
+	Code             string `json:"code"`
+	Module           string `json:"module"`
+	ProjectID        uint64 `json:"project_id"`
+	RegisterType     uint64 `json:"register_type"`
+	OperationID      string `json:"operation_id"`
+	AuthorityName    string `json:"authority_name"`
+	AuthorityIDType  uint32 `json:"authority_id_type"`
+	AuthorityIDNum   string `json:"authority_id_num"`
+	AuthoritedName   string `json:"authorited_name"`
+	AuthoritedIDType uint32 `json:"authorited_id_type"`
+	AuthoritedIDNum  string `json:"authorited_id_num"`
+	AuthInstructions string `json:"auth_instructions"`
+	StartTime        string `json:"start_time"`
+	EndTime          string `json:"end_time"`
+	Scope            string `json:"scope"`
+	ContractAmount   string `json:"contract_amount"`
+	ContractFiles    string `json:"contract_files"`
+}
+
+type EditTransferResponse struct {
+}
+
+type TransferInfoRequest struct {
+	Code         string `json:"code"`
+	Module       string `json:"module"`
+	ProjectID    uint64 `json:"project_id"`
+	RegisterType uint64 `json:"register_type"`
+	OperationID  string `json:"operation_id"`
+}
+
+type TransferInfoResponse struct {
+	ProductId              string `json:"product_id"`               // 作品编号
+	CertificateNum         string `json:"certificate_num"`          // 版权登记号
+	Status                 uint32 `json:"status"`                   // 登记状态，0:待审核、1:转让成功、2:转让失败
+	ErrorMessage           string `json:"error_message"`            // 失败时显示失败原因
+	TransferCertificateNum string `json:"transfer_certificate_num"` // 转让后证书登记号
+	TransferCertificateUrl string `json:"transfer_certificate_url"` // 转让证书地址
+
+}
+
+type RevokeRequest struct {
+	Code           string `json:"code"`
+	Module         string `json:"module"`
+	ProjectID      uint64 `json:"project_id"`
+	RegisterType   uint64 `json:"register_type"`
+	OperationID    string `json:"operation_id"`
+	ProductID      string `json:"product_id"`
+	CertificateNum string `json:"certificate_num"`
+}
+
+type RevokeResponse struct {
+	OperationID string `json:"operation_id"`
+}
+
+type EditRevokeRequest struct {
+	Code         string `json:"code"`
+	Module       string `json:"module"`
+	ProjectID    uint64 `json:"project_id"`
+	RegisterType uint64 `json:"register_type"`
+	OperationID  string `json:"operation_id"`
+}
+
+type EditRevokeResponse struct {
+}
+
+type RevokeInfoRequest struct {
+	Code         string `json:"code"`
+	Module       string `json:"module"`
+	ProjectID    uint64 `json:"project_id"`
+	RegisterType uint64 `json:"register_type"`
+	OperationID  string `json:"operation_id"`
+}
+
+type RevokeInfoResponse struct {
+	ProductId            string `json:"product_id"`
+	CertificateNum       string `json:"certificate_num"`
+	Status               uint32 `json:"status"`
+	ErrMessage           string `json:"err_message"`
+	RevokeCertificateNum string `json:"revoke_certificate_num"`
+}
+
+type ProductInfoRequest struct {
+	Code         string `json:"code"`
+	Module       string `json:"module"`
+	ProjectID    uint64 `json:"project_id"`
+	RegisterType uint64 `json:"register_type"`
+	ProductID    string `json:"product_id"`
+}
+
+type ProductInfoResponse struct {
+	CertificateNum string `json:"certificate_num"`
+	CertificateUrl string `json:"certificate_url"`
+}
