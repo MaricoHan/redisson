@@ -362,12 +362,12 @@ type ChangeInfoRequest struct {
 }
 
 type ChangeInfoResponse struct {
-	ProductId            string `json:"product_id"`             // 作品编号
-	CertificateNum       string `json:"certificate_num"`        // 版权登记号
-	Status               uint32 `json:"status"`                 // 版权变更状态，0：待审核; 1：登记成功; 2：登记失败; 3：复审核中
-	ChangeCertificateUrl string `json:"change_certificate_url"` // 变更登记证书
-	ErrorMessage         string `json:"error_message"`          // 登记失败时显示失败原因
-	ChangeCertificateNum string `json:"change_certificate_num"` // 变更成功后返回的登记号
+	ProductId            string   `json:"product_id"`             // 作品编号
+	CertificateNum       string   `json:"certificate_num"`        // 版权登记号
+	Status               uint32   `json:"status"`                 // 版权变更状态，0：待审核; 1：登记成功; 2：登记失败; 3：复审核中
+	ChangeCertificateUrl []string `json:"change_certificate_url"` // 变更登记证书
+	ErrorMessage         string   `json:"error_message"`          // 登记失败时显示失败原因
+	ChangeCertificateNum string   `json:"change_certificate_num"` // 变更成功后返回的登记号
 
 }
 
@@ -430,12 +430,12 @@ type TransferInfoRequest struct {
 }
 
 type TransferInfoResponse struct {
-	ProductId              string `json:"product_id"`               // 作品编号
-	CertificateNum         string `json:"certificate_num"`          // 版权登记号
-	Status                 uint32 `json:"status"`                   // 登记状态，0:待审核、1:转让成功、2:转让失败
-	ErrorMessage           string `json:"error_message"`            // 失败时显示失败原因
-	TransferCertificateNum string `json:"transfer_certificate_num"` // 转让后证书登记号
-	TransferCertificateUrl string `json:"transfer_certificate_url"` // 转让证书地址
+	ProductId              string   `json:"product_id"`               // 作品编号
+	CertificateNum         string   `json:"certificate_num"`          // 版权登记号
+	Status                 uint32   `json:"status"`                   // 登记状态，0:待审核、1:转让成功、2:转让失败
+	ErrorMessage           string   `json:"error_message"`            // 失败时显示失败原因
+	TransferCertificateNum string   `json:"transfer_certificate_num"` // 转让后证书登记号
+	TransferCertificateUrl []string `json:"transfer_certificate_url"` // 转让证书地址
 
 }
 
@@ -489,6 +489,6 @@ type ProductInfoRequest struct {
 }
 
 type ProductInfoResponse struct {
-	CertificateNum string `json:"certificate_num"`
-	CertificateUrl string `json:"certificate_url"`
+	CertificateNum string   `json:"certificate_num"`
+	CertificateUrl []string `json:"certificate_url"`
 }
