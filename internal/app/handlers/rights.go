@@ -792,7 +792,7 @@ func (r Rights) Revoke(ctx context.Context, request interface{}) (response inter
 }
 
 func (r Rights) EditRevoke(ctx context.Context, request interface{}) (response interface{}, err error) {
-	req, ok := request.(*vo.EditTransferRequest)
+	req, ok := request.(*vo.EditRevokeRequest)
 	if !ok {
 		log.Debugf("failed to assert : %v", request)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrClientParams)
