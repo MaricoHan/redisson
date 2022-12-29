@@ -112,6 +112,7 @@ func (r Rights) Register(ctx context.Context, params *dto.RegisterRequest) (*dto
 			PubChannel:    params.ProductInfo.PubChannel,
 			PubAnnex:      params.ProductInfo.PubAnnex,
 			Hash:          params.ProductInfo.Hash,
+			HashType:      params.ProductInfo.HashType,
 		},
 		RightsInfo: &rights.RightsInfo{
 			Hold:          params.RightsInfo.Hold,
@@ -213,6 +214,7 @@ func (r Rights) EditRegister(ctx context.Context, params *dto.EditRegisterReques
 			PubChannel:    params.ProductInfo.PubChannel,
 			PubAnnex:      params.ProductInfo.PubAnnex,
 			Hash:          params.ProductInfo.Hash,
+			HashType:      params.ProductInfo.HashType,
 		},
 		RightsInfo: &rights.RightsInfo{
 			Hold:          params.RightsInfo.Hold,
