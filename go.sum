@@ -520,8 +520,8 @@ github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9dec
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
 gitlab.bianjie.ai/avata/chains/api.git v0.11.0 h1:BXk6LJmAj6jMeKkdDeuJ4sEZkjLaLCuYIQDeCFJwuaE=
 gitlab.bianjie.ai/avata/chains/api.git v0.11.0/go.mod h1:lcdtaR68PfIyq2/hWI3JGXV8m/zukqF5STGFLcFRWRI=
-gitlab.bianjie.ai/avata/services/api.git v0.1.1-0.20221222101207-352e03f1151c h1:xUcH+VzawLX+czcELCjTrcphNCoz+NMnP2RU/h09KrI=
-gitlab.bianjie.ai/avata/services/api.git v0.1.1-0.20221222101207-352e03f1151c/go.mod h1:p+WJ9Bjc2U8bdiIdKwGWh2XfzRngRH+qPTxLRRb83SY=
+gitlab.bianjie.ai/avata/services/api.git v0.1.1-0.20221228104933-95752b605eec h1:nZ0wOi2E9H9aDbeSVVqeZiuudVJgjL+mBo08vVpY+3Q=
+gitlab.bianjie.ai/avata/services/api.git v0.1.1-0.20221228104933-95752b605eec/go.mod h1:p+WJ9Bjc2U8bdiIdKwGWh2XfzRngRH+qPTxLRRb83SY=
 gitlab.bianjie.ai/avata/utils/commons.git v0.2.0 h1:yrHRsknZUSbSfg4Ic3rrVw9EzW6L4QjwbtuJkRvNK+o=
 gitlab.bianjie.ai/avata/utils/commons.git v0.2.0/go.mod h1:5pjo+UkW8V/un8fQnk4jFkGAGzF1DXF88/E2G6JTCk8=
 gitlab.bianjie.ai/avata/utils/errors.git v0.1.9 h1:8IcVSe122yRBA8tUm6/8T6n2dDWepqlhSyShlYhCEVM=
