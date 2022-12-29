@@ -128,7 +128,7 @@ func (r Rights) Register(ctx context.Context, params *dto.RegisterRequest) (*dto
 	}
 	resp, err := grpcClient.Register(ctx, &req)
 	if err != nil {
-		logger.Error("grpc request failed")
+		logger.WithError(err).Error("grpc request failed")
 		return nil, err
 	}
 	if resp == nil {
@@ -229,7 +229,7 @@ func (r Rights) EditRegister(ctx context.Context, params *dto.EditRegisterReques
 	}
 	resp, err := grpcClient.EditRegister(ctx, &req)
 	if err != nil {
-		logger.Error("grpc request failed")
+		logger.WithError(err).Error("grpc request failed")
 		return nil, err
 	}
 	if resp == nil {
@@ -252,7 +252,7 @@ func (r Rights) QueryRegister(ctx context.Context, params *dto.QueryRegisterRequ
 	}
 	resp, err := grpcClient.RegisterInfo(ctx, &req)
 	if err != nil {
-		logger.Error("grpc request failed")
+		logger.WithError(err).Error("grpc request failed")
 		return nil, err
 	}
 	if resp == nil {
@@ -329,7 +329,7 @@ func (r Rights) UserAuth(ctx context.Context, params *dto.UserAuthRequest) (*dto
 	}
 	resp, err := grpcClient.UserAuth(ctx, &req)
 	if err != nil {
-		logger.Error("grpc request failed")
+		logger.WithError(err).Error("grpc request failed")
 		return nil, err
 	}
 	if resp == nil {
@@ -401,7 +401,7 @@ func (r Rights) EditUserAuth(ctx context.Context, params *dto.EditUserAuthReques
 	}
 	resp, err := grpcClient.EditUserAuth(ctx, &req)
 	if err != nil {
-		logger.Error("grpc request failed")
+		logger.WithError(err).Error("grpc request failed")
 		return nil, err
 	}
 	if resp == nil {
@@ -429,7 +429,7 @@ func (r Rights) QueryUserAuth(ctx context.Context, params *dto.QueryUserAuthRequ
 	}
 	resp, err := grpcClient.UserAuthInfo(ctx, &req)
 	if err != nil {
-		logger.Error("grpc request failed")
+		logger.WithError(err).Error("grpc request failed")
 		return nil, err
 	}
 	if resp == nil {
@@ -457,7 +457,7 @@ func (r Rights) Dict(ctx context.Context, params *dto.DictRequest) (*dto.DictRes
 	}
 	resp, err := grpcClient.Dict(ctx, &req)
 	if err != nil {
-		logger.Error("grpc request failed")
+		logger.WithError(err).Error("grpc request failed")
 		return nil, err
 	}
 	if resp == nil {
@@ -514,7 +514,7 @@ func (r Rights) Region(ctx context.Context, params *dto.RegionRequest) (*dto.Reg
 	}
 	resp, err := grpcClient.Region(ctx, &req)
 	if err != nil {
-		logger.Error("grpc request failed")
+		logger.WithError(err).Error("grpc request failed")
 		return nil, err
 	}
 	if resp == nil {
@@ -562,7 +562,7 @@ func (r Rights) Delivery(ctx context.Context, params *dto.DeliveryRequest) (*dto
 	defer cancel()
 	resp, err := grpcClient.Delivery(ctx, &req)
 	if err != nil {
-		logger.Error("grpc request failed")
+		logger.WithError(err).Error("grpc request failed")
 		return nil, err
 	}
 	if resp == nil {
@@ -594,7 +594,7 @@ func (r Rights) EditDelivery(ctx context.Context, params *dto.EditDeliveryReques
 	defer cancel()
 	resp, err := grpcClient.EditDelivery(ctx, &req)
 	if err != nil {
-		logger.Error("grpc request failed")
+		logger.WithError(err).Error("grpc request failed")
 		return nil, err
 	}
 	if resp == nil {
@@ -623,7 +623,7 @@ func (r Rights) DeliveryInfo(ctx context.Context, params *dto.DeliveryInfoReques
 	defer cancel()
 	resp, err := grpcClient.DeliveryInfo(ctx, &req)
 	if err != nil {
-		logger.Error("grpc request failed")
+		logger.WithError(err).Error("grpc request failed")
 		return nil, err
 	}
 	if resp == nil {
