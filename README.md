@@ -4,7 +4,9 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/MaricoHan/redisson)](https://goreportcard.com/report/github.com/MaricoHan/redisson)
 [![License：MIT](https://img.shields.io/github/license/MaricoHan/redisson)](https://github.com/MaricoHan/redisson/blob/master/LICENSE)
 
-使用 redis 实现：分布式“互斥锁”和“读写锁”。
+基于 redis 实现：分布式“互斥锁”和“读写锁”。
+
+目前不支持可重入锁、红锁。
 
 # 功能
 
