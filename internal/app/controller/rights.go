@@ -72,5 +72,53 @@ func (r RightsController) GetEndpoints() []kit.Endpoint {
 			Method:  http.MethodGet,
 			Handler: r.makeHandler(r.handler.DeliveryInfo, nil),
 		},
+
+		{
+			URI:     "/rights/change",
+			Method:  http.MethodPost,
+			Handler: r.makeHandler(r.handler.Change, &vo.ChangeRequest{}),
+		}, {
+			URI:     "/rights/change/{operation_id}",
+			Method:  http.MethodPatch,
+			Handler: r.makeHandler(r.handler.EditChange, &vo.EditChangeRequest{}),
+		}, {
+			URI:     "/rights/change/{operation_id}",
+			Method:  http.MethodGet,
+			Handler: r.makeHandler(r.handler.ChangeInfo, nil),
+		},
+
+		{
+			URI:     "/rights/transfer",
+			Method:  http.MethodPost,
+			Handler: r.makeHandler(r.handler.Transfer, &vo.TransferRequest{}),
+		}, {
+			URI:     "/rights/transfer/{operation_id}",
+			Method:  http.MethodPatch,
+			Handler: r.makeHandler(r.handler.EditTransfer, &vo.EditTransferRequest{}),
+		}, {
+			URI:     "/rights/transfer/{operation_id}",
+			Method:  http.MethodGet,
+			Handler: r.makeHandler(r.handler.TransferInfo, nil),
+		},
+
+		{
+			URI:     "/rights/revoke",
+			Method:  http.MethodPost,
+			Handler: r.makeHandler(r.handler.Revoke, &vo.RevokeRequest{}),
+		}, {
+			URI:     "/rights/revoke/{operation_id}",
+			Method:  http.MethodPatch,
+			Handler: r.makeHandler(r.handler.EditRevoke, &vo.EditRevokeRequest{}),
+		}, {
+			URI:     "/rights/revoke/{operation_id}",
+			Method:  http.MethodGet,
+			Handler: r.makeHandler(r.handler.RevokeInfo, nil),
+		},
+
+		{
+			URI:     "/rights/product/{product_id}",
+			Method:  http.MethodGet,
+			Handler: r.makeHandler(r.handler.ProductInfo, nil),
+		},
 	}
 }

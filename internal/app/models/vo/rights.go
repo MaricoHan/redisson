@@ -47,6 +47,7 @@ type ProductInfo struct {
 	PubChannel    uint32 `json:"pub_channel"`
 	PubAnnex      string `json:"pub_annex"`
 	Hash          string `json:"hash"`
+	HashType      uint32 `json:"hash_type"`
 }
 
 type RightsInfo struct {
@@ -153,4 +154,89 @@ type EditDeliveryRequest struct {
 	Postcode     string `json:"postcode"`
 	Recipient    string `json:"recipient"`
 	PhoneNum     string `json:"phone_num"`
+}
+
+type ChangeRequest struct {
+	RegisterType          uint64                `json:"register_type"`
+	OperationID           string                `json:"operation_id"`
+	ProductID             string                `json:"product_id"`
+	CertificateNum        string                `json:"certificate_num"`
+	Name                  string                `json:"name"`
+	CatName               string                `json:"cat_name"`
+	CopyrighterNum        string                `json:"copyrighter_num"`
+	CopyrighterType       uint32                `json:"copyrighter_type"`
+	CopyrighterCorporate  CopyrighterCorporate  `json:"copyrighter_info_corporate"`
+	CopyrighterIndividual CopyrighterIndividual `json:"copyrighter_info_individual"`
+	ProofFiles            string                `json:"proof_files"`
+	UrgentTime            uint32                `json:"urgent_time"`
+}
+
+type CopyrighterCorporate struct {
+	CompanyName string `json:"company_name"`
+	BusLicImg   string `json:"bus_lic_img"`
+}
+
+type CopyrighterIndividual struct {
+	RealName   string `json:"real_name"`
+	IDCardFimg string `json:"idcard_fimg"`
+	IDCardBimg string `json:"idcard_bimg"`
+	IDCardHimg string `json:"idcard_himg"`
+}
+
+type EditChangeRequest struct {
+	RegisterType          uint64                `json:"register_type"`
+	Name                  string                `json:"name"`
+	CatName               string                `json:"cat_name"`
+	CopyrighterNum        string                `json:"copyrighter_num"`
+	CopyrighterType       uint32                `json:"copyrighter_type"`
+	CopyrighterCorporate  CopyrighterCorporate  `json:"copyrighter_info_corporate"`
+	CopyrighterIndividual CopyrighterIndividual `json:"copyrighter_info_individual"`
+	ProofFiles            string                `json:"proof_files"`
+}
+
+type TransferRequest struct {
+	RegisterType     uint64 `json:"register_type"`
+	OperationID      string `json:"operation_id"`
+	CertificateNum   string `json:"certificate_num"`
+	ProductID        string `json:"product_id"`
+	AuthorityName    string `json:"authority_name"`
+	AuthorityIDType  uint32 `json:"authority_id_type"`
+	AuthorityIDNum   string `json:"authority_id_num"`
+	AuthoritedIDName string `json:"authorited_name"`
+	AuthoritedIDType uint32 `json:"authorited_id_type"`
+	AuthoritedIDNum  string `json:"authorited_id_num"`
+	AuthInstructions string `json:"auth_instructions"`
+	StartTime        string `json:"start_time"`
+	EndTime          string `json:"end_time"`
+	Scope            string `json:"scope"`
+	ContractAmount   string `json:"contract_amount"`
+	ContractFiles    string `json:"contract_files"`
+	UrgentTime       uint32 `json:"urgent_time"`
+}
+
+type EditTransferRequest struct {
+	RegisterType     uint64 `json:"register_type"`
+	AuthorityName    string `json:"authority_name"`
+	AuthorityIDType  uint32 `json:"authority_id_type"`
+	AuthorityIDNum   string `json:"authority_id_num"`
+	AuthoritedIDName string `json:"authorited_name"`
+	AuthoritedIDType uint32 `json:"authorited_id_type"`
+	AuthoritedIDNum  string `json:"authorited_id_num"`
+	AuthInstructions string `json:"auth_instructions"`
+	StartTime        string `json:"start_time"`
+	EndTime          string `json:"end_time"`
+	Scope            string `json:"scope"`
+	ContractAmount   string `json:"contract_amount"`
+	ContractFiles    string `json:"contract_files"`
+}
+
+type RevokeRequest struct {
+	RegisterType   uint64 `json:"register_type"`
+	OperationID    string `json:"operation_id"`
+	CertificateNum string `json:"certificate_num"`
+	ProductID      string `json:"product_id"`
+}
+
+type EditRevokeRequest struct {
+	RegisterType uint64 `json:"register_type"`
 }
