@@ -3,36 +3,37 @@ package constant
 var GrpcTimeout int
 
 const (
-	//ENV
+	// ENV
 	EnvPro   = "prod"
 	EnvDev   = "dev"
 	EnvLocal = "local"
 
-	//LogLevel
+	// LogLevel
 	LogLevelDebug = "debug"
 	LogLevelInfo  = "info"
 	LogLevelWarn  = "warn"
 	LogLevelError = "error"
 
-	//Time
+	// Time
 	TimeLayout = "2006-01-02 15:04:05"
 
 	Delete = "DELETE"
 
-	//orderType
+	// orderType
 	OrderTypeGas      = "gas"
 	OrderTypeBusiness = "business"
 
-	//chain map
+	// chain map
 	WenchangNative = "wenchangchain-native"
 	WenchangDDC    = "wenchangchain-ddc"
 	DatangNative   = "datangchain-native"
 	IritaOPBNative = "irita-opb-native"
+	IrisHubNative  = "irishub-native"
 
-	//etcdSchema
+	// etcdSchema
 	Schema = "avata"
 
-	//etcdEndpoint
+	// etcdEndpoint
 	WenchangNativeEndpoint = "services/chains/wenchangchain-native"
 	WenchangDDCEndpoint    = "services/chains/wenchangchain-ddc"
 	DatangNatveEndpoint    = "services/chains/datangchain-native"
