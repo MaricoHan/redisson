@@ -8,7 +8,7 @@ import (
 
 type Root struct {
 	Client *redis.Client
-	UUID   string
+	UUID   string // 自定义用于区分不同客户端的唯一标识
 }
 
 type baseMutex struct {
