@@ -8,7 +8,7 @@ import (
 	"github.com/go-redis/redis/v8"
 
 	"github.com/MaricoHan/redisson/pkg/types"
-	"github.com/MaricoHan/redisson/pkg/util"
+	"github.com/MaricoHan/redisson/pkg/utils"
 )
 
 var (
@@ -28,7 +28,7 @@ type RWMutex struct {
 func NewRWMutex(r *Root, name string, options ...Option) *RWMutex {
 	base := baseMutex{
 		Name:   name,
-		pubSub: r.Client.Subscribe(context.Background(), util.ChannelName(name)),
+		pubSub: r.Client.Subscribe(context.Background(), utils.ChannelName(name)),
 	}
 
 	for i := range options {
@@ -50,7 +50,7 @@ func (r RWMutex) Lock() error {
 	ctx, cancel := context.WithTimeout(context.Background(), r.waitTimeout)
 	defer cancel()
 
-	clientID := r.root.UUID + ":" + strconv.FormatInt(util.GoID(), 10)
+	clientID := r.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
 	err := r.tryLock(ctx, clientID, expiration)
 	if err != nil {
 		return err
@@ -113,7 +113,7 @@ func (r RWMutex) RLock() error {
 	ctx, cancel := context.WithTimeout(context.Background(), r.waitTimeout)
 	defer cancel()
 
-	clientID := r.root.UUID + ":" + strconv.FormatInt(util.GoID(), 10)
+	clientID := r.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
 	err := r.tryRLock(ctx, clientID, expiration)
 	if err != nil {
 		return err
@@ -169,11 +169,11 @@ func (r RWMutex) rLockInner(clientID string, expiration int64) (int64, error) {
 	return pTTL.(int64), nil
 }
 func (r *RWMutex) Unlock() error {
-	goID := util.GoID()
+	goID := utils.GoID()
 	return r.unlockInner(goID)
 }
 func (r *RWMutex) unlockInner(goID int64) error {
-	res, err := r.root.Client.Eval(context.TODO(), rwMutexScript.unlockScript, []string{r.Name, util.ChannelName(r.Name)}, r.root.UUID+":"+strconv.FormatInt(goID, 10), 1).Int64()
+	res, err := r.root.Client.Eval(context.TODO(), rwMutexScript.unlockScript, []string{r.Name, utils.ChannelName(r.Name)}, r.root.UUID+":"+strconv.FormatInt(goID, 10), 1).Int64()
 	if err != nil {
 		return err
 	}

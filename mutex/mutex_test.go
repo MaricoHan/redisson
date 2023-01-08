@@ -3,6 +3,7 @@ package mutex
 import (
 	"context"
 	"fmt"
+	"io"
 	"strconv"
 	"sync"
 	"testing"
@@ -10,7 +11,7 @@ import (
 
 	"github.com/go-redis/redis/v8"
 
-	"github.com/MaricoHan/redisson/pkg/util"
+	"github.com/MaricoHan/redisson/pkg/utils"
 )
 
 var (
@@ -24,7 +25,7 @@ var (
 )
 
 func TestMutex_lockInner(t *testing.T) {
-	clientID := mutex.root.UUID + ":" + strconv.FormatInt(util.GoID(), 10)
+	clientID := mutex.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
 	acquire, err := mutex.lockInner(clientID, int64(mutex.expiration/time.Millisecond))
 	if err != nil {
 		t.Error(err)
@@ -33,18 +34,22 @@ func TestMutex_lockInner(t *testing.T) {
 	t.Log(acquire)
 }
 
+func TestName(t *testing.T) {
+	fmt.Println(io.EOF == nil)
+}
+
 func TestMutex_tryLock(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), mutex.waitTimeout)
 	defer cancel()
 
-	clientID := mutex.root.UUID + ":" + strconv.FormatInt(util.GoID(), 10)
+	clientID := mutex.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
 
 	err := mutex.tryLock(ctx, clientID, int64(mutex.expiration/time.Millisecond))
 	t.Log(err)
 }
 
 func TestMutex_unlockInner_ExpiredMutex(t *testing.T) {
-	goID := util.GoID()
+	goID := utils.GoID()
 
 	// 测试：可以解锁过期的锁
 	err := mutex.unlockInner(goID)
@@ -62,7 +67,7 @@ func TestMutex_unlockInner_ExpiredMutex(t *testing.T) {
 // @Description: 测试：只可以解自己加的锁
 // @param t
 func TestMutex_unlockInner(t *testing.T) {
-	clientID := mutex.root.UUID + ":" + strconv.FormatInt(util.GoID(), 10)
+	clientID := mutex.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
 
 	_, err := mutex.lockInner(clientID, int64(mutex.expiration/time.Millisecond))
 	if err != nil {
@@ -78,7 +83,7 @@ func TestMutex_unlockInner(t *testing.T) {
 		defer func() {
 			waitGroup.Done()
 		}()
-		err = mutex.unlockInner(util.GoID())
+		err = mutex.unlockInner(utils.GoID())
 		if err != nil {
 			t.Error(err) // mismatch identification
 			return
@@ -88,7 +93,7 @@ func TestMutex_unlockInner(t *testing.T) {
 	waitGroup.Wait()
 
 	// 测试：加锁的协程可以顺利解锁
-	err = mutex.unlockInner(util.GoID())
+	err = mutex.unlockInner(utils.GoID())
 	if err != nil {
 		t.Error(err)
 		return
@@ -100,7 +105,7 @@ func TestMutex_Unlock(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), mutex.waitTimeout)
 	defer cancel()
 
-	clientID := mutex.root.UUID + ":" + strconv.FormatInt(util.GoID(), 10)
+	clientID := mutex.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
 
 	// 第一次上锁
 	err := mutex.tryLock(ctx, clientID, int64(mutex.expiration/time.Millisecond))
