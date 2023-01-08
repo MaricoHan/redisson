@@ -8,7 +8,7 @@ import (
 	"github.com/go-redis/redis/v8"
 
 	"github.com/MaricoHan/redisson/pkg/types"
-	"github.com/MaricoHan/redisson/pkg/util"
+	"github.com/MaricoHan/redisson/pkg/utils"
 )
 
 var mutexScript = struct {
@@ -25,7 +25,7 @@ type Mutex struct {
 func NewMutex(root *Root, name string, options ...Option) *Mutex {
 	base := baseMutex{
 		Name:   name,
-		pubSub: root.Client.Subscribe(context.Background(), util.ChannelName(name)),
+		pubSub: root.Client.Subscribe(context.Background(), utils.ChannelName(name)),
 	}
 
 	for i := range options {
@@ -47,7 +47,7 @@ func (m *Mutex) Lock() error {
 	ctx, cancel := context.WithTimeout(context.Background(), m.waitTimeout)
 	defer cancel()
 
-	clientID := m.root.UUID + ":" + strconv.FormatInt(util.GoID(), 10)
+	clientID := m.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
 	err := m.tryLock(ctx, clientID, expiration)
 	if err != nil {
 		return err
@@ -103,12 +103,12 @@ func (m *Mutex) lockInner(clientID string, expiration int64) (int64, error) {
 }
 
 func (m *Mutex) Unlock() error {
-	goID := util.GoID()
+	goID := utils.GoID()
 	return m.unlockInner(goID)
 }
 
 func (m *Mutex) unlockInner(goID int64) error {
-	res, err := m.root.Client.Eval(context.TODO(), mutexScript.unlockScript, []string{m.Name, util.ChannelName(m.Name)}, m.root.UUID+":"+strconv.FormatInt(goID, 10), 1).Int64()
+	res, err := m.root.Client.Eval(context.TODO(), mutexScript.unlockScript, []string{m.Name, utils.ChannelName(m.Name)}, m.root.UUID+":"+strconv.FormatInt(goID, 10), 1).Int64()
 	if err != nil {
 		return err
 	}

@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-redis/redis/v8"
 
-	"github.com/MaricoHan/redisson/pkg/util"
+	"github.com/MaricoHan/redisson/pkg/utils"
 )
 
 var (
@@ -24,7 +24,7 @@ var (
 )
 
 func TestRWMutex_lockInner(t *testing.T) {
-	clientID := rwMutex.root.UUID + ":" + strconv.FormatInt(util.GoID(), 10)
+	clientID := rwMutex.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
 
 	pTTL, err := rwMutex.lockInner(clientID, int64(rwMutex.expiration/time.Millisecond))
 	if err != nil {
@@ -35,7 +35,7 @@ func TestRWMutex_lockInner(t *testing.T) {
 }
 
 func TestRWMutex_unlockInner_ExpiredMutex(t *testing.T) {
-	goID := util.GoID()
+	goID := utils.GoID()
 
 	// 测试：可以解锁过期的锁
 	err := rwMutex.unlockInner(goID)
@@ -62,7 +62,7 @@ func TestRWMutex_tryLock(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), rwMutex.waitTimeout)
 	defer cancel()
 
-	clientID := rwMutex.root.UUID + ":" + strconv.FormatInt(util.GoID(), 10)
+	clientID := rwMutex.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
 
 	err := rwMutex.tryLock(ctx, clientID, int64(rwMutex.expiration/time.Millisecond))
 	if err != nil {
@@ -82,7 +82,7 @@ func TestRWMutex_Lock(t *testing.T) {
 }
 
 func TestRWMutex_rLockInner(t *testing.T) {
-	clientID := rwMutex.root.UUID + ":" + strconv.FormatInt(util.GoID(), 10)
+	clientID := rwMutex.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
 
 	pTTL, err := rwMutex.rLockInner(clientID, int64(rwMutex.expiration/time.Millisecond))
 	if err != nil {
@@ -96,7 +96,7 @@ func TestRWMutex_tryRLock(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), rwMutex.waitTimeout)
 	defer cancel()
 
-	clientID := rwMutex.root.UUID + ":" + strconv.FormatInt(util.GoID(), 10)
+	clientID := rwMutex.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
 
 	err := rwMutex.tryRLock(ctx, clientID, int64(rwMutex.expiration/time.Millisecond))
 	if err != nil {
