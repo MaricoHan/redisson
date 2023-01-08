@@ -3,7 +3,6 @@ package mutex
 import (
 	"context"
 	"fmt"
-	"io"
 	"strconv"
 	"sync"
 	"testing"
@@ -32,10 +31,6 @@ func TestMutex_lockInner(t *testing.T) {
 		return
 	}
 	t.Log(acquire)
-}
-
-func TestName(t *testing.T) {
-	fmt.Println(io.EOF == nil)
 }
 
 func TestMutex_tryLock(t *testing.T) {
