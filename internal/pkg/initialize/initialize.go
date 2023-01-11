@@ -185,49 +185,74 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 		logger.Fatal("get rights_jiangsu grpc connect failed, err: ", err.Error())
 	}
 	GrpcConnRightsMap[constant.JiangSu] = RightsConn
+
+	// irisHub
+	logger.Info("connecting iris-hub-native ...")
+	irisHubNativeConn, err := grpc.DialContext(
+		context.Background(),
+		cfg.GrpcClient.IrisHubNativeAddr,
+		grpc.WithInsecure(),
+		grpc.WithKeepaliveParams(kacp),
+		grpc.WithBlock(),
+		grpc.WithBalancerName(roundrobin.Name),
+		grpc.WithUnaryInterceptor(middleware.NewGrpcInterceptorMiddleware().Interceptor()))
+	if err != nil {
+		logger.Fatal("get iris-hub-native grpc connect failed, err: ", err.Error())
+	}
+	GrpcConnMap[constant.IrisHubNative] = irisHubNativeConn
+
 	AccountClientMap = make(map[string]pb_account.AccountClient)
 	AccountClientMap[constant.WenchangDDC] = pb_account.NewAccountClient(GrpcConnMap[constant.WenchangDDC])
 	AccountClientMap[constant.WenchangNative] = pb_account.NewAccountClient(GrpcConnMap[constant.WenchangNative])
 	AccountClientMap[constant.IritaOPBNative] = pb_account.NewAccountClient(GrpcConnMap[constant.IritaOPBNative])
+	AccountClientMap[constant.IrisHubNative] = pb_account.NewAccountClient(GrpcConnMap[constant.IrisHubNative])
 	// 初始化business grpc client
 	BusineessClientMap = make(map[string]pb_business.BuyClient)
 	BusineessClientMap[constant.WenchangDDC] = pb_business.NewBuyClient(GrpcConnMap[constant.WenchangDDC])
 	BusineessClientMap[constant.WenchangNative] = pb_business.NewBuyClient(GrpcConnMap[constant.WenchangNative])
 	BusineessClientMap[constant.IritaOPBNative] = pb_business.NewBuyClient(GrpcConnMap[constant.IritaOPBNative])
+	BusineessClientMap[constant.IrisHubNative] = pb_business.NewBuyClient(GrpcConnMap[constant.IrisHubNative])
 	// 初始化msgs grpc client
 	MsgsClientMap = make(map[string]pb_msgs.MSGSClient)
 	MsgsClientMap[constant.WenchangDDC] = pb_msgs.NewMSGSClient(GrpcConnMap[constant.WenchangDDC])
 	MsgsClientMap[constant.WenchangNative] = pb_msgs.NewMSGSClient(GrpcConnMap[constant.WenchangNative])
 	MsgsClientMap[constant.IritaOPBNative] = pb_msgs.NewMSGSClient(GrpcConnMap[constant.IritaOPBNative])
+	MsgsClientMap[constant.IrisHubNative] = pb_msgs.NewMSGSClient(GrpcConnMap[constant.IrisHubNative])
 	// 初始化nft grpc client
 	NftClientMap = make(map[string]pb_nft.NFTClient)
 	NftClientMap[constant.WenchangDDC] = pb_nft.NewNFTClient(GrpcConnMap[constant.WenchangDDC])
 	NftClientMap[constant.WenchangNative] = pb_nft.NewNFTClient(GrpcConnMap[constant.WenchangNative])
 	NftClientMap[constant.IritaOPBNative] = pb_nft.NewNFTClient(GrpcConnMap[constant.IritaOPBNative])
+	NftClientMap[constant.IrisHubNative] = pb_nft.NewNFTClient(GrpcConnMap[constant.IrisHubNative])
 	// 初始化nft class grpc client
 	ClassClientMap = make(map[string]pb_class.ClassClient)
 	ClassClientMap[constant.WenchangDDC] = pb_class.NewClassClient(GrpcConnMap[constant.WenchangDDC])
 	ClassClientMap[constant.WenchangNative] = pb_class.NewClassClient(GrpcConnMap[constant.WenchangNative])
 	ClassClientMap[constant.IritaOPBNative] = pb_class.NewClassClient(GrpcConnMap[constant.IritaOPBNative])
+	ClassClientMap[constant.IrisHubNative] = pb_class.NewClassClient(GrpcConnMap[constant.IrisHubNative])
 	// 初始化tx grpc client
 	TxClientMap = make(map[string]pb_tx.TxClient)
 	TxClientMap[constant.WenchangDDC] = pb_tx.NewTxClient(GrpcConnMap[constant.WenchangDDC])
 	TxClientMap[constant.WenchangNative] = pb_tx.NewTxClient(GrpcConnMap[constant.WenchangNative])
 	TxClientMap[constant.IritaOPBNative] = pb_tx.NewTxClient(GrpcConnMap[constant.IritaOPBNative])
+	TxClientMap[constant.IrisHubNative] = pb_tx.NewTxClient(GrpcConnMap[constant.IrisHubNative])
 	// 初始化mt
 	MTClientMap = make(map[string]pb_mt.MTClient)
 	MTClientMap[constant.WenchangDDC] = pb_mt.NewMTClient(GrpcConnMap[constant.WenchangDDC])
 	MTClientMap[constant.WenchangNative] = pb_mt.NewMTClient(GrpcConnMap[constant.WenchangNative])
 	MTClientMap[constant.IritaOPBNative] = pb_mt.NewMTClient(GrpcConnMap[constant.IritaOPBNative])
+	MTClientMap[constant.IrisHubNative] = pb_mt.NewMTClient(GrpcConnMap[constant.IrisHubNative])
 	// 初始化mt_class
 	MTClassClientMap = make(map[string]pb_mt_class.MTClassClient)
 	MTClassClientMap[constant.WenchangDDC] = pb_mt_class.NewMTClassClient(GrpcConnMap[constant.WenchangDDC])
 	MTClassClientMap[constant.WenchangNative] = pb_mt_class.NewMTClassClient(GrpcConnMap[constant.WenchangNative])
 	MTClassClientMap[constant.IritaOPBNative] = pb_mt_class.NewMTClassClient(GrpcConnMap[constant.IritaOPBNative])
+	MTClassClientMap[constant.IrisHubNative] = pb_mt_class.NewMTClassClient(GrpcConnMap[constant.IrisHubNative])
 	// 初始化mt_msgs
 	MTMsgsClientMap = make(map[string]pb_mt_msgs.MTMSGSClient)
 	MTMsgsClientMap[constant.WenchangNative] = pb_mt_msgs.NewMTMSGSClient(GrpcConnMap[constant.WenchangNative])
 	MTMsgsClientMap[constant.IritaOPBNative] = pb_mt_msgs.NewMTMSGSClient(GrpcConnMap[constant.IritaOPBNative])
+	MTMsgsClientMap[constant.IrisHubNative] = pb_mt_msgs.NewMTMSGSClient(GrpcConnMap[constant.IrisHubNative])
 
 	// 初始化tx_queue
 	TxQueueClient = pb_tx_queue.NewTxQueueClient(StateGatewayServer)
@@ -241,12 +266,14 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	RecordClientMap[constant.WenchangDDC] = pb_record.NewRecordClient(GrpcConnMap[constant.WenchangDDC])
 	RecordClientMap[constant.WenchangNative] = pb_record.NewRecordClient(GrpcConnMap[constant.WenchangNative])
 	RecordClientMap[constant.IritaOPBNative] = pb_record.NewRecordClient(GrpcConnMap[constant.IritaOPBNative])
+	RecordClientMap[constant.IrisHubNative] = pb_record.NewRecordClient(GrpcConnMap[constant.IrisHubNative])
 
 	// 初始化notice
 	NoticeClientMap = make(map[string]pb_notice.NoticeClient)
 	NoticeClientMap[constant.WenchangNative] = pb_notice.NewNoticeClient(GrpcConnMap[constant.WenchangNative])
 	NoticeClientMap[constant.IritaOPBNative] = pb_notice.NewNoticeClient(GrpcConnMap[constant.IritaOPBNative])
 	NoticeClientMap[constant.WenchangDDC] = pb_notice.NewNoticeClient(GrpcConnMap[constant.WenchangDDC])
+	NoticeClientMap[constant.IrisHubNative] = pb_notice.NewNoticeClient(GrpcConnMap[constant.IrisHubNative])
 }
 
 func InitRedisClient(cfg *configs.Config, logger *log.Logger) {
