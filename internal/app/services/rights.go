@@ -252,7 +252,7 @@ func (r Rights) EditRegister(ctx context.Context, params *dto.EditRegisterReques
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
 
-	return &dto.EditRegisterResponse{OperationID: resp.OperationId}, nil
+	return &dto.EditRegisterResponse{}, nil
 }
 
 func (r Rights) QueryRegister(ctx context.Context, params *dto.QueryRegisterRequest) (*dto.QueryRegisterResponse, error) {
@@ -423,9 +423,7 @@ func (r Rights) EditUserAuth(ctx context.Context, params *dto.EditUserAuthReques
 	if resp == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
-	result := &dto.EditUserAuthResponse{
-		Data: resp.Data,
-	}
+	result := &dto.EditUserAuthResponse{}
 	return result, nil
 }
 
