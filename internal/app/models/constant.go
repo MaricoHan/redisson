@@ -1,23 +1,16 @@
 package constant
 
+//项目状态
 const (
-	//ENV
-	EnvPro   = "prod"
-	EnvDev   = "dev"
-	EnvLocal = "local"
+	ProjectStatusEnable  int = iota + 1 //启用
+	ProjectStatusDisable                //禁用
+	ProjectStatusCancel                 //注销
+)
 
-	//LogLevel
-	LogLevelDebug = "debug"
-	LogLevelInfo  = "info"
-	LogLevelWarn  = "warn"
-	LogLevelError = "error"
-
-	//Time
-	TimeLayout           = "2006-01-02 15:04:05"
-	TimeLayoutWithoutHMS = "2006-01-02"
-
-	//MysqlTable
-	TableUser    = "user"
-	TableProject = "project"
-	TableChain   = "chain"
+// 是否删除
+const (
+	// 是
+	IsDelete = 1
+	// 否
+	IsNotDelete = 2
 )

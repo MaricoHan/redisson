@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	
+
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/chain"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/project"

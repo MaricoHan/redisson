@@ -15,6 +15,7 @@ type Project struct {
 	UserId      uint      `gorm:"column:user_id;type:bigint(20) unsigned;default:0;comment:用户 ID;NOT NULL" json:"user_id"`
 	Name        string    `gorm:"column:name;type:varchar(255);comment:项目名称;NOT NULL" json:"name"`
 	Description string    `gorm:"column:description;type:varchar(255);comment:项目描述;NOT NULL" json:"description"`
+	Status      uint      `gorm:"column:status;type:tinyint(4) unsigned;default:1;comment:状态（1.启用 2.禁用 3.注销）;NOT NULL" json:"status"`
 	UpdatedAt   time.Time `gorm:"column:updated_at;type:datetime;default:CURRENT_TIMESTAMP;comment:更新时间;NOT NULL" json:"updated_at"`
 	CreatedAt   time.Time `gorm:"column:created_at;type:datetime;default:CURRENT_TIMESTAMP;comment:创建时间;NOT NULL" json:"created_at"`
 }
@@ -23,3 +24,27 @@ const (
 	MANAGED = iota + 1
 	UNMANAGED
 )
+
+var ProjectFields = struct {
+	BaseModelFields
+	Code        string
+	ApiKey      string
+	ApiSecret   string
+	AccessMode  string
+	ChainId     string
+	UserId      string
+	Name        string
+	Description string
+	Status      string
+}{
+	baseModelFields,
+	"code",
+	"api_key",
+	"api_secret",
+	"access_mode",
+	"chain_id",
+	"user_id",
+	"name",
+	"description",
+	"status",
+}
