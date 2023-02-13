@@ -91,7 +91,6 @@ type RegisterResponse struct {
 }
 
 type EditRegisterResponse struct {
-	OperationID string `json:"operation_id"`
 }
 
 type QueryRegisterRequest struct {
@@ -231,7 +230,6 @@ type EditUserAuthRequest struct {
 }
 
 type EditUserAuthResponse struct {
-	Data string `json:"data"`
 }
 
 type QueryUserAuthRequest struct {
