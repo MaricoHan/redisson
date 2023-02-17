@@ -18,4 +18,27 @@ type User struct {
 	Description      string    `gorm:"column:description;type:text;comment:个人介绍" json:"description"`
 	UpdatedAt        time.Time `gorm:"column:updated_at;type:datetime;default:CURRENT_TIMESTAMP;comment:更新时间;NOT NULL" json:"updated_at"`
 	CreatedAt        time.Time `gorm:"column:created_at;type:datetime;default:CURRENT_TIMESTAMP;comment:创建时间;NOT NULL" json:"created_at"`
+	IsDeleted        uint      `gorm:"column:is_deleted;type:tinyint(1) unsigned;default:2;comment:是否删除（1：是 2：否）;NOT NULL" json:"is_deleted"`
+}
+
+var UserFields = struct {
+	BaseModelFields
+	Code             string
+	Amount           string
+	InvoicableAmount string
+	UserName         string
+	PhoneNumber      string
+	Email            string
+	Description      string
+	IsDeleted        string
+}{
+	baseModelFields,
+	"code",
+	"amount",
+	"invoicable_amount",
+	"user_name",
+	"phone_number",
+	"email",
+	"description",
+	"is_deleted",
 }

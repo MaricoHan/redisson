@@ -3,6 +3,7 @@ package user
 import (
 	"gorm.io/gorm"
 
+	constant "gitlab.bianjie.ai/avata/open-api/internal/app/models"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 )
 
@@ -19,6 +20,10 @@ func NewUserRepo(db *gorm.DB) *UserRepo {
 }
 
 func (p *UserRepo) GetUser(id uint64) (user entity.User, err error) {
-	err = p.db.Select("id,code").Where("id=?", id).Find(&user).Error
-	return user, err
+	err = p.db.Select(entity.UserFields.ID, entity.UserFields.Code).
+		Where(entity.UserFields.ID, id).
+		Where(entity.UserFields.IsDeleted, constant.IsNotDelete).
+		Find(&user).Error
+
+	return
 }
