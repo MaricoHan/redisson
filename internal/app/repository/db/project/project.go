@@ -1,8 +1,10 @@
 package project
 
 import (
-	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gorm.io/gorm"
+
+	constant "gitlab.bianjie.ai/avata/open-api/internal/app/models"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 )
 
 type IProjectRepo interface {
@@ -19,11 +21,28 @@ func NewProjectRepo(db *gorm.DB) *ProjectRepo {
 }
 
 func (p *ProjectRepo) GetProjectByApiKey(apiKey string) (project entity.Project, err error) {
-	err = p.db.Select("id,chain_id,user_id,api_secret,api_key,access_mode").Where("api_key=?", apiKey).Find(&project).Error
-	return project, err
+	err = p.db.Omit(
+		entity.ProjectFields.Code,
+		entity.ProjectFields.Name,
+		entity.ProjectFields.Description,
+		entity.ProjectFields.CreatedAt,
+		entity.ProjectFields.UpdatedAt,
+	).Where(entity.ProjectFields.ApiKey, apiKey).
+		Where(entity.ProjectFields.Status, constant.ProjectStatusEnable).
+		Find(&project).Error
+
+	return
 }
 
 func (p *ProjectRepo) GetProjectByCode(code string) (project entity.Project, err error) {
-	err = p.db.Select("id,chain_id,user_id,api_secret,api_key,access_mode").Where("code=?", code).First(&project).Error
-	return project, err
+	err = p.db.Omit(
+		entity.ProjectFields.Code,
+		entity.ProjectFields.Name,
+		entity.ProjectFields.Description,
+		entity.ProjectFields.CreatedAt,
+		entity.ProjectFields.UpdatedAt,
+	).Where(entity.ProjectFields.Code, code).
+		Where(entity.ProjectFields.Status, constant.ProjectStatusEnable).
+		Find(&project).Error
+	return
 }
