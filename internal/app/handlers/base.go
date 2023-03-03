@@ -3,10 +3,10 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"gitlab.bianjie.ai/avata/utils/errors/common"
 	"strconv"
+	"strings"
 
 	"github.com/asaskevich/govalidator"
 	log "github.com/sirupsen/logrus"
@@ -68,12 +68,12 @@ func (h pageBasic) Offset(ctx context.Context) (int64, error) {
 	return offsetInt, nil
 }
 
-func (h pageBasic) Limit(ctx context.Context) (int64, error) {
+func (h pageBasic) Limit(ctx context.Context) (uint64, error) {
 	limit := ctx.Value("limit")
 	if limit == "" || limit == nil {
 		return 10, nil
 	}
-	limitInt, err := strconv.ParseInt(limit.(string), 10, 64)
+	limitInt, err := strconv.ParseUint(limit.(string), 10, 64)
 	if err != nil {
 		return 10, errors2.New(errors2.ClientParams, errors2.ErrLimitParam)
 	}

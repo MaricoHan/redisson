@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"context"
+	"fmt"
+	"gitlab.bianjie.ai/avata/utils/errors/common"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
@@ -52,11 +54,12 @@ func (h *Business) GetAllOrders(ctx context.Context, _ interface{}) (interface{}
 		Status:     h.GetStatus(ctx),
 		AccessMode: authData.AccessMode,
 	}
-	offset, err := h.Offset(ctx)
+	params.PageKey = h.NextKey(ctx)
+	countTotal, err := h.CountTotal(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errors2.New(errors2.ClientParams, fmt.Sprintf(common.ERR_INVALID_VALUE, "count_total"))
 	}
-	params.Offset = offset
+	params.CountTotal = countTotal
 
 	limit, err := h.Limit(ctx)
 	if err != nil {

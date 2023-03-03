@@ -57,7 +57,7 @@ func (s *nft) List(ctx context.Context, params dto.Nfts) (*dto.NftsRes, error) {
 		Status:     pb.STATUS(pb.STATUS_value[params.Status]),
 		SortBy:     pb.SORTS(sort),
 		Name:       params.Name,
-		NextKey:    params.NextKey,
+		PageKey:    params.PageKey,
 		CountTotal: params.CountTotal,
 	}
 
@@ -83,9 +83,9 @@ func (s *nft) List(ctx context.Context, params dto.Nfts) (*dto.NftsRes, error) {
 		Nfts: []*dto.NFT{},
 	}
 	result.Limit = resp.Limit
+	result.PrevPageKey = resp.PrevPageKey
+	result.NextPageKey = resp.NextPageKey
 	result.TotalCount = resp.TotalCount
-	result.PreKey = resp.PreKey
-	result.NextKey = resp.NextKey
 
 	var nfts []*dto.NFT
 	for _, item := range resp.Data {

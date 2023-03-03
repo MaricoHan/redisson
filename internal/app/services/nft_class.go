@@ -46,7 +46,7 @@ func (n *nftClass) GetAllNFTClasses(ctx context.Context, params dto.NftClasses) 
 
 	req := pb.ClassListRequest{
 		ProjectId:  params.ProjectID,
-		NextKey:    params.NextKey,
+		PageKey:    params.PageKey,
 		CountTotal: params.CountTotal,
 		Limit:      params.Limit,
 		StartDate:  params.StartDate,
@@ -75,9 +75,10 @@ func (n *nftClass) GetAllNFTClasses(ctx context.Context, params dto.NftClasses) 
 	}
 	result := &dto.NftClassesRes{
 		PageRes: dto.PageRes{
-			PreKey:  resp.PreKey,
-			NextKey: resp.NextKey,
-			Limit:   resp.Limit,
+			PrevPageKey: resp.PrevPageKey,
+			NextPageKey: resp.NextPageKey,
+			Limit:       resp.Limit,
+			TotalCount:  resp.TotalCount,
 		},
 		NftClasses: []*dto.NftClass{},
 	}

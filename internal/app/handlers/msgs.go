@@ -38,7 +38,7 @@ func (h *Msgs) GetNFTHistory(ctx context.Context, _ interface{}) (interface{}, e
 		AccessMode: authData.AccessMode,
 	}
 
-	params.NextKey = h.NextKey(ctx)
+	params.PageKey = h.NextKey(ctx)
 	countTotal, err := h.CountTotal(ctx)
 	if err != nil {
 		return nil, errors.New(errors.ClientParams, fmt.Sprintf(common.ERR_INVALID_VALUE, "count_total"))
@@ -89,7 +89,7 @@ func (h *Msgs) GetAccountHistory(ctx context.Context, _ interface{}) (interface{
 		AccessMode:      authData.AccessMode,
 	}
 
-	params.NextKey = h.NextKey(ctx)
+	params.PageKey = h.NextKey(ctx)
 	countTotal, err := h.CountTotal(ctx)
 	if err != nil {
 		return nil, errors.New(errors.ClientParams, fmt.Sprintf(common.ERR_INVALID_VALUE, "count_total"))

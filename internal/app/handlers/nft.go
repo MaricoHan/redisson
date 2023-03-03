@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"gitlab.bianjie.ai/avata/utils/errors/common"
+	"strconv"
 	"strings"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
@@ -149,15 +150,18 @@ func (h *NFT) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 		Code:       authData.Code,
 		AccessMode: authData.AccessMode,
 
-		Id:      h.Id(ctx),
 		ClassId: h.ClassId(ctx),
 		Owner:   h.Owner(ctx),
 		TxHash:  h.TxHash(ctx),
 		Status:  status,
 		Name:    h.Name(ctx),
 	}
+	params.Id, err = h.Id(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	params.NextKey = h.NextKey(ctx)
+	params.PageKey = h.NextKey(ctx)
 	countTotal, err := h.CountTotal(ctx)
 	if err != nil {
 		return nil, errors2.New(errors2.ClientParams, fmt.Sprintf(common.ERR_INVALID_VALUE, "count_total"))
@@ -217,12 +221,16 @@ func (h *NFT) Signer(ctx context.Context) string {
 	return signer.(string)
 }
 
-func (h *NFT) Id(ctx context.Context) string {
-	id := ctx.Value("id")
-	if id == nil {
-		return ""
+func (h *NFT) Id(ctx context.Context) (uint64, error) {
+	s := ctx.Value("id")
+	if s == nil {
+		return 0, nil
 	}
-	return id.(string)
+	res, err := strconv.ParseUint(s.(string), 10, 64)
+	if err != nil {
+		return 0, errors2.New(errors2.ClientParams, fmt.Sprintf(common.ERR_INVALID_VALUE, "id"))
+	}
+	return res, nil
 }
 
 func (h *NFT) ClassId(ctx context.Context) string {

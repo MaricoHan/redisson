@@ -51,7 +51,7 @@ func (s *msgs) GetNFTHistory(ctx context.Context, params dto.NftOperationHistory
 		NftId:      params.NftId,
 		Signer:     params.Signer,
 		TxHash:     params.Txhash,
-		NextKey:    params.NextKey,
+		PageKey:    params.PageKey,
 		CountTotal: params.CountTotal,
 		Limit:      params.Limit,
 		StartDate:  params.StartDate,
@@ -79,9 +79,10 @@ func (s *msgs) GetNFTHistory(ctx context.Context, params dto.NftOperationHistory
 	}
 	result := &dto.NftOperationHistoryByNftIdRes{
 		PageRes: dto.PageRes{
-			PreKey:  resp.PreKey,
-			NextKey: resp.NextKey,
-			Limit:   resp.Limit,
+			PrevPageKey: resp.PrevPageKey,
+			NextPageKey: resp.NextPageKey,
+			Limit:       resp.Limit,
+			TotalCount:  resp.TotalCount,
 		},
 		OperationRecords: []*dto.OperationRecord{},
 	}
@@ -123,13 +124,13 @@ func (s *msgs) GetAccountHistory(ctx context.Context, params dto.AccountsInfo) (
 
 	req := pb.AccountHistoryRequest{
 		ProjectId:  params.ProjectID,
-		NextKey:    params.NextKey,
+		PageKey:    params.PageKey,
 		CountTotal: params.CountTotal,
 		Limit:      params.Limit,
 		StartDate:  params.StartDate,
 		EndDate:    params.EndDate,
 		SortBy:     pb.SORTS(sort),
-		Address:    params.Account,
+		Account:    params.Account,
 		Module:     params.OperationModule,
 		Operation:  params.Operation,
 		TxHash:     params.TxHash,
@@ -153,10 +154,10 @@ func (s *msgs) GetAccountHistory(ctx context.Context, params dto.AccountsInfo) (
 	}
 	result := &dto.AccountOperationRecordRes{
 		PageRes: dto.PageRes{
-			PreKey:     resp.PreKey,
-			NextKey:    resp.NextKey,
-			Limit:      resp.Limit,
-			TotalCount: resp.TotalCount,
+			PrevPageKey: resp.PrevPageKey,
+			NextPageKey: resp.NextPageKey,
+			Limit:       resp.Limit,
+			TotalCount:  resp.TotalCount,
 		},
 		OperationRecords: []*dto.AccountOperationRecords{},
 	}
