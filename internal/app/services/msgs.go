@@ -19,7 +19,6 @@ import (
 type IMsgs interface {
 	GetNFTHistory(ctx context.Context, params dto.NftOperationHistoryByNftId) (*dto.NftOperationHistoryByNftIdRes, error)
 	GetAccountHistory(ctx context.Context, params dto.AccountsInfo) (*dto.AccountOperationRecordRes, error)
-	GetMTHistory(ctx context.Context, params dto.MTOperationHistoryByMTId) (*dto.MTOperationHistoryByMTIdRes, error)
 }
 
 type msgs struct {
@@ -59,7 +58,7 @@ func (s *msgs) GetNFTHistory(ctx context.Context, params dto.NftOperationHistory
 		ClassId:   params.ClassID,
 		SortBy:    pb.SORTS(sort),
 	}
-	req.Operation = params.Operation
+	req.Operation = pb.NFT_OPERATIONS(params.Operation)
 
 	resp := &pb.NFTHistoryResponse{}
 	var err error
@@ -89,7 +88,7 @@ func (s *msgs) GetNFTHistory(ctx context.Context, params dto.NftOperationHistory
 	for _, item := range resp.Data {
 		var operationRecord = &dto.OperationRecord{
 			Txhash:    item.TxHash,
-			Operation: item.Operation,
+			Operation: uint64(item.Operation),
 			Signer:    item.Signer,
 			Recipient: item.Recipient,
 			Timestamp: item.Timestamp,
@@ -159,20 +158,12 @@ func (s *msgs) GetAccountHistory(ctx context.Context, params dto.AccountsInfo) (
 	}
 	var accountOperationRecords []*dto.AccountOperationRecords
 	for _, item := range resp.Data {
-		typeJson := types.JSON{}
-		err := json.Unmarshal([]byte(item.Message), &typeJson)
-		if err != nil {
-			return nil, err
-		}
 		accountOperationRecord := &dto.AccountOperationRecords{
-			TxHash:      item.TxHash,
-			Module:      item.Module,
-			Operation:   item.Operation,
-			Signer:      item.Signer,
-			Timestamp:   item.Timestamp,
-			Message:     &typeJson,
-			GasFee:      item.GasFee,
-			BusinessFee: item.BusinessFee,
+			TxHash:    item.TxHash,
+			Module:    uint64(item.Module),
+			Operation: uint64(item.Operation),
+			Signer:    item.Signer,
+			Timestamp: item.Timestamp,
 		}
 		if item.NftMsg != "" {
 			typeJsonNft := types.JSON{}
@@ -181,91 +172,10 @@ func (s *msgs) GetAccountHistory(ctx context.Context, params dto.AccountsInfo) (
 			}
 			accountOperationRecord.NftMsg = &typeJsonNft
 		}
-		if item.MtMsg != "" {
-			typeJsonMt := types.JSON{}
-			if err := json.Unmarshal([]byte(item.MtMsg), &typeJsonMt); err != nil {
-				return nil, err
-			}
-			accountOperationRecord.MtMsg = &typeJsonMt
-		}
 		accountOperationRecords = append(accountOperationRecords, accountOperationRecord)
 	}
 	if accountOperationRecords != nil {
 		result.OperationRecords = accountOperationRecords
-	}
-
-	return result, nil
-}
-
-func (s *msgs) GetMTHistory(ctx context.Context, params dto.MTOperationHistoryByMTId) (*dto.MTOperationHistoryByMTIdRes, error) {
-	logger := s.logger.WithField("params", params).WithField("func", "GetMTHistory")
-
-	// 非托管模式不支持
-	if params.AccessMode == entity.UNMANAGED {
-		return nil, errors2.ErrNotImplemented
-	}
-
-	sort, ok := pb.SORTS_value[params.SortBy]
-	if !ok {
-		logger.Error(errors2.ErrSortBy)
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrSortBy)
-	}
-
-	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
-	defer cancel()
-	req := pb.MTHistoryRequest{
-		ProjectId: params.ProjectID,
-		Offset:    params.Offset,
-		Limit:     params.Limit,
-		StartDate: params.StartDate,
-		EndDate:   params.EndDate,
-		SortBy:    pb.SORTS(sort),
-		Signer:    params.Signer,
-		TxHash:    params.Txhash,
-		MtId:      params.MTId,
-		ClassId:   params.ClassID,
-	}
-
-	req.Operation = params.Operation
-
-	resp := &pb.MTHistoryResponse{}
-	var err error
-	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
-	grpcClient, ok := initialize.MsgsClientMap[mapKey]
-	if !ok {
-		logger.Error(errors2.ErrService)
-		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
-	}
-	resp, err = grpcClient.MTHistory(ctx, &req)
-	if err != nil {
-		logger.Error("request err:", err.Error())
-		return nil, err
-	}
-	if resp == nil {
-		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
-	}
-	result := &dto.MTOperationHistoryByMTIdRes{
-		PageRes: dto.PageRes{
-			Offset: resp.Offset,
-			Limit:  resp.Limit,
-		},
-		OperationRecords: []*dto.MTOperationRecord{},
-	}
-	result.TotalCount = resp.TotalCount
-	var operationRecords []*dto.MTOperationRecord
-	for _, item := range resp.Data {
-		var operationRecord = &dto.MTOperationRecord{
-			Txhash:    item.TxHash,
-			Operation: item.Operation,
-			Signer:    item.Signer,
-			Recipient: item.Recipient,
-			Amount:    item.Amount,
-			Timestamp: item.Timestamp,
-		}
-		operationRecords = append(operationRecords, operationRecord)
-	}
-	if operationRecords != nil {
-		result.OperationRecords = operationRecords
 	}
 
 	return result, nil

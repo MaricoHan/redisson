@@ -25,7 +25,7 @@ func (h *Tx) TxResultByTxHash(ctx context.Context, _ interface{}) (interface{}, 
 	// 校验参数 start
 	authData := h.AuthData(ctx)
 	params := dto.TxResultByTxHash{
-		OperationId: h.TaskId(ctx),
+		OperationId: h.OperationId(ctx),
 		ChainID:     authData.ChainId,
 		ProjectID:   authData.ProjectId,
 		PlatFormID:  authData.PlatformId,
@@ -38,19 +38,11 @@ func (h *Tx) TxResultByTxHash(ctx context.Context, _ interface{}) (interface{}, 
 	return h.svc.TxResultByTxHash(ctx, params)
 }
 
-func (h *Tx) TaskId(ctx context.Context) string {
-	taskid := ctx.Value("task_id")
-	if taskid == nil {
-		return ""
-	}
-	return taskid.(string)
-}
-
 func (h *Tx) TxQueueInfo(ctx context.Context, _ interface{}) (interface{}, error) {
 	// 校验参数 start
 	authData := h.AuthData(ctx)
 	params := dto.TxQueueInfo{
-		OperationId: h.OperationID(ctx),
+		OperationId: h.OperationId(ctx),
 		ProjectID:   authData.ProjectId,
 		Module:      authData.Module,
 		Code:        authData.Code,
@@ -59,10 +51,10 @@ func (h *Tx) TxQueueInfo(ctx context.Context, _ interface{}) (interface{}, error
 	return h.svc.TxQueueInfo(ctx, params)
 }
 
-func (h *Tx) OperationID(ctx context.Context) string {
-	OperationID := ctx.Value("operation_id")
-	if OperationID == nil || OperationID == "" {
+func (h *Tx) OperationId(ctx context.Context) string {
+	operationId := ctx.Value("operation_id")
+	if operationId == nil {
 		return ""
 	}
-	return OperationID.(string)
+	return operationId.(string)
 }

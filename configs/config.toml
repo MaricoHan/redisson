@@ -8,7 +8,7 @@ addr = ":8096"
 prometheus_addr = "0.0.0.0:9092"
 signature_auth = false
 timestamp_auth = false
-router_prefix = "v1beta1"
+router_prefix = "v2beta1"
 grpc_timeout = 1000000
 http_timeout = 1000000
 
@@ -17,11 +17,7 @@ host = "192.168.150.40"
 port = 23306
 username = "root"
 password = "rootPassword"
-# host = "192.168.150.40"
-# port = 23306
 db = "core"
-# username = "core"
-# password = "corePassword"
 max_open_conns = 100
 max_idle_conns = 20
 #单位为小时
@@ -38,8 +34,7 @@ wenchangchain_native_addr = "192.168.150.42:10000"
 irita_opb_native_addr = "192.168.150.43:10000"
 iris_hub_native_addr = "192.168.150.43:10000"
 state_gateway_addr = "192.168.150.44:10000"
-# rights_jiangsu = "192.168.150.41:10005"
-rights_jiangsu = "127.0.0.1:10005"
+rights_jiangsu = "192.168.150.41:10005"
 
 
 [project]

@@ -1,16 +1,12 @@
 package dto
 
-import (
-	pb "gitlab.bianjie.ai/avata/chains/api/pb/nft"
-)
-
 type NftOperationHistoryByNftId struct {
 	Page
 	ClassID         string `json:"class_id"`
-	NftId           string `json:"nft_id"`
+	NftId           uint64 `json:"nft_id"`
 	Signer          string `json:"signer"`
 	Txhash          string `json:"tx_hash"`
-	Operation       string `json:"operation"`
+	Operation       uint64 `json:"operation"`
 	ProjectID       uint64 `json:"project_id"`
 	ChainID         uint64 `json:"chain_id"`
 	PlatFormID      uint64 `json:"plat_form_id"`
@@ -27,7 +23,7 @@ type NftOperationHistoryByNftIdRes struct {
 
 type OperationRecord struct {
 	Txhash    string `json:"tx_hash"`
-	Operation string `json:"operation"`
+	Operation uint64 `json:"operation"`
 	Signer    string `json:"signer"`
 	Recipient string `json:"recipient"`
 	Timestamp string `json:"timestamp"`
@@ -36,20 +32,15 @@ type OperationRecord struct {
 type CreateNftClass struct {
 	Name        string `json:"name"`
 	Symbol      string `json:"symbol"`
-	Description string `json:"description"`
 	Uri         string `json:"uri"`
-	UriHash     string `json:"uri_hash"`
-	Data        string `json:"data"`
 	Owner       string `json:"owner"`
 	ProjectID   uint64 `json:"project_id"`
 	ChainID     uint64 `json:"chain_id"`
 	PlatFormID  uint64 `json:"plat_form_id"`
-	Tag         []byte `json:"tag"`
 	Module      string `json:"module"`
 	Code        string `json:"code"`
 	AccessMode  int    `json:"access_mode"`
 	OperationId string `json:"operation_id"`
-	ClassId     string `json:"class_id"`
 }
 
 type NftClasses struct {
@@ -67,12 +58,6 @@ type NftClasses struct {
 }
 
 type TxRes struct {
-	TaskId      string `json:"task_id"`
-	OperationId string `json:"operation_id"`
-}
-
-type BatchTxRes struct {
-	OperationId string `json:"operation_id"`
 }
 
 type NftClassesRes struct {
@@ -116,7 +101,6 @@ type TransferNftClassById struct {
 	ProjectID   uint64 `json:"project_id"`
 	ChainID     uint64 `json:"chain_id"`
 	PlatFormID  uint64 `json:"plat_form_id"`
-	Tag         []byte `json:"tag"`
 	Module      string `json:"module"`
 	Code        string `json:"code"`
 	AccessMode  int    `json:"access_mode"`
@@ -126,12 +110,11 @@ type TransferNftClassById struct {
 type TransferNftByNftId struct {
 	ClassID     string `json:"class_id"`
 	Sender      string `json:"owner"`
-	NftId       string `json:"nft_id"`
+	NftId       uint64 `json:"nft_id"`
 	Recipient   string `json:"recipient"`
 	ProjectID   uint64 `json:"project_id"`
 	ChainID     uint64 `json:"chain_id"`
 	PlatFormID  uint64 `json:"plat_form_id"`
-	Tag         []byte `json:"tag"`
 	Module      string `json:"module"`
 	Code        string `json:"code"`
 	AccessMode  int    `json:"access_mode"`
@@ -144,7 +127,7 @@ type NftsRes struct {
 }
 
 type NFT struct {
-	Id          string `json:"id"`
+	Id          uint64 `json:"id"`
 	Name        string `json:"name"`
 	ClassId     string `json:"class_id"`
 	ClassName   string `json:"class_name"`
@@ -157,7 +140,7 @@ type NFT struct {
 }
 
 type NftReq struct {
-	Id          string `json:"id"`
+	Id          uint64 `json:"id"`
 	Name        string `json:"name"`
 	ClassId     string `json:"class_id"`
 	ClassName   string `json:"class_name"`
@@ -192,42 +175,19 @@ type CreateNfts struct {
 	ChainID     uint64 `json:"chain_id"`
 	PlatFormID  uint64 `json:"plat_form_id"`
 	ClassId     string `json:"class_id"`
-	Name        string `json:"name"`
 	Uri         string `json:"uri"`
-	UriHash     string `json:"uri_hash"`
-	Data        string `json:"data"`
-	Amount      int    `json:"amount"`
 	Recipient   string `json:"recipient"`
-	Tag         []byte `json:"tag"`
 	Module      string `json:"module"`
 	Code        string `json:"code"`
 	AccessMode  int    `json:"access_mode"`
 	OperationId string `json:"operation_id"`
 }
 
-type BatchCreateNfts struct {
-	ProjectID   uint64                         `json:"project_id"`
-	ChainID     uint64                         `json:"chain_id"`
-	PlatFormID  uint64                         `json:"plat_form_id"`
-	ClassId     string                         `json:"class_id"`
-	Name        string                         `json:"name"`
-	Uri         string                         `json:"uri"`
-	UriHash     string                         `json:"uri_hash"`
-	Data        string                         `json:"data"`
-	Amount      int                            `json:"amount"`
-	Recipients  []*pb.NFTBatchCreateRecipients `json:"recipients"`
-	Tag         []byte                         `json:"tag"`
-	Module      string                         `json:"module"`
-	Code        string                         `json:"code"`
-	OperationId string                         `json:"operation_id"`
-	AccessMode  int                            `json:"access_mode"`
-}
-
 type NftByNftId struct {
 	ProjectID  uint64 `json:"project_id"`
 	ChainID    uint64 `json:"chain_id"`
 	PlatFormID uint64 `json:"plat_form_id"`
-	NftId      string `json:"nft_id"`
+	NftId      uint64 `json:"nft_id"`
 	ClassId    string `json:"class_id"`
 	Module     string `json:"module"`
 	Code       string `json:"code"`
@@ -235,17 +195,14 @@ type NftByNftId struct {
 }
 
 type EditNftByNftId struct {
-	NftId       string `json:"nft_id"`
-	Name        string `json:"name"`
+	NftId       uint64 `json:"nft_id"`
 	Uri         string `json:"uri"`
-	Data        string `json:"data"`
 	Module      string `json:"module"`
 	ProjectID   uint64 `json:"project_id"`
 	ChainID     uint64 `json:"chain_id"`
 	PlatFormID  uint64 `json:"plat_form_id"`
 	ClassId     string `json:"class_id"`
 	Sender      string `json:"owner"`
-	Tag         []byte `json:"tag"`
 	Code        string `json:"code"`
 	AccessMode  int    `json:"access_mode"`
 	OperationId string `json:"operation_id"`
@@ -257,52 +214,9 @@ type DeleteNftByNftId struct {
 	PlatFormID  uint64 `json:"plat_form_id"`
 	ClassId     string `json:"class_id"`
 	Sender      string `json:"owner"`
-	NftId       string `json:"nft_id"`
-	Tag         []byte `json:"tag"`
+	NftId       uint64 `json:"nft_id"`
 	Module      string `json:"module"`
 	Code        string `json:"code"`
 	AccessMode  int    `json:"access_mode"`
 	OperationId string `json:"operation_id"`
-}
-
-type BatchTransferRequest struct {
-	Module     string `json:"module"`
-	ProjectID  uint64 `json:"project_id"`
-	ChainID    uint64 `json:"chain_id"`
-	PlatFormID uint64 `json:"plat_form_id"`
-	Sender     string `json:"owner"`
-	Code       string `json:"code"`
-
-	Data        []*pb.NFTBatchTransferData `json:"data" validate:"required"`
-	Tag         string                     `json:"tag"`
-	OperationID string                     `json:"operation_id" validate:"required"`
-	AccessMode  int                        `json:"access_mode"`
-}
-
-type BatchEditRequest struct {
-	Module     string `json:"module"`
-	ProjectID  uint64 `json:"project_id"`
-	ChainID    uint64 `json:"chain_id"`
-	PlatFormID uint64 `json:"plat_form_id"`
-	Sender     string `json:"owner"`
-	Code       string `json:"code"`
-
-	Nfts        []*pb.NFTBatchEditData `json:"nfts"`
-	Tag         string                 `json:"tag"`
-	OperationID string                 `json:"operation_id" validate:"required"`
-	AccessMode  int                    `json:"access_mode"`
-}
-
-type BatchDeleteRequest struct {
-	Module     string `json:"module"`
-	ProjectID  uint64 `json:"project_id"`
-	ChainID    uint64 `json:"chain_id"`
-	PlatFormID uint64 `json:"plat_form_id"`
-	Sender     string `json:"owner"`
-	Code       string `json:"code"`
-
-	Nfts        []*pb.NFTIndex `json:"nfts"`
-	Tag         string         `json:"tag"`
-	OperationID string         `json:"operation_id" validate:"required"`
-	AccessMode  int            `json:"access_mode"`
 }

@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/cache"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
@@ -80,6 +81,13 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if chainInfo.Id == 0 {
 		log.Error("project not exist")
 		writeInternalResp(w)
+		return
+	}
+
+	// 判断项目参数版本号
+	if projectInfo.Version != entity.Version2 {
+		log.Error("project version not implemented")
+		writeBadRequestResp(w, constant.ErrUnSupported)
 		return
 	}
 
