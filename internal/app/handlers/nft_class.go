@@ -33,21 +33,12 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 	req := request.(*vo.CreateNftClassRequest)
 
 	name := strings.TrimSpace(req.Name)
-	classId := strings.TrimSpace(req.ClassId)
-	description := strings.TrimSpace(req.Description)
 	symbol := strings.TrimSpace(req.Symbol)
 	uri := strings.TrimSpace(req.Uri)
-	uriHash := strings.TrimSpace(req.UriHash)
-	data := strings.TrimSpace(req.Data)
 	owner := strings.TrimSpace(req.Owner)
 	operationId := strings.TrimSpace(req.OperationID)
 	if operationId == "" {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
-	}
-
-	tagBytes, err := h.ValidateTag(req.Tag)
-	if err != nil {
-		return nil, err
 	}
 	if name == "" {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrName)
@@ -75,15 +66,10 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 		Module:      authData.Module,
 		Name:        name,
 		Symbol:      symbol,
-		Description: description,
 		Uri:         uri,
-		UriHash:     uriHash,
-		Data:        data,
 		Owner:       owner,
-		Tag:         tagBytes,
 		Code:        authData.Code,
 		OperationId: operationId,
-		ClassId:     classId,
 		AccessMode:  authData.AccessMode,
 	}
 	return h.svc.CreateNFTClass(ctx, params)
@@ -168,6 +154,7 @@ func (h NftClass) Id(ctx context.Context) string {
 	}
 	return idR.(string)
 }
+
 func (h NftClass) Name(ctx context.Context) string {
 	nameR := ctx.Value("name")
 	if nameR == nil {
@@ -175,6 +162,7 @@ func (h NftClass) Name(ctx context.Context) string {
 	}
 	return nameR.(string)
 }
+
 func (h NftClass) Owner(ctx context.Context) string {
 	ownerR := ctx.Value("owner")
 	if ownerR == nil {
@@ -182,6 +170,7 @@ func (h NftClass) Owner(ctx context.Context) string {
 	}
 	return ownerR.(string)
 }
+
 func (h NftClass) TxHash(ctx context.Context) string {
 	txHashR := ctx.Value("tx_hash")
 	if txHashR == nil {

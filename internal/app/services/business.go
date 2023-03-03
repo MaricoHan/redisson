@@ -34,13 +34,16 @@ func (s *business) GetOrderInfo(ctx context.Context, params dto.GetOrder) (*dto.
 	logger := s.logger.WithField("params", params).WithField("func", "GetOrderInfo")
 
 	req := pb.OrderShowRequest{
-		ProjectId: params.ProjectID,
-		OrderId:   params.OrderId,
+		ProjectId:   params.ProjectID,
+		OperationId: params.OperationId,
 	}
 	resp := &pb.BuyOrderShowResponse{}
 	var err error
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
-	// 非托管模式仅支持文昌链-天舟；托管模式仅支持文昌链-DDC
+	// 非托管模式仅支持文昌链-天舟,V2项目转发到V1；托管模式仅支持文昌链-DDC,V2项目转发到V1
+	if mapKey == constant.WenchangNativeV2 {
+		mapKey = constant.IritaOPBNative
+	}
 	if (params.AccessMode != entity.UNMANAGED || mapKey != constant.IritaOPBNative) && (params.AccessMode != entity.MANAGED || mapKey != constant.WenchangDDC) {
 		return nil, errors2.ErrNotImplemented
 	}
@@ -60,18 +63,17 @@ func (s *business) GetOrderInfo(ctx context.Context, params dto.GetOrder) (*dto.
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
 	result := &dto.OrderInfo{
-		OrderId:    resp.OrderId,
-		Status:     strings.ToLower(pb.Status_name[int32(resp.Status)]),
-		Message:    resp.Message,
-		Account:    resp.Address,
-		Amount:     resp.Amount,
-		Number:     resp.Number,
-		CreateTime: resp.CreatedAt,
-		UpdateTime: resp.UpdatedAt,
-		OrderType:  resp.Type,
+		OperationId: resp.OperationId,
+		Status:      strings.ToLower(pb.Status_name[int32(resp.Status)]),
+		Message:     resp.Message,
+		Account:     resp.Address,
+		Amount:      resp.Amount,
+		Number:      resp.Number,
+		CreateTime:  resp.CreatedAt,
+		UpdateTime:  resp.UpdatedAt,
+		OrderType:   resp.Type,
 	}
 	return result, nil
-
 }
 
 func (s *business) GetAllOrders(ctx context.Context, params dto.GetAllOrder) (*dto.OrderOperationRes, error) {
@@ -102,15 +104,15 @@ func (s *business) GetAllOrders(ctx context.Context, params dto.GetAllOrder) (*d
 	}
 
 	req := pb.OrderListRequest{
-		ProjectId: params.ProjectId,
-		OrderId:   params.OrderId,
-		Offset:    params.Offset,
-		Limit:     params.Limit,
-		StartDate: params.StartDate,
-		EndDate:   params.EndDate,
-		SortBy:    sort,
-		SortRule:  rule,
-		Address:   params.Account,
+		ProjectId:   params.ProjectId,
+		OperationId: params.OperationId,
+		Offset:      params.Offset,
+		Limit:       params.Limit,
+		StartDate:   params.StartDate,
+		EndDate:     params.EndDate,
+		SortBy:      sort,
+		SortRule:    rule,
+		Address:     params.Account,
 		// Status: pb.Status(status),
 
 	}
@@ -126,8 +128,10 @@ func (s *business) GetAllOrders(ctx context.Context, params dto.GetAllOrder) (*d
 	resp := &pb.BuyOrderListResponse{}
 	var err error
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
-
-	// 非托管模式仅支持文昌链-天舟；托管模式仅支持文昌链-DDC
+	// 非托管模式仅支持文昌链-天舟,V2项目转发到V1；托管模式仅支持文昌链-DDC,V2项目转发到V1
+	if mapKey == constant.WenchangNativeV2 {
+		mapKey = constant.IritaOPBNative
+	}
 	if (params.AccessMode != entity.UNMANAGED || mapKey != constant.IritaOPBNative) && (params.AccessMode != entity.MANAGED || mapKey != constant.WenchangDDC) {
 		return nil, errors2.ErrNotImplemented
 	}
@@ -159,15 +163,15 @@ func (s *business) GetAllOrders(ctx context.Context, params dto.GetAllOrder) (*d
 	var orderOperationRes []*dto.OrderInfo
 	for _, item := range resp.Data {
 		var orderInfo = &dto.OrderInfo{
-			OrderId:    item.OrderId,
-			Status:     strings.ToLower(pb.Status_name[int32(item.Status)]),
-			Message:    item.Message,
-			Account:    item.Address,
-			Amount:     item.Amount,
-			Number:     item.Number,
-			CreateTime: item.CreatedAt,
-			UpdateTime: item.UpdatedAt,
-			OrderType:  item.Type,
+			OperationId: item.OperationId,
+			Status:      strings.ToLower(pb.Status_name[int32(item.Status)]),
+			Message:     item.Message,
+			Account:     item.Address,
+			Amount:      item.Amount,
+			Number:      item.Number,
+			CreateTime:  item.CreatedAt,
+			UpdateTime:  item.UpdatedAt,
+			OrderType:   item.Type,
 		}
 		orderOperationRes = append(orderOperationRes, orderInfo)
 	}
@@ -176,22 +180,24 @@ func (s *business) GetAllOrders(ctx context.Context, params dto.GetAllOrder) (*d
 	}
 
 	return result, nil
-
 }
 
 func (s *business) BuildOrder(ctx context.Context, params dto.BuildOrderInfo) (*dto.BuyResponse, error) {
 	logger := s.logger.WithField("params", params).WithField("func", "BuildOrder")
 
 	req := pb.BuyRequest{
-		ProjectId: params.ProjectID,
-		Address:   params.Address,
-		Amount:    params.Amount,
-		OrderId:   params.OrderId,
+		ProjectId:   params.ProjectID,
+		Address:     params.Address,
+		Amount:      params.Amount,
+		OperationId: params.OperationId,
 	}
 	resp := &pb.BuyResponse{}
 	var err error
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
-	// 非托管模式仅支持文昌链-天舟充值 gas；托管模式仅支持文昌链-DDC
+	// 非托管模式仅支持文昌链-天舟,V2项目转发到V1；托管模式仅支持文昌链-DDC,V2项目转发到V1
+	if mapKey == constant.WenchangNativeV2 {
+		mapKey = constant.IritaOPBNative
+	}
 	if (params.OrderType != constant.OrderTypeGas || params.AccessMode != entity.UNMANAGED || mapKey != constant.IritaOPBNative) && (params.AccessMode != entity.MANAGED || mapKey != constant.WenchangDDC) {
 		if params.OrderType != constant.OrderTypeGas && params.AccessMode == entity.UNMANAGED && mapKey == constant.IritaOPBNative {
 			return nil, errors2.New(errors2.ClientParams, errors2.ErrOrderType)
@@ -212,23 +218,14 @@ func (s *business) BuildOrder(ctx context.Context, params dto.BuildOrderInfo) (*
 			logger.Error("request err:", err.Error())
 			return nil, err
 		}
-	case constant.OrderTypeBusiness:
-		resp, err = grpcClient.BuyBusiness(ctx, &req)
-		if err != nil {
-			logger.Error("request err:", err.Error())
-			return nil, err
-		}
 	default:
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOrderType)
 	}
 	if resp == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
-	result := &dto.BuyResponse{
-		OrderId: resp.OrderId,
-	}
+	result := &dto.BuyResponse{}
 	return result, nil
-
 }
 
 func (s *business) BatchBuyGas(ctx context.Context, params dto.BatchBuyGas) (*dto.BuyResponse, error) {
@@ -238,13 +235,17 @@ func (s *business) BatchBuyGas(ctx context.Context, params dto.BatchBuyGas) (*dt
 	})
 
 	req := pb.BatchBuyRequest{
-		ProjectId: params.ProjectID,
-		List:      params.List,
-		OrderId:   params.OrderId,
+		ProjectId:   params.ProjectID,
+		List:        params.List,
+		OperationId: params.OperationId,
 	}
 	resp := &pb.BatchBuyResponse{}
 	var err error
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+	// 非托管模式仅支持文昌链-天舟,V2项目转发到V1
+	if mapKey == constant.WenchangNativeV2 {
+		mapKey = constant.IritaOPBNative
+	}
 	// 非托管模式仅支持文昌链-天舟；
 	if params.AccessMode != entity.UNMANAGED || mapKey != constant.IritaOPBNative {
 		return nil, errors2.ErrNotImplemented
@@ -264,8 +265,6 @@ func (s *business) BatchBuyGas(ctx context.Context, params dto.BatchBuyGas) (*dt
 	if resp == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
-	result := &dto.BuyResponse{
-		OrderId: resp.OrderId,
-	}
+	result := &dto.BuyResponse{}
 	return result, nil
 }

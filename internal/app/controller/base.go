@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+
 	log "github.com/sirupsen/logrus"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
@@ -25,14 +26,8 @@ func GetAllControllers(logger *log.Logger) []kit.IController {
 		NewNftController(baseController, handlers.NewNft(services.NewNFT(logger))),
 		NewNftTransferController(baseController, handlers.NewNFTTransfer(services.NewNFTTransfer(logger))),
 		NewEmptionController(baseController, handlers.NewBusiness(services.NewBusiness(logger))),
-		NewMTClassController(baseController, handlers.NewMTClass(services.NewMTClass(logger))),
-		NewMTController(baseController, handlers.NewMT(services.NewMT(logger))),
-		// NewMTMsgsController(baseController, handlers.NewMTMsgs(services.NewMTMsgs(logger))),
-		NewRightsController(baseController, handlers.NewRights(services.NewRights(logger))),
-		NewRecordController(baseController, handlers.NewRecord(services.NewRecord(logger))),
 		NewAuthController(baseController, handlers.NewAuth(services.NewAuth(logger))),
 		NewNoticeController(baseController, handlers.NewNotice(services.NewNotice(logger))),
-		// NewMTMsgsController(baseController, handlers.NewMTMsgs(services.NewMTMsgs(logger))),
 	}
 
 	return controllers

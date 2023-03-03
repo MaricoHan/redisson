@@ -3,10 +3,11 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo/notice"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
 	"gitlab.bianjie.ai/avata/utils/errors"
-	"strings"
 )
 
 type INotice interface {

@@ -35,8 +35,8 @@ type AccountsInfo struct {
 	ChainID         uint64 `json:"chain_id"`
 	PlatFormID      uint64 `json:"plat_form_id"`
 	Module          string `json:"module"`
-	Operation       string `json:"operation"`
-	OperationModule string `json:"operation_module"`
+	Operation       uint64 `json:"operation"`
+	OperationModule uint64 `json:"operation_module"`
 	Code            string `json:"code"`
 	TxHash          string `json:"tx_hash"`
 	OperationId     string `json:"operation_id"`
@@ -45,14 +45,11 @@ type AccountsInfo struct {
 }
 
 type BatchAccountRes struct {
-	Accounts    []string `json:"accounts"`
-	OperationId string   `json:"operation_id"`
+	Accounts []string `json:"accounts"`
 }
 
 type AccountRes struct {
-	Account     string `json:"account"`
-	Name        string `json:"name"`
-	OperationId string `json:"operation_id"`
+	Account string `json:"account"`
 }
 
 type AccountsRes struct {
@@ -64,9 +61,6 @@ type Account struct {
 	Account     string `json:"account"`
 	Name        string `json:"name"`
 	OperationId string `json:"operation_id"`
-	Gas         uint64 `json:"gas"`
-	BizFee      uint64 `json:"biz_fee"` // 余额业务
-	Status      uint64 `json:"status"`
 }
 
 type AccountOperationRecordRes struct {
@@ -75,14 +69,11 @@ type AccountOperationRecordRes struct {
 }
 
 type AccountOperationRecords struct {
-	TxHash      string      `json:"tx_hash"`
-	Module      string      `json:"module"`
-	Operation   string      `json:"operation"`
-	Signer      string      `json:"signer"`
-	Timestamp   string      `json:"timestamp"`
-	GasFee      uint64      `json:"gas_fee"`
-	BusinessFee uint64      `json:"business_fee"`
-	Message     *types.JSON `json:"message"`
-	NftMsg      *types.JSON `json:"nft_msg"`
-	MtMsg       *types.JSON `json:"mt_msg"`
+	TxHash    string      `json:"tx_hash"`
+	Module    uint64      `json:"module"`
+	Operation uint64      `json:"operation"`
+	Signer    string      `json:"signer"`
+	Timestamp string      `json:"timestamp"`
+	NftMsg    *types.JSON `json:"nft_msg"`
+	MtMsg     *types.JSON `json:"mt_msg"`
 }

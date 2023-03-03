@@ -51,7 +51,7 @@ var (
 	ErrNftStatus            = Register(RootCodeSpace, NftStatusAbnormal, ErrNftStatusMsg)
 	ErrTimestamp            = Register(RootCodeSpace, TimestampTimeout, "timestamp is timeout")
 	ErrDuplicate            = Register(RootCodeSpace, DuplicateRequest, "duplicate request")
-	ErrUnSupported          = Register(MtCodeSpace, UnSupported, "not implemented")
+	ErrUnSupported          = Register(RootCodeSpace, UnSupported, "not implemented")
 	ErrUnmanagedUnSupported = Register(RootCodeSpace, UnSupported, "not implemented")
 )
 

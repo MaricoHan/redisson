@@ -55,7 +55,6 @@ func (n *nftClass) GetAllNFTClasses(ctx context.Context, params dto.NftClasses) 
 		Name:      params.Name,
 		Owner:     params.Owner,
 		TxHash:    params.TxHash,
-		Status:    pb.STATUS_Active,
 	}
 	resp := &pb.ClassListResponse{}
 	var err error
@@ -115,7 +114,6 @@ func (n *nftClass) GetNFTClass(ctx context.Context, params dto.NftClasses) (*dto
 	req := pb.ClassShowRequest{
 		ProjectId: params.ProjectID,
 		Id:        params.Id,
-		Status:    pb.STATUS_Active, // todo
 	}
 	resp := &pb.ClassShowResponse{}
 	var err error
@@ -161,15 +159,10 @@ func (n *nftClass) CreateNFTClass(ctx context.Context, params dto.CreateNftClass
 	req := pb.ClassCreateRequest{
 		Name:        params.Name,
 		Symbol:      params.Symbol,
-		Description: params.Description,
 		Uri:         params.Uri,
-		UriHash:     params.UriHash,
 		Owner:       params.Owner,
-		Data:        params.Data,
 		ProjectId:   params.ProjectID,
-		Tag:         string(params.Tag),
 		OperationId: params.OperationId,
-		ClassId:     params.ClassId,
 	}
 
 	resp := &pb.ClassCreateResponse{}
@@ -188,5 +181,5 @@ func (n *nftClass) CreateNFTClass(ctx context.Context, params dto.CreateNftClass
 	if resp == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
-	return &dto.TxRes{TaskId: resp.TaskId, OperationId: resp.OperationId}, nil
+	return &dto.TxRes{}, nil
 }
