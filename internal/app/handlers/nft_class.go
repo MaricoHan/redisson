@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"context"
+	"fmt"
+	"gitlab.bianjie.ai/avata/utils/errors/common"
 	"strings"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
@@ -91,11 +93,12 @@ func (h NftClass) Classes(ctx context.Context, _ interface{}) (interface{}, erro
 		Code:       authData.Code,
 		AccessMode: authData.AccessMode,
 	}
-	offset, err := h.Offset(ctx)
+	params.PageKey = h.NextKey(ctx)
+	countTotal, err := h.CountTotal(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errors2.New(errors2.ClientParams, fmt.Sprintf(common.ERR_INVALID_VALUE, "count_total"))
 	}
-	params.Offset = offset
+	params.CountTotal = countTotal
 
 	limit, err := h.Limit(ctx)
 	if err != nil {
@@ -114,14 +117,6 @@ func (h NftClass) Classes(ctx context.Context, _ interface{}) (interface{}, erro
 	}
 
 	params.SortBy = h.SortBy(ctx)
-	// switch h.SortBy(ctx) {
-	// case "DATE_ASC":
-	//	params.SortBy = "DATE_ASC"
-	// case "DATE_DESC":
-	//	params.SortBy = "DATE_DESC"
-	// default:
-	//	return nil, constant.NewAppError(constant.RootCodeSpace, constant.ClientParamsError, constant.ErrSortBy)
-	// }
 
 	// 校验参数 end
 	// 业务数据入库的地方

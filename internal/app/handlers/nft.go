@@ -2,6 +2,9 @@ package handlers
 
 import (
 	"context"
+	"fmt"
+	"gitlab.bianjie.ai/avata/utils/errors/common"
+	"strconv"
 	"strings"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
@@ -144,20 +147,26 @@ func (h *NFT) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 		ProjectID:  authData.ProjectId,
 		PlatFormID: authData.PlatformId,
 		Module:     authData.Module,
-		Id:         h.Id(ctx),
-		ClassId:    h.ClassId(ctx),
-		Owner:      h.Owner(ctx),
-		TxHash:     h.TxHash(ctx),
-		Status:     status,
 		Code:       authData.Code,
-		Name:       h.Name(ctx),
 		AccessMode: authData.AccessMode,
+
+		ClassId: h.ClassId(ctx),
+		Owner:   h.Owner(ctx),
+		TxHash:  h.TxHash(ctx),
+		Status:  status,
+		Name:    h.Name(ctx),
 	}
-	offset, err := h.Offset(ctx)
+	params.Id, err = h.Id(ctx)
 	if err != nil {
 		return nil, err
 	}
-	params.Offset = offset
+
+	params.PageKey = h.NextKey(ctx)
+	countTotal, err := h.CountTotal(ctx)
+	if err != nil {
+		return nil, errors2.New(errors2.ClientParams, fmt.Sprintf(common.ERR_INVALID_VALUE, "count_total"))
+	}
+	params.CountTotal = countTotal
 
 	limit, err := h.Limit(ctx)
 	if err != nil {
@@ -176,7 +185,6 @@ func (h *NFT) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 
 	endDateR := h.EndDate(ctx)
 	if endDateR != "" {
-
 		params.EndDate = endDateR
 	}
 
@@ -213,12 +221,16 @@ func (h *NFT) Signer(ctx context.Context) string {
 	return signer.(string)
 }
 
-func (h *NFT) Id(ctx context.Context) string {
-	id := ctx.Value("id")
-	if id == nil {
-		return ""
+func (h *NFT) Id(ctx context.Context) (uint64, error) {
+	s := ctx.Value("id")
+	if s == nil {
+		return 0, nil
 	}
-	return id.(string)
+	res, err := strconv.ParseUint(s.(string), 10, 64)
+	if err != nil {
+		return 0, errors2.New(errors2.ClientParams, fmt.Sprintf(common.ERR_INVALID_VALUE, "id"))
+	}
+	return res, nil
 }
 
 func (h *NFT) ClassId(ctx context.Context) string {

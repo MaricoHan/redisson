@@ -46,18 +46,19 @@ func (s *nft) List(ctx context.Context, params dto.Nfts) (*dto.NftsRes, error) {
 	}
 
 	req := pb.NFTListRequest{
-		ProjectId: params.ProjectID,
-		Offset:    params.Offset,
-		Limit:     params.Limit,
-		StartDate: params.StartDate,
-		EndDate:   params.EndDate,
-		Id:        params.Id,
-		ClassId:   params.ClassId,
-		Owner:     params.Owner,
-		TxHash:    params.TxHash,
-		Status:    pb.STATUS(pb.STATUS_value[params.Status]),
-		SortBy:    pb.SORTS(sort),
-		Name:      params.Name,
+		ProjectId:  params.ProjectID,
+		Limit:      params.Limit,
+		StartDate:  params.StartDate,
+		EndDate:    params.EndDate,
+		Id:         params.Id,
+		ClassId:    params.ClassId,
+		Owner:      params.Owner,
+		TxHash:     params.TxHash,
+		Status:     pb.STATUS(pb.STATUS_value[params.Status]),
+		SortBy:     pb.SORTS(sort),
+		Name:       params.Name,
+		PageKey:    params.PageKey,
+		CountTotal: params.CountTotal,
 	}
 
 	resp := &pb.NFTListResponse{}
@@ -82,8 +83,10 @@ func (s *nft) List(ctx context.Context, params dto.Nfts) (*dto.NftsRes, error) {
 		Nfts: []*dto.NFT{},
 	}
 	result.Limit = resp.Limit
-	result.Offset = resp.Offset
+	result.PrevPageKey = resp.PrevPageKey
+	result.NextPageKey = resp.NextPageKey
 	result.TotalCount = resp.TotalCount
+
 	var nfts []*dto.NFT
 	for _, item := range resp.Data {
 		nft := &dto.NFT{

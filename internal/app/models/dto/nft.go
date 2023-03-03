@@ -156,7 +156,7 @@ type NftReq struct {
 
 type Nfts struct {
 	Page
-	Id         string `json:"id"`
+	Id         uint64 `json:"id"`
 	ClassId    string `json:"class_id"`
 	Owner      string `json:"owner"`
 	TxHash     string `json:"tx_hash"`

@@ -24,11 +24,11 @@ const (
 	OrderTypeBusiness = "business"
 
 	// chain map
-	WenchangNativeV2 = "wenchangchain-nativeV2"
-	WenchangDDC      = "wenchangchain-ddc"
-	DatangNative     = "datangchain-native"
-	IritaOPBNative   = "irita-opb-native"
-	IrisHubNative    = "irishub-native"
+	WenchangNative = "wenchangchain-native"
+	WenchangDDC    = "wenchangchain-ddc"
+	DatangNative   = "datangchain-native"
+	IritaOPBNative = "irita-opb-native"
+	IrisHubNative  = "irishub-native"
 
 	// Enum values for NFTSStatus
 	NFTSStatusActive = "active"

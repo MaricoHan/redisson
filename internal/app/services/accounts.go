@@ -120,6 +120,8 @@ func (a *account) GetAccounts(ctx context.Context, params dto.AccountsInfo) (*dt
 
 	req := pb.AccountShowRequest{
 		ProjectId:   params.ProjectID,
+		PageKey:     params.PageKey,
+		CountTotal:  params.CountTotal,
 		Limit:       params.Limit,
 		SortBy:      pb.SORT(sort),
 		Account:     params.Account,
@@ -148,10 +150,14 @@ func (a *account) GetAccounts(ctx context.Context, params dto.AccountsInfo) (*dt
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
 	result := &dto.AccountsRes{
+		PageRes: dto.PageRes{
+			PrevPageKey: resp.PrevPageKey,
+			NextPageKey: resp.NextPageKey,
+			Limit:       resp.Limit,
+			TotalCount:  resp.TotalCount,
+		},
 		Accounts: []*dto.Account{},
 	}
-	result.Limit = resp.Limit
-	result.TotalCount = resp.TotalCount
 	var accounts []*dto.Account
 	for _, result := range resp.Data {
 		account := &dto.Account{

@@ -3,13 +3,16 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"gitlab.bianjie.ai/avata/utils/errors/common"
 	"strconv"
+	"strings"
 
 	"github.com/asaskevich/govalidator"
 	log "github.com/sirupsen/logrus"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 
-	pb "gitlab.bianjie.ai/avata/chains/api/pb/account"
+	"gitlab.bianjie.ai/avata/chains/api/pb/nft"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 )
 
@@ -65,12 +68,12 @@ func (h pageBasic) Offset(ctx context.Context) (int64, error) {
 	return offsetInt, nil
 }
 
-func (h pageBasic) Limit(ctx context.Context) (int64, error) {
+func (h pageBasic) Limit(ctx context.Context) (uint64, error) {
 	limit := ctx.Value("limit")
 	if limit == "" || limit == nil {
 		return 10, nil
 	}
-	limitInt, err := strconv.ParseInt(limit.(string), 10, 64)
+	limitInt, err := strconv.ParseUint(limit.(string), 10, 64)
 	if err != nil {
 		return 10, errors2.New(errors2.ClientParams, errors2.ErrLimitParam)
 	}
@@ -99,7 +102,33 @@ func (h pageBasic) EndDate(ctx context.Context) string {
 func (h pageBasic) SortBy(ctx context.Context) string {
 	sortBy := ctx.Value("sort_by")
 	if sortBy == "" || sortBy == nil {
-		return pb.SORT_name[0]
+		return nft.SORTS_name[0]
 	}
 	return sortBy.(string)
+}
+
+func (pageBasic) NextKey(ctx context.Context) string {
+	v := ctx.Value("next_key")
+	if v == nil {
+		return ""
+	}
+	// 因为 get 请求的 query 参数中的 '+' 会被转为空格
+	return strings.ReplaceAll(v.(string), " ", "+")
+}
+
+func (p pageBasic) CountTotal(ctx context.Context) (string, error) {
+	CountTotal := p.StringValue(ctx, "count_total")
+	if CountTotal != "0" && CountTotal != "1" {
+		return "", errors2.New(errors2.ClientParams, fmt.Sprintf(common.ERR_INVALID_VALUE, "count_total"))
+	}
+	return CountTotal, nil
+}
+
+func (pageBasic) StringValue(ctx context.Context, key string) string {
+	v := ctx.Value(key)
+	if v == nil {
+		return ""
+	}
+
+	return v.(string)
 }

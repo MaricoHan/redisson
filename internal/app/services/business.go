@@ -41,7 +41,7 @@ func (s *business) GetOrderInfo(ctx context.Context, params dto.GetOrder) (*dto.
 	var err error
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	// 非托管模式仅支持文昌链-天舟,V2项目转发到V1；托管模式仅支持文昌链-DDC,V2项目转发到V1
-	if mapKey == constant.WenchangNativeV2 {
+	if mapKey == constant.WenchangNative {
 		mapKey = constant.IritaOPBNative
 	}
 	if (params.AccessMode != entity.UNMANAGED || mapKey != constant.IritaOPBNative) && (params.AccessMode != entity.MANAGED || mapKey != constant.WenchangDDC) {
@@ -106,7 +106,8 @@ func (s *business) GetAllOrders(ctx context.Context, params dto.GetAllOrder) (*d
 	req := pb.OrderListRequest{
 		ProjectId:   params.ProjectId,
 		OperationId: params.OperationId,
-		Offset:      params.Offset,
+		PageKey:     params.PageKey,
+		CountTotal:  params.CountTotal,
 		Limit:       params.Limit,
 		StartDate:   params.StartDate,
 		EndDate:     params.EndDate,
@@ -129,7 +130,7 @@ func (s *business) GetAllOrders(ctx context.Context, params dto.GetAllOrder) (*d
 	var err error
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	// 非托管模式仅支持文昌链-天舟,V2项目转发到V1；托管模式仅支持文昌链-DDC,V2项目转发到V1
-	if mapKey == constant.WenchangNativeV2 {
+	if mapKey == constant.WenchangNative {
 		mapKey = constant.IritaOPBNative
 	}
 	if (params.AccessMode != entity.UNMANAGED || mapKey != constant.IritaOPBNative) && (params.AccessMode != entity.MANAGED || mapKey != constant.WenchangDDC) {
@@ -153,9 +154,10 @@ func (s *business) GetAllOrders(ctx context.Context, params dto.GetAllOrder) (*d
 	}
 	result := &dto.OrderOperationRes{
 		PageRes: dto.PageRes{
-			Offset:     resp.Offset,
-			Limit:      resp.Limit,
-			TotalCount: resp.TotalCount,
+			PrevPageKey: resp.PrevPageKey,
+			NextPageKey: resp.NextPageKey,
+			Limit:       resp.Limit,
+			TotalCount:  resp.TotalCount,
 		},
 		OrderInfos: []*dto.OrderInfo{},
 	}
@@ -195,7 +197,7 @@ func (s *business) BuildOrder(ctx context.Context, params dto.BuildOrderInfo) (*
 	var err error
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	// 非托管模式仅支持文昌链-天舟,V2项目转发到V1；托管模式仅支持文昌链-DDC,V2项目转发到V1
-	if mapKey == constant.WenchangNativeV2 {
+	if mapKey == constant.WenchangNative {
 		mapKey = constant.IritaOPBNative
 	}
 	if (params.OrderType != constant.OrderTypeGas || params.AccessMode != entity.UNMANAGED || mapKey != constant.IritaOPBNative) && (params.AccessMode != entity.MANAGED || mapKey != constant.WenchangDDC) {
@@ -243,7 +245,7 @@ func (s *business) BatchBuyGas(ctx context.Context, params dto.BatchBuyGas) (*dt
 	var err error
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	// 非托管模式仅支持文昌链-天舟,V2项目转发到V1
-	if mapKey == constant.WenchangNativeV2 {
+	if mapKey == constant.WenchangNative {
 		mapKey = constant.IritaOPBNative
 	}
 	// 非托管模式仅支持文昌链-天舟；

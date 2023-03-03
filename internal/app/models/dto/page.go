@@ -1,15 +1,17 @@
 package dto
 
 type Page struct {
-	Offset    int64  `json:"offset"`
-	Limit     int64  `json:"limit" `
-	StartDate string `json:"start_date"`
-	EndDate   string `json:"end_date"`
-	SortBy    string `json:"sort_by"`
+	Limit      uint64 `json:"limit" `
+	StartDate  string `json:"start_date"`
+	EndDate    string `json:"end_date"`
+	SortBy     string `json:"sort_by"`
+	PageKey    string `json:"next_key"`
+	CountTotal string `json:"count_total"`
 }
 
 type PageRes struct {
-	Offset     int64 `json:"offset"  `
-	Limit      int64 `json:"limit" `
-	TotalCount int64 `json:"total_count"`
+	Limit       uint64 `json:"limit" `
+	TotalCount  int64  `json:"total_count"`
+	PrevPageKey string `json:"last_key"`
+	NextPageKey string `json:"next_key"`
 }

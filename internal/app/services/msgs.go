@@ -47,16 +47,17 @@ func (s *msgs) GetNFTHistory(ctx context.Context, params dto.NftOperationHistory
 	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	req := pb.NFTHistoryRequest{
-		ProjectId: params.ProjectID,
-		NftId:     params.NftId,
-		Signer:    params.Signer,
-		TxHash:    params.Txhash,
-		Offset:    params.Offset,
-		Limit:     params.Limit,
-		StartDate: params.StartDate,
-		EndDate:   params.EndDate,
-		ClassId:   params.ClassID,
-		SortBy:    pb.SORTS(sort),
+		ProjectId:  params.ProjectID,
+		NftId:      params.NftId,
+		Signer:     params.Signer,
+		TxHash:     params.Txhash,
+		PageKey:    params.PageKey,
+		CountTotal: params.CountTotal,
+		Limit:      params.Limit,
+		StartDate:  params.StartDate,
+		EndDate:    params.EndDate,
+		ClassId:    params.ClassID,
+		SortBy:     pb.SORTS(sort),
 	}
 	req.Operation = pb.NFT_OPERATIONS(params.Operation)
 
@@ -78,8 +79,10 @@ func (s *msgs) GetNFTHistory(ctx context.Context, params dto.NftOperationHistory
 	}
 	result := &dto.NftOperationHistoryByNftIdRes{
 		PageRes: dto.PageRes{
-			Offset: resp.Offset,
-			Limit:  resp.Limit,
+			PrevPageKey: resp.PrevPageKey,
+			NextPageKey: resp.NextPageKey,
+			Limit:       resp.Limit,
+			TotalCount:  resp.TotalCount,
 		},
 		OperationRecords: []*dto.OperationRecord{},
 	}
@@ -120,16 +123,17 @@ func (s *msgs) GetAccountHistory(ctx context.Context, params dto.AccountsInfo) (
 	}
 
 	req := pb.AccountHistoryRequest{
-		ProjectId: params.ProjectID,
-		Offset:    params.Offset,
-		Limit:     params.Limit,
-		StartDate: params.StartDate,
-		EndDate:   params.EndDate,
-		SortBy:    pb.SORTS(sort),
-		Address:   params.Account,
-		Module:    params.OperationModule,
-		Operation: params.Operation,
-		TxHash:    params.TxHash,
+		ProjectId:  params.ProjectID,
+		PageKey:    params.PageKey,
+		CountTotal: params.CountTotal,
+		Limit:      params.Limit,
+		StartDate:  params.StartDate,
+		EndDate:    params.EndDate,
+		SortBy:     pb.SORTS(sort),
+		Account:    params.Account,
+		Module:     params.OperationModule,
+		Operation:  params.Operation,
+		TxHash:     params.TxHash,
 	}
 
 	resp := &pb.AccountHistoryResponse{}
@@ -150,9 +154,10 @@ func (s *msgs) GetAccountHistory(ctx context.Context, params dto.AccountsInfo) (
 	}
 	result := &dto.AccountOperationRecordRes{
 		PageRes: dto.PageRes{
-			Offset:     resp.Offset,
-			Limit:      resp.Limit,
-			TotalCount: resp.TotalCount,
+			PrevPageKey: resp.PrevPageKey,
+			NextPageKey: resp.NextPageKey,
+			Limit:       resp.Limit,
+			TotalCount:  resp.TotalCount,
 		},
 		OperationRecords: []*dto.AccountOperationRecords{},
 	}
