@@ -45,17 +45,18 @@ func (n *nftClass) GetAllNFTClasses(ctx context.Context, params dto.NftClasses) 
 	}
 
 	req := pb.ClassListRequest{
-		ProjectId: params.ProjectID,
-		Offset:    params.Offset,
-		Limit:     params.Limit,
-		StartDate: params.StartDate,
-		EndDate:   params.EndDate,
-		SortBy:    pb.SORTS(sort),
-		Id:        params.Id,
-		Name:      params.Name,
-		Owner:     params.Owner,
-		TxHash:    params.TxHash,
-		Status:    pb.STATUS_Active,
+		ProjectId:  params.ProjectID,
+		NextKey:    params.NextKey,
+		CountTotal: params.CountTotal,
+		Limit:      params.Limit,
+		StartDate:  params.StartDate,
+		EndDate:    params.EndDate,
+		SortBy:     pb.SORTS(sort),
+		Id:         params.Id,
+		Name:       params.Name,
+		Owner:      params.Owner,
+		TxHash:     params.TxHash,
+		Status:     pb.STATUS_Active,
 	}
 	resp := &pb.ClassListResponse{}
 	var err error
@@ -75,8 +76,9 @@ func (n *nftClass) GetAllNFTClasses(ctx context.Context, params dto.NftClasses) 
 	}
 	result := &dto.NftClassesRes{
 		PageRes: dto.PageRes{
-			Offset: resp.Offset,
-			Limit:  resp.Limit,
+			PreKey:  resp.PreKey,
+			NextKey: resp.NextKey,
+			Limit:   resp.Limit,
 		},
 		NftClasses: []*dto.NftClass{},
 	}

@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"context"
+	"fmt"
+	"gitlab.bianjie.ai/avata/utils/errors/common"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -243,20 +245,23 @@ func (h *NFT) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 		ProjectID:  authData.ProjectId,
 		PlatFormID: authData.PlatformId,
 		Module:     authData.Module,
-		Id:         h.Id(ctx),
-		ClassId:    h.ClassId(ctx),
-		Owner:      h.Owner(ctx),
-		TxHash:     h.TxHash(ctx),
-		Status:     status,
 		Code:       authData.Code,
-		Name:       h.Name(ctx),
 		AccessMode: authData.AccessMode,
+
+		Id:      h.Id(ctx),
+		ClassId: h.ClassId(ctx),
+		Owner:   h.Owner(ctx),
+		TxHash:  h.TxHash(ctx),
+		Status:  status,
+		Name:    h.Name(ctx),
 	}
-	offset, err := h.Offset(ctx)
+
+	params.NextKey = h.NextKey(ctx)
+	countTotal, err := h.CountTotal(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errors2.New(errors2.ClientParams, fmt.Sprintf(common.ERR_INVALID_VALUE, "count_total"))
 	}
-	params.Offset = offset
+	params.CountTotal = countTotal
 
 	limit, err := h.Limit(ctx)
 	if err != nil {
@@ -275,7 +280,6 @@ func (h *NFT) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 
 	endDateR := h.EndDate(ctx)
 	if endDateR != "" {
-
 		params.EndDate = endDateR
 	}
 

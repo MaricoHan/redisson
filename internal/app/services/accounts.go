@@ -124,7 +124,8 @@ func (a *account) GetAccounts(ctx context.Context, params dto.AccountsInfo) (*dt
 
 	req := pb.AccountShowRequest{
 		ProjectId:   params.ProjectID,
-		Offset:      params.Offset,
+		NextKey:     params.NextKey,
+		CountTotal:  params.CountTotal,
 		Limit:       params.Limit,
 		SortBy:      pb.SORT(sort),
 		Address:     params.Account,
