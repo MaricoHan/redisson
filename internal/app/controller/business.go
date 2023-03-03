@@ -21,7 +21,7 @@ func (c EmptionController) GetEndpoints() []kit.Endpoint {
 	var ends []kit.Endpoint
 	ends = append(ends,
 		kit.Endpoint{
-			URI:     "/orders/{order_id}",
+			URI:     "/orders/{operation_id}",
 			Method:  http.MethodGet,
 			Handler: c.makeHandler(c.handler.GetOrderInfo, nil),
 		},

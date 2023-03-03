@@ -55,7 +55,6 @@ type TransferMTClass struct {
 	ProjectID   uint64 `json:"project_id"`
 	ChainID     uint64 `json:"chain_id"`
 	PlatFormID  uint64 `json:"plat_form_id"`
-	Tag         []byte `json:"tag"`
 	Module      string `json:"module"`
 	Code        string `json:"code"`
 	OperationId string `json:"operation_id"`

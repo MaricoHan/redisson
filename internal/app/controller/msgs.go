@@ -3,8 +3,9 @@ package controller
 import (
 	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
 
-	kit "gitlab.bianjie.ai/avata/open-api/pkg/gokit"
 	"net/http"
+
+	kit "gitlab.bianjie.ai/avata/open-api/pkg/gokit"
 )
 
 type MsgsController struct {
@@ -28,11 +29,6 @@ func (c MsgsController) GetEndpoints() []kit.Endpoint {
 			URI:     "/accounts/history",
 			Method:  http.MethodGet,
 			Handler: c.makeHandler(c.handler.GetAccountHistory, nil),
-		},
-		kit.Endpoint{
-			URI:     "/mt/mts/{class_id}/{mt_id}/history",
-			Method:  http.MethodGet,
-			Handler: c.makeHandler(c.handler.GetMTHistory, nil),
 		},
 	)
 	return ends

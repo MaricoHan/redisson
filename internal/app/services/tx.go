@@ -62,24 +62,15 @@ func (t *tx) TxResultByTxHash(ctx context.Context, params dto.TxResultByTxHash) 
 	}
 	result := new(dto.TxResultByTxHashRes)
 	status := resp.Detail.Status
-	result.Module = resp.Detail.Module
-	result.Type = resp.Detail.Operation
+	result.Module = uint64(resp.Detail.Module)
+	result.Operation = uint64(resp.Detail.Operation)
 	result.TxHash = ""
 	result.Status = int32(status)
 	if status == pb.STATUS_success || status == pb.STATUS_failed {
 		result.TxHash = resp.Detail.Hash
 	}
-	if resp.Detail.Tag != "" {
-		var tagInterface interface{}
-		err = json.Unmarshal([]byte(resp.Detail.Tag), &tagInterface)
-		if err != nil {
-			logger.WithError(err).Error("Unmarshal failed")
-			return nil, errors2.ErrInternal
-		}
-		result.Tag = tagInterface.(map[string]interface{})
-	}
 
-	result.Message = resp.Detail.ErrMsg
+	result.Message = resp.Detail.Message
 	result.BlockHeight = resp.Detail.BlockHeight
 	result.Timestamp = resp.Detail.Timestamp
 
@@ -90,22 +81,8 @@ func (t *tx) TxResultByTxHash(ctx context.Context, params dto.TxResultByTxHash) 
 			logger.WithError(err).Error("Unmarshal failed")
 			return nil, errors2.ErrInternal
 		}
-		result.NftID = resp.Detail.NftId
-		result.ClassID = resp.Detail.ClassId
 	}
 
-	if resp.Detail.Mt != "" {
-		result.Mt = new(types.JSON)
-		err = json.Unmarshal([]byte(resp.Detail.Mt), result.Mt)
-		if err != nil {
-			logger.WithError(err).Error("Unmarshal failed")
-			return nil, errors2.ErrInternal
-		}
-	}
-
-	if resp.Detail.Record != new(pb.Record) {
-		result.Record = resp.Detail.Record
-	}
 	return result, nil
 }
 

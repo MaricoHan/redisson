@@ -12,7 +12,6 @@ type IssueRequest struct {
 	Metadata    string `json:"metadata"`
 	Amount      uint64 `json:"amount"`
 	Recipient   string `json:"recipient"`
-	Tag         string `json:"tag"`
 	OperationID string `json:"operation_id" validate:"required"`
 	AccessMode  int    `json:"access_mode"`
 }
@@ -28,7 +27,6 @@ type MintRequest struct {
 	MTID        string `json:"mt_id"`
 	Amount      uint64 `json:"amount,omitempty"`
 	Recipient   string `json:"recipient,omitempty"`
-	Tag         string `json:"tag"`
 	OperationID string `json:"operation_id" validate:"required"`
 	AccessMode  int    `json:"access_mode"`
 }
@@ -43,7 +41,6 @@ type BatchMintRequest struct {
 	ClassID     string          `json:"class_id"`
 	MTID        string          `json:"mt_id"`
 	Recipients  []*pb.Recipient `json:"recipients"`
-	Tag         string          `json:"tag"`
 	OperationID string          `json:"operation_id" validate:"required"`
 	AccessMode  int             `json:"access_mode"`
 }
@@ -56,7 +53,6 @@ type EditRequest struct {
 	ProjectID   uint64 `json:"project_id"`
 	Owner       string `json:"owner"`
 	Data        string `json:"data"`
-	Tag         string `json:"tag"`
 	ClassId     string `json:"class_id"`
 	MTID        string `json:"mt_id"`
 	OperationID string `json:"operation_id" validate:"required"`
@@ -73,7 +69,6 @@ type BurnRequest struct {
 	ClassID     string `json:"class_id"`
 	MtID        string `json:"mt_id"`
 	Amount      uint64 `json:"amount"`
-	Tag         string `json:"tag"`
 	OperationID string `json:"operation_id" validate:"required"`
 	AccessMode  int    `json:"access_mode"`
 }
@@ -83,7 +78,6 @@ type BatchBurnRequest struct {
 	ProjectID   uint64       `json:"project_id"`
 	Owner       string       `json:"owner"`
 	Mts         []*pb.BurnMT `json:"mts"`
-	Tag         string       `json:"tag"`
 	OperationID string       `json:"operation_id" validate:"required"`
 	AccessMode  int          `json:"access_mode"`
 }
@@ -96,7 +90,6 @@ type MTBatchTransferRequest struct {
 	ProjectID   uint64         `json:"project_id"`
 	Owner       string         `json:"owner"`
 	Mts         []*pb.Transfer `json:"mts"`
-	Tag         string         `json:"tag"`
 	OperationID string         `json:"operation_id" validate:"required"`
 	AccessMode  int            `json:"access_mode"`
 }
@@ -116,7 +109,6 @@ type MTTransferRequest struct {
 	MtId        string `json:"mt_id"`
 	Amount      uint64 `json:"amount"`
 	Recipient   string `json:"recipient"`
-	Tag         string `json:"tag"`
 	OperationID string `json:"operation_id" validate:"required"`
 	AccessMode  int    `json:"access_mode"`
 }
@@ -179,7 +171,6 @@ type CreateMTClass struct {
 	ProjectID   uint64 `json:"project_id"`
 	ChainID     uint64 `json:"chain_id"`
 	PlatFormID  uint64 `json:"plat_form_id"`
-	Tag         []byte `json:"tag"`
 	Module      string `json:"module"`
 	Code        string `json:"code"`
 	OperationId string `json:"operation_id"`
