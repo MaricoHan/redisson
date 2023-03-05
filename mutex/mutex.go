@@ -2,6 +2,7 @@ package mutex
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -40,7 +41,7 @@ func NewMutex(root *Root, name string, options ...Option) *Mutex {
 	}
 }
 
-func (m *Mutex) Lock() error {
+func (m Mutex) Lock() error {
 	// 单位：ms
 	expiration := int64(m.expiration / time.Millisecond)
 
@@ -66,7 +67,7 @@ func (m *Mutex) Lock() error {
 	return nil
 }
 
-func (m *Mutex) tryLock(ctx context.Context, clientID string, expiration int64) error {
+func (m Mutex) tryLock(ctx context.Context, clientID string, expiration int64) error {
 	// 尝试加锁
 	pTTL, err := m.lockInner(clientID, expiration)
 	if err != nil {
@@ -89,7 +90,7 @@ func (m *Mutex) tryLock(ctx context.Context, clientID string, expiration int64) 
 	}
 }
 
-func (m *Mutex) lockInner(clientID string, expiration int64) (int64, error) {
+func (m Mutex) lockInner(clientID string, expiration int64) (int64, error) {
 	pTTL, err := m.root.Client.Eval(context.TODO(), mutexScript.lockScript, []string{m.Name}, clientID, expiration).Result()
 	if err == redis.Nil {
 		return 0, nil
@@ -102,12 +103,21 @@ func (m *Mutex) lockInner(clientID string, expiration int64) (int64, error) {
 	return pTTL.(int64), nil
 }
 
-func (m *Mutex) Unlock() error {
+func (m Mutex) Unlock() error {
 	goID := utils.GoID()
-	return m.unlockInner(goID)
+
+	if err := m.unlockInner(goID); err != nil {
+		return fmt.Errorf("unlock err: %w", err)
+	}
+
+	if err := m.pubSub.Unsubscribe(context.Background(), utils.ChannelName(m.Name)); err != nil {
+		return fmt.Errorf("unsub err: %w", err)
+	}
+
+	return nil
 }
 
-func (m *Mutex) unlockInner(goID int64) error {
+func (m Mutex) unlockInner(goID int64) error {
 	res, err := m.root.Client.Eval(context.TODO(), mutexScript.unlockScript, []string{m.Name, utils.ChannelName(m.Name)}, m.root.UUID+":"+strconv.FormatInt(goID, 10), 1).Int64()
 	if err != nil {
 		return err
