@@ -117,11 +117,15 @@ func (pageBasic) NextKey(ctx context.Context) string {
 }
 
 func (p pageBasic) CountTotal(ctx context.Context) (string, error) {
-	CountTotal := p.StringValue(ctx, "count_total")
-	if CountTotal != "0" && CountTotal != "1" {
+	CountTotal := ctx.Value("count_total")
+	if CountTotal == nil {
+		return "0", nil
+	}
+
+	if CountTotal.(string) != "0" && CountTotal.(string) != "1" {
 		return "", errors2.New(errors2.ClientParams, fmt.Sprintf(common.ERR_INVALID_VALUE, "count_total"))
 	}
-	return CountTotal, nil
+	return CountTotal.(string), nil
 }
 
 func (pageBasic) StringValue(ctx context.Context, key string) string {
