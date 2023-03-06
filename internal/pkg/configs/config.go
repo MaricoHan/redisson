@@ -12,8 +12,6 @@ type (
 	}
 
 	App struct {
-		ServerName         string `mapstructure:"name"`
-		Version            string `mapstructure:"version"`
 		LogLevel           string `mapstructure:"log_level"`
 		LogFormat          string `mapstructure:"log_format"`
 		Addr               string `mapstructure:"addr"`
@@ -45,12 +43,8 @@ type (
 	}
 
 	GrpcClient struct {
-		WenchangchainDDCAddr    string `mapstructure:"wenchangchain_ddc_addr"`
 		WenchangchainNativeAddr string `mapstructure:"wenchangchain_native_addr"`
-		IritaOPBNativeAddr      string `mapstructure:"irita_opb_native_addr"`
-		IrisHubNativeAddr       string `mapstructure:"iris_hub_native_addr"`
 		StateGatewayAddr        string `mapstructure:"state_gateway_addr"`
-		RightsJiangSu           string `mapstructure:"rights_jiangsu"`
 	}
 
 	Project struct {

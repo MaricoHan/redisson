@@ -3,8 +3,9 @@ package handlers
 import (
 	"context"
 	"fmt"
-	"gitlab.bianjie.ai/avata/utils/errors/common"
 	"strings"
+
+	"gitlab.bianjie.ai/avata/utils/errors/common"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
@@ -66,8 +67,10 @@ func (h *Account) BatchCreateAccount(ctx context.Context, request interface{}) (
 func (h *Account) CreateAccount(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
 	req := request.(*vo.CreateAccountRequest)
+
 	name := strings.TrimSpace(req.Name)
 	operationId := strings.TrimSpace(req.OperationID)
+
 	if operationId == "" {
 		return nil, errors.New(errors.ClientParams, errors.ErrOperationID)
 	}
