@@ -93,7 +93,7 @@ func (h NftClass) Classes(ctx context.Context, _ interface{}) (interface{}, erro
 		Code:       authData.Code,
 		AccessMode: authData.AccessMode,
 	}
-	params.PageKey = h.NextKey(ctx)
+	params.PageKey = h.PageKey(ctx)
 	countTotal, err := h.CountTotal(ctx)
 	if err != nil {
 		return nil, errors2.New(errors2.ClientParams, fmt.Sprintf(common.ERR_INVALID_VALUE, "count_total"))

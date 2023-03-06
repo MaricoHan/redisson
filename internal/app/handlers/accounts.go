@@ -112,7 +112,7 @@ func (h *Account) GetAccounts(ctx context.Context, _ interface{}) (interface{}, 
 		AccessMode:  authData.AccessMode,
 	}
 
-	params.PageKey = h.NextKey(ctx)
+	params.PageKey = h.PageKey(ctx)
 	countTotal, err := h.CountTotal(ctx)
 	if err != nil {
 		return nil, errors.New(errors.ClientParams, fmt.Sprintf(common.ERR_INVALID_VALUE, "count_total"))
