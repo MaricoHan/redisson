@@ -12,6 +12,6 @@ type Page struct {
 type PageRes struct {
 	Limit       uint64 `json:"limit" `
 	TotalCount  int64  `json:"total_count"`
-	PrevPageKey string `json:"last_key"`
-	NextPageKey string `json:"next_key"`
+	PrevPageKey string `json:"prev_page_key"`
+	NextPageKey string `json:"next_page_key"`
 }

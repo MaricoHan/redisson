@@ -107,8 +107,8 @@ func (h pageBasic) SortBy(ctx context.Context) string {
 	return sortBy.(string)
 }
 
-func (pageBasic) NextKey(ctx context.Context) string {
-	v := ctx.Value("next_key")
+func (pageBasic) PageKey(ctx context.Context) string {
+	v := ctx.Value("page_key")
 	if v == nil {
 		return ""
 	}
