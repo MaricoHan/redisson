@@ -4,13 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"gitlab.bianjie.ai/avata/utils/errors/common"
 	"strconv"
 	"strings"
 
 	"github.com/asaskevich/govalidator"
 	log "github.com/sirupsen/logrus"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
+	"gitlab.bianjie.ai/avata/utils/errors/common"
 
 	"gitlab.bianjie.ai/avata/chains/api/pb/nft"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
@@ -19,7 +19,7 @@ import (
 type base struct {
 }
 
-func (h base) AuthData(ctx context.Context) vo.AuthData {
+func (b base) AuthData(ctx context.Context) vo.AuthData {
 	authDataString := ctx.Value("X-Auth-Data")
 	authDataSlice, ok := authDataString.([]string)
 	if !ok {
@@ -34,7 +34,7 @@ func (h base) AuthData(ctx context.Context) vo.AuthData {
 	return authData
 }
 
-func (h base) UriCheck(uri string) error {
+func (b base) UriCheck(uri string) error {
 	if len([]rune(uri)) == 0 {
 		return nil
 	}
@@ -53,7 +53,7 @@ func (h base) UriCheck(uri string) error {
 type pageBasic struct {
 }
 
-func (h pageBasic) Offset(ctx context.Context) (int64, error) {
+func (p pageBasic) Offset(ctx context.Context) (int64, error) {
 	offset := ctx.Value("offset")
 	if offset == "" || offset == nil {
 		return 0, nil
@@ -68,7 +68,7 @@ func (h pageBasic) Offset(ctx context.Context) (int64, error) {
 	return offsetInt, nil
 }
 
-func (h pageBasic) Limit(ctx context.Context) (uint64, error) {
+func (p pageBasic) Limit(ctx context.Context) (uint64, error) {
 	limit := ctx.Value("limit")
 	if limit == "" || limit == nil {
 		return 10, nil
@@ -83,7 +83,7 @@ func (h pageBasic) Limit(ctx context.Context) (uint64, error) {
 	return limitInt, nil
 }
 
-func (h pageBasic) StartDate(ctx context.Context) string {
+func (p pageBasic) StartDate(ctx context.Context) string {
 	startDate := ctx.Value("start_date")
 	if startDate == "" || startDate == nil {
 		return ""
@@ -91,7 +91,7 @@ func (h pageBasic) StartDate(ctx context.Context) string {
 	return startDate.(string)
 }
 
-func (h pageBasic) EndDate(ctx context.Context) string {
+func (p pageBasic) EndDate(ctx context.Context) string {
 	endDate := ctx.Value("end_date")
 	if endDate == "" || endDate == nil {
 		return ""
@@ -99,7 +99,7 @@ func (h pageBasic) EndDate(ctx context.Context) string {
 	return endDate.(string)
 }
 
-func (h pageBasic) SortBy(ctx context.Context) string {
+func (p pageBasic) SortBy(ctx context.Context) string {
 	sortBy := ctx.Value("sort_by")
 	if sortBy == "" || sortBy == nil {
 		return nft.SORTS_name[0]
@@ -107,7 +107,7 @@ func (h pageBasic) SortBy(ctx context.Context) string {
 	return sortBy.(string)
 }
 
-func (pageBasic) PageKey(ctx context.Context) string {
+func (p pageBasic) PageKey(ctx context.Context) string {
 	v := ctx.Value("page_key")
 	if v == nil {
 		return ""
@@ -128,7 +128,7 @@ func (p pageBasic) CountTotal(ctx context.Context) (string, error) {
 	return CountTotal.(string), nil
 }
 
-func (pageBasic) StringValue(ctx context.Context, key string) string {
+func (p pageBasic) StringValue(ctx context.Context, key string) string {
 	v := ctx.Value(key)
 	if v == nil {
 		return ""
