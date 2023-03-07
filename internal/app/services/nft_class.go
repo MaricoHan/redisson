@@ -141,8 +141,6 @@ func (n *nftClass) GetNFTClass(ctx context.Context, params dto.NftClasses) (*dto
 	result.Uri = resp.Detail.Uri
 	result.Owner = resp.Detail.Owner
 	result.Symbol = resp.Detail.Symbol
-	result.Data = resp.Detail.Metadata
-	result.Description = resp.Detail.Description
 	result.UriHash = resp.Detail.UriHash
 	result.NftCount = resp.Detail.NftCount
 	result.TxHash = resp.Detail.TxHash
