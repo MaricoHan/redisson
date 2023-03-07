@@ -8,6 +8,12 @@ type CreateNftClassRequest struct {
 	Owner       string `json:"owner" validate:"required"`
 }
 
+type TransferNftClassByIDRequest struct {
+	// Base
+	OperationID string `json:"operation_id"`
+	Recipient   string `json:"recipient" validate:"required"`
+}
+
 type TransferNftByNftIdRequest struct {
 	// Base
 	OperationID string `json:"operation_id"`
