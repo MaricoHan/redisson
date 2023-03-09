@@ -19,8 +19,6 @@ type TxResultByTxHashRes struct {
 	Operation   uint64      `json:"operation"`
 	TxHash      string      `json:"tx_hash"`
 	Status      int32       `json:"status"`
-	ClassID     string      `json:"class_id"`
-	NftID       uint64      `json:"nft_id"`
 	Nft         *types.JSON `json:"nft"`
 	Message     string      `json:"message"`
 	BlockHeight uint64      `json:"block_height"`
