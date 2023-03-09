@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"gitlab.bianjie.ai/avata/utils/errors"
 	"gitlab.bianjie.ai/avata/utils/errors/common"
@@ -80,15 +81,20 @@ func (h *Msgs) GetAccountHistory(ctx context.Context, _ interface{}) (interface{
 	// 校验参数 start
 	authData := h.AuthData(ctx)
 	params := dto.AccountsInfo{
-		ChainID:         authData.ChainId,
-		ProjectID:       authData.ProjectId,
-		PlatFormID:      authData.PlatformId,
-		Account:         h.Account(ctx),
-		Module:          authData.Module,
-		Code:            authData.Code,
-		OperationModule: h.operationModule(ctx),
-		AccessMode:      authData.AccessMode,
+		ChainID:    authData.ChainId,
+		ProjectID:  authData.ProjectId,
+		PlatFormID: authData.PlatformId,
+		Account:    h.Account(ctx),
+		Module:     authData.Module,
+		Code:       authData.Code,
+		AccessMode: authData.AccessMode,
 	}
+
+	module, err := h.operationModule(ctx)
+	if err != nil {
+		return nil, err
+	}
+	params.OperationModule = module
 
 	params.PageKey = h.PageKey(ctx)
 	countTotal, err := h.CountTotal(ctx)
@@ -118,7 +124,13 @@ func (h *Msgs) GetAccountHistory(ctx context.Context, _ interface{}) (interface{
 	}
 
 	params.SortBy = h.SortBy(ctx)
-	params.Operation = h.operation(ctx)
+	operation, err := h.operation(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if module > 0 {
+		params.Operation = operation
+	}
 	params.TxHash = h.Txhash(ctx)
 
 	return h.svc.GetAccountHistory(ctx, params)
@@ -182,18 +194,31 @@ func (h *Msgs) Account(ctx context.Context) string {
 	return accountR.(string)
 }
 
-func (h *Msgs) operationModule(ctx context.Context) uint64 {
-	module := ctx.Value("module")
-	if module == nil || module == "" {
-		return 0
+func (h *Msgs) operationModule(ctx context.Context) (uint64, error) {
+	v := ctx.Value("module")
+	if v == nil {
+		return 0, nil
 	}
-	return module.(uint64)
+	m := v.(string)
+
+	res, err := strconv.ParseUint(m, 10, 64)
+	if err != nil {
+		return 0, errors.ErrModules
+	}
+
+	return res, nil
 }
 
-func (h *Msgs) operation(ctx context.Context) uint64 {
-	operation := ctx.Value("operation")
-	if operation == nil || operation == 0 {
-		return 0
+func (h *Msgs) operation(ctx context.Context) (uint64, error) {
+	v := ctx.Value("operation")
+	if v == nil {
+		return 0, nil
 	}
-	return operation.(uint64)
+
+	res, err := strconv.ParseUint(v.(string), 10, 64)
+	if err != nil {
+		return 0, errors.New(errors.ClientParams, errors.ErrOperation)
+	}
+
+	return res, nil
 }
