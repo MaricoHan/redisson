@@ -6,7 +6,7 @@ addr = ":8080"
 prometheus_addr = "0.0.0.0:9092"
 signature_auth = false
 timestamp_auth = false
-router_prefix = "v2beta1"
+router_prefix = "v2"
 grpc_timeout = 1000000
 http_timeout = 1000000
 
@@ -27,8 +27,8 @@ password = ""
 db = 11
 
 [grpc_client]
-wenchangchain_native_addr = "localhost:10000"
-state_gateway_addr = "192.168.150.44:10000"
+iritaopb_native = "localhost:10000"
+state_gateway = "192.168.150.44:10000"
 
 
 [project]

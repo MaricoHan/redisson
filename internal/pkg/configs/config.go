@@ -43,8 +43,8 @@ type (
 	}
 
 	GrpcClient struct {
-		WenchangchainNativeAddr string `mapstructure:"wenchangchain_native_addr"`
-		StateGatewayAddr        string `mapstructure:"state_gateway_addr"`
+		IritaOpbNative string `mapstructure:"iritaopb_native"`
+		StateGateway   string `mapstructure:"state_gateway"`
 	}
 
 	Project struct {
