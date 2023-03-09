@@ -11,6 +11,7 @@ import (
 )
 
 type INFTTransfer interface {
+	TransferNftClassByID(ctx context.Context, request interface{}) (interface{}, error)
 	TransferNftByNftId(ctx context.Context, _ interface{}) (interface{}, error)
 }
 
@@ -22,6 +23,39 @@ type NFTTransfer struct {
 
 func NewNFTTransfer(svc services.INFTTransfer) *NFTTransfer {
 	return &NFTTransfer{svc: svc}
+}
+
+func (h *NFTTransfer) TransferNftClassByID(ctx context.Context, request interface{}) (interface{}, error) {
+	// 校验参数 start
+	req := request.(*vo.TransferNftClassByIDRequest)
+	recipient := strings.TrimSpace(req.Recipient)
+	operationId := strings.TrimSpace(req.OperationID)
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
+	if recipient == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrRecipient)
+	}
+
+	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
+	}
+
+	// 校验参数 end
+	authData := h.AuthData(ctx)
+	params := dto.TransferNftClassById{
+		ClassID:     h.ClassID(ctx),
+		Owner:       h.Owner(ctx),
+		Recipient:   recipient,
+		ChainID:     authData.ChainId,
+		ProjectID:   authData.ProjectId,
+		PlatFormID:  authData.PlatformId,
+		Module:      authData.Module,
+		Code:        authData.Code,
+		OperationId: operationId,
+		AccessMode:  authData.AccessMode,
+	}
+	return h.svc.TransferNFTClass(ctx, params)
 }
 
 // TransferNftByNftId transfer an nft class by index

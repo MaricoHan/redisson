@@ -125,34 +125,6 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	}
 	GrpcConnMap[constant.WenchangNative] = wenNativeConn
 
-	logger.Info("connecting wenchangchain-ddc ...")
-	wenDDcConn, err := grpc.DialContext(
-		context.Background(),
-		cfg.GrpcClient.WenchangchainDDCAddr,
-		grpc.WithInsecure(),
-		grpc.WithKeepaliveParams(kacp),
-		grpc.WithBlock(),
-		grpc.WithBalancerName(roundrobin.Name),
-		grpc.WithUnaryInterceptor(middleware.NewGrpcInterceptorMiddleware().Interceptor()))
-	if err != nil {
-		logger.Fatal("get wenchangchain-ddc grpc connect failed, err: ", err.Error())
-	}
-	GrpcConnMap[constant.WenchangDDC] = wenDDcConn
-
-	logger.Info("connecting irita-opb-native ...")
-	IritaOPBNativeConn, err := grpc.DialContext(
-		context.Background(),
-		cfg.GrpcClient.IritaOPBNativeAddr,
-		grpc.WithInsecure(),
-		grpc.WithKeepaliveParams(kacp),
-		grpc.WithBlock(),
-		grpc.WithBalancerName(roundrobin.Name),
-		grpc.WithUnaryInterceptor(middleware.NewGrpcInterceptorMiddleware().Interceptor()))
-	if err != nil {
-		logger.Fatal("get irita-opb-native grpc connect failed, err: ", err.Error())
-	}
-	GrpcConnMap[constant.IritaOPBNative] = IritaOPBNativeConn
-
 	logger.Info("connecting state-gateway-server ...")
 	StateGatewayServer, err = grpc.DialContext(
 		context.Background(),
@@ -182,21 +154,6 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	//	logger.Fatal("get rights_jiangsu grpc connect failed, err: ", err.Error())
 	//}
 	//GrpcConnRightsMap[constant.JiangSu] = RightsConn
-
-	// irisHub
-	logger.Info("connecting iris-hub-native ...")
-	irisHubNativeConn, err := grpc.DialContext(
-		context.Background(),
-		cfg.GrpcClient.IrisHubNativeAddr,
-		grpc.WithInsecure(),
-		grpc.WithKeepaliveParams(kacp),
-		grpc.WithBlock(),
-		grpc.WithBalancerName(roundrobin.Name),
-		grpc.WithUnaryInterceptor(middleware.NewGrpcInterceptorMiddleware().Interceptor()))
-	if err != nil {
-		logger.Fatal("get iris-hub-native grpc connect failed, err: ", err.Error())
-	}
-	GrpcConnMap[constant.IrisHubNative] = irisHubNativeConn
 
 	AccountClientMap = make(map[string]pb_account.AccountClient)
 	AccountClientMap[constant.WenchangDDC] = pb_account.NewAccountClient(GrpcConnMap[constant.WenchangDDC])
