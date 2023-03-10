@@ -17,14 +17,13 @@ require (
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/viper v1.10.1
 	github.com/volatiletech/sqlboiler v3.7.1+incompatible
-	gitlab.bianjie.ai/avata/chains/api v0.0.0-00010101000000-000000000000
 	google.golang.org/grpc v1.45.0
 	gorm.io/gorm v1.23.4
-
 )
 
 require (
 	github.com/deckarep/golang-set v1.8.0
+	gitlab.bianjie.ai/avata/chains/api v0.7.2-0.20220830014600-0360685e7537
 	gitlab.bianjie.ai/avata/utils/commons v0.0.0-00010101000000-000000000000
 	gitlab.bianjie.ai/avata/utils/errors v0.0.0-00010101000000-000000000000
 	gorm.io/driver/mysql v1.3.4
@@ -74,7 +73,7 @@ require (
 )
 
 replace (
-	gitlab.bianjie.ai/avata/chains/api => gitlab.bianjie.ai/avata/chains/api.git v0.11.1-0.20230308094748-bb67254e67d0
+	gitlab.bianjie.ai/avata/chains/api => gitlab.bianjie.ai/avata/chains/api.git v0.11.1-0.20230310072649-42b42ccee576
 
 	gitlab.bianjie.ai/avata/utils/commons => gitlab.bianjie.ai/avata/utils/commons.git v0.2.0
 
