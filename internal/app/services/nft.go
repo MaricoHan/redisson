@@ -54,7 +54,7 @@ func (s *nft) List(ctx context.Context, params dto.Nfts) (*dto.NftsRes, error) {
 		ClassId:    params.ClassId,
 		Owner:      params.Owner,
 		TxHash:     params.TxHash,
-		Status:     pb.STATUS(pb.STATUS_value[params.Status]),
+		Status:     params.Status,
 		SortBy:     pb.SORTS(sort),
 		PageKey:    params.PageKey,
 		CountTotal: params.CountTotal,

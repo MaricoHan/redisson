@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
+	pb "gitlab.bianjie.ai/avata/chains/api/pb/nft"
 	"strconv"
 	"strings"
 
@@ -11,7 +12,6 @@ import (
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
-	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 )
 
@@ -297,14 +297,20 @@ func (h *NFT) TxHash(ctx context.Context) string {
 	return txHash.(string)
 }
 
-func (h *NFT) Status(ctx context.Context) (string, error) {
+func (h *NFT) Status(ctx context.Context) (pb.STATUS, error) {
 	v := ctx.Value("status")
-	if v == nil || v == "" {
-		return constant.NFTSStatusActive, nil
+	if v == nil {
+		return pb.STATUS_active, nil
+	}
+	s := v.(string)
+	status, err := strconv.ParseInt(s, 10, 32)
+	if err != nil {
+		return 0, errors2.New(errors2.ClientParams, errors2.ErrStatus)
 	}
 
-	if v != constant.NFTSStatusActive && v != constant.NFTSStatusBurned {
-		return "", errors2.New(errors2.ClientParams, errors2.ErrStatus)
+	if pb.STATUS(status) != pb.STATUS_active && pb.STATUS(status) != pb.STATUS_burned {
+		return 0, errors2.New(errors2.ClientParams, errors2.ErrStatus)
 	}
-	return v.(string), nil
+
+	return pb.STATUS(status), nil
 }

@@ -30,10 +30,6 @@ const (
 	IritaOPBNative = "irita-opb-native"
 	IrisHubNative  = "irishub-native"
 
-	// Enum values for NFTSStatus
-	NFTSStatusActive = "1"
-	NFTSStatusBurned = "2"
-
 	// rights map
 	JiangSu = "jiangsu"
 	Guizhou = "guizhou"
