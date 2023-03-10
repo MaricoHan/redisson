@@ -1,5 +1,7 @@
 package dto
 
+import pb "gitlab.bianjie.ai/avata/chains/api/pb/nft"
+
 type NftOperationHistoryByNftId struct {
 	Page
 	ClassID         string `json:"class_id"`
@@ -157,17 +159,17 @@ type NftRes struct {
 
 type Nfts struct {
 	Page
-	Id         uint64 `json:"id"`
-	ClassId    string `json:"class_id"`
-	Owner      string `json:"owner"`
-	TxHash     string `json:"tx_hash"`
-	Status     string `json:"status"`
-	ProjectID  uint64 `json:"project_id"`
-	ChainID    uint64 `json:"chain_id"`
-	PlatFormID uint64 `json:"plat_form_id"`
-	Module     string `json:"module"`
-	Code       string `json:"code"`
-	AccessMode int    `json:"access_mode"`
+	Id         uint64    `json:"id"`
+	ClassId    string    `json:"class_id"`
+	Owner      string    `json:"owner"`
+	TxHash     string    `json:"tx_hash"`
+	Status     pb.STATUS `json:"status"`
+	ProjectID  uint64    `json:"project_id"`
+	ChainID    uint64    `json:"chain_id"`
+	PlatFormID uint64    `json:"plat_form_id"`
+	Module     string    `json:"module"`
+	Code       string    `json:"code"`
+	AccessMode int       `json:"access_mode"`
 }
 
 type CreateNfts struct {

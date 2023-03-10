@@ -31,7 +31,6 @@ func (h *Msgs) GetNFTHistory(ctx context.Context, _ interface{}) (interface{}, e
 	authData := h.AuthData(ctx)
 	params := dto.NftOperationHistoryByNftId{
 		ClassID:    h.ClassId(ctx),
-		NftId:      h.NftId(ctx),
 		ChainID:    authData.ChainId,
 		ProjectID:  authData.ProjectId,
 		PlatFormID: authData.PlatformId,
@@ -39,6 +38,12 @@ func (h *Msgs) GetNFTHistory(ctx context.Context, _ interface{}) (interface{}, e
 		Code:       authData.Code,
 		AccessMode: authData.AccessMode,
 	}
+	nftId, err := h.NftId(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	params.NftId = nftId
 
 	params.PageKey = h.PageKey(ctx)
 	countTotal, err := h.CountTotal(ctx)
@@ -154,12 +159,17 @@ func (h *Msgs) ClassId(ctx context.Context) string {
 
 }
 
-func (h *Msgs) NftId(ctx context.Context) uint64 {
-	nftId := ctx.Value("nft_id")
-	if nftId == nil {
-		return 0
+func (h *Msgs) NftId(ctx context.Context) (uint64, error) {
+	v := ctx.Value("nft_id")
+	if v == nil {
+		return 0, errors.New(errors.NotFound, "")
 	}
-	return nftId.(uint64)
+	res, err := strconv.ParseUint(v.(string), 10, 64)
+	if err != nil {
+		return 0, errors.New(errors.NotFound, fmt.Sprintf("%s, nft_id: %s not found", errors.ErrRecordNotFound, v.(string)))
+	}
+
+	return res, nil
 }
 
 func (h *Msgs) Signer(ctx context.Context) string {
