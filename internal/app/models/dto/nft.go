@@ -30,17 +30,20 @@ type OperationRecord struct {
 }
 
 type CreateNftClass struct {
-	Name        string `json:"name"`
-	Symbol      string `json:"symbol"`
-	Uri         string `json:"uri"`
-	Owner       string `json:"owner"`
-	ProjectID   uint64 `json:"project_id"`
-	ChainID     uint64 `json:"chain_id"`
-	PlatFormID  uint64 `json:"plat_form_id"`
-	Module      string `json:"module"`
-	Code        string `json:"code"`
-	AccessMode  int    `json:"access_mode"`
-	OperationId string `json:"operation_id"`
+	Name                 string `json:"name"`
+	Symbol               string `json:"symbol"`
+	Uri                  string `json:"uri"`
+	UriHash              string `json:"uri_hash"`
+	EditableByOwner      uint32 `json:"editable_by_owner"`
+	EditableByClassOwner uint32 `json:"editable_by_class_owner"`
+	Owner                string `json:"owner"`
+	ProjectID            uint64 `json:"project_id"`
+	ChainID              uint64 `json:"chain_id"`
+	PlatFormID           uint64 `json:"plat_form_id"`
+	Module               string `json:"module"`
+	Code                 string `json:"code"`
+	AccessMode           int    `json:"access_mode"`
+	OperationId          string `json:"operation_id"`
 }
 
 type NftClasses struct {
@@ -173,6 +176,7 @@ type CreateNfts struct {
 	PlatFormID  uint64 `json:"plat_form_id"`
 	ClassId     string `json:"class_id"`
 	Uri         string `json:"uri"`
+	UriHash     string `json:"uri_hash"`
 	Recipient   string `json:"recipient"`
 	Module      string `json:"module"`
 	Code        string `json:"code"`
@@ -194,6 +198,7 @@ type NftByNftId struct {
 type EditNftByNftId struct {
 	NftId       uint64 `json:"nft_id"`
 	Uri         string `json:"uri"`
+	UriHash     string `json:"uri_hash"`
 	Module      string `json:"module"`
 	ProjectID   uint64 `json:"project_id"`
 	ChainID     uint64 `json:"chain_id"`

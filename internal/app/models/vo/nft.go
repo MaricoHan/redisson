@@ -1,11 +1,14 @@
 package vo
 
 type CreateNftClassRequest struct {
-	OperationID string `json:"operation_id"`
-	Name        string `json:"name" validate:"required"`
-	Symbol      string `json:"symbol" validate:"required"`
-	Uri         string `json:"uri"`
-	Owner       string `json:"owner" validate:"required"`
+	OperationID          string `json:"operation_id"`
+	Name                 string `json:"name" validate:"required"`
+	Symbol               string `json:"symbol" validate:"required"`
+	Uri                  string `json:"uri"`
+	UriHash              string `json:"uri_hash"`
+	EditableByOwner      uint32 `json:"editable_by_owner"`
+	EditableByClassOwner uint32 `json:"editable_by_class_owner"`
+	Owner                string `json:"owner" validate:"required"`
 }
 
 type TransferNftClassByIDRequest struct {
@@ -23,11 +26,13 @@ type TransferNftByNftIdRequest struct {
 type CreateNftsRequest struct {
 	OperationID string `json:"operation_id"`
 	Uri         string `json:"uri" validate:"required"`
+	UriHash     string `json:"uri_hash"`
 	Recipient   string `json:"recipient"`
 }
 
 type EditNftByIndexRequest struct {
 	Uri         string `json:"uri" validate:"required"`
+	UriHash     string `json:"uri_hash"`
 	OperationID string `json:"operation_id"`
 }
 
