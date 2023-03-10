@@ -73,14 +73,14 @@ func (p pageBasic) Limit(ctx context.Context) (uint64, error) {
 	if limit == "" || limit == nil {
 		return 10, nil
 	}
-	limitInt, err := strconv.ParseUint(limit.(string), 10, 64)
+	limitInt, err := strconv.ParseInt(limit.(string), 10, 64)
 	if err != nil {
 		return 10, errors2.New(errors2.ClientParams, errors2.ErrLimitParam)
 	}
 	if limitInt < 1 || limitInt > 50 {
 		return 10, errors2.New(errors2.ClientParams, errors2.ErrLimitParamInt)
 	}
-	return limitInt, nil
+	return uint64(limitInt), nil
 }
 
 func (p pageBasic) StartDate(ctx context.Context) string {
