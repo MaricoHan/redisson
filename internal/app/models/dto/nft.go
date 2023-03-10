@@ -152,7 +152,7 @@ type NftRes struct {
 	Uri         string `json:"uri"`
 	UriHash     string `json:"uri_hash"`
 	Owner       string `json:"owner"`
-	Status      string `json:"status"`
+	Status      int32  `json:"status"`
 	TxHash      string `json:"tx_hash"`
 	Timestamp   string `json:"timestamp"`
 }

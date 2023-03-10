@@ -187,7 +187,7 @@ func (s *nft) Show(ctx context.Context, params dto.NftByNftId) (*dto.NftRes, err
 		Uri:         resp.Detail.Uri,
 		UriHash:     resp.Detail.UriHash,
 		Owner:       resp.Detail.Owner,
-		Status:      resp.Detail.Status.String(),
+		Status:      pb.STATUS_value[resp.Detail.Status.String()],
 		TxHash:      resp.Detail.TxHash,
 		Timestamp:   resp.Detail.Timestamp,
 	}
