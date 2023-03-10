@@ -96,13 +96,18 @@ func (h *NFT) EditNftByNftId(ctx context.Context, request interface{}) (interfac
 		PlatFormID:  authData.PlatformId,
 		ClassId:     h.ClassId(ctx),
 		Sender:      h.Owner(ctx),
-		NftId:       h.NftId(ctx),
 		Module:      authData.Module,
 		Uri:         uri,
 		Code:        authData.Code,
 		OperationId: operationId,
 		AccessMode:  authData.AccessMode,
 	}
+	nftId, err := h.NftId(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	params.NftId = nftId
 
 	return h.svc.Update(ctx, params)
 }
@@ -126,11 +131,16 @@ func (h *NFT) DeleteNftByNftId(ctx context.Context, request interface{}) (interf
 		Module:      authData.Module,
 		ClassId:     h.ClassId(ctx),
 		Sender:      h.Owner(ctx),
-		NftId:       h.NftId(ctx),
 		Code:        authData.Code,
 		OperationId: operationId,
 		AccessMode:  authData.AccessMode,
 	}
+	nftId, err := h.NftId(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	params.NftId = nftId
 
 	return h.svc.Delete(ctx, params)
 }
@@ -205,13 +215,17 @@ func (h *NFT) NftByNftId(ctx context.Context, _ interface{}) (interface{}, error
 		PlatFormID: authData.PlatformId,
 		Module:     authData.Module,
 		ClassId:    h.ClassId(ctx),
-		NftId:      h.NftId(ctx),
 		Code:       authData.Code,
 		AccessMode: authData.AccessMode,
 	}
+	nftId, err := h.NftId(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	params.NftId = nftId
 
 	return h.svc.Show(ctx, params)
-
 }
 
 func (h *NFT) Signer(ctx context.Context) string {
@@ -258,12 +272,17 @@ func (h *NFT) Owner(ctx context.Context) string {
 	return owner.(string)
 }
 
-func (h *NFT) NftId(ctx context.Context) uint64 {
-	nftId := ctx.Value("nft_id")
-	if nftId == nil {
-		return 0
+func (h *NFT) NftId(ctx context.Context) (uint64, error) {
+	v := ctx.Value("nft_id")
+	if v == nil {
+		return 0, errors2.New(errors2.NotFound, "")
 	}
-	return nftId.(uint64)
+	res, err := strconv.ParseUint(v.(string), 10, 64)
+	if err != nil {
+		return 0, errors2.New(errors2.NotFound, fmt.Sprintf("%s, nft_id: %s not found", errors2.ErrRecordNotFound, v.(string)))
+	}
+
+	return res, nil
 }
 
 func (h *NFT) TxHash(ctx context.Context) string {
