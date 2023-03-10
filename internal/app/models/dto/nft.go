@@ -139,15 +139,13 @@ type NFT struct {
 	Timestamp   string `json:"timestamp"`
 }
 
-type NftReq struct {
+type NftRes struct {
 	Id          uint64 `json:"id"`
-	Name        string `json:"name"`
 	ClassId     string `json:"class_id"`
 	ClassName   string `json:"class_name"`
 	ClassSymbol string `json:"class_symbol"`
 	Uri         string `json:"uri"`
 	UriHash     string `json:"uri_hash"`
-	Data        string `json:"data"`
 	Owner       string `json:"owner"`
 	Status      string `json:"status"`
 	TxHash      string `json:"tx_hash"`
