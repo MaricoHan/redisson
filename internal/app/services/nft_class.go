@@ -160,12 +160,15 @@ func (n *nftClass) CreateNFTClass(ctx context.Context, params dto.CreateNftClass
 	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	req := pb.ClassCreateRequest{
-		Name:        params.Name,
-		Symbol:      params.Symbol,
-		Uri:         params.Uri,
-		Owner:       params.Owner,
-		ProjectId:   params.ProjectID,
-		OperationId: params.OperationId,
+		Name:                 params.Name,
+		Symbol:               params.Symbol,
+		Uri:                  params.Uri,
+		Owner:                params.Owner,
+		ProjectId:            params.ProjectID,
+		OperationId:          params.OperationId,
+		UriHash:              params.UriHash,
+		EditableByClassOwner: params.EditableByClassOwner,
+		EditableByOwner:      params.EditableByOwner,
 	}
 
 	resp := &pb.ClassCreateResponse{}

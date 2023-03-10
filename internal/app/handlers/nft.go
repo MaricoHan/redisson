@@ -38,6 +38,7 @@ func (h *NFT) CreateNft(ctx context.Context, request interface{}) (interface{}, 
 	req := request.(*vo.CreateNftsRequest)
 
 	uri := strings.TrimSpace(req.Uri)
+	uriHash := strings.TrimSpace(req.UriHash)
 	recipient := strings.TrimSpace(req.Recipient)
 	operationId := strings.TrimSpace(req.OperationID)
 	if operationId == "" {
@@ -60,6 +61,7 @@ func (h *NFT) CreateNft(ctx context.Context, request interface{}) (interface{}, 
 		Module:      authData.Module,
 		ClassId:     h.ClassId(ctx),
 		Uri:         uri,
+		UriHash:     uriHash,
 		Recipient:   recipient,
 		Code:        authData.Code,
 		OperationId: operationId,
@@ -74,6 +76,7 @@ func (h *NFT) EditNftByNftId(ctx context.Context, request interface{}) (interfac
 	req := request.(*vo.EditNftByIndexRequest)
 
 	uri := strings.TrimSpace(req.Uri)
+	uriHash := strings.TrimSpace(req.UriHash)
 	operationId := strings.TrimSpace(req.OperationID)
 	if operationId == "" {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
@@ -98,6 +101,7 @@ func (h *NFT) EditNftByNftId(ctx context.Context, request interface{}) (interfac
 		Sender:      h.Owner(ctx),
 		Module:      authData.Module,
 		Uri:         uri,
+		UriHash:     uriHash,
 		Code:        authData.Code,
 		OperationId: operationId,
 		AccessMode:  authData.AccessMode,

@@ -121,6 +121,7 @@ func (s *nft) Create(ctx context.Context, params dto.CreateNfts) (*dto.TxRes, er
 		ProjectId:   params.ProjectID,
 		ClassId:     params.ClassId,
 		Uri:         params.Uri,
+		UriHash:     params.UriHash,
 		Recipient:   params.Recipient,
 		OperationId: params.OperationId,
 	}
@@ -206,6 +207,7 @@ func (s *nft) Update(ctx context.Context, params dto.EditNftByNftId) (*dto.TxRes
 		ProjectId:   params.ProjectID,
 		ClassId:     params.ClassId,
 		Uri:         params.Uri,
+		UriHash:     params.UriHash,
 		NftId:       params.NftId,
 		Owner:       params.Sender,
 		OperationId: params.OperationId,
