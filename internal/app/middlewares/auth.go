@@ -87,7 +87,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// 判断项目参数版本号
 	if projectInfo.Version == entity.Version1 {
 		log.Error("project version not implemented")
-		writeBadRequestResp(w, constant.ErrUnSupported)
+		writeNotFoundRequestResp(w, constant.ErrUnSupported)
 		return
 	}
 
