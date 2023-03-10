@@ -92,6 +92,7 @@ func (s *nft) List(ctx context.Context, params dto.Nfts) (*dto.NftsRes, error) {
 			Id:          item.NftId,
 			ClassId:     item.ClassId,
 			Uri:         item.Uri,
+			UriHash:     item.UriHash,
 			Owner:       item.Owner,
 			Status:      pb.STATUS_value[item.Status.String()],
 			TxHash:      item.TxHash,
@@ -186,7 +187,7 @@ func (s *nft) Show(ctx context.Context, params dto.NftByNftId) (*dto.NftRes, err
 		Uri:         resp.Detail.Uri,
 		UriHash:     resp.Detail.UriHash,
 		Owner:       resp.Detail.Owner,
-		Status:      resp.Detail.Status.String(),
+		Status:      pb.STATUS_value[resp.Detail.Status.String()],
 		TxHash:      resp.Detail.TxHash,
 		Timestamp:   resp.Detail.Timestamp,
 	}
