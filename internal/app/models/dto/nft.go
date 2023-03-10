@@ -135,6 +135,7 @@ type NFT struct {
 	ClassName   string `json:"class_name"`
 	ClassSymbol string `json:"class_symbol"`
 	Uri         string `json:"uri"`
+	UriHash     string `json:"uri_hash"`
 	Owner       string `json:"owner"`
 	Status      int32  `json:"status"`
 	TxHash      string `json:"tx_hash"`
