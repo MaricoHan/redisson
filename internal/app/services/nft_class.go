@@ -89,6 +89,7 @@ func (n *nftClass) GetAllNFTClasses(ctx context.Context, params dto.NftClasses) 
 			Name:      item.Name,
 			Symbol:    item.Symbol,
 			Uri:       item.Uri,
+			UriHash:   item.UriHash,
 			Owner:     item.Owner,
 			TxHash:    item.TxHash,
 			Timestamp: item.Timestamp,

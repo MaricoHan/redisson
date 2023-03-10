@@ -77,6 +77,7 @@ type NftClass struct {
 	TxHash    string `json:"tx_hash"`
 	Symbol    string `json:"symbol"`
 	Uri       string `json:"uri"`
+	UriHash   string `json:"uri_hash"`
 	Timestamp string `json:"timestamp"`
 }
 
