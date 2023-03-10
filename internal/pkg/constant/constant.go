@@ -31,8 +31,8 @@ const (
 	IrisHubNative  = "irishub-native"
 
 	// Enum values for NFTSStatus
-	NFTSStatusActive = "active"
-	NFTSStatusBurned = "burned"
+	NFTSStatusActive = "1"
+	NFTSStatusBurned = "2"
 
 	// rights map
 	JiangSu = "jiangsu"

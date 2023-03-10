@@ -19,7 +19,7 @@ import (
 type INFT interface {
 	List(ctx context.Context, params dto.Nfts) (*dto.NftsRes, error)
 	Create(ctx context.Context, params dto.CreateNfts) (*dto.TxRes, error)
-	Show(ctx context.Context, params dto.NftByNftId) (*dto.NftReq, error)
+	Show(ctx context.Context, params dto.NftByNftId) (*dto.NftRes, error)
 	Update(ctx context.Context, params dto.EditNftByNftId) (*dto.TxRes, error)
 	Delete(ctx context.Context, params dto.DeleteNftByNftId) (*dto.TxRes, error)
 }
@@ -147,7 +147,7 @@ func (s *nft) Create(ctx context.Context, params dto.CreateNfts) (*dto.TxRes, er
 
 }
 
-func (s *nft) Show(ctx context.Context, params dto.NftByNftId) (*dto.NftReq, error) {
+func (s *nft) Show(ctx context.Context, params dto.NftByNftId) (*dto.NftRes, error) {
 	logger := s.logger.WithField("params", params).WithField("func", "ShowNFT")
 
 	// 非托管模式不支持
@@ -178,14 +178,13 @@ func (s *nft) Show(ctx context.Context, params dto.NftByNftId) (*dto.NftReq, err
 	if resp == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
-	result := &dto.NftReq{
+	result := &dto.NftRes{
 		Id:          resp.Detail.NftId,
 		ClassId:     resp.Detail.ClassId,
 		ClassName:   resp.Detail.ClassName,
 		ClassSymbol: resp.Detail.ClassSymbol,
 		Uri:         resp.Detail.Uri,
 		UriHash:     resp.Detail.UriHash,
-		Data:        resp.Detail.Metadata,
 		Owner:       resp.Detail.Owner,
 		Status:      resp.Detail.Status.String(),
 		TxHash:      resp.Detail.TxHash,

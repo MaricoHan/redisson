@@ -298,12 +298,13 @@ func (h *NFT) TxHash(ctx context.Context) string {
 }
 
 func (h *NFT) Status(ctx context.Context) (string, error) {
-	status := ctx.Value("status")
-	if status == nil || status == "" {
+	v := ctx.Value("status")
+	if v == nil || v == "" {
 		return constant.NFTSStatusActive, nil
 	}
-	if status != constant.NFTSStatusActive && status != constant.NFTSStatusBurned {
+
+	if v != constant.NFTSStatusActive && v != constant.NFTSStatusBurned {
 		return "", errors2.New(errors2.ClientParams, errors2.ErrStatus)
 	}
-	return status.(string), nil
+	return v.(string), nil
 }
