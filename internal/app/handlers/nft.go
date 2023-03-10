@@ -165,7 +165,6 @@ func (h *NFT) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 		Owner:   h.Owner(ctx),
 		TxHash:  h.TxHash(ctx),
 		Status:  status,
-		Name:    h.Name(ctx),
 	}
 	params.Id, err = h.Id(ctx)
 	if err != nil {

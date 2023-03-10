@@ -76,17 +76,17 @@ type NftClass struct {
 	Timestamp string `json:"timestamp"`
 }
 type NftClassRes struct {
-	Id          string `json:"id"`
-	Name        string `json:"name"`
-	Owner       string `json:"owner"`
-	TxHash      string `json:"tx_hash"`
-	Symbol      string `json:"symbol"`
-	NftCount    uint64 `json:"nft_count"`
-	Uri         string `json:"uri"`
-	Timestamp   string `json:"timestamp"`
-	UriHash     string `json:"uri_hash"`
-	Data        string `json:"data"`
-	Description string `json:"description"`
+	Id                   string `json:"id"`
+	Name                 string `json:"name"`
+	Owner                string `json:"owner"`
+	TxHash               string `json:"tx_hash"`
+	Symbol               string `json:"symbol"`
+	NftCount             uint64 `json:"nft_count"`
+	Uri                  string `json:"uri"`
+	Timestamp            string `json:"timestamp"`
+	UriHash              string `json:"uri_hash"`
+	EditableByOwner      uint32 `json:"editable_by_owner"`
+	EditableByClassOwner uint32 `json:"editable_by_class_owner"`
 }
 
 type NftCount struct {
@@ -128,7 +128,6 @@ type NftsRes struct {
 
 type NFT struct {
 	Id          uint64 `json:"id"`
-	Name        string `json:"name"`
 	ClassId     string `json:"class_id"`
 	ClassName   string `json:"class_name"`
 	ClassSymbol string `json:"class_symbol"`
@@ -164,7 +163,6 @@ type Nfts struct {
 	PlatFormID uint64 `json:"plat_form_id"`
 	Module     string `json:"module"`
 	Code       string `json:"code"`
-	Name       string `json:"name"`
 	AccessMode int    `json:"access_mode"`
 }
 
