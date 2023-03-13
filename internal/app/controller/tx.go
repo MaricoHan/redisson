@@ -22,7 +22,7 @@ func (c TxController) GetEndpoints() []kit.Endpoint {
 		kit.Endpoint{
 			URI:     "/tx/{operation_id}",
 			Method:  http.MethodGet,
-			Handler: c.makeHandler(c.handler.TxResultByTxHash, nil),
+			Handler: c.makeHandler(c.handler.TxResult, nil),
 		},
 		kit.Endpoint{
 			URI:     "/tx/queue/info",

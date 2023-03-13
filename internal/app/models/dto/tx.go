@@ -14,15 +14,15 @@ type TxResultByTxHash struct {
 	AccessMode  int    `json:"access_mode"`
 }
 
-type TxResultByTxHashRes struct {
+type TxResultRes struct {
 	Module      uint64      `json:"module"`
 	Operation   uint64      `json:"operation"`
 	TxHash      string      `json:"tx_hash"`
 	Status      int32       `json:"status"`
-	Nft         *types.JSON `json:"nft"`
 	Message     string      `json:"message"`
 	BlockHeight uint64      `json:"block_height"`
 	Timestamp   string      `json:"timestamp"`
+	Nft         *types.JSON `json:"nft"`
 }
 
 type TxQueueInfo struct {

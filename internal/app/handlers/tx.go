@@ -8,7 +8,7 @@ import (
 )
 
 type ITx interface {
-	TxResultByTxHash(ctx context.Context, _ interface{}) (interface{}, error)
+	TxResult(ctx context.Context, _ interface{}) (interface{}, error)
 	TxQueueInfo(ctx context.Context, _ interface{}) (interface{}, error)
 }
 
@@ -21,7 +21,7 @@ func NewTx(svc services.ITx) *Tx {
 	return &Tx{svc: svc}
 }
 
-func (h *Tx) TxResultByTxHash(ctx context.Context, _ interface{}) (interface{}, error) {
+func (h *Tx) TxResult(ctx context.Context, _ interface{}) (interface{}, error) {
 	// 校验参数 start
 	authData := h.AuthData(ctx)
 	params := dto.TxResultByTxHash{
@@ -35,7 +35,7 @@ func (h *Tx) TxResultByTxHash(ctx context.Context, _ interface{}) (interface{}, 
 	}
 	// 校验参数 end
 	// 业务数据入库的地方
-	return h.svc.TxResultByTxHash(ctx, params)
+	return h.svc.TxResult(ctx, params)
 }
 
 func (h *Tx) TxQueueInfo(ctx context.Context, _ interface{}) (interface{}, error) {

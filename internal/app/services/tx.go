@@ -19,7 +19,7 @@ import (
 )
 
 type ITx interface {
-	TxResultByTxHash(ctx context.Context, params dto.TxResultByTxHash) (*dto.TxResultByTxHashRes, error)
+	TxResult(ctx context.Context, params dto.TxResultByTxHash) (*dto.TxResultRes, error)
 	TxQueueInfo(ctx context.Context, params dto.TxQueueInfo) (*dto.TxQueueInfoRes, error)
 }
 
@@ -31,8 +31,8 @@ func NewTx(logger *log.Logger) *tx {
 	return &tx{logger: logger.WithField("model", "tx")}
 }
 
-func (t *tx) TxResultByTxHash(ctx context.Context, params dto.TxResultByTxHash) (*dto.TxResultByTxHashRes, error) {
-	logger := t.logger.WithField("params", params).WithField("func", "TxResultByTxHash")
+func (t *tx) TxResult(ctx context.Context, params dto.TxResultByTxHash) (*dto.TxResultRes, error) {
+	logger := t.logger.WithField("params", params).WithField("func", "TxResult")
 	// 非托管模式不支持
 	if params.AccessMode == entity.UNMANAGED {
 		return nil, errors2.ErrNotImplemented
@@ -60,7 +60,7 @@ func (t *tx) TxResultByTxHash(ctx context.Context, params dto.TxResultByTxHash) 
 	if resp == nil || resp.Detail == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
-	result := new(dto.TxResultByTxHashRes)
+	result := new(dto.TxResultRes)
 	status := resp.Detail.Status
 	result.Module = uint64(resp.Detail.Module)
 	result.Operation = uint64(resp.Detail.Operation)

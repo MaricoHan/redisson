@@ -75,5 +75,4 @@ type AccountOperationRecords struct {
 	Signer    string      `json:"signer"`
 	Timestamp string      `json:"timestamp"`
 	NftMsg    *types.JSON `json:"nft_msg"`
-	MtMsg     *types.JSON `json:"mt_msg"`
 }
