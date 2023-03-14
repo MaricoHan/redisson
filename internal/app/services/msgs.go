@@ -59,7 +59,7 @@ func (s *msgs) GetNFTHistory(ctx context.Context, params dto.NftOperationHistory
 		ClassId:    params.ClassID,
 		SortBy:     pb.SORTS(sort),
 	}
-	req.Operation = pb.NFT_OPERATIONS(params.Operation)
+	req.Operation = params.Operation
 
 	resp := &pb.NFTHistoryResponse{}
 	var err error

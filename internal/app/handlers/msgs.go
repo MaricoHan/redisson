@@ -77,7 +77,11 @@ func (h *Msgs) GetNFTHistory(ctx context.Context, _ interface{}) (interface{}, e
 	params.Signer = h.Signer(ctx)
 	params.Txhash = h.Txhash(ctx)
 
-	params.Operation = h.Operation(ctx)
+	operation, err := h.operation(ctx)
+	if err != nil {
+		return nil, err
+	}
+	params.Operation = uint32(operation)
 
 	return h.svc.GetNFTHistory(ctx, params)
 }
@@ -178,14 +182,6 @@ func (h *Msgs) Signer(ctx context.Context) string {
 		return ""
 	}
 	return signer.(string)
-}
-
-func (h *Msgs) Operation(ctx context.Context) uint64 {
-	operation := ctx.Value("operation")
-	if operation == nil || operation == 0 {
-		return 0
-	}
-	return operation.(uint64)
 }
 
 func (h *Msgs) Txhash(ctx context.Context) string {
