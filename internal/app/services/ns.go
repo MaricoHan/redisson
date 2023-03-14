@@ -65,7 +65,11 @@ func (t *ns) CreateDomain(ctx context.Context, params dto.CreateDomain) (*dto.Tx
 }
 
 func (t *ns) Domains(ctx context.Context, params dto.Domains) (*dto.DomainsRes, error) {
-	logger := t.logger.WithField("params", params).WithField("func", "TxQueueInfo")
+	logger := t.logger.WithField("params", params).WithField("func", "Domains")
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
