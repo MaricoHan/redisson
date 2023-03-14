@@ -308,9 +308,5 @@ func (h *NFT) Status(ctx context.Context) (pb.STATUS, error) {
 		return 0, errors2.New(errors2.ClientParams, errors2.ErrStatus)
 	}
 
-	if pb.STATUS(status) != pb.STATUS_active && pb.STATUS(status) != pb.STATUS_burned {
-		return 0, errors2.New(errors2.ClientParams, errors2.ErrStatus)
-	}
-
 	return pb.STATUS(status), nil
 }
