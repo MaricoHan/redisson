@@ -54,6 +54,7 @@ var ProjectFields = struct {
 
 // 项目参数版本
 const (
-	Version1 = iota + 1
+	VersionStage = iota
+	Version1
 	Version2
 )
