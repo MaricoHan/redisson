@@ -1,10 +1,7 @@
 package controller
 
 import (
-	"net/http"
-
 	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	kit "gitlab.bianjie.ai/avata/open-api/pkg/gokit"
 )
 
@@ -20,26 +17,26 @@ func NewEmptionController(bc BaseController, handler handlers.IBusiness) kit.ICo
 func (c EmptionController) GetEndpoints() []kit.Endpoint {
 	var ends []kit.Endpoint
 	ends = append(ends,
-		kit.Endpoint{
-			URI:     "/orders/{operation_id}",
-			Method:  http.MethodGet,
-			Handler: c.makeHandler(c.handler.GetOrderInfo, nil),
-		},
-		kit.Endpoint{
-			URI:     "/orders",
-			Method:  http.MethodPost,
-			Handler: c.makeHandler(c.handler.BuildOrder, &vo.BuyRequest{}),
-		},
-		kit.Endpoint{
-			URI:     "/orders",
-			Method:  http.MethodGet,
-			Handler: c.makeHandler(c.handler.GetAllOrders, nil),
-		},
-		kit.Endpoint{
-			URI:     "/orders/batch",
-			Method:  http.MethodPost,
-			Handler: c.makeHandler(c.handler.BatchBuyGas, &vo.BatchBuyRequest{}),
-		},
+		//kit.Endpoint{
+		//	URI:     "/orders/{operation_id}",
+		//	Method:  http.MethodGet,
+		//	Handler: c.makeHandler(c.handler.GetOrderInfo, nil),
+		//},
+		//kit.Endpoint{
+		//	URI:     "/orders",
+		//	Method:  http.MethodPost,
+		//	Handler: c.makeHandler(c.handler.BuildOrder, &vo.BuyRequest{}),
+		//},
+		//kit.Endpoint{
+		//	URI:     "/orders",
+		//	Method:  http.MethodGet,
+		//	Handler: c.makeHandler(c.handler.GetAllOrders, nil),
+		//},
+		//kit.Endpoint{
+		//	URI:     "/orders/batch",
+		//	Method:  http.MethodPost,
+		//	Handler: c.makeHandler(c.handler.BatchBuyGas, &vo.BatchBuyRequest{}),
+		//},
 	)
 	return ends
 }

@@ -24,11 +24,11 @@ func (c TxController) GetEndpoints() []kit.Endpoint {
 			Method:  http.MethodGet,
 			Handler: c.makeHandler(c.handler.TxResult, nil),
 		},
-		kit.Endpoint{
-			URI:     "/tx/queue/info",
-			Method:  http.MethodGet,
-			Handler: c.makeHandler(c.handler.TxQueueInfo, nil),
-		},
+		//kit.Endpoint{
+		//	URI:     "/tx/queue/info",
+		//	Method:  http.MethodGet,
+		//	Handler: c.makeHandler(c.handler.TxQueueInfo, nil),
+		//},
 	)
 	return ends
 }

@@ -30,7 +30,6 @@ db = 11
 iritaopb_native = "localhost:10000"
 state_gateway = "192.168.150.44:10000"
 
-
 [project]
 secret_pwd = "Console_Projects_Secrets"
 
