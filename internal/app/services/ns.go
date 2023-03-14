@@ -6,13 +6,13 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	pb "gitlab.bianjie.ai/avata/chains/api/pb/ns"
-	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 
+	pb "gitlab.bianjie.ai/avata/chains/api/pb/ns"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
+	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 )
 
 type INs interface {
