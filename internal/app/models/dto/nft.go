@@ -8,7 +8,7 @@ type NftOperationHistoryByNftId struct {
 	NftId           uint64 `json:"nft_id"`
 	Signer          string `json:"signer"`
 	Txhash          string `json:"tx_hash"`
-	Operation       uint64 `json:"operation"`
+	Operation       uint32 `json:"operation"`
 	ProjectID       uint64 `json:"project_id"`
 	ChainID         uint64 `json:"chain_id"`
 	PlatFormID      uint64 `json:"plat_form_id"`
