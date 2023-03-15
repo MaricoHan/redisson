@@ -14,7 +14,6 @@ import (
 	"gorm.io/gorm/schema"
 
 	pb_account "gitlab.bianjie.ai/avata/chains/api/pb/account"
-	pb_business "gitlab.bianjie.ai/avata/chains/api/pb/buy"
 	pb_class "gitlab.bianjie.ai/avata/chains/api/pb/class"
 	pb_msgs "gitlab.bianjie.ai/avata/chains/api/pb/msgs"
 	pb_nft "gitlab.bianjie.ai/avata/chains/api/pb/nft"
@@ -33,7 +32,6 @@ var MysqlDB *gorm.DB
 var GrpcConnMap map[string]*grpc.ClientConn
 var AccountClientMap map[string]pb_account.AccountClient
 var NoticeClientMap map[string]pb_notice.NoticeClient
-var BusineessClientMap map[string]pb_business.BuyClient
 var MsgsClientMap map[string]pb_msgs.MSGSClient
 var NftClientMap map[string]pb_nft.NFTClient
 
@@ -157,9 +155,6 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 
 	AccountClientMap = make(map[string]pb_account.AccountClient)
 	AccountClientMap[constant.IritaOPBNative] = pb_account.NewAccountClient(GrpcConnMap[constant.IritaOPBNative])
-	// 初始化business grpc client
-	BusineessClientMap = make(map[string]pb_business.BuyClient)
-	BusineessClientMap[constant.IritaOPBNative] = pb_business.NewBuyClient(GrpcConnMap[constant.IritaOPBNative])
 	// 初始化msgs grpc client
 	MsgsClientMap = make(map[string]pb_msgs.MSGSClient)
 	MsgsClientMap[constant.IritaOPBNative] = pb_msgs.NewMSGSClient(GrpcConnMap[constant.IritaOPBNative])

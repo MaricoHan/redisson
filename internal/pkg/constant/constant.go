@@ -30,6 +30,10 @@ const (
 	IritaOPBNative = "irita-opb-native"
 	IrisHubNative  = "irishub-native"
 
+	// stage
+	IritaOPB = "irita-opb"
+	Native   = "native"
+
 	// rights map
 	JiangSu = "jiangsu"
 	Guizhou = "guizhou"
