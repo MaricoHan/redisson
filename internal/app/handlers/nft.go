@@ -3,7 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
-	pb "gitlab.bianjie.ai/avata/chains/api/pb/nft"
+	pb "gitlab.bianjie.ai/avata/chains/api/pb/v2/nft"
 	"strconv"
 	"strings"
 

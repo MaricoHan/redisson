@@ -1,6 +1,6 @@
 package dto
 
-import pb "gitlab.bianjie.ai/avata/chains/api/pb/nft"
+import pb "gitlab.bianjie.ai/avata/chains/api/pb/v2/nft"
 
 type NftOperationHistoryByNftId struct {
 	Page
