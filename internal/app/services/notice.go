@@ -15,7 +15,7 @@ import (
 
 	httptransport "github.com/go-kit/kit/transport/http"
 	log "github.com/sirupsen/logrus"
-	pb_notice "gitlab.bianjie.ai/avata/chains/api/pb/notice"
+	pb_notice "gitlab.bianjie.ai/avata/chains/api/pb/v2/notice"
 	authErr "gitlab.bianjie.ai/avata/utils/errors/auth"
 
 	noticeResp "gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/notice"

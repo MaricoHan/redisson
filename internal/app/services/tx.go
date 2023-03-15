@@ -8,8 +8,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/volatiletech/sqlboiler/types"
-	pb "gitlab.bianjie.ai/avata/chains/api/pb/tx"
-	pb_queue "gitlab.bianjie.ai/avata/chains/api/pb/tx_queue"
+	pb "gitlab.bianjie.ai/avata/chains/api/pb/v2/tx"
+	pb_queue "gitlab.bianjie.ai/avata/chains/api/pb/v2/tx_queue"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
