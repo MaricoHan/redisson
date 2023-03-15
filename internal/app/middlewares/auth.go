@@ -93,7 +93,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		AccessMode: projectInfo.AccessMode,
 		UserId:     uint64(projectInfo.UserId),
 	}
-	projectInfo.Version = 0
+
 	// 判断项目参数版本号
 	if projectInfo.Version == entity.Version1 {
 		log.Error("project version not implemented")
