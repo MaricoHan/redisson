@@ -31,7 +31,7 @@ password = ""
 db = 11
 
 [grpc_client]
-iritaopb_native = "192.168.150.42:20000"
+iritaopb_native = "127.0.0.1:10000"
 state_gateway = "192.168.150.44:10000"
 
 [project]
