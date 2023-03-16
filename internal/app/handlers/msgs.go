@@ -75,7 +75,7 @@ func (h *Msgs) GetNFTHistory(ctx context.Context, _ interface{}) (interface{}, e
 	params.SortBy = h.SortBy(ctx)
 
 	params.Signer = h.Signer(ctx)
-	params.Txhash = h.Txhash(ctx)
+	params.TxHash = h.Txhash(ctx)
 
 	operation, err := h.operation(ctx)
 	if err != nil {
@@ -200,7 +200,7 @@ func (h *Msgs) Account(ctx context.Context) string {
 	return accountR.(string)
 }
 
-func (h *Msgs) operationModule(ctx context.Context) (uint64, error) {
+func (h *Msgs) operationModule(ctx context.Context) (uint32, error) {
 	v := ctx.Value("module")
 	if v == nil {
 		return 0, nil
@@ -212,10 +212,10 @@ func (h *Msgs) operationModule(ctx context.Context) (uint64, error) {
 		return 0, errors.ErrModules
 	}
 
-	return res, nil
+	return uint32(res), nil
 }
 
-func (h *Msgs) operation(ctx context.Context) (uint64, error) {
+func (h *Msgs) operation(ctx context.Context) (uint32, error) {
 	v := ctx.Value("operation")
 	if v == nil {
 		return 0, nil
@@ -226,5 +226,5 @@ func (h *Msgs) operation(ctx context.Context) (uint64, error) {
 		return 0, errors.New(errors.ClientParams, errors.ErrOperation)
 	}
 
-	return res, nil
+	return uint32(res), nil
 }

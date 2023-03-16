@@ -5,7 +5,6 @@ type CreateNftClassRequest struct {
 	Name                 string `json:"name" validate:"required"`
 	Symbol               string `json:"symbol" validate:"required"`
 	Uri                  string `json:"uri"`
-	UriHash              string `json:"uri_hash"`
 	EditableByOwner      uint32 `json:"editable_by_owner"`
 	EditableByClassOwner uint32 `json:"editable_by_class_owner"`
 	Owner                string `json:"owner" validate:"required"`

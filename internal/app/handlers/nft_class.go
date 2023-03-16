@@ -38,7 +38,6 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 	name := strings.TrimSpace(req.Name)
 	symbol := strings.TrimSpace(req.Symbol)
 	uri := strings.TrimSpace(req.Uri)
-	uriHash := strings.TrimSpace(req.UriHash)
 	owner := strings.TrimSpace(req.Owner)
 	operationId := strings.TrimSpace(req.OperationID)
 	if operationId == "" {
@@ -71,7 +70,6 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 		Name:                 name,
 		Symbol:               symbol,
 		Uri:                  uri,
-		UriHash:              uriHash,
 		EditableByClassOwner: req.EditableByClassOwner,
 		EditableByOwner:      req.EditableByOwner,
 		Owner:                owner,
