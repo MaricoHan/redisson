@@ -15,10 +15,10 @@ type TxResultByTxHash struct {
 }
 
 type TxResultRes struct {
-	Module      uint64      `json:"module"`
-	Operation   uint64      `json:"operation"`
+	Module      uint32      `json:"module"`
+	Operation   uint32      `json:"operation"`
 	TxHash      string      `json:"tx_hash"`
-	Status      int32       `json:"status"`
+	Status      uint32      `json:"status"`
 	Message     string      `json:"message"`
 	BlockHeight uint64      `json:"block_height"`
 	Timestamp   string      `json:"timestamp"`

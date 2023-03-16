@@ -1,7 +1,7 @@
 package dto
 
 type Page struct {
-	Limit      uint64 `json:"limit" `
+	Limit      uint32 `json:"limit" `
 	StartDate  string `json:"start_date"`
 	EndDate    string `json:"end_date"`
 	SortBy     string `json:"sort_by"`
@@ -12,6 +12,6 @@ type Page struct {
 type PageRes struct {
 	PrevPageKey string `json:"prev_page_key"`
 	NextPageKey string `json:"next_page_key"`
-	Limit       uint64 `json:"limit" `
-	TotalCount  int64  `json:"total_count"`
+	Limit       uint32 `json:"limit" `
+	TotalCount  uint64 `json:"total_count"`
 }

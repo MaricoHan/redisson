@@ -6,7 +6,7 @@ import (
 
 // BatchCreateAccount 批量创建链账户
 type BatchCreateAccount struct {
-	Count       int64  `json:"count"`
+	Count       uint32 `json:"count"`
 	ProjectID   uint64 `json:"project_id"`
 	ChainID     uint64 `json:"chain_id"`
 	PlatFormID  uint64 `json:"plat_form_id"`
@@ -35,8 +35,8 @@ type AccountsInfo struct {
 	ChainID         uint64 `json:"chain_id"`
 	PlatFormID      uint64 `json:"plat_form_id"`
 	Module          string `json:"module"`
-	Operation       uint64 `json:"operation"`
-	OperationModule uint64 `json:"operation_module"`
+	Operation       uint32 `json:"operation"`
+	OperationModule uint32 `json:"operation_module"`
 	Code            string `json:"code"`
 	TxHash          string `json:"tx_hash"`
 	OperationId     string `json:"operation_id"`
@@ -70,8 +70,8 @@ type AccountOperationRecordRes struct {
 
 type AccountOperationRecords struct {
 	TxHash    string      `json:"tx_hash"`
-	Module    uint64      `json:"module"`
-	Operation uint64      `json:"operation"`
+	Module    uint32      `json:"module"`
+	Operation uint32      `json:"operation"`
 	Signer    string      `json:"signer"`
 	Timestamp string      `json:"timestamp"`
 	NftMsg    *types.JSON `json:"nft_msg"`

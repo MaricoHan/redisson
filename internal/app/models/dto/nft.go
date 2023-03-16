@@ -7,7 +7,7 @@ type NftOperationHistoryByNftId struct {
 	ClassID         string `json:"class_id"`
 	NftId           uint64 `json:"nft_id"`
 	Signer          string `json:"signer"`
-	Txhash          string `json:"tx_hash"`
+	TxHash          string `json:"tx_hash"`
 	Operation       uint32 `json:"operation"`
 	ProjectID       uint64 `json:"project_id"`
 	ChainID         uint64 `json:"chain_id"`
@@ -24,8 +24,8 @@ type NftOperationHistoryByNftIdRes struct {
 }
 
 type OperationRecord struct {
-	Txhash    string `json:"tx_hash"`
-	Operation uint64 `json:"operation"`
+	TxHash    string `json:"tx_hash"`
+	Operation uint32 `json:"operation"`
 	Signer    string `json:"signer"`
 	Recipient string `json:"recipient"`
 	Timestamp string `json:"timestamp"`
@@ -35,7 +35,6 @@ type CreateNftClass struct {
 	Name                 string `json:"name"`
 	Symbol               string `json:"symbol"`
 	Uri                  string `json:"uri"`
-	UriHash              string `json:"uri_hash"`
 	EditableByOwner      uint32 `json:"editable_by_owner"`
 	EditableByClassOwner uint32 `json:"editable_by_class_owner"`
 	Owner                string `json:"owner"`
@@ -74,7 +73,6 @@ type NftClass struct {
 	Id        string `json:"id"`
 	Name      string `json:"name"`
 	Uri       string `json:"uri"`
-	UriHash   string `json:"uri_hash"`
 	Symbol    string `json:"symbol"`
 	Owner     string `json:"owner"`
 	TxHash    string `json:"tx_hash"`
@@ -85,7 +83,6 @@ type NftClassRes struct {
 	Id                   string `json:"id"`
 	Name                 string `json:"name"`
 	Uri                  string `json:"uri"`
-	UriHash              string `json:"uri_hash"`
 	Symbol               string `json:"symbol"`
 	NftCount             uint64 `json:"nft_count"`
 	Owner                string `json:"owner"`
@@ -96,7 +93,7 @@ type NftClassRes struct {
 }
 
 type NftCount struct {
-	Count   int64  `json:"count"`
+	Count   uint64 `json:"count"`
 	ClassId string `json:"class_id"`
 }
 

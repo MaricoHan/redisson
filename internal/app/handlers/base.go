@@ -68,7 +68,7 @@ func (p pageBasic) Offset(ctx context.Context) (int64, error) {
 	return offsetInt, nil
 }
 
-func (p pageBasic) Limit(ctx context.Context) (uint64, error) {
+func (p pageBasic) Limit(ctx context.Context) (uint32, error) {
 	limit := ctx.Value("limit")
 	if limit == "" || limit == nil {
 		return 10, nil
@@ -80,7 +80,7 @@ func (p pageBasic) Limit(ctx context.Context) (uint64, error) {
 	if limitInt < 1 || limitInt > 50 {
 		return 10, errors2.New(errors2.ClientParams, errors2.ErrLimitParamInt)
 	}
-	return uint64(limitInt), nil
+	return uint32(limitInt), nil
 }
 
 func (p pageBasic) StartDate(ctx context.Context) string {

@@ -62,11 +62,11 @@ func (t *tx) TxResult(ctx context.Context, params dto.TxResultByTxHash) (*dto.Tx
 	}
 	result := new(dto.TxResultRes)
 	status := resp.Detail.Status
-	result.Module = uint64(resp.Detail.Module)
-	result.Operation = uint64(resp.Detail.Operation)
+	result.Module = uint32(resp.Detail.Module)
+	result.Operation = uint32(resp.Detail.Operation)
 	result.TxHash = ""
-	result.Status = int32(status)
-	if status == pb.STATUS_success || status == pb.STATUS_failed {
+	result.Status = uint32(status)
+	if status == pb.STATUS_SUCCESS || status == pb.STATUS_FAILED {
 		result.TxHash = resp.Detail.Hash
 	}
 
