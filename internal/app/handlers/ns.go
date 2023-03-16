@@ -58,12 +58,7 @@ func (h *Ns) Domains(ctx context.Context, request interface{}) (interface{}, err
 	tld := strings.TrimSpace(h.Tld(ctx))
 
 	if name == "" {
-		// todo
-		return nil, errors2.New(errors2.ClientParams, "empty name")
-	}
-	if tld == "" {
-		// todo
-		return nil, errors2.New(errors2.ClientParams, "empty tld")
+		return nil, errors2.New(errors2.ClientParams, "name is a required field")
 	}
 
 	// 校验参数 start
