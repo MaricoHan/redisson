@@ -40,7 +40,7 @@ func (h *Ns) CreateDomain(ctx context.Context, request interface{}) (interface{}
 	// 校验参数 start
 	authData := h.AuthData(ctx)
 	params := dto.CreateDomain{
-		OperationId: h.OperationId(ctx),
+		OperationId: operationId,
 		ProjectID:   authData.ProjectId,
 		Module:      authData.Module,
 		Code:        authData.Code,

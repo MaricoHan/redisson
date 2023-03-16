@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	kit "gitlab.bianjie.ai/avata/open-api/pkg/gokit"
 )
 
@@ -27,7 +28,7 @@ func (c NsController) GetEndpoints() []kit.Endpoint {
 		kit.Endpoint{
 			URI:     "/ns/domains",
 			Method:  http.MethodPost,
-			Handler: c.makeHandler(c.handler.CreateDomain, nil),
+			Handler: c.makeHandler(c.handler.CreateDomain, &vo.CreateDomainRequest{}),
 		},
 	)
 	return ends

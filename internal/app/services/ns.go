@@ -40,6 +40,8 @@ func (t *ns) CreateDomain(ctx context.Context, params dto.CreateDomain) (*dto.Tx
 	req := pb.DomainCreateRequest{
 		ProjectId:   params.ProjectID,
 		OperationId: params.OperationId,
+		Name:        params.Name,
+		Owner:       params.Owner,
 	}
 	resp := &pb.DomainCreateResponse{}
 	var err error
