@@ -75,9 +75,13 @@ func (h *Msgs) GetNFTHistory(ctx context.Context, _ interface{}) (interface{}, e
 	params.SortBy = h.SortBy(ctx)
 
 	params.Signer = h.Signer(ctx)
-	params.Txhash = h.Txhash(ctx)
+	params.TxHash = h.Txhash(ctx)
 
-	params.Operation = h.Operation(ctx)
+	operation, err := h.operation(ctx)
+	if err != nil {
+		return nil, err
+	}
+	params.Operation = uint32(operation)
 
 	return h.svc.GetNFTHistory(ctx, params)
 }
@@ -180,14 +184,6 @@ func (h *Msgs) Signer(ctx context.Context) string {
 	return signer.(string)
 }
 
-func (h *Msgs) Operation(ctx context.Context) uint64 {
-	operation := ctx.Value("operation")
-	if operation == nil || operation == 0 {
-		return 0
-	}
-	return operation.(uint64)
-}
-
 func (h *Msgs) Txhash(ctx context.Context) string {
 	txhash := ctx.Value("tx_hash")
 	if txhash == nil || txhash == "" {
@@ -204,7 +200,7 @@ func (h *Msgs) Account(ctx context.Context) string {
 	return accountR.(string)
 }
 
-func (h *Msgs) operationModule(ctx context.Context) (uint64, error) {
+func (h *Msgs) operationModule(ctx context.Context) (uint32, error) {
 	v := ctx.Value("module")
 	if v == nil {
 		return 0, nil
@@ -216,10 +212,10 @@ func (h *Msgs) operationModule(ctx context.Context) (uint64, error) {
 		return 0, errors.ErrModules
 	}
 
-	return res, nil
+	return uint32(res), nil
 }
 
-func (h *Msgs) operation(ctx context.Context) (uint64, error) {
+func (h *Msgs) operation(ctx context.Context) (uint32, error) {
 	v := ctx.Value("operation")
 	if v == nil {
 		return 0, nil
@@ -230,5 +226,5 @@ func (h *Msgs) operation(ctx context.Context) (uint64, error) {
 		return 0, errors.New(errors.ClientParams, errors.ErrOperation)
 	}
 
-	return res, nil
+	return uint32(res), nil
 }

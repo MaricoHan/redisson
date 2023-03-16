@@ -3,9 +3,10 @@ package handlers
 import (
 	"context"
 	"fmt"
-	pb "gitlab.bianjie.ai/avata/chains/api/pb/nft"
 	"strconv"
 	"strings"
+
+	pb "gitlab.bianjie.ai/avata/chains/api/pb/v2/nft"
 
 	"gitlab.bianjie.ai/avata/utils/errors/common"
 
@@ -300,15 +301,11 @@ func (h *NFT) TxHash(ctx context.Context) string {
 func (h *NFT) Status(ctx context.Context) (pb.STATUS, error) {
 	v := ctx.Value("status")
 	if v == nil {
-		return pb.STATUS_active, nil
+		return pb.STATUS_ACTIVE, nil
 	}
 	s := v.(string)
 	status, err := strconv.ParseInt(s, 10, 32)
 	if err != nil {
-		return 0, errors2.New(errors2.ClientParams, errors2.ErrStatus)
-	}
-
-	if pb.STATUS(status) != pb.STATUS_active && pb.STATUS(status) != pb.STATUS_burned {
 		return 0, errors2.New(errors2.ClientParams, errors2.ErrStatus)
 	}
 

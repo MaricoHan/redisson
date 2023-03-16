@@ -8,8 +8,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/volatiletech/sqlboiler/types"
-	pb "gitlab.bianjie.ai/avata/chains/api/pb/tx"
-	pb_queue "gitlab.bianjie.ai/avata/chains/api/pb/tx_queue"
+	pb "gitlab.bianjie.ai/avata/chains/api/pb/v2/tx"
+	pb_queue "gitlab.bianjie.ai/avata/chains/api/pb/v2/tx_queue"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
@@ -62,11 +62,11 @@ func (t *tx) TxResult(ctx context.Context, params dto.TxResultByTxHash) (*dto.Tx
 	}
 	result := new(dto.TxResultRes)
 	status := resp.Detail.Status
-	result.Module = uint64(resp.Detail.Module)
-	result.Operation = uint64(resp.Detail.Operation)
+	result.Module = uint32(resp.Detail.Module)
+	result.Operation = uint32(resp.Detail.Operation)
 	result.TxHash = ""
-	result.Status = int32(status)
-	if status == pb.STATUS_success || status == pb.STATUS_failed {
+	result.Status = uint32(status)
+	if status == pb.STATUS_SUCCESS || status == pb.STATUS_FAILED {
 		result.TxHash = resp.Detail.Hash
 	}
 

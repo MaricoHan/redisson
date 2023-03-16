@@ -6,7 +6,7 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	pb "gitlab.bianjie.ai/avata/chains/api/pb/class"
+	pb "gitlab.bianjie.ai/avata/chains/api/pb/v2/class"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
@@ -89,7 +89,6 @@ func (n *nftClass) GetAllNFTClasses(ctx context.Context, params dto.NftClasses) 
 			Name:      item.Name,
 			Symbol:    item.Symbol,
 			Uri:       item.Uri,
-			UriHash:   item.UriHash,
 			Owner:     item.Owner,
 			TxHash:    item.TxHash,
 			Timestamp: item.Timestamp,
@@ -143,7 +142,6 @@ func (n *nftClass) GetNFTClass(ctx context.Context, params dto.NftClasses) (*dto
 	result.Symbol = resp.Detail.Symbol
 	result.EditableByOwner = resp.Detail.EditableByOwner
 	result.EditableByClassOwner = resp.Detail.EditableByClassOwner
-	result.UriHash = resp.Detail.UriHash
 	result.NftCount = resp.Detail.NftCount
 	result.TxHash = resp.Detail.TxHash
 	return result, nil
@@ -166,7 +164,6 @@ func (n *nftClass) CreateNFTClass(ctx context.Context, params dto.CreateNftClass
 		Owner:                params.Owner,
 		ProjectId:            params.ProjectID,
 		OperationId:          params.OperationId,
-		UriHash:              params.UriHash,
 		EditableByClassOwner: params.EditableByClassOwner,
 		EditableByOwner:      params.EditableByOwner,
 	}

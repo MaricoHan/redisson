@@ -8,7 +8,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/volatiletech/sqlboiler/types"
-	pb "gitlab.bianjie.ai/avata/chains/api/pb/msgs"
+	pb "gitlab.bianjie.ai/avata/chains/api/pb/v2/msgs"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
@@ -50,7 +50,7 @@ func (s *msgs) GetNFTHistory(ctx context.Context, params dto.NftOperationHistory
 		ProjectId:  params.ProjectID,
 		NftId:      params.NftId,
 		Signer:     params.Signer,
-		TxHash:     params.Txhash,
+		TxHash:     params.TxHash,
 		PageKey:    params.PageKey,
 		CountTotal: params.CountTotal,
 		Limit:      params.Limit,
@@ -59,7 +59,7 @@ func (s *msgs) GetNFTHistory(ctx context.Context, params dto.NftOperationHistory
 		ClassId:    params.ClassID,
 		SortBy:     pb.SORTS(sort),
 	}
-	req.Operation = pb.NFT_OPERATIONS(params.Operation)
+	req.Operation = params.Operation
 
 	resp := &pb.NFTHistoryResponse{}
 	var err error
@@ -90,8 +90,8 @@ func (s *msgs) GetNFTHistory(ctx context.Context, params dto.NftOperationHistory
 	var operationRecords []*dto.OperationRecord
 	for _, item := range resp.Data {
 		var operationRecord = &dto.OperationRecord{
-			Txhash:    item.TxHash,
-			Operation: uint64(item.Operation),
+			TxHash:    item.TxHash,
+			Operation: item.Operation,
 			Signer:    item.Signer,
 			Recipient: item.Recipient,
 			Timestamp: item.Timestamp,
@@ -165,8 +165,8 @@ func (s *msgs) GetAccountHistory(ctx context.Context, params dto.AccountsInfo) (
 	for _, item := range resp.Data {
 		accountOperationRecord := &dto.AccountOperationRecords{
 			TxHash:    item.TxHash,
-			Module:    uint64(item.Module),
-			Operation: uint64(item.Operation),
+			Module:    item.Module,
+			Operation: item.Operation,
 			Signer:    item.Signer,
 			Timestamp: item.Timestamp,
 		}

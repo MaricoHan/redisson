@@ -84,13 +84,6 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 判断项目参数版本号
-	if projectInfo.Version == entity.Version1 {
-		log.Error("project version not implemented")
-		writeNotFoundRequestResp(w, constant.ErrUnSupported)
-		return
-	}
-
 	authData := vo.AuthData{
 		ProjectId:  uint64(projectInfo.Id),
 		ChainId:    uint64(chainInfo.Id),
@@ -100,6 +93,17 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		AccessMode: projectInfo.AccessMode,
 		UserId:     uint64(projectInfo.UserId),
 	}
+
+	// 判断项目参数版本号
+	if projectInfo.Version == entity.Version1 {
+		log.Error("project version not implemented")
+		writeNotFoundRequestResp(w, constant.ErrUnSupported)
+		return
+	} else if projectInfo.Version == entity.VersionStage {
+		authData.Code = constant.IritaOPB
+		authData.Module = constant.Native
+	}
+
 	authDataBytes, _ := json.Marshal(authData)
 	// 1. 判断时间误差
 	if configs.Cfg.App.TimestampAuth {
