@@ -6,8 +6,8 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	pb "gitlab.bianjie.ai/avata/chains/api/pb/class"
-	pb2 "gitlab.bianjie.ai/avata/chains/api/pb/nft"
+	pb "gitlab.bianjie.ai/avata/chains/api/pb/v2/class"
+	pb2 "gitlab.bianjie.ai/avata/chains/api/pb/v2/nft"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
@@ -16,7 +16,7 @@ import (
 )
 
 type INFTTransfer interface {
-	TransferNFTClass(ctx context.Context, params dto.TransferNftClassById) (*dto.TxRes, error) // 转让NFTClass
+	TransferNFTClass(ctx context.Context, params dto.TransferNftClassById) (*dto.TxRes, error)
 	TransferNFT(ctx context.Context, params dto.TransferNftByNftId) (*dto.TxRes, error)
 }
 
@@ -44,7 +44,6 @@ func (s *nftTransfer) TransferNFTClass(ctx context.Context, params dto.TransferN
 		Owner:       params.Owner,
 		Recipient:   params.Recipient,
 		ProjectId:   params.ProjectID,
-		Tag:         string(params.Tag),
 		OperationId: params.OperationId,
 	}
 	resp := &pb.ClassTransferResponse{}
@@ -63,7 +62,7 @@ func (s *nftTransfer) TransferNFTClass(ctx context.Context, params dto.TransferN
 	if resp == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
-	return &dto.TxRes{TaskId: resp.TaskId, OperationId: resp.OperationId}, nil
+	return &dto.TxRes{}, nil
 
 }
 
@@ -83,7 +82,6 @@ func (s *nftTransfer) TransferNFT(ctx context.Context, params dto.TransferNftByN
 		NftId:       params.NftId,
 		Recipient:   params.Recipient,
 		ProjectId:   params.ProjectID,
-		Tag:         string(params.Tag),
 		OperationId: params.OperationId,
 	}
 	resp := &pb2.NFTTransferResponse{}
@@ -102,5 +100,5 @@ func (s *nftTransfer) TransferNFT(ctx context.Context, params dto.TransferNftByN
 	if resp == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
-	return &dto.TxRes{TaskId: resp.TaskId, OperationId: resp.OperationId}, nil
+	return &dto.TxRes{}, nil
 }

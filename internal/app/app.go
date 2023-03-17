@@ -19,7 +19,7 @@ import (
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/safe"
 )
 
-//Start a instance of the http server
+// Start a instance of the http server
 func Start(ctx *configs.Context) {
 
 	if ctx.Config.App.GprcTimeout == 0 {
@@ -77,8 +77,6 @@ func Start(ctx *configs.Context) {
 	sig := <-sigs
 
 	//释放所有资源
-	initialize.GrpcConnMap[constant.WenchangNative].Close()
-	initialize.GrpcConnMap[constant.WenchangDDC].Close()
 	initialize.GrpcConnMap[constant.IritaOPBNative].Close()
 
 	log.WithFields(log.Fields{

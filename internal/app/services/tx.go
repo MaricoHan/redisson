@@ -8,8 +8,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/volatiletech/sqlboiler/types"
-	pb "gitlab.bianjie.ai/avata/chains/api/pb/tx"
-	pb_queue "gitlab.bianjie.ai/avata/chains/api/pb/tx_queue"
+	pb "gitlab.bianjie.ai/avata/chains/api/pb/v2/tx"
+	pb_queue "gitlab.bianjie.ai/avata/chains/api/pb/v2/tx_queue"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
@@ -19,7 +19,7 @@ import (
 )
 
 type ITx interface {
-	TxResultByTxHash(ctx context.Context, params dto.TxResultByTxHash) (*dto.TxResultByTxHashRes, error)
+	TxResult(ctx context.Context, params dto.TxResultByTxHash) (*dto.TxResultRes, error)
 	TxQueueInfo(ctx context.Context, params dto.TxQueueInfo) (*dto.TxQueueInfoRes, error)
 }
 
@@ -31,8 +31,8 @@ func NewTx(logger *log.Logger) *tx {
 	return &tx{logger: logger.WithField("model", "tx")}
 }
 
-func (t *tx) TxResultByTxHash(ctx context.Context, params dto.TxResultByTxHash) (*dto.TxResultByTxHashRes, error) {
-	logger := t.logger.WithField("params", params).WithField("func", "TxResultByTxHash")
+func (t *tx) TxResult(ctx context.Context, params dto.TxResultByTxHash) (*dto.TxResultRes, error) {
+	logger := t.logger.WithField("params", params).WithField("func", "TxResult")
 	// 非托管模式不支持
 	if params.AccessMode == entity.UNMANAGED {
 		return nil, errors2.ErrNotImplemented
@@ -60,26 +60,17 @@ func (t *tx) TxResultByTxHash(ctx context.Context, params dto.TxResultByTxHash) 
 	if resp == nil || resp.Detail == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
-	result := new(dto.TxResultByTxHashRes)
+	result := new(dto.TxResultRes)
 	status := resp.Detail.Status
-	result.Module = resp.Detail.Module
-	result.Type = resp.Detail.Operation
+	result.Module = uint32(resp.Detail.Module)
+	result.Operation = uint32(resp.Detail.Operation)
 	result.TxHash = ""
-	result.Status = int32(status)
-	if status == pb.STATUS_success || status == pb.STATUS_failed {
+	result.Status = uint32(status)
+	if status == pb.STATUS_SUCCESS || status == pb.STATUS_FAILED {
 		result.TxHash = resp.Detail.Hash
 	}
-	if resp.Detail.Tag != "" {
-		var tagInterface interface{}
-		err = json.Unmarshal([]byte(resp.Detail.Tag), &tagInterface)
-		if err != nil {
-			logger.WithError(err).Error("Unmarshal failed")
-			return nil, errors2.ErrInternal
-		}
-		result.Tag = tagInterface.(map[string]interface{})
-	}
 
-	result.Message = resp.Detail.ErrMsg
+	result.Message = resp.Detail.Message
 	result.BlockHeight = resp.Detail.BlockHeight
 	result.Timestamp = resp.Detail.Timestamp
 
@@ -90,22 +81,8 @@ func (t *tx) TxResultByTxHash(ctx context.Context, params dto.TxResultByTxHash) 
 			logger.WithError(err).Error("Unmarshal failed")
 			return nil, errors2.ErrInternal
 		}
-		result.NftID = resp.Detail.NftId
-		result.ClassID = resp.Detail.ClassId
 	}
 
-	if resp.Detail.Mt != "" {
-		result.Mt = new(types.JSON)
-		err = json.Unmarshal([]byte(resp.Detail.Mt), result.Mt)
-		if err != nil {
-			logger.WithError(err).Error("Unmarshal failed")
-			return nil, errors2.ErrInternal
-		}
-	}
-
-	if resp.Detail.Record != new(pb.Record) {
-		result.Record = resp.Detail.Record
-	}
 	return result, nil
 }
 

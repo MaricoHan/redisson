@@ -6,7 +6,7 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	pb "gitlab.bianjie.ai/avata/chains/api/pb/account"
+	pb "gitlab.bianjie.ai/avata/chains/api/pb/v2/account"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 
@@ -38,13 +38,12 @@ func (a *account) BatchCreateAccount(ctx context.Context, params dto.BatchCreate
 		return nil, errors2.ErrNotImplemented
 	}
 
-	req := pb.AccountCreateRequest{
+	req := pb.AccountBatchCreateRequest{
 		ProjectId:   params.ProjectID,
 		Count:       params.Count,
-		PlatformId:  int64(params.PlatFormID),
 		OperationId: params.OperationId,
 	}
-	resp := &pb.AccountCreateResponse{}
+	resp := &pb.AccountBatchCreateResponse{}
 	var err error
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.AccountClientMap[mapKey]
@@ -64,7 +63,6 @@ func (a *account) BatchCreateAccount(ctx context.Context, params dto.BatchCreate
 	}
 	result := &dto.BatchAccountRes{}
 	result.Accounts = resp.Accounts
-	result.OperationId = resp.OperationId
 	return result, nil
 }
 
@@ -77,13 +75,12 @@ func (a *account) CreateAccount(ctx context.Context, params dto.CreateAccount) (
 		return nil, errors2.ErrNotImplemented
 	}
 
-	req := pb.AccountSeparateCreateRequest{
+	req := pb.AccountCreateRequest{
 		ProjectId:   params.ProjectID,
 		Name:        params.Name,
-		PlatformId:  int64(params.PlatFormID),
 		OperationId: params.OperationId,
 	}
-	resp := &pb.AccountSeparateCreateResponse{}
+	resp := &pb.AccountCreateResponse{}
 	var err error
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 	grpcClient, ok := initialize.AccountClientMap[mapKey]
@@ -103,11 +100,10 @@ func (a *account) CreateAccount(ctx context.Context, params dto.CreateAccount) (
 	}
 	result := &dto.AccountRes{}
 	result.Account = resp.Account
-	result.Name = resp.Name
-	result.OperationId = resp.OperationId
 	return result, nil
 }
 
+// GetAccounts 查询链账户
 func (a *account) GetAccounts(ctx context.Context, params dto.AccountsInfo) (*dto.AccountsRes, error) {
 	logger := a.logger.WithField("params", params).WithField("func", "GetAccounts")
 
@@ -124,10 +120,11 @@ func (a *account) GetAccounts(ctx context.Context, params dto.AccountsInfo) (*dt
 
 	req := pb.AccountShowRequest{
 		ProjectId:   params.ProjectID,
-		Offset:      params.Offset,
+		PageKey:     params.PageKey,
+		CountTotal:  params.CountTotal,
 		Limit:       params.Limit,
 		SortBy:      pb.SORT(sort),
-		Address:     params.Account,
+		Account:     params.Account,
 		StartDate:   params.StartDate,
 		EndDate:     params.EndDate,
 		OperationId: params.OperationId,
@@ -153,20 +150,20 @@ func (a *account) GetAccounts(ctx context.Context, params dto.AccountsInfo) (*dt
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
 	result := &dto.AccountsRes{
+		PageRes: dto.PageRes{
+			PrevPageKey: resp.PrevPageKey,
+			NextPageKey: resp.NextPageKey,
+			Limit:       resp.Limit,
+			TotalCount:  resp.TotalCount,
+		},
 		Accounts: []*dto.Account{},
 	}
-	result.Offset = resp.Offset
-	result.Limit = resp.Limit
-	result.TotalCount = resp.TotalCount
 	var accounts []*dto.Account
 	for _, result := range resp.Data {
 		account := &dto.Account{
 			Account:     result.Address,
-			Gas:         result.Gas,
-			BizFee:      result.BizFee,
 			Name:        result.Name,
 			OperationId: result.OperationId,
-			Status:      uint64(result.Status),
 		}
 		accounts = append(accounts, account)
 	}

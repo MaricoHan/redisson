@@ -3,10 +3,12 @@ package handlers
 import (
 	"context"
 	"fmt"
+
+	"gitlab.bianjie.ai/avata/utils/errors"
+
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
-	"gitlab.bianjie.ai/avata/utils/errors"
 )
 
 const (

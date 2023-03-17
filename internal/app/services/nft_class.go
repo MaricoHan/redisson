@@ -6,7 +6,7 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	pb "gitlab.bianjie.ai/avata/chains/api/pb/class"
+	pb "gitlab.bianjie.ai/avata/chains/api/pb/v2/class"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
@@ -45,17 +45,17 @@ func (n *nftClass) GetAllNFTClasses(ctx context.Context, params dto.NftClasses) 
 	}
 
 	req := pb.ClassListRequest{
-		ProjectId: params.ProjectID,
-		Offset:    params.Offset,
-		Limit:     params.Limit,
-		StartDate: params.StartDate,
-		EndDate:   params.EndDate,
-		SortBy:    pb.SORTS(sort),
-		Id:        params.Id,
-		Name:      params.Name,
-		Owner:     params.Owner,
-		TxHash:    params.TxHash,
-		Status:    pb.STATUS_Active,
+		ProjectId:  params.ProjectID,
+		PageKey:    params.PageKey,
+		CountTotal: params.CountTotal,
+		Limit:      params.Limit,
+		StartDate:  params.StartDate,
+		EndDate:    params.EndDate,
+		SortBy:     pb.SORTS(sort),
+		Id:         params.Id,
+		Name:       params.Name,
+		Owner:      params.Owner,
+		TxHash:     params.TxHash,
 	}
 	resp := &pb.ClassListResponse{}
 	var err error
@@ -75,8 +75,10 @@ func (n *nftClass) GetAllNFTClasses(ctx context.Context, params dto.NftClasses) 
 	}
 	result := &dto.NftClassesRes{
 		PageRes: dto.PageRes{
-			Offset: resp.Offset,
-			Limit:  resp.Limit,
+			PrevPageKey: resp.PrevPageKey,
+			NextPageKey: resp.NextPageKey,
+			Limit:       resp.Limit,
+			TotalCount:  resp.TotalCount,
 		},
 		NftClasses: []*dto.NftClass{},
 	}
@@ -87,7 +89,6 @@ func (n *nftClass) GetAllNFTClasses(ctx context.Context, params dto.NftClasses) 
 			Name:      item.Name,
 			Symbol:    item.Symbol,
 			Uri:       item.Uri,
-			NftCount:  item.NftCount,
 			Owner:     item.Owner,
 			TxHash:    item.TxHash,
 			Timestamp: item.Timestamp,
@@ -115,7 +116,6 @@ func (n *nftClass) GetNFTClass(ctx context.Context, params dto.NftClasses) (*dto
 	req := pb.ClassShowRequest{
 		ProjectId: params.ProjectID,
 		Id:        params.Id,
-		Status:    pb.STATUS_Active, // todo
 	}
 	resp := &pb.ClassShowResponse{}
 	var err error
@@ -140,9 +140,8 @@ func (n *nftClass) GetNFTClass(ctx context.Context, params dto.NftClasses) (*dto
 	result.Uri = resp.Detail.Uri
 	result.Owner = resp.Detail.Owner
 	result.Symbol = resp.Detail.Symbol
-	result.Data = resp.Detail.Metadata
-	result.Description = resp.Detail.Description
-	result.UriHash = resp.Detail.UriHash
+	result.EditableByOwner = resp.Detail.EditableByOwner
+	result.EditableByClassOwner = resp.Detail.EditableByClassOwner
 	result.NftCount = resp.Detail.NftCount
 	result.TxHash = resp.Detail.TxHash
 	return result, nil
@@ -159,17 +158,14 @@ func (n *nftClass) CreateNFTClass(ctx context.Context, params dto.CreateNftClass
 	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	req := pb.ClassCreateRequest{
-		Name:        params.Name,
-		Symbol:      params.Symbol,
-		Description: params.Description,
-		Uri:         params.Uri,
-		UriHash:     params.UriHash,
-		Owner:       params.Owner,
-		Data:        params.Data,
-		ProjectId:   params.ProjectID,
-		Tag:         string(params.Tag),
-		OperationId: params.OperationId,
-		ClassId:     params.ClassId,
+		Name:                 params.Name,
+		Symbol:               params.Symbol,
+		Uri:                  params.Uri,
+		Owner:                params.Owner,
+		ProjectId:            params.ProjectID,
+		OperationId:          params.OperationId,
+		EditableByClassOwner: params.EditableByClassOwner,
+		EditableByOwner:      params.EditableByOwner,
 	}
 
 	resp := &pb.ClassCreateResponse{}
@@ -188,5 +184,5 @@ func (n *nftClass) CreateNFTClass(ctx context.Context, params dto.CreateNftClass
 	if resp == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
-	return &dto.TxRes{TaskId: resp.TaskId, OperationId: resp.OperationId}, nil
+	return &dto.TxRes{}, nil
 }

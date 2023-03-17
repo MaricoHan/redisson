@@ -8,7 +8,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/volatiletech/sqlboiler/types"
-	pb "gitlab.bianjie.ai/avata/chains/api/pb/msgs"
+	pb "gitlab.bianjie.ai/avata/chains/api/pb/v2/msgs"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
@@ -19,7 +19,6 @@ import (
 type IMsgs interface {
 	GetNFTHistory(ctx context.Context, params dto.NftOperationHistoryByNftId) (*dto.NftOperationHistoryByNftIdRes, error)
 	GetAccountHistory(ctx context.Context, params dto.AccountsInfo) (*dto.AccountOperationRecordRes, error)
-	GetMTHistory(ctx context.Context, params dto.MTOperationHistoryByMTId) (*dto.MTOperationHistoryByMTIdRes, error)
 }
 
 type msgs struct {
@@ -48,16 +47,17 @@ func (s *msgs) GetNFTHistory(ctx context.Context, params dto.NftOperationHistory
 	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	req := pb.NFTHistoryRequest{
-		ProjectId: params.ProjectID,
-		NftId:     params.NftId,
-		Signer:    params.Signer,
-		TxHash:    params.Txhash,
-		Offset:    params.Offset,
-		Limit:     params.Limit,
-		StartDate: params.StartDate,
-		EndDate:   params.EndDate,
-		ClassId:   params.ClassID,
-		SortBy:    pb.SORTS(sort),
+		ProjectId:  params.ProjectID,
+		NftId:      params.NftId,
+		Signer:     params.Signer,
+		TxHash:     params.TxHash,
+		PageKey:    params.PageKey,
+		CountTotal: params.CountTotal,
+		Limit:      params.Limit,
+		StartDate:  params.StartDate,
+		EndDate:    params.EndDate,
+		ClassId:    params.ClassID,
+		SortBy:     pb.SORTS(sort),
 	}
 	req.Operation = params.Operation
 
@@ -79,8 +79,10 @@ func (s *msgs) GetNFTHistory(ctx context.Context, params dto.NftOperationHistory
 	}
 	result := &dto.NftOperationHistoryByNftIdRes{
 		PageRes: dto.PageRes{
-			Offset: resp.Offset,
-			Limit:  resp.Limit,
+			PrevPageKey: resp.PrevPageKey,
+			NextPageKey: resp.NextPageKey,
+			Limit:       resp.Limit,
+			TotalCount:  resp.TotalCount,
 		},
 		OperationRecords: []*dto.OperationRecord{},
 	}
@@ -88,7 +90,7 @@ func (s *msgs) GetNFTHistory(ctx context.Context, params dto.NftOperationHistory
 	var operationRecords []*dto.OperationRecord
 	for _, item := range resp.Data {
 		var operationRecord = &dto.OperationRecord{
-			Txhash:    item.TxHash,
+			TxHash:    item.TxHash,
 			Operation: item.Operation,
 			Signer:    item.Signer,
 			Recipient: item.Recipient,
@@ -121,16 +123,17 @@ func (s *msgs) GetAccountHistory(ctx context.Context, params dto.AccountsInfo) (
 	}
 
 	req := pb.AccountHistoryRequest{
-		ProjectId: params.ProjectID,
-		Offset:    params.Offset,
-		Limit:     params.Limit,
-		StartDate: params.StartDate,
-		EndDate:   params.EndDate,
-		SortBy:    pb.SORTS(sort),
-		Address:   params.Account,
-		Module:    params.OperationModule,
-		Operation: params.Operation,
-		TxHash:    params.TxHash,
+		ProjectId:  params.ProjectID,
+		PageKey:    params.PageKey,
+		CountTotal: params.CountTotal,
+		Limit:      params.Limit,
+		StartDate:  params.StartDate,
+		EndDate:    params.EndDate,
+		SortBy:     pb.SORTS(sort),
+		Account:    params.Account,
+		Module:     params.OperationModule,
+		Operation:  params.Operation,
+		TxHash:     params.TxHash,
 	}
 
 	resp := &pb.AccountHistoryResponse{}
@@ -151,28 +154,21 @@ func (s *msgs) GetAccountHistory(ctx context.Context, params dto.AccountsInfo) (
 	}
 	result := &dto.AccountOperationRecordRes{
 		PageRes: dto.PageRes{
-			Offset:     resp.Offset,
-			Limit:      resp.Limit,
-			TotalCount: resp.TotalCount,
+			PrevPageKey: resp.PrevPageKey,
+			NextPageKey: resp.NextPageKey,
+			Limit:       resp.Limit,
+			TotalCount:  resp.TotalCount,
 		},
 		OperationRecords: []*dto.AccountOperationRecords{},
 	}
 	var accountOperationRecords []*dto.AccountOperationRecords
 	for _, item := range resp.Data {
-		typeJson := types.JSON{}
-		err := json.Unmarshal([]byte(item.Message), &typeJson)
-		if err != nil {
-			return nil, err
-		}
 		accountOperationRecord := &dto.AccountOperationRecords{
-			TxHash:      item.TxHash,
-			Module:      item.Module,
-			Operation:   item.Operation,
-			Signer:      item.Signer,
-			Timestamp:   item.Timestamp,
-			Message:     &typeJson,
-			GasFee:      item.GasFee,
-			BusinessFee: item.BusinessFee,
+			TxHash:    item.TxHash,
+			Module:    item.Module,
+			Operation: item.Operation,
+			Signer:    item.Signer,
+			Timestamp: item.Timestamp,
 		}
 		if item.NftMsg != "" {
 			typeJsonNft := types.JSON{}
@@ -181,91 +177,10 @@ func (s *msgs) GetAccountHistory(ctx context.Context, params dto.AccountsInfo) (
 			}
 			accountOperationRecord.NftMsg = &typeJsonNft
 		}
-		if item.MtMsg != "" {
-			typeJsonMt := types.JSON{}
-			if err := json.Unmarshal([]byte(item.MtMsg), &typeJsonMt); err != nil {
-				return nil, err
-			}
-			accountOperationRecord.MtMsg = &typeJsonMt
-		}
 		accountOperationRecords = append(accountOperationRecords, accountOperationRecord)
 	}
 	if accountOperationRecords != nil {
 		result.OperationRecords = accountOperationRecords
-	}
-
-	return result, nil
-}
-
-func (s *msgs) GetMTHistory(ctx context.Context, params dto.MTOperationHistoryByMTId) (*dto.MTOperationHistoryByMTIdRes, error) {
-	logger := s.logger.WithField("params", params).WithField("func", "GetMTHistory")
-
-	// 非托管模式不支持
-	if params.AccessMode == entity.UNMANAGED {
-		return nil, errors2.ErrNotImplemented
-	}
-
-	sort, ok := pb.SORTS_value[params.SortBy]
-	if !ok {
-		logger.Error(errors2.ErrSortBy)
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrSortBy)
-	}
-
-	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
-	defer cancel()
-	req := pb.MTHistoryRequest{
-		ProjectId: params.ProjectID,
-		Offset:    params.Offset,
-		Limit:     params.Limit,
-		StartDate: params.StartDate,
-		EndDate:   params.EndDate,
-		SortBy:    pb.SORTS(sort),
-		Signer:    params.Signer,
-		TxHash:    params.Txhash,
-		MtId:      params.MTId,
-		ClassId:   params.ClassID,
-	}
-
-	req.Operation = params.Operation
-
-	resp := &pb.MTHistoryResponse{}
-	var err error
-	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
-	grpcClient, ok := initialize.MsgsClientMap[mapKey]
-	if !ok {
-		logger.Error(errors2.ErrService)
-		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
-	}
-	resp, err = grpcClient.MTHistory(ctx, &req)
-	if err != nil {
-		logger.Error("request err:", err.Error())
-		return nil, err
-	}
-	if resp == nil {
-		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
-	}
-	result := &dto.MTOperationHistoryByMTIdRes{
-		PageRes: dto.PageRes{
-			Offset: resp.Offset,
-			Limit:  resp.Limit,
-		},
-		OperationRecords: []*dto.MTOperationRecord{},
-	}
-	result.TotalCount = resp.TotalCount
-	var operationRecords []*dto.MTOperationRecord
-	for _, item := range resp.Data {
-		var operationRecord = &dto.MTOperationRecord{
-			Txhash:    item.TxHash,
-			Operation: item.Operation,
-			Signer:    item.Signer,
-			Recipient: item.Recipient,
-			Amount:    item.Amount,
-			Timestamp: item.Timestamp,
-		}
-		operationRecords = append(operationRecords, operationRecord)
-	}
-	if operationRecords != nil {
-		result.OperationRecords = operationRecords
 	}
 
 	return result, nil

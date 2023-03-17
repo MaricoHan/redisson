@@ -30,17 +30,9 @@ const (
 	IritaOPBNative = "irita-opb-native"
 	IrisHubNative  = "irishub-native"
 
-	// etcdSchema
-	Schema = "avata"
-
-	// etcdEndpoint
-	WenchangNativeEndpoint = "services/chains/wenchangchain-native"
-	WenchangDDCEndpoint    = "services/chains/wenchangchain-ddc"
-	DatangNatveEndpoint    = "services/chains/datangchain-native"
-
-	// Enum values for NFTSStatus
-	NFTSStatusActive = "active"
-	NFTSStatusBurned = "burned"
+	// stage
+	IritaOPB = "irita-opb"
+	Native   = "native"
 
 	// rights map
 	JiangSu = "jiangsu"

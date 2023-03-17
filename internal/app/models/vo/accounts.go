@@ -2,7 +2,7 @@ package vo
 
 type BatchCreateAccountRequest struct {
 	OperationID string `json:"operation_id"`
-	Count       int64  `json:"count"`
+	Count       int32  `json:"count"`
 }
 
 type CreateAccountRequest struct {

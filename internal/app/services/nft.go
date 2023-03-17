@@ -7,7 +7,7 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	pb "gitlab.bianjie.ai/avata/chains/api/pb/nft"
+	pb "gitlab.bianjie.ai/avata/chains/api/pb/v2/nft"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 
@@ -19,13 +19,9 @@ import (
 type INFT interface {
 	List(ctx context.Context, params dto.Nfts) (*dto.NftsRes, error)
 	Create(ctx context.Context, params dto.CreateNfts) (*dto.TxRes, error)
-	BatchCreate(ctx context.Context, params dto.BatchCreateNfts) (*dto.BatchTxRes, error)
-	Show(ctx context.Context, params dto.NftByNftId) (*dto.NftReq, error)
+	Show(ctx context.Context, params dto.NftByNftId) (*dto.NftRes, error)
 	Update(ctx context.Context, params dto.EditNftByNftId) (*dto.TxRes, error)
 	Delete(ctx context.Context, params dto.DeleteNftByNftId) (*dto.TxRes, error)
-	BatchTransfer(ctx context.Context, params *dto.BatchTransferRequest) (*dto.BatchTxRes, error)
-	BatchEdit(ctx context.Context, params *dto.BatchEditRequest) (*dto.BatchTxRes, error)
-	BatchDelete(ctx context.Context, params *dto.BatchDeleteRequest) (*dto.BatchTxRes, error)
 }
 type nft struct {
 	logger *log.Logger
@@ -50,18 +46,18 @@ func (s *nft) List(ctx context.Context, params dto.Nfts) (*dto.NftsRes, error) {
 	}
 
 	req := pb.NFTListRequest{
-		ProjectId: params.ProjectID,
-		Offset:    params.Offset,
-		Limit:     params.Limit,
-		StartDate: params.StartDate,
-		EndDate:   params.EndDate,
-		Id:        params.Id,
-		ClassId:   params.ClassId,
-		Owner:     params.Owner,
-		TxHash:    params.TxHash,
-		Status:    pb.STATUS(pb.STATUS_value[params.Status]),
-		SortBy:    pb.SORTS(sort),
-		Name:      params.Name,
+		ProjectId:  params.ProjectID,
+		Limit:      params.Limit,
+		StartDate:  params.StartDate,
+		EndDate:    params.EndDate,
+		Id:         params.Id,
+		ClassId:    params.ClassId,
+		Owner:      params.Owner,
+		TxHash:     params.TxHash,
+		Status:     params.Status,
+		SortBy:     pb.SORTS(sort),
+		PageKey:    params.PageKey,
+		CountTotal: params.CountTotal,
 	}
 
 	resp := &pb.NFTListResponse{}
@@ -86,17 +82,19 @@ func (s *nft) List(ctx context.Context, params dto.Nfts) (*dto.NftsRes, error) {
 		Nfts: []*dto.NFT{},
 	}
 	result.Limit = resp.Limit
-	result.Offset = resp.Offset
+	result.PrevPageKey = resp.PrevPageKey
+	result.NextPageKey = resp.NextPageKey
 	result.TotalCount = resp.TotalCount
+
 	var nfts []*dto.NFT
 	for _, item := range resp.Data {
 		nft := &dto.NFT{
 			Id:          item.NftId,
-			Name:        item.Name,
 			ClassId:     item.ClassId,
 			Uri:         item.Uri,
+			UriHash:     item.UriHash,
 			Owner:       item.Owner,
-			Status:      item.Status.String(),
+			Status:      pb.STATUS_value[item.Status.String()],
 			TxHash:      item.TxHash,
 			Timestamp:   item.Timestamp,
 			ClassName:   item.ClassName,
@@ -123,12 +121,9 @@ func (s *nft) Create(ctx context.Context, params dto.CreateNfts) (*dto.TxRes, er
 	req := pb.NFTCreateRequest{
 		ProjectId:   params.ProjectID,
 		ClassId:     params.ClassId,
-		Name:        params.Name,
 		Uri:         params.Uri,
 		UriHash:     params.UriHash,
-		Data:        params.Data,
 		Recipient:   params.Recipient,
-		Tag:         string(params.Tag),
 		OperationId: params.OperationId,
 	}
 	resp := &pb.NFTCreateResponse{}
@@ -149,51 +144,11 @@ func (s *nft) Create(ctx context.Context, params dto.CreateNfts) (*dto.TxRes, er
 	if resp == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
-	return &dto.TxRes{TaskId: resp.TaskId, OperationId: resp.OperationId}, nil
+	return &dto.TxRes{}, nil
 
 }
 
-func (s *nft) BatchCreate(ctx context.Context, params dto.BatchCreateNfts) (*dto.BatchTxRes, error) {
-	logger := s.logger.WithField("params", params).WithField("func", "BatchCreateNFT")
-
-	// 非托管模式不支持
-	if params.AccessMode == entity.UNMANAGED {
-		return nil, errors2.ErrNotImplemented
-	}
-
-	req := pb.NFTBatchCreateRequest{
-		ProjectId:   params.ProjectID,
-		ClassId:     params.ClassId,
-		Name:        params.Name,
-		Uri:         params.Uri,
-		UriHash:     params.UriHash,
-		Data:        params.Data,
-		Recipients:  params.Recipients,
-		Tag:         string(params.Tag),
-		OperationId: params.OperationId,
-	}
-	resp := &pb.NFTBatchCreateResponse{}
-	var err error
-	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
-	grpcClient, ok := initialize.NftClientMap[mapKey]
-	if !ok {
-		logger.Error(errors2.ErrService)
-		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
-	}
-	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
-	defer cancel()
-	resp, err = grpcClient.BatchCreate(ctx, &req)
-	if err != nil {
-		logger.Error("request err:", err.Error())
-		return nil, err
-	}
-	if resp == nil {
-		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
-	}
-	return &dto.BatchTxRes{OperationId: resp.OperationId}, nil
-}
-
-func (s *nft) Show(ctx context.Context, params dto.NftByNftId) (*dto.NftReq, error) {
+func (s *nft) Show(ctx context.Context, params dto.NftByNftId) (*dto.NftRes, error) {
 	logger := s.logger.WithField("params", params).WithField("func", "ShowNFT")
 
 	// 非托管模式不支持
@@ -224,17 +179,15 @@ func (s *nft) Show(ctx context.Context, params dto.NftByNftId) (*dto.NftReq, err
 	if resp == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
-	result := &dto.NftReq{
+	result := &dto.NftRes{
 		Id:          resp.Detail.NftId,
-		Name:        resp.Detail.Name,
 		ClassId:     resp.Detail.ClassId,
 		ClassName:   resp.Detail.ClassName,
 		ClassSymbol: resp.Detail.ClassSymbol,
 		Uri:         resp.Detail.Uri,
 		UriHash:     resp.Detail.UriHash,
-		Data:        resp.Detail.Metadata,
 		Owner:       resp.Detail.Owner,
-		Status:      resp.Detail.Status.String(),
+		Status:      pb.STATUS_value[resp.Detail.Status.String()],
 		TxHash:      resp.Detail.TxHash,
 		Timestamp:   resp.Detail.Timestamp,
 	}
@@ -254,12 +207,10 @@ func (s *nft) Update(ctx context.Context, params dto.EditNftByNftId) (*dto.TxRes
 	req := pb.NFTUpdateRequest{
 		ProjectId:   params.ProjectID,
 		ClassId:     params.ClassId,
-		Name:        params.Name,
 		Uri:         params.Uri,
+		UriHash:     params.UriHash,
 		NftId:       params.NftId,
-		Data:        params.Data,
 		Owner:       params.Sender,
-		Tag:         string(params.Tag),
 		OperationId: params.OperationId,
 	}
 	resp := &pb.NFTUpdateResponse{}
@@ -281,7 +232,7 @@ func (s *nft) Update(ctx context.Context, params dto.EditNftByNftId) (*dto.TxRes
 	if resp == nil {
 		return nil, errors.New("grpc response is nil")
 	}
-	return &dto.TxRes{TaskId: resp.TaskId, OperationId: resp.OperationId}, nil
+	return &dto.TxRes{}, nil
 }
 
 func (s *nft) Delete(ctx context.Context, params dto.DeleteNftByNftId) (*dto.TxRes, error) {
@@ -297,7 +248,6 @@ func (s *nft) Delete(ctx context.Context, params dto.DeleteNftByNftId) (*dto.TxR
 		ClassId:     params.ClassId,
 		NftId:       params.NftId,
 		Owner:       params.Sender,
-		Tag:         string(params.Tag),
 		OperationId: params.OperationId,
 	}
 	resp := &pb.NFTDeleteResponse{}
@@ -318,116 +268,5 @@ func (s *nft) Delete(ctx context.Context, params dto.DeleteNftByNftId) (*dto.TxR
 	if resp == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
-	return &dto.TxRes{TaskId: resp.TaskId, OperationId: resp.OperationId}, nil
-}
-
-func (s *nft) BatchTransfer(ctx context.Context, params *dto.BatchTransferRequest) (*dto.BatchTxRes, error) {
-	logger := s.logger.WithField("params", params).WithField("func", "BatchTransferNFT")
-
-	// 非托管模式不支持
-	if params.AccessMode == entity.UNMANAGED {
-		return nil, errors2.ErrNotImplemented
-	}
-
-	req := pb.NFTBatchTransferRequest{
-		ProjectId:   params.ProjectID,
-		Owner:       params.Sender,
-		Data:        params.Data,
-		Tag:         params.Tag,
-		OperationId: params.OperationID,
-	}
-	resp := new(pb.NFTBatchTransferResponse)
-
-	var err error
-	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
-	grpcClient, ok := initialize.NftClientMap[mapKey]
-	if !ok {
-		logger.Error(errors2.ErrService)
-		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
-	}
-	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
-	defer cancel()
-	resp, err = grpcClient.BatchTransfer(ctx, &req)
-	if err != nil {
-		logger.Error("request err:", err.Error())
-		return nil, err
-	}
-	if resp == nil {
-		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
-	}
-	return &dto.BatchTxRes{OperationId: resp.OperationId}, nil
-}
-
-func (s *nft) BatchEdit(ctx context.Context, params *dto.BatchEditRequest) (*dto.BatchTxRes, error) {
-	logger := s.logger.WithField("params", params).WithField("func", "BatchEditNFT")
-
-	// 非托管模式不支持
-	if params.AccessMode == entity.UNMANAGED {
-		return nil, errors2.ErrNotImplemented
-	}
-
-	req := pb.NFTBatchEditRequest{
-		ProjectId:   params.ProjectID,
-		Owner:       params.Sender,
-		Nfts:        params.Nfts,
-		Tag:         params.Tag,
-		OperationId: params.OperationID,
-	}
-	resp := new(pb.NFTBatchEditResponse)
-
-	var err error
-	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
-	grpcClient, ok := initialize.NftClientMap[mapKey]
-	if !ok {
-		logger.Error(errors2.ErrService)
-		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
-	}
-	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
-	defer cancel()
-	resp, err = grpcClient.BatchEdit(ctx, &req)
-	if err != nil {
-		logger.Error("request err:", err.Error())
-		return nil, err
-	}
-	if resp == nil {
-		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
-	}
-	return &dto.BatchTxRes{OperationId: resp.OperationId}, nil
-}
-
-func (s *nft) BatchDelete(ctx context.Context, params *dto.BatchDeleteRequest) (*dto.BatchTxRes, error) {
-	logger := s.logger.WithField("params", params).WithField("func", "BatchDeleteNFT")
-
-	// 非托管模式不支持
-	if params.AccessMode == entity.UNMANAGED {
-		return nil, errors2.ErrNotImplemented
-	}
-
-	req := pb.NFTBatchDeleteRequest{
-		ProjectId:   params.ProjectID,
-		Owner:       params.Sender,
-		Nfts:        params.Nfts,
-		Tag:         params.Tag,
-		OperationId: params.OperationID,
-	}
-	resp := new(pb.NFTBatchDeleteResponse)
-
-	var err error
-	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
-	grpcClient, ok := initialize.NftClientMap[mapKey]
-	if !ok {
-		logger.Error(errors2.ErrService)
-		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
-	}
-	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
-	defer cancel()
-	resp, err = grpcClient.BatchDelete(ctx, &req)
-	if err != nil {
-		logger.Error("request err:", err.Error())
-		return nil, err
-	}
-	if resp == nil {
-		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
-	}
-	return &dto.BatchTxRes{OperationId: resp.OperationId}, nil
+	return &dto.TxRes{}, nil
 }

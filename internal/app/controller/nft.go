@@ -27,11 +27,6 @@ func (c NftController) GetEndpoints() []kit.Endpoint {
 			Handler: c.makeHandler(c.handler.CreateNft, &vo.CreateNftsRequest{}),
 		},
 		kit.Endpoint{
-			URI:     "/nft/batch/nfts/{class_id}",
-			Method:  http.MethodPost,
-			Handler: c.makeHandler(c.handler.BatchCreateNft, &vo.BatchCreateNftsRequest{}),
-		},
-		kit.Endpoint{
 			URI:     "/nft/nfts/{class_id}/{owner}/{nft_id}",
 			Method:  http.MethodPatch,
 			Handler: c.makeHandler(c.handler.EditNftByNftId, &vo.EditNftByIndexRequest{}),
@@ -50,21 +45,6 @@ func (c NftController) GetEndpoints() []kit.Endpoint {
 			URI:     "/nft/nfts/{class_id}/{nft_id}",
 			Method:  http.MethodGet,
 			Handler: c.makeHandler(c.handler.NftByNftId, nil),
-		},
-		kit.Endpoint{
-			URI:     "/nft/batch/nft-transfers/{owner}",
-			Method:  http.MethodPost,
-			Handler: c.makeHandler(c.handler.BatchTransfer, &vo.BatchTransferRequest{}),
-		},
-		kit.Endpoint{
-			URI:     "/nft/batch/nfts/{owner}",
-			Method:  http.MethodPatch,
-			Handler: c.makeHandler(c.handler.BatchEdit, &vo.BatchEditRequest{}),
-		},
-		kit.Endpoint{
-			URI:     "/nft/batch/nfts/{owner}",
-			Method:  http.MethodDelete,
-			Handler: c.makeHandler(c.handler.BatchDelete, &vo.BatchDeleteRequest{}),
 		},
 	)
 	return ends

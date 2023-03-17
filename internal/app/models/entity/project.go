@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-// 项目表
+// Project 项目表
 type Project struct {
 	Id          uint      `gorm:"column:id;type:bigint(20) unsigned;primary_key;AUTO_INCREMENT;comment:ID" json:"id"`
 	Code        string    `gorm:"column:code;type:char(16);comment:项目 Code;NOT NULL" json:"code"`
@@ -16,6 +16,7 @@ type Project struct {
 	Name        string    `gorm:"column:name;type:varchar(255);comment:项目名称;NOT NULL" json:"name"`
 	Description string    `gorm:"column:description;type:varchar(255);comment:项目描述;NOT NULL" json:"description"`
 	Status      uint      `gorm:"column:status;type:tinyint(4) unsigned;default:1;comment:状态（1.启用 2.禁用 3.注销）;NOT NULL" json:"status"`
+	Version     uint      `gorm:"column:version;type:tinyint(4) unsigned;default:0;comment:项目参数版本号,1:V1；2:V2;NOT NULL" json:"version"`
 	UpdatedAt   time.Time `gorm:"column:updated_at;type:datetime;default:CURRENT_TIMESTAMP;comment:更新时间;NOT NULL" json:"updated_at"`
 	CreatedAt   time.Time `gorm:"column:created_at;type:datetime;default:CURRENT_TIMESTAMP;comment:创建时间;NOT NULL" json:"created_at"`
 }
@@ -36,6 +37,7 @@ var ProjectFields = struct {
 	Name        string
 	Description string
 	Status      string
+	Version     string
 }{
 	baseModelFields,
 	"code",
@@ -47,4 +49,12 @@ var ProjectFields = struct {
 	"name",
 	"description",
 	"status",
+	"version",
 }
+
+// 项目参数版本
+const (
+	VersionStage = iota
+	Version1
+	Version2
+)

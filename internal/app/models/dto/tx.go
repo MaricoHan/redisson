@@ -2,7 +2,6 @@ package dto
 
 import (
 	"github.com/volatiletech/sqlboiler/types"
-	"gitlab.bianjie.ai/avata/chains/api/pb/tx"
 )
 
 type TxResultByTxHash struct {
@@ -15,20 +14,15 @@ type TxResultByTxHash struct {
 	AccessMode  int    `json:"access_mode"`
 }
 
-type TxResultByTxHashRes struct {
-	Module      string                 `json:"module"`
-	Type        string                 `json:"type"`
-	TxHash      string                 `json:"tx_hash"`
-	Status      int32                  `json:"status"`
-	ClassID     string                 `json:"class_id"`
-	NftID       string                 `json:"nft_id"`
-	Nft         *types.JSON            `json:"nft"`
-	Mt          *types.JSON            `json:"mt"`
-	Record      *tx.Record             `json:"record"`
-	Message     string                 `json:"message"`
-	BlockHeight uint64                 `json:"block_height"`
-	Timestamp   string                 `json:"timestamp"`
-	Tag         map[string]interface{} `json:"tag"`
+type TxResultRes struct {
+	Module      uint32      `json:"module"`
+	Operation   uint32      `json:"operation"`
+	TxHash      string      `json:"tx_hash"`
+	Status      uint32      `json:"status"`
+	Message     string      `json:"message"`
+	BlockHeight uint64      `json:"block_height"`
+	Timestamp   string      `json:"timestamp"`
+	Nft         *types.JSON `json:"nft"`
 }
 
 type TxQueueInfo struct {

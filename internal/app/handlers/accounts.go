@@ -2,7 +2,10 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"strings"
+
+	"gitlab.bianjie.ai/avata/utils/errors/common"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
@@ -45,7 +48,7 @@ func (h *Account) BatchCreateAccount(ctx context.Context, request interface{}) (
 		ChainID:     authData.ChainId,
 		ProjectID:   authData.ProjectId,
 		PlatFormID:  authData.PlatformId,
-		Count:       req.Count,
+		Count:       uint32(req.Count),
 		Module:      authData.Module,
 		Code:        authData.Code,
 		OperationId: operationId,
@@ -64,16 +67,15 @@ func (h *Account) BatchCreateAccount(ctx context.Context, request interface{}) (
 func (h *Account) CreateAccount(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
 	req := request.(*vo.CreateAccountRequest)
+
 	name := strings.TrimSpace(req.Name)
 	operationId := strings.TrimSpace(req.OperationID)
+
 	if operationId == "" {
 		return nil, errors.New(errors.ClientParams, errors.ErrOperationID)
 	}
-	if name == "" {
-		return nil, errors.New(errors.ClientParams, errors.ErrName)
-	}
 
-	if len([]rune(name)) < 1 || len([]rune(name)) > 20 {
+	if name != "" && (len([]rune(name)) < 1 || len([]rune(name)) > 20) {
 		return nil, errors.New(errors.ClientParams, errors.ErrAccountNameLen)
 	}
 
@@ -109,11 +111,13 @@ func (h *Account) GetAccounts(ctx context.Context, _ interface{}) (interface{}, 
 		Name:        h.Name(ctx),
 		AccessMode:  authData.AccessMode,
 	}
-	offset, err := h.Offset(ctx)
+
+	params.PageKey = h.PageKey(ctx)
+	countTotal, err := h.CountTotal(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errors.New(errors.ClientParams, fmt.Sprintf(common.ERR_INVALID_VALUE, "count_total"))
 	}
-	params.Offset = offset
+	params.CountTotal = countTotal
 
 	limit, err := h.Limit(ctx)
 	if err != nil {

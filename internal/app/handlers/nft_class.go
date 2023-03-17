@@ -2,7 +2,10 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"strings"
+
+	"gitlab.bianjie.ai/avata/utils/errors/common"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
@@ -33,21 +36,12 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 	req := request.(*vo.CreateNftClassRequest)
 
 	name := strings.TrimSpace(req.Name)
-	classId := strings.TrimSpace(req.ClassId)
-	description := strings.TrimSpace(req.Description)
 	symbol := strings.TrimSpace(req.Symbol)
 	uri := strings.TrimSpace(req.Uri)
-	uriHash := strings.TrimSpace(req.UriHash)
-	data := strings.TrimSpace(req.Data)
 	owner := strings.TrimSpace(req.Owner)
 	operationId := strings.TrimSpace(req.OperationID)
 	if operationId == "" {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
-	}
-
-	tagBytes, err := h.ValidateTag(req.Tag)
-	if err != nil {
-		return nil, err
 	}
 	if name == "" {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrName)
@@ -69,22 +63,19 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 
 	authData := h.AuthData(ctx)
 	params := dto.CreateNftClass{
-		ChainID:     authData.ChainId,
-		ProjectID:   authData.ProjectId,
-		PlatFormID:  authData.PlatformId,
-		Module:      authData.Module,
-		Name:        name,
-		Symbol:      symbol,
-		Description: description,
-		Uri:         uri,
-		UriHash:     uriHash,
-		Data:        data,
-		Owner:       owner,
-		Tag:         tagBytes,
-		Code:        authData.Code,
-		OperationId: operationId,
-		ClassId:     classId,
-		AccessMode:  authData.AccessMode,
+		ChainID:              authData.ChainId,
+		ProjectID:            authData.ProjectId,
+		PlatFormID:           authData.PlatformId,
+		Module:               authData.Module,
+		Name:                 name,
+		Symbol:               symbol,
+		Uri:                  uri,
+		EditableByClassOwner: req.EditableByClassOwner,
+		EditableByOwner:      req.EditableByOwner,
+		Owner:                owner,
+		Code:                 authData.Code,
+		OperationId:          operationId,
+		AccessMode:           authData.AccessMode,
 	}
 	return h.svc.CreateNFTClass(ctx, params)
 }
@@ -105,11 +96,12 @@ func (h NftClass) Classes(ctx context.Context, _ interface{}) (interface{}, erro
 		Code:       authData.Code,
 		AccessMode: authData.AccessMode,
 	}
-	offset, err := h.Offset(ctx)
+	params.PageKey = h.PageKey(ctx)
+	countTotal, err := h.CountTotal(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errors2.New(errors2.ClientParams, fmt.Sprintf(common.ERR_INVALID_VALUE, "count_total"))
 	}
-	params.Offset = offset
+	params.CountTotal = countTotal
 
 	limit, err := h.Limit(ctx)
 	if err != nil {
@@ -128,14 +120,6 @@ func (h NftClass) Classes(ctx context.Context, _ interface{}) (interface{}, erro
 	}
 
 	params.SortBy = h.SortBy(ctx)
-	// switch h.SortBy(ctx) {
-	// case "DATE_ASC":
-	//	params.SortBy = "DATE_ASC"
-	// case "DATE_DESC":
-	//	params.SortBy = "DATE_DESC"
-	// default:
-	//	return nil, constant.NewAppError(constant.RootCodeSpace, constant.ClientParamsError, constant.ErrSortBy)
-	// }
 
 	// 校验参数 end
 	// 业务数据入库的地方
@@ -168,6 +152,7 @@ func (h NftClass) Id(ctx context.Context) string {
 	}
 	return idR.(string)
 }
+
 func (h NftClass) Name(ctx context.Context) string {
 	nameR := ctx.Value("name")
 	if nameR == nil {
@@ -175,6 +160,7 @@ func (h NftClass) Name(ctx context.Context) string {
 	}
 	return nameR.(string)
 }
+
 func (h NftClass) Owner(ctx context.Context) string {
 	ownerR := ctx.Value("owner")
 	if ownerR == nil {
@@ -182,6 +168,7 @@ func (h NftClass) Owner(ctx context.Context) string {
 	}
 	return ownerR.(string)
 }
+
 func (h NftClass) TxHash(ctx context.Context) string {
 	txHashR := ctx.Value("tx_hash")
 	if txHashR == nil {

@@ -2,6 +2,11 @@ package handlers
 
 import (
 	"context"
+	"fmt"
+	"strconv"
+
+	"gitlab.bianjie.ai/avata/utils/errors"
+	"gitlab.bianjie.ai/avata/utils/errors/common"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
@@ -10,7 +15,6 @@ import (
 type IMsgs interface {
 	GetNFTHistory(ctx context.Context, _ interface{}) (interface{}, error)
 	GetAccountHistory(ctx context.Context, _ interface{}) (interface{}, error)
-	GetMTHistory(ctx context.Context, _ interface{}) (interface{}, error)
 }
 
 type Msgs struct {
@@ -27,7 +31,6 @@ func (h *Msgs) GetNFTHistory(ctx context.Context, _ interface{}) (interface{}, e
 	authData := h.AuthData(ctx)
 	params := dto.NftOperationHistoryByNftId{
 		ClassID:    h.ClassId(ctx),
-		NftId:      h.NftId(ctx),
 		ChainID:    authData.ChainId,
 		ProjectID:  authData.ProjectId,
 		PlatFormID: authData.PlatformId,
@@ -35,12 +38,19 @@ func (h *Msgs) GetNFTHistory(ctx context.Context, _ interface{}) (interface{}, e
 		Code:       authData.Code,
 		AccessMode: authData.AccessMode,
 	}
-
-	offset, err := h.Offset(ctx)
+	nftId, err := h.NftId(ctx)
 	if err != nil {
 		return nil, err
 	}
-	params.Offset = offset
+
+	params.NftId = nftId
+
+	params.PageKey = h.PageKey(ctx)
+	countTotal, err := h.CountTotal(ctx)
+	if err != nil {
+		return nil, errors.New(errors.ClientParams, fmt.Sprintf(common.ERR_INVALID_VALUE, "count_total"))
+	}
+	params.CountTotal = countTotal
 
 	limit, err := h.Limit(ctx)
 	if err != nil {
@@ -65,9 +75,13 @@ func (h *Msgs) GetNFTHistory(ctx context.Context, _ interface{}) (interface{}, e
 	params.SortBy = h.SortBy(ctx)
 
 	params.Signer = h.Signer(ctx)
-	params.Txhash = h.Txhash(ctx)
+	params.TxHash = h.Txhash(ctx)
 
-	params.Operation = h.Operation(ctx)
+	operation, err := h.operation(ctx)
+	if err != nil {
+		return nil, err
+	}
+	params.Operation = uint32(operation)
 
 	return h.svc.GetNFTHistory(ctx, params)
 }
@@ -76,69 +90,27 @@ func (h *Msgs) GetAccountHistory(ctx context.Context, _ interface{}) (interface{
 	// 校验参数 start
 	authData := h.AuthData(ctx)
 	params := dto.AccountsInfo{
-		ChainID:         authData.ChainId,
-		ProjectID:       authData.ProjectId,
-		PlatFormID:      authData.PlatformId,
-		Account:         h.Account(ctx),
-		Module:          authData.Module,
-		Code:            authData.Code,
-		OperationModule: h.operationModule(ctx),
-		AccessMode:      authData.AccessMode,
-	}
-
-	offset, err := h.Offset(ctx)
-	if err != nil {
-		return nil, err
-	}
-	params.Offset = offset
-
-	limit, err := h.Limit(ctx)
-	if err != nil {
-		return nil, err
-	}
-	params.Limit = limit
-
-	if params.Limit == 0 {
-		params.Limit = 10
-	}
-
-	startDateR := h.StartDate(ctx)
-
-	if startDateR != "" {
-		params.StartDate = startDateR
-	}
-
-	endDateR := h.EndDate(ctx)
-	if endDateR != "" {
-		params.EndDate = endDateR
-	}
-
-	params.SortBy = h.SortBy(ctx)
-	params.Operation = h.operation(ctx)
-	params.TxHash = h.Txhash(ctx)
-
-	return h.svc.GetAccountHistory(ctx, params)
-}
-
-func (h *Msgs) GetMTHistory(ctx context.Context, _ interface{}) (interface{}, error) {
-	authData := h.AuthData(ctx)
-	params := dto.MTOperationHistoryByMTId{
-		ClassID:    h.ClassId(ctx),
-		MTId:       h.MTId(ctx),
 		ChainID:    authData.ChainId,
 		ProjectID:  authData.ProjectId,
 		PlatFormID: authData.PlatformId,
+		Account:    h.Account(ctx),
 		Module:     authData.Module,
 		Code:       authData.Code,
 		AccessMode: authData.AccessMode,
 	}
 
-	offset, err := h.Offset(ctx)
+	module, err := h.operationModule(ctx)
 	if err != nil {
 		return nil, err
 	}
-	params.Offset = offset
+	params.OperationModule = module
 
+	params.PageKey = h.PageKey(ctx)
+	countTotal, err := h.CountTotal(ctx)
+	if err != nil {
+		return nil, errors.New(errors.ClientParams, fmt.Sprintf(common.ERR_INVALID_VALUE, "count_total"))
+	}
+	params.CountTotal = countTotal
 	limit, err := h.Limit(ctx)
 	if err != nil {
 		return nil, err
@@ -150,6 +122,7 @@ func (h *Msgs) GetMTHistory(ctx context.Context, _ interface{}) (interface{}, er
 	}
 
 	startDateR := h.StartDate(ctx)
+
 	if startDateR != "" {
 		params.StartDate = startDateR
 	}
@@ -160,11 +133,16 @@ func (h *Msgs) GetMTHistory(ctx context.Context, _ interface{}) (interface{}, er
 	}
 
 	params.SortBy = h.SortBy(ctx)
-	params.Signer = h.Signer(ctx)
-	params.Txhash = h.Txhash(ctx)
-	params.Operation = h.Operation(ctx)
+	operation, err := h.operation(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if module > 0 {
+		params.Operation = operation
+	}
+	params.TxHash = h.Txhash(ctx)
 
-	return h.svc.GetMTHistory(ctx, params)
+	return h.svc.GetAccountHistory(ctx, params)
 }
 
 func (h *Msgs) MTId(ctx context.Context) string {
@@ -185,12 +163,17 @@ func (h *Msgs) ClassId(ctx context.Context) string {
 
 }
 
-func (h *Msgs) NftId(ctx context.Context) string {
-	nftId := ctx.Value("nft_id")
-	if nftId == nil {
-		return ""
+func (h *Msgs) NftId(ctx context.Context) (uint64, error) {
+	v := ctx.Value("nft_id")
+	if v == nil {
+		return 0, errors.New(errors.NotFound, "")
 	}
-	return nftId.(string)
+	res, err := strconv.ParseUint(v.(string), 10, 64)
+	if err != nil {
+		return 0, errors.New(errors.NotFound, fmt.Sprintf("%s, nft_id: %s not found", errors.ErrRecordNotFound, v.(string)))
+	}
+
+	return res, nil
 }
 
 func (h *Msgs) Signer(ctx context.Context) string {
@@ -199,14 +182,6 @@ func (h *Msgs) Signer(ctx context.Context) string {
 		return ""
 	}
 	return signer.(string)
-}
-
-func (h *Msgs) Operation(ctx context.Context) string {
-	operation := ctx.Value("operation")
-	if operation == nil || operation == "" {
-		return ""
-	}
-	return operation.(string)
 }
 
 func (h *Msgs) Txhash(ctx context.Context) string {
@@ -225,18 +200,31 @@ func (h *Msgs) Account(ctx context.Context) string {
 	return accountR.(string)
 }
 
-func (h *Msgs) operationModule(ctx context.Context) string {
-	module := ctx.Value("module")
-	if module == nil || module == "" {
-		return ""
+func (h *Msgs) operationModule(ctx context.Context) (uint32, error) {
+	v := ctx.Value("module")
+	if v == nil {
+		return 0, nil
 	}
-	return module.(string)
+	m := v.(string)
+
+	res, err := strconv.ParseUint(m, 10, 64)
+	if err != nil {
+		return 0, errors.ErrModules
+	}
+
+	return uint32(res), nil
 }
 
-func (h *Msgs) operation(ctx context.Context) string {
-	operation := ctx.Value("operation")
-	if operation == nil || operation == "" {
-		return ""
+func (h *Msgs) operation(ctx context.Context) (uint32, error) {
+	v := ctx.Value("operation")
+	if v == nil {
+		return 0, nil
 	}
-	return operation.(string)
+
+	res, err := strconv.ParseUint(v.(string), 10, 64)
+	if err != nil {
+		return 0, errors.New(errors.ClientParams, errors.ErrOperation)
+	}
+
+	return uint32(res), nil
 }
