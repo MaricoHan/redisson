@@ -74,11 +74,8 @@ func (h *Account) CreateAccount(ctx context.Context, request interface{}) (inter
 	if operationId == "" {
 		return nil, errors.New(errors.ClientParams, errors.ErrOperationID)
 	}
-	if name == "" {
-		return nil, errors.New(errors.ClientParams, errors.ErrName)
-	}
 
-	if len([]rune(name)) < 1 || len([]rune(name)) > 20 {
+	if name != "" && (len([]rune(name)) < 1 || len([]rune(name)) > 20) {
 		return nil, errors.New(errors.ClientParams, errors.ErrAccountNameLen)
 	}
 
