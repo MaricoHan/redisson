@@ -48,7 +48,7 @@ func (h *Account) BatchCreateAccount(ctx context.Context, request interface{}) (
 		ChainID:     authData.ChainId,
 		ProjectID:   authData.ProjectId,
 		PlatFormID:  authData.PlatformId,
-		Count:       req.Count,
+		Count:       uint32(req.Count),
 		Module:      authData.Module,
 		Code:        authData.Code,
 		OperationId: operationId,
@@ -74,11 +74,8 @@ func (h *Account) CreateAccount(ctx context.Context, request interface{}) (inter
 	if operationId == "" {
 		return nil, errors.New(errors.ClientParams, errors.ErrOperationID)
 	}
-	if name == "" {
-		return nil, errors.New(errors.ClientParams, errors.ErrName)
-	}
 
-	if len([]rune(name)) < 1 || len([]rune(name)) > 20 {
+	if name != "" && (len([]rune(name)) < 1 || len([]rune(name)) > 20) {
 		return nil, errors.New(errors.ClientParams, errors.ErrAccountNameLen)
 	}
 
