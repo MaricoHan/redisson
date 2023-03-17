@@ -83,6 +83,15 @@ func (t *tx) TxResult(ctx context.Context, params dto.TxResultByTxHash) (*dto.Tx
 		}
 	}
 
+	if resp.Detail.Ns != "" {
+		result.Ns = new(types.JSON)
+		err = json.Unmarshal([]byte(resp.Detail.Ns), &result.Ns)
+		if err != nil {
+			logger.WithError(err).Error("Unmarshal failed")
+			return nil, errors2.ErrInternal
+		}
+	}
+
 	return result, nil
 }
 

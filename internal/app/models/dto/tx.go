@@ -23,6 +23,7 @@ type TxResultRes struct {
 	BlockHeight uint64      `json:"block_height"`
 	Timestamp   string      `json:"timestamp"`
 	Nft         *types.JSON `json:"nft"`
+	Ns          *types.JSON `json:"ns"`
 }
 
 type TxQueueInfo struct {
