@@ -48,7 +48,7 @@ func (h *Account) BatchCreateAccount(ctx context.Context, request interface{}) (
 		ChainID:     authData.ChainId,
 		ProjectID:   authData.ProjectId,
 		PlatFormID:  authData.PlatformId,
-		Count:       req.Count,
+		Count:       uint32(req.Count),
 		Module:      authData.Module,
 		Code:        authData.Code,
 		OperationId: operationId,
