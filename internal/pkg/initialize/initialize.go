@@ -18,8 +18,10 @@ import (
 	pb_msgs "gitlab.bianjie.ai/avata/chains/api/pb/v2/msgs"
 	pb_nft "gitlab.bianjie.ai/avata/chains/api/pb/v2/nft"
 	pb_notice "gitlab.bianjie.ai/avata/chains/api/pb/v2/notice"
+	pb_ns "gitlab.bianjie.ai/avata/chains/api/pb/v2/ns"
 	pb_tx "gitlab.bianjie.ai/avata/chains/api/pb/v2/tx"
 	pb_tx_queue "gitlab.bianjie.ai/avata/chains/api/pb/v2/tx_queue"
+
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/middleware"
@@ -48,6 +50,8 @@ var TxQueueClient pb_tx_queue.TxQueueClient
 
 //var GrpcConnRightsMap map[string]*grpc.ClientConn
 //var RightsClientMap map[string]rights.RightsClient
+
+var NsClientMap map[string]pb_ns.NSClient
 
 var Log = new(log.Logger)
 
@@ -205,6 +209,10 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	//NoticeClientMap[constant.IritaOPBNative] = pb_notice.NewNoticeClient(GrpcConnMap[constant.IritaOPBNative])
 	//NoticeClientMap[constant.WenchangDDC] = pb_notice.NewNoticeClient(GrpcConnMap[constant.WenchangDDC])
 	//NoticeClientMap[constant.IrisHubNative] = pb_notice.NewNoticeClient(GrpcConnMap[constant.IrisHubNative])
+
+	// 初始化ns grpc client
+	NsClientMap = make(map[string]pb_ns.NSClient)
+	NsClientMap[constant.IritaOPBNative] = pb_ns.NewNSClient(GrpcConnMap[constant.IritaOPBNative])
 }
 
 func InitRedisClient(cfg *configs.Config, logger *log.Logger) {
