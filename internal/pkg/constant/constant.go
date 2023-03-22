@@ -30,6 +30,11 @@ const (
 	IritaOPBNative = "irita-opb-native"
 	IrisHubNative  = "irishub-native"
 
+	// wallet
+	WalletServer = "wallet-server"
+	Wallet       = "wallet"
+	Server       = "server"
+
 	// stage
 	IritaOPB = "irita-opb"
 	Native   = "native"

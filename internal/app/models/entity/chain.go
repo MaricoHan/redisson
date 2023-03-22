@@ -1,6 +1,6 @@
 package entity
 
-// 链表
+// Chain 链表
 type Chain struct {
 	Id     uint   `gorm:"column:id;type:bigint(20) unsigned;primary_key;AUTO_INCREMENT;comment:ID" json:"id"`
 	Code   string `gorm:"column:code;type:varchar(15);comment:链 Code,如: wenchangchain;NOT NULL" json:"code"`

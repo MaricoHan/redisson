@@ -21,7 +21,8 @@ func NewProjectRepo(db *gorm.DB) *ProjectRepo {
 }
 
 func (p *ProjectRepo) GetProjectByApiKey(apiKey string) (project entity.Project, err error) {
-	err = p.db.Omit(
+	err = p.db.Model(&entity.Project{}).
+		Omit(
 		entity.ProjectFields.Code,
 		entity.ProjectFields.Name,
 		entity.ProjectFields.Description,

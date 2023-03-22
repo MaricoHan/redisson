@@ -70,6 +70,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		writeNotEnoughAmount(w)
 		return
 	}
+
 	// 查询缓存
 	chainInfo, err := cache.NewCache().Chain(projectInfo.ChainId)
 	if err != nil {
@@ -102,6 +103,12 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else if projectInfo.Version == entity.VersionStage {
 		authData.Code = constant.IritaOPB
 		authData.Module = constant.Native
+	}
+
+	// 判断项目是否关联钱包服务
+	if len(projectInfo.Service) != 0 {
+		authData.Code = constant.Wallet
+		authData.Module = constant.Server
 	}
 
 	authDataBytes, _ := json.Marshal(authData)

@@ -20,6 +20,7 @@ import (
 	pb_notice "gitlab.bianjie.ai/avata/chains/api/pb/v2/notice"
 	pb_tx "gitlab.bianjie.ai/avata/chains/api/pb/v2/tx"
 	pb_tx_queue "gitlab.bianjie.ai/avata/chains/api/pb/v2/tx_queue"
+	pb_wallet "gitlab.bianjie.ai/avata/chains/api/pb/v2/wallet"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/middleware"
@@ -48,6 +49,8 @@ var TxQueueClient pb_tx_queue.TxQueueClient
 
 //var GrpcConnRightsMap map[string]*grpc.ClientConn
 //var RightsClientMap map[string]rights.RightsClient
+
+var WalletClientMap map[string]pb_wallet.WalletClient
 
 var Log = new(log.Logger)
 
@@ -109,6 +112,7 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	}
 
 	GrpcConnMap = make(map[string]*grpc.ClientConn)
+
 	logger.Info("connecting irita-opb-native ...")
 	iritaOpbConn, err := grpc.DialContext(
 		context.Background(),
@@ -136,23 +140,21 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 		logger.Fatal("get state-gateway-server grpc connect failed, err: ", err.Error())
 	}
 
+	logger.Info("connecting wallet-server ...")
+	walletServer, err := grpc.DialContext(
+		context.Background(),
+		cfg.GrpcClient.WalletServer,
+		grpc.WithInsecure(),
+		grpc.WithKeepaliveParams(kacp),
+		grpc.WithBlock(),
+		grpc.WithBalancerName(roundrobin.Name),
+		grpc.WithUnaryInterceptor(middleware.NewGrpcInterceptorMiddleware().Interceptor()))
+	if err != nil {
+		logger.Fatal("get wallet-server grpc connect failed, err: ", err.Error())
+	}
+	GrpcConnMap[constant.WalletServer] = walletServer
+
 	// 初始化Account grpc client
-	//GrpcConnRightsMap = make(map[string]*grpc.ClientConn)
-
-	//logger.Info("connecting rights_jiangsu server ...")
-	//RightsConn, err := grpc.DialContext(
-	//	context.Background(),
-	//	cfg.GrpcClient.RightsJiangSu,
-	//	grpc.WithInsecure(),
-	//	grpc.WithKeepaliveParams(kacp),
-	//	grpc.WithBlock(),
-	//	grpc.WithBalancerName(roundrobin.Name),
-	//	grpc.WithUnaryInterceptor(middleware.NewGrpcInterceptorMiddleware().Interceptor()))
-	//if err != nil {
-	//	logger.Fatal("get rights_jiangsu grpc connect failed, err: ", err.Error())
-	//}
-	//GrpcConnRightsMap[constant.JiangSu] = RightsConn
-
 	AccountClientMap = make(map[string]pb_account.AccountClient)
 	AccountClientMap[constant.IritaOPBNative] = pb_account.NewAccountClient(GrpcConnMap[constant.IritaOPBNative])
 	// 初始化msgs grpc client
@@ -205,6 +207,10 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	//NoticeClientMap[constant.IritaOPBNative] = pb_notice.NewNoticeClient(GrpcConnMap[constant.IritaOPBNative])
 	//NoticeClientMap[constant.WenchangDDC] = pb_notice.NewNoticeClient(GrpcConnMap[constant.WenchangDDC])
 	//NoticeClientMap[constant.IrisHubNative] = pb_notice.NewNoticeClient(GrpcConnMap[constant.IrisHubNative])
+
+	// 初始化wallet grpc client
+	WalletClientMap = make(map[string]pb_wallet.WalletClient)
+	WalletClientMap[constant.WalletServer] = pb_wallet.NewWalletClient(GrpcConnMap[constant.WalletServer])
 }
 
 func InitRedisClient(cfg *configs.Config, logger *log.Logger) {

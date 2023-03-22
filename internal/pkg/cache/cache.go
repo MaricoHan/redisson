@@ -37,7 +37,7 @@ func (c cache) Project(key string) (entity.Project, error) {
 		return projectInfo, errors.Wrap(err, "get project from cache")
 	}
 	if projectInfo.Id < 1 {
-		// 查询project信息
+		// 查询 project 信息以及 project 关联的 service 信息
 		projectRepo := project.NewProjectRepo(initialize.MysqlDB)
 		projectInfo, err = projectRepo.GetProjectByApiKey(key)
 		if err != nil {
