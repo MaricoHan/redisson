@@ -9,6 +9,7 @@ import (
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 )
 
@@ -52,7 +53,7 @@ func (h *NFTTransfer) TransferNftClassByID(ctx context.Context, request interfac
 		ChainID:     authData.ChainId,
 		ProjectID:   authData.ProjectId,
 		PlatFormID:  authData.PlatformId,
-		Module:      authData.Module,
+		Module:      constant.EVM,
 		Code:        authData.Code,
 		OperationId: operationId,
 		AccessMode:  authData.AccessMode,
@@ -86,7 +87,7 @@ func (h *NFTTransfer) TransferNftByNftId(ctx context.Context, request interface{
 		ChainID:     authData.ChainId,
 		ProjectID:   authData.ProjectId,
 		PlatFormID:  authData.PlatformId,
-		Module:      authData.Module,
+		Module:      constant.EVM,
 		Code:        authData.Code,
 		OperationId: operationId,
 		AccessMode:  authData.AccessMode,

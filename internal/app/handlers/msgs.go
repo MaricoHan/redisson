@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/utils/errors"
 	"gitlab.bianjie.ai/avata/utils/errors/common"
 
@@ -34,7 +35,7 @@ func (h *Msgs) GetNFTHistory(ctx context.Context, _ interface{}) (interface{}, e
 		ChainID:    authData.ChainId,
 		ProjectID:  authData.ProjectId,
 		PlatFormID: authData.PlatformId,
-		Module:     authData.Module,
+		Module:     constant.EVM,
 		Code:       authData.Code,
 		AccessMode: authData.AccessMode,
 	}
@@ -94,7 +95,7 @@ func (h *Msgs) GetAccountHistory(ctx context.Context, _ interface{}) (interface{
 		ProjectID:  authData.ProjectId,
 		PlatFormID: authData.PlatformId,
 		Account:    h.Account(ctx),
-		Module:     authData.Module,
+		Module:     constant.EVM,
 		Code:       authData.Code,
 		AccessMode: authData.AccessMode,
 	}

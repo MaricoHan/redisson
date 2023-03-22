@@ -13,6 +13,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 
+	pb_record "gitlab.bianjie.ai/avata/chains/api/pb/v1beta1/record"
 	pb_account "gitlab.bianjie.ai/avata/chains/api/pb/v2/account"
 	pb_class "gitlab.bianjie.ai/avata/chains/api/pb/v2/class"
 	pb_msgs "gitlab.bianjie.ai/avata/chains/api/pb/v2/msgs"
@@ -34,6 +35,7 @@ var AccountClientMap map[string]pb_account.AccountClient
 var NoticeClientMap map[string]pb_notice.NoticeClient
 var MsgsClientMap map[string]pb_msgs.MSGSClient
 var NftClientMap map[string]pb_nft.NFTClient
+var RecordClientMap map[string]pb_record.RecordClient
 
 // var RecordClientMap map[string]pb_record.RecordClient
 var ClassClientMap map[string]pb_class.ClassClient
@@ -109,8 +111,23 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	}
 
 	GrpcConnMap = make(map[string]*grpc.ClientConn)
+
+	logger.Info("connecting irita-opb-evm ...")
+	iritaOpbEvmConn, err := grpc.DialContext(
+		context.Background(),
+		cfg.GrpcClient.IritaOpbEvm,
+		grpc.WithInsecure(),
+		grpc.WithKeepaliveParams(kacp),
+		grpc.WithBlock(),
+		grpc.WithBalancerName(roundrobin.Name),
+		grpc.WithUnaryInterceptor(middleware.NewGrpcInterceptorMiddleware().Interceptor()))
+	if err != nil {
+		logger.Fatal("get irita-opb-evm grpc connect failed, err: ", err.Error())
+	}
+	GrpcConnMap[constant.IritaOPBEVM] = iritaOpbEvmConn
+
 	logger.Info("connecting irita-opb-native ...")
-	iritaOpbConn, err := grpc.DialContext(
+	iritaOpbNativeConn, err := grpc.DialContext(
 		context.Background(),
 		cfg.GrpcClient.IritaOpbNative,
 		grpc.WithInsecure(),
@@ -121,7 +138,7 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	if err != nil {
 		logger.Fatal("get irita-opb-native grpc connect failed, err: ", err.Error())
 	}
-	GrpcConnMap[constant.IritaOPBNative] = iritaOpbConn
+	GrpcConnMap[constant.IritaOPBNative] = iritaOpbNativeConn
 
 	logger.Info("connecting state-gateway-server ...")
 	StateGatewayServer, err = grpc.DialContext(
@@ -136,7 +153,6 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 		logger.Fatal("get state-gateway-server grpc connect failed, err: ", err.Error())
 	}
 
-	// 初始化Account grpc client
 	//GrpcConnRightsMap = make(map[string]*grpc.ClientConn)
 
 	//logger.Info("connecting rights_jiangsu server ...")
@@ -153,20 +169,21 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	//}
 	//GrpcConnRightsMap[constant.JiangSu] = RightsConn
 
+	// 初始化Account grpc client
 	AccountClientMap = make(map[string]pb_account.AccountClient)
-	AccountClientMap[constant.IritaOPBNative] = pb_account.NewAccountClient(GrpcConnMap[constant.IritaOPBNative])
+	AccountClientMap[constant.IritaOPBEVM] = pb_account.NewAccountClient(GrpcConnMap[constant.IritaOPBEVM])
 	// 初始化msgs grpc client
 	MsgsClientMap = make(map[string]pb_msgs.MSGSClient)
-	MsgsClientMap[constant.IritaOPBNative] = pb_msgs.NewMSGSClient(GrpcConnMap[constant.IritaOPBNative])
+	MsgsClientMap[constant.IritaOPBEVM] = pb_msgs.NewMSGSClient(GrpcConnMap[constant.IritaOPBEVM])
 	// 初始化nft grpc client
 	NftClientMap = make(map[string]pb_nft.NFTClient)
-	NftClientMap[constant.IritaOPBNative] = pb_nft.NewNFTClient(GrpcConnMap[constant.IritaOPBNative])
+	NftClientMap[constant.IritaOPBEVM] = pb_nft.NewNFTClient(GrpcConnMap[constant.IritaOPBEVM])
 	// 初始化nft class grpc client
 	ClassClientMap = make(map[string]pb_class.ClassClient)
-	ClassClientMap[constant.IritaOPBNative] = pb_class.NewClassClient(GrpcConnMap[constant.IritaOPBNative])
+	ClassClientMap[constant.IritaOPBEVM] = pb_class.NewClassClient(GrpcConnMap[constant.IritaOPBEVM])
 	// 初始化tx grpc client
 	TxClientMap = make(map[string]pb_tx.TxClient)
-	TxClientMap[constant.IritaOPBNative] = pb_tx.NewTxClient(GrpcConnMap[constant.IritaOPBNative])
+	TxClientMap[constant.IritaOPBEVM] = pb_tx.NewTxClient(GrpcConnMap[constant.IritaOPBEVM])
 	// 初始化mt
 	//MTClientMap = make(map[string]pb_mt.MTClient)
 	//MTClientMap[constant.WenchangDDC] = pb_mt.NewMTClient(GrpcConnMap[constant.WenchangDDC])
@@ -193,11 +210,8 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	//RightsClientMap[constant.JiangSu] = rights.NewRightsClient(GrpcConnRightsMap[constant.JiangSu])
 
 	// 初始化record grpc client
-	//RecordClientMap = make(map[string]pb_record.RecordClient)
-	//RecordClientMap[constant.WenchangDDC] = pb_record.NewRecordClient(GrpcConnMap[constant.WenchangDDC])
-	//RecordClientMap[constant.WenchangNative] = pb_record.NewRecordClient(GrpcConnMap[constant.WenchangNative])
-	//RecordClientMap[constant.IritaOPBNative] = pb_record.NewRecordClient(GrpcConnMap[constant.IritaOPBNative])
-	//RecordClientMap[constant.IrisHubNative] = pb_record.NewRecordClient(GrpcConnMap[constant.IrisHubNative])
+	RecordClientMap = make(map[string]pb_record.RecordClient)
+	RecordClientMap[constant.IritaOPBNative] = pb_record.NewRecordClient(GrpcConnMap[constant.IritaOPBNative])
 
 	// 初始化notice
 	//NoticeClientMap = make(map[string]pb_notice.NoticeClient)

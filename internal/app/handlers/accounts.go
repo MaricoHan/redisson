@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/utils/errors/common"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
@@ -49,7 +50,7 @@ func (h *Account) BatchCreateAccount(ctx context.Context, request interface{}) (
 		ProjectID:   authData.ProjectId,
 		PlatFormID:  authData.PlatformId,
 		Count:       uint32(req.Count),
-		Module:      authData.Module,
+		Module:      constant.EVM,
 		Code:        authData.Code,
 		OperationId: operationId,
 		AccessMode:  authData.AccessMode,
@@ -88,7 +89,7 @@ func (h *Account) CreateAccount(ctx context.Context, request interface{}) (inter
 		ProjectID:   authData.ProjectId,
 		PlatFormID:  authData.PlatformId,
 		Name:        name,
-		Module:      authData.Module,
+		Module:      constant.EVM,
 		Code:        authData.Code,
 		OperationId: operationId,
 		AccessMode:  authData.AccessMode,
@@ -105,7 +106,7 @@ func (h *Account) GetAccounts(ctx context.Context, _ interface{}) (interface{}, 
 		ProjectID:   authData.ProjectId,
 		PlatFormID:  authData.PlatformId,
 		Account:     h.Account(ctx),
-		Module:      authData.Module,
+		Module:      constant.EVM,
 		Code:        authData.Code,
 		OperationId: h.OperationID(ctx),
 		Name:        h.Name(ctx),

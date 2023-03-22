@@ -26,7 +26,8 @@ func GetAllControllers(logger *log.Logger) []kit.IController {
 		NewNftController(baseController, handlers.NewNft(services.NewNFT(logger))),
 		NewNftTransferController(baseController, handlers.NewNFTTransfer(services.NewNFTTransfer(logger))),
 		NewAuthController(baseController, handlers.NewAuth(services.NewAuth(logger))),
-		NewNoticeController(baseController, handlers.NewNotice(services.NewNotice(logger))),
+		//NewNoticeController(baseController, handlers.NewNotice(services.NewNotice(logger))),
+		NewRecordController(baseController, handlers.NewRecord(services.NewRecord(logger))),
 	}
 
 	return controllers
