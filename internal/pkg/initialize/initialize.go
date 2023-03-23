@@ -18,8 +18,10 @@ import (
 	pb_msgs "gitlab.bianjie.ai/avata/chains/api/pb/v2/msgs"
 	pb_nft "gitlab.bianjie.ai/avata/chains/api/pb/v2/nft"
 	pb_notice "gitlab.bianjie.ai/avata/chains/api/pb/v2/notice"
+	pb_ns "gitlab.bianjie.ai/avata/chains/api/pb/v2/ns"
 	pb_tx "gitlab.bianjie.ai/avata/chains/api/pb/v2/tx"
 	pb_tx_queue "gitlab.bianjie.ai/avata/chains/api/pb/v2/tx_queue"
+
 	pb_wallet "gitlab.bianjie.ai/avata/chains/api/pb/v2/wallet"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
@@ -51,6 +53,8 @@ var TxQueueClient pb_tx_queue.TxQueueClient
 //var RightsClientMap map[string]rights.RightsClient
 
 var WalletClientMap map[string]pb_wallet.WalletClient
+
+var NsClientMap map[string]pb_ns.NSClient
 
 var Log = new(log.Logger)
 
@@ -211,6 +215,11 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	// 初始化wallet grpc client
 	WalletClientMap = make(map[string]pb_wallet.WalletClient)
 	WalletClientMap[constant.WalletServer] = pb_wallet.NewWalletClient(GrpcConnMap[constant.WalletServer])
+
+	// 初始化ns grpc client
+	NsClientMap = make(map[string]pb_ns.NSClient)
+	NsClientMap[constant.IritaOPBNative] = pb_ns.NewNSClient(GrpcConnMap[constant.IritaOPBNative])
+
 }
 
 func InitRedisClient(cfg *configs.Config, logger *log.Logger) {
