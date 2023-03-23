@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/project"
 	"io"
 	"net/http"
 	"sort"
@@ -148,6 +149,21 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				"status", "401",
 			}...).Add(1)
 			writeForbiddenResp(w, "")
+			return
+		}
+	}
+
+	if strings.ContainsAny("/ns/", r.URL.Path) {
+		// 域名请求，验证权限
+		projectRepo := project.NewProjectRepo(initialize.MysqlDB)
+		auth, err := projectRepo.ExistServices(projectInfo.Id, entity.ServiceTypeNS)
+		if err != nil {
+			log.WithError(err).Error("query service")
+			writeInternalResp(w)
+			return
+		}
+		if !auth {
+			writeForbiddenResp(w, constant.AuthenticationFailed)
 			return
 		}
 	}
