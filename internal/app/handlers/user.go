@@ -29,7 +29,14 @@ func (u User) CreateUsers(ctx context.Context, request interface{}) (interface{}
 	req := request.(*vo.CreateUserRequest)
 
 	// 校验参数
-	req.Individual.Name = strings.TrimSpace(req.Individual.Name)
+	individualName := strings.TrimSpace(req.Individual.Name)
+	certificateNum := strings.TrimSpace(req.Individual.CertificateNum)
+	individualPhoneNum := strings.TrimSpace(req.Individual.PhoneNum)
+	enterpriseName := strings.TrimSpace(req.Enterprise.Name)
+	registrationNum := strings.TrimSpace(req.Enterprise.RegistrationNum)
+	enterprisePhoneNum := strings.TrimSpace(req.Enterprise.PhoneNum)
+	businessLicense := strings.TrimSpace(req.Enterprise.BusinessLicense)
+	email := strings.TrimSpace(req.Enterprise.Email)
 
 	authData := u.AuthData(ctx)
 	params := dto.CreateUsers{
@@ -40,19 +47,19 @@ func (u User) CreateUsers(ctx context.Context, request interface{}) (interface{}
 		AccessMode: authData.AccessMode,
 		Usertype:   req.Usertype,
 		Individual: &wallet.INDIVIDUALS{
-			Name:            req.Individual.Name,
+			Name:            individualName,
 			Region:          wallet.REGION(req.Individual.Region),
 			CertificateType: wallet.CERTIFICATE_TYPE(req.Individual.CertificateType),
-			CertificateNum:  req.Individual.CertificateNum,
-			PhoneNum:        req.Individual.PhoneNum,
+			CertificateNum:  certificateNum,
+			PhoneNum:        individualPhoneNum,
 		},
 		Enterprise: &wallet.ENTERPRISES{
-			Name:               req.Enterprise.Name,
+			Name:               enterpriseName,
 			RegistrationRegion: wallet.REGION(req.Enterprise.RegistrationRegion),
-			RegistrationNum:    req.Enterprise.RegistrationNum,
-			PhoneNum:           req.Enterprise.PhoneNum,
-			BusinessLicense:    req.Enterprise.BusinessLicense,
-			Email:              req.Enterprise.Email,
+			RegistrationNum:    registrationNum,
+			PhoneNum:           enterprisePhoneNum,
+			BusinessLicense:    businessLicense,
+			Email:              email,
 		},
 	}
 	return u.svc.CreateUsers(ctx, params)

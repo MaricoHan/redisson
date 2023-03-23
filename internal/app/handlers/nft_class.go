@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/utils/errors/common"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
@@ -67,7 +66,7 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 		ChainID:              authData.ChainId,
 		ProjectID:            authData.ProjectId,
 		PlatFormID:           authData.PlatformId,
-		Module:               constant.EVM,
+		Module:               authData.Module,
 		Name:                 name,
 		Symbol:               symbol,
 		Uri:                  uri,
@@ -89,7 +88,7 @@ func (h NftClass) Classes(ctx context.Context, _ interface{}) (interface{}, erro
 		ChainID:    authData.ChainId,
 		ProjectID:  authData.ProjectId,
 		PlatFormID: authData.PlatformId,
-		Module:     constant.EVM,
+		Module:     authData.Module,
 		Id:         h.Id(ctx),
 		Name:       h.Name(ctx),
 		Owner:      h.Owner(ctx),
@@ -135,7 +134,7 @@ func (h NftClass) ClassByID(ctx context.Context, _ interface{}) (interface{}, er
 		ChainID:    authData.ChainId,
 		ProjectID:  authData.ProjectId,
 		PlatFormID: authData.PlatformId,
-		Module:     constant.EVM,
+		Module:     authData.Module,
 		Id:         h.Id(ctx),
 		Code:       authData.Code,
 		AccessMode: authData.AccessMode,

@@ -113,21 +113,6 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 
 	GrpcConnMap = make(map[string]*grpc.ClientConn)
 
-	logger.Info("connecting irita-opb-evm ...")
-	iritaOpbEvmConn, err := grpc.DialContext(
-		context.Background(),
-		cfg.GrpcClient.IritaOpbEvm,
-		grpc.WithInsecure(),
-		grpc.WithKeepaliveParams(kacp),
-		grpc.WithBlock(),
-		grpc.WithBalancerName(roundrobin.Name),
-		grpc.WithUnaryInterceptor(middleware.NewGrpcInterceptorMiddleware().Interceptor()))
-	if err != nil {
-		logger.Fatal("get irita-opb-evm grpc connect failed, err: ", err.Error())
-	}
-	GrpcConnMap[constant.IritaOPBEVM] = iritaOpbEvmConn
-
-
 	logger.Info("connecting irita-opb-native ...")
 	iritaOpbNativeConn, err := grpc.DialContext(
 		context.Background(),
@@ -171,19 +156,19 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 
 	// 初始化Account grpc client
 	AccountClientMap = make(map[string]pb_account.AccountClient)
-	AccountClientMap[constant.IritaOPBEVM] = pb_account.NewAccountClient(GrpcConnMap[constant.IritaOPBEVM])
+	AccountClientMap[constant.IritaOPBNative] = pb_account.NewAccountClient(GrpcConnMap[constant.IritaOPBNative])
 	// 初始化msgs grpc client
 	MsgsClientMap = make(map[string]pb_msgs.MSGSClient)
-	MsgsClientMap[constant.IritaOPBEVM] = pb_msgs.NewMSGSClient(GrpcConnMap[constant.IritaOPBEVM])
+	MsgsClientMap[constant.IritaOPBNative] = pb_msgs.NewMSGSClient(GrpcConnMap[constant.IritaOPBNative])
 	// 初始化nft grpc client
 	NftClientMap = make(map[string]pb_nft.NFTClient)
-	NftClientMap[constant.IritaOPBEVM] = pb_nft.NewNFTClient(GrpcConnMap[constant.IritaOPBEVM])
+	NftClientMap[constant.IritaOPBNative] = pb_nft.NewNFTClient(GrpcConnMap[constant.IritaOPBNative])
 	// 初始化nft class grpc client
 	ClassClientMap = make(map[string]pb_class.ClassClient)
-	ClassClientMap[constant.IritaOPBEVM] = pb_class.NewClassClient(GrpcConnMap[constant.IritaOPBEVM])
+	ClassClientMap[constant.IritaOPBNative] = pb_class.NewClassClient(GrpcConnMap[constant.IritaOPBNative])
 	// 初始化tx grpc client
 	TxClientMap = make(map[string]pb_tx.TxClient)
-	TxClientMap[constant.IritaOPBEVM] = pb_tx.NewTxClient(GrpcConnMap[constant.IritaOPBEVM])
+	TxClientMap[constant.IritaOPBNative] = pb_tx.NewTxClient(GrpcConnMap[constant.IritaOPBNative])
 	// 初始化mt
 	//MTClientMap = make(map[string]pb_mt.MTClient)
 	//MTClientMap[constant.WenchangDDC] = pb_mt.NewMTClient(GrpcConnMap[constant.WenchangDDC])

@@ -27,7 +27,6 @@ const (
 	WenchangNative = "wenchangchain-native"
 	WenchangDDC    = "wenchangchain-ddc"
 	DatangNative   = "datangchain-native"
-	IritaOPBEVM    = "irita-opb-evm"
 	IritaOPBNative = "irita-opb-native"
 	IrisHubNative  = "irishub-native"
 
@@ -39,7 +38,6 @@ const (
 	// stage
 	IritaOPB = "irita-opb"
 	Native   = "native"
-	EVM      = "evm"
 
 	// rights map
 	JiangSu = "jiangsu"

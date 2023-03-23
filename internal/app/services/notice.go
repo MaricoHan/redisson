@@ -61,7 +61,6 @@ func (a *notice) TransferNFTS(ctx context.Context, params *notice2.TransferNFTS)
 		logger.WithError(err).Error("auth data")
 		return res, errors.ErrInternal
 	}
-	authData.Module = constant.EVM
 	user, err := a.getUser(authData.UserId)
 	if err != nil {
 		logger.WithError(err).Error("query project")
@@ -128,7 +127,6 @@ func (a *notice) TransferClasses(ctx context.Context, params *notice2.TransferCl
 		logger.WithError(err).Error("auth data")
 		return res, errors.ErrInternal
 	}
-	authData.Module = constant.EVM
 	user, err := a.getUser(authData.UserId)
 	if err != nil {
 		logger.WithError(err).Error("query project")
