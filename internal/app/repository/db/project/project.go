@@ -48,13 +48,13 @@ func (p *ProjectRepo) GetProjectByCode(code string) (project entity.Project, err
 	return
 }
 
-func (p *ProjectRepo) ExistWalletServices(projectId uint) (bool, error) {
+func (p *ProjectRepo) ExistServices(projectId, serviceType uint) (bool, error) {
 	var Ids []uint64
 	if err := p.db.Model(&entity.ProjectServices{}).Select("service_id").Where("project_id = ?", projectId).Find(&Ids).Error; err != nil {
 		return false, err
 	}
 	var services []*entity.Services
-	if err := p.db.Where("id IN ? AND type = ?", Ids, 1).Find(&services).Error; err != nil {
+	if err := p.db.Where("id IN ? AND type = ?", Ids, serviceType).Find(&services).Error; err != nil {
 		return false, err
 	}
 	if len(services) > 0 {
