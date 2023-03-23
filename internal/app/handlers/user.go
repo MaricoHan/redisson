@@ -9,6 +9,8 @@ import (
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
+	"gitlab.bianjie.ai/avata/utils/errors"
 )
 
 type IUser interface {
@@ -38,6 +40,13 @@ func (u User) CreateUsers(ctx context.Context, request interface{}) (interface{}
 	email := strings.TrimSpace(req.Email)
 
 	authData := u.AuthData(ctx)
+	if authData.ExistWalletService {
+		authData.Code = constant.Wallet
+		authData.Module = constant.Server
+	} else {
+		return nil, errors.ErrNotImplemented
+	}
+
 	params := dto.CreateUsers{
 		ChainID:    authData.ChainId,
 		ProjectID:  authData.ProjectId,
@@ -75,6 +84,12 @@ func (u User) UpdateUsers(ctx context.Context, request interface{}) (interface{}
 	userId := strings.TrimSpace(req.UserId)
 	phoneNum := strings.TrimSpace(req.PhoneNum)
 	authData := u.AuthData(ctx)
+	if authData.ExistWalletService {
+		authData.Code = constant.Wallet
+		authData.Module = constant.Server
+	} else {
+		return nil, errors.ErrNotImplemented
+	}
 	params := dto.UpdateUsers{
 		ChainID:    authData.ChainId,
 		ProjectID:  authData.ProjectId,

@@ -3,13 +3,14 @@ package vo
 import "encoding/json"
 
 type AuthData struct {
-	ProjectId  uint64 `json:"project_id"`
-	ChainId    uint64 `json:"chain_id"`
-	PlatformId uint64 `json:"platform_id"`
-	Module     string `json:"module"`
-	Code       string `json:"code"`
-	AccessMode int    `json:"access_mode"`
-	UserId     uint64 `json:"user_id"`
+	ProjectId          uint64 `json:"project_id"`
+	ChainId            uint64 `json:"chain_id"`
+	PlatformId         uint64 `json:"platform_id"`
+	Module             string `json:"module"`
+	Code               string `json:"code"`
+	AccessMode         int    `json:"access_mode"`
+	UserId             uint64 `json:"user_id"`
+	ExistWalletService bool   `json:"exist_wallet_service"`
 }
 
 // AuthVerify auth模块下验证
