@@ -35,7 +35,10 @@ func (u user) CreateUsers(ctx context.Context, params dto.CreateUsers) (*dto.Cre
 		})
 
 	req := wallet.CreateUsersRequest{
-		ProjectId: params.ProjectID,
+		ProjectId:  params.ProjectID,
+		UserType:   wallet.USER_TYPE(params.Usertype),
+		Individual: params.Individual,
+		Enterprise: params.Enterprise,
 	}
 	resp := &wallet.CreateUsersResponse{}
 	var err error
@@ -68,6 +71,8 @@ func (u user) UpdateUsers(ctx context.Context, params dto.UpdateUsers) (*dto.TxR
 
 	req := wallet.UpdateUsersRequest{
 		ProjectId: params.ProjectID,
+		UserId:    params.UserId,
+		PhoneNum:  params.PhoneNum,
 	}
 	resp := &wallet.UpdateUsersResponse{}
 	var err error

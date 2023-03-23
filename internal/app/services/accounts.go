@@ -7,6 +7,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	pb "gitlab.bianjie.ai/avata/chains/api/pb/v2/account"
+	"gitlab.bianjie.ai/avata/chains/api/pb/v2/wallet"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 
@@ -74,6 +75,37 @@ func (a *account) CreateAccount(ctx context.Context, params dto.CreateAccount) (
 	if params.AccessMode == entity.UNMANAGED {
 		return nil, errors2.ErrNotImplemented
 	}
+	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+
+	if mapKey == constant.WalletServer {
+		req := wallet.AccountCreateRequest{
+			ProjectId:   params.ProjectID,
+			Name:        params.Name,
+			OperationId: params.OperationId,
+			UserId:      params.UserId,
+		}
+		resp := &wallet.AccountCreateResponse{}
+		var err error
+
+		grpcClient, ok := initialize.WalletClientMap[mapKey]
+		if !ok {
+			logger.Error(errors2.ErrService)
+			return nil, errors2.New(errors2.InternalError, errors2.ErrService)
+		}
+		ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
+		defer cancel()
+		resp, err = grpcClient.CreateAccount(ctx, &req)
+		if err != nil {
+			logger.WithError(err).Error("request err")
+			return nil, err
+		}
+		if resp == nil {
+			return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+		}
+		result := &dto.AccountRes{}
+		result.Account = resp.Account
+		return result, nil
+	}
 
 	req := pb.AccountCreateRequest{
 		ProjectId:   params.ProjectID,
@@ -82,7 +114,7 @@ func (a *account) CreateAccount(ctx context.Context, params dto.CreateAccount) (
 	}
 	resp := &pb.AccountCreateResponse{}
 	var err error
-	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+
 	grpcClient, ok := initialize.AccountClientMap[mapKey]
 	if !ok {
 		logger.Error(errors2.ErrService)
@@ -111,6 +143,72 @@ func (a *account) GetAccounts(ctx context.Context, params dto.AccountsInfo) (*dt
 	if params.AccessMode == entity.UNMANAGED {
 		return nil, errors2.ErrNotImplemented
 	}
+	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+
+	if mapKey == constant.WalletServer {
+
+		sort, ok := wallet.SORT_value[params.SortBy]
+		if !ok {
+			logger.Error(errors2.ErrSortBy)
+			return nil, errors2.New(errors2.ClientParams, errors2.ErrSortBy)
+		}
+
+		req := wallet.AccountShowRequest{
+			ProjectId:   params.ProjectID,
+			PageKey:     params.PageKey,
+			CountTotal:  params.CountTotal,
+			Limit:       params.Limit,
+			SortBy:      wallet.SORT(sort),
+			Account:     params.Account,
+			StartDate:   params.StartDate,
+			EndDate:     params.EndDate,
+			OperationId: params.OperationId,
+			Name:        params.Name,
+		}
+
+		resp := &wallet.AccountShowResponse{}
+		var err error
+
+		grpcClient, ok := initialize.WalletClientMap[mapKey]
+		if !ok {
+			logger.Error(errors2.ErrService)
+			return nil, errors2.New(errors2.InternalError, errors2.ErrService)
+		}
+		ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
+		defer cancel()
+		resp, err = grpcClient.ShowAccounts(ctx, &req)
+		if err != nil {
+			logger.Error("request err:", err.Error())
+			return nil, err
+		}
+		if resp == nil {
+			return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+		}
+		result := &dto.AccountsRes{
+			PageRes: dto.PageRes{
+				PrevPageKey: resp.PrevPageKey,
+				NextPageKey: resp.NextPageKey,
+				Limit:       resp.Limit,
+				TotalCount:  resp.TotalCount,
+			},
+			Accounts: []*dto.Account{},
+		}
+		var accounts []*dto.Account
+		for _, result := range resp.Data {
+			account := &dto.Account{
+				Account:     result.Address,
+				Name:        result.Name,
+				OperationId: result.OperationId,
+			}
+			accounts = append(accounts, account)
+		}
+
+		if accounts != nil {
+			result.Accounts = accounts
+		}
+
+		return result, nil
+	}
 
 	sort, ok := pb.SORT_value[params.SortBy]
 	if !ok {
@@ -133,7 +231,7 @@ func (a *account) GetAccounts(ctx context.Context, params dto.AccountsInfo) (*dt
 
 	resp := &pb.AccountShowResponse{}
 	var err error
-	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+
 	grpcClient, ok := initialize.AccountClientMap[mapKey]
 	if !ok {
 		logger.Error(errors2.ErrService)

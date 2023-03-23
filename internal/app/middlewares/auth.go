@@ -46,7 +46,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	})
 
 	// 查询缓存
-	projectInfo, err := cache.NewCache().Project(appKey)
+	projectInfo, existWalletService, err := cache.NewCache().Project(appKey)
 	if err != nil {
 		log.WithError(err).Error("project from cache")
 		writeInternalResp(w)
@@ -105,8 +105,8 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		authData.Module = constant.Native
 	}
 
-	// 判断项目是否关联钱包服务
-	if len(projectInfo.Service) != 0 {
+	// 如果项目关联钱包服务,转发到钱包微服务
+	if existWalletService {
 		authData.Code = constant.Wallet
 		authData.Module = constant.Server
 	}

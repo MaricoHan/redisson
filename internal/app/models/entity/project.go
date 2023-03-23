@@ -19,7 +19,6 @@ type Project struct {
 	Version     uint      `gorm:"column:version;type:tinyint(4) unsigned;default:0;comment:项目参数版本号,1:V1；2:V2;NOT NULL" json:"version"`
 	UpdatedAt   time.Time `gorm:"column:updated_at;type:datetime;default:CURRENT_TIMESTAMP;comment:更新时间;NOT NULL" json:"updated_at"`
 	CreatedAt   time.Time `gorm:"column:created_at;type:datetime;default:CURRENT_TIMESTAMP;comment:创建时间;NOT NULL" json:"created_at"`
-	Service     []Service
 }
 
 const (

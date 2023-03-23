@@ -24,6 +24,7 @@ type CreateAccount struct {
 	Module      string `json:"module"`
 	Code        string `json:"code"`
 	Name        string `json:"name"`
+	UserId      string `json:"user_id"`
 	OperationId string `json:"operation_id"`
 	AccessMode  int    `json:"access_mode"`
 }

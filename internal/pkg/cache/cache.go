@@ -30,28 +30,42 @@ func NewCache() *cache {
 }
 
 // Project 返回项目信息切缓存项目
-func (c cache) Project(key string) (entity.Project, error) {
+func (c cache) Project(key string) (entity.Project, bool, error) {
 	var projectInfo entity.Project
+	var existWalletService bool
 	err := initialize.RedisClient.GetObject(fmt.Sprintf("%s%s", constant.KeyProjectApikey, key), &projectInfo)
 	if err != nil {
-		return projectInfo, errors.Wrap(err, "get project from cache")
+		return projectInfo, existWalletService, errors.Wrap(err, "get project from cache")
+	}
+	err = initialize.RedisClient.GetObject(fmt.Sprintf("%s%s", constant.KeyExistWalletService, key), &existWalletService)
+	if err != nil {
+		return projectInfo, existWalletService, errors.Wrap(err, "get project exist wallet services from cache")
 	}
 	if projectInfo.Id < 1 {
-		// 查询 project 信息以及 project 关联的 service 信息
+		// 查询 project 信息
 		projectRepo := project.NewProjectRepo(initialize.MysqlDB)
 		projectInfo, err = projectRepo.GetProjectByApiKey(key)
 		if err != nil {
-			return projectInfo, errors.Wrap(err, "get project from db")
+			return projectInfo, existWalletService, errors.Wrap(err, "get project from db")
 		}
 
 		if projectInfo.Id > 0 {
 			// save cache
 			if err := initialize.RedisClient.SetObject(fmt.Sprintf("%s%s", constant.KeyProjectApikey, key), projectInfo, time.Minute*5); err != nil {
-				return projectInfo, errors.Wrap(err, "save project cache")
+				return projectInfo, existWalletService, errors.Wrap(err, "save project cache")
 			}
 		}
+
+		// project 关联的 serviceIds
+		existWalletService, err = projectRepo.ExistWalletServices(projectInfo.Id)
+		if err != nil {
+			return projectInfo, existWalletService, errors.Wrap(err, "get project services from db")
+		}
+		if err := initialize.RedisClient.SetObject(fmt.Sprintf("%s%s", constant.KeyExistWalletService, key), existWalletService, time.Minute*5); err != nil {
+			return projectInfo, existWalletService, errors.Wrap(err, "save project exist wallet services cache")
+		}
 	}
-	return projectInfo, nil
+	return projectInfo, existWalletService, nil
 }
 
 // Chain 返回链信息且缓存链信息

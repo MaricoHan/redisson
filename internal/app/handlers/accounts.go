@@ -92,6 +92,7 @@ func (h *Account) CreateAccount(ctx context.Context, request interface{}) (inter
 		Code:        authData.Code,
 		OperationId: operationId,
 		AccessMode:  authData.AccessMode,
+		UserId:      req.UserId,
 	}
 
 	return h.svc.CreateAccount(ctx, params)
