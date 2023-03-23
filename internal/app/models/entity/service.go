@@ -4,6 +4,11 @@ import (
 	"time"
 )
 
+const (
+	ServiceTypeWallet = 1 // 钱包服务
+	ServiceTypeNS     = 2 // 域名服务
+)
+
 // Services 服务类型表
 type Services struct {
 	Id        uint64    `gorm:"column:id;type:bigint(20) unsigned;primary_key;AUTO_INCREMENT;comment:ID" json:"id"`

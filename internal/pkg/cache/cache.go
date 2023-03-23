@@ -57,7 +57,7 @@ func (c cache) Project(key string) (entity.Project, bool, error) {
 		}
 
 		// project 关联的 serviceIds
-		existWalletService, err = projectRepo.ExistWalletServices(projectInfo.Id)
+		existWalletService, err = projectRepo.ExistServices(projectInfo.Id, entity.ServiceTypeWallet)
 		if err != nil {
 			return projectInfo, existWalletService, errors.Wrap(err, "get project services from db")
 		}
