@@ -43,6 +43,7 @@ type (
 	}
 
 	GrpcClient struct {
+		IritaOpbEvm    string `mapstructure:"iritaopb_evm"`
 		IritaOpbNative string `mapstructure:"iritaopb_native"`
 		StateGateway   string `mapstructure:"state_gateway"`
 		WalletServer   string `mapstructure:"wallet_server"`

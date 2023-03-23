@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	pb "gitlab.bianjie.ai/avata/chains/api/pb/v2/nft"
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 
 	"gitlab.bianjie.ai/avata/utils/errors/common"
 
@@ -59,7 +60,7 @@ func (h *NFT) CreateNft(ctx context.Context, request interface{}) (interface{}, 
 		ChainID:     authData.ChainId,
 		ProjectID:   authData.ProjectId,
 		PlatFormID:  authData.PlatformId,
-		Module:      authData.Module,
+		Module:      constant.EVM,
 		ClassId:     h.ClassId(ctx),
 		Uri:         uri,
 		UriHash:     uriHash,
@@ -100,7 +101,7 @@ func (h *NFT) EditNftByNftId(ctx context.Context, request interface{}) (interfac
 		PlatFormID:  authData.PlatformId,
 		ClassId:     h.ClassId(ctx),
 		Sender:      h.Owner(ctx),
-		Module:      authData.Module,
+		Module:      constant.EVM,
 		Uri:         uri,
 		UriHash:     uriHash,
 		Code:        authData.Code,
@@ -133,7 +134,7 @@ func (h *NFT) DeleteNftByNftId(ctx context.Context, request interface{}) (interf
 		ChainID:     authData.ChainId,
 		ProjectID:   authData.ProjectId,
 		PlatFormID:  authData.PlatformId,
-		Module:      authData.Module,
+		Module:      constant.EVM,
 		ClassId:     h.ClassId(ctx),
 		Sender:      h.Owner(ctx),
 		Code:        authData.Code,
@@ -162,7 +163,7 @@ func (h *NFT) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 		ChainID:    authData.ChainId,
 		ProjectID:  authData.ProjectId,
 		PlatFormID: authData.PlatformId,
-		Module:     authData.Module,
+		Module:     constant.EVM,
 		Code:       authData.Code,
 		AccessMode: authData.AccessMode,
 
@@ -217,7 +218,7 @@ func (h *NFT) NftByNftId(ctx context.Context, _ interface{}) (interface{}, error
 		ChainID:    authData.ChainId,
 		ProjectID:  authData.ProjectId,
 		PlatFormID: authData.PlatformId,
-		Module:     authData.Module,
+		Module:     constant.EVM,
 		ClassId:    h.ClassId(ctx),
 		Code:       authData.Code,
 		AccessMode: authData.AccessMode,

@@ -5,6 +5,7 @@ import (
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 )
 
 type ITx interface {
@@ -29,7 +30,7 @@ func (h *Tx) TxResult(ctx context.Context, _ interface{}) (interface{}, error) {
 		ChainID:     authData.ChainId,
 		ProjectID:   authData.ProjectId,
 		PlatFormID:  authData.PlatformId,
-		Module:      authData.Module,
+		Module:      constant.EVM,
 		Code:        authData.Code,
 		AccessMode:  authData.AccessMode,
 	}
@@ -44,7 +45,7 @@ func (h *Tx) TxQueueInfo(ctx context.Context, _ interface{}) (interface{}, error
 	params := dto.TxQueueInfo{
 		OperationId: h.OperationId(ctx),
 		ProjectID:   authData.ProjectId,
-		Module:      authData.Module,
+		Module:      constant.EVM,
 		Code:        authData.Code,
 	}
 	// 校验参数 end
