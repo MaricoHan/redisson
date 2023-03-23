@@ -11,14 +11,10 @@ grpc_timeout = 1000000
 http_timeout = 1000000
 
 [mysql]
-#host = "192.168.0.136"
-#port = 3306
-#username = "root"
-#password = "rootPassword"
-host = "127.0.0.1"
-port = 3306
+host = "192.168.150.40"
+port = 23306
 username = "root"
-password = "12345678"
+password = "rootPassword"
 db = "core"
 max_open_conns = 100
 max_idle_conns = 20
