@@ -6,6 +6,7 @@ import (
 
 	"gitlab.bianjie.ai/avata/chains/api/pb/v2/wallet"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
 )
@@ -29,14 +30,12 @@ func (u User) CreateUsers(ctx context.Context, request interface{}) (interface{}
 	req := request.(*vo.CreateUserRequest)
 
 	// 校验参数
-	individualName := strings.TrimSpace(req.Individual.Name)
-	certificateNum := strings.TrimSpace(req.Individual.CertificateNum)
-	individualPhoneNum := strings.TrimSpace(req.Individual.PhoneNum)
-	enterpriseName := strings.TrimSpace(req.Enterprise.Name)
-	registrationNum := strings.TrimSpace(req.Enterprise.RegistrationNum)
-	enterprisePhoneNum := strings.TrimSpace(req.Enterprise.PhoneNum)
-	businessLicense := strings.TrimSpace(req.Enterprise.BusinessLicense)
-	email := strings.TrimSpace(req.Enterprise.Email)
+	name := strings.TrimSpace(req.Name)
+	certificateNum := strings.TrimSpace(req.CertificateNum)
+	phoneNum := strings.TrimSpace(req.PhoneNum)
+	registrationNum := strings.TrimSpace(req.RegistrationNum)
+	businessLicense := strings.TrimSpace(req.BusinessLicense)
+	email := strings.TrimSpace(req.Email)
 
 	authData := u.AuthData(ctx)
 	params := dto.CreateUsers{
@@ -46,21 +45,25 @@ func (u User) CreateUsers(ctx context.Context, request interface{}) (interface{}
 		Code:       authData.Code,
 		AccessMode: authData.AccessMode,
 		Usertype:   req.Usertype,
-		Individual: &wallet.INDIVIDUALS{
-			Name:            individualName,
-			Region:          wallet.REGION(req.Individual.Region),
-			CertificateType: wallet.CERTIFICATE_TYPE(req.Individual.CertificateType),
+	}
+
+	if req.Usertype == entity.UserTypeIndividual {
+		params.Individual = &wallet.INDIVIDUALS{
+			Name:            name,
+			Region:          wallet.REGION(req.Region),
+			CertificateType: wallet.CERTIFICATE_TYPE(req.CertificateType),
 			CertificateNum:  certificateNum,
-			PhoneNum:        individualPhoneNum,
-		},
-		Enterprise: &wallet.ENTERPRISES{
-			Name:               enterpriseName,
-			RegistrationRegion: wallet.REGION(req.Enterprise.RegistrationRegion),
+			PhoneNum:        phoneNum,
+		}
+	} else if req.Usertype == entity.UserTypeEnterprise {
+		params.Enterprise = &wallet.ENTERPRISES{
+			Name:               name,
+			RegistrationRegion: wallet.REGION(req.RegistrationRegion),
 			RegistrationNum:    registrationNum,
-			PhoneNum:           enterprisePhoneNum,
+			PhoneNum:           phoneNum,
 			BusinessLicense:    businessLicense,
 			Email:              email,
-		},
+		}
 	}
 	return u.svc.CreateUsers(ctx, params)
 }

@@ -42,3 +42,8 @@ var UserFields = struct {
 	"description",
 	"is_deleted",
 }
+
+const (
+	UserTypeIndividual = iota + 1
+	UserTypeEnterprise
+)
