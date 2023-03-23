@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/utils/errors/common"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
@@ -83,6 +84,10 @@ func (h *Account) CreateAccount(ctx context.Context, request interface{}) (inter
 		return nil, errors.New(errors.ClientParams, errors.ErrOperationIDLen)
 	}
 	authData := h.AuthData(ctx)
+	if authData.ExistWalletService {
+		authData.Code = constant.Wallet
+		authData.Module = constant.Server
+	}
 	params := dto.CreateAccount{
 		ChainID:     authData.ChainId,
 		ProjectID:   authData.ProjectId,
@@ -101,6 +106,10 @@ func (h *Account) CreateAccount(ctx context.Context, request interface{}) (inter
 func (h *Account) GetAccounts(ctx context.Context, _ interface{}) (interface{}, error) {
 	// 校验参数 start
 	authData := h.AuthData(ctx)
+	if authData.ExistWalletService {
+		authData.Code = constant.Wallet
+		authData.Module = constant.Server
+	}
 	params := dto.AccountsInfo{
 		ChainID:     authData.ChainId,
 		ProjectID:   authData.ProjectId,

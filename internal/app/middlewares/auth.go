@@ -86,13 +86,14 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	authData := vo.AuthData{
-		ProjectId:  uint64(projectInfo.Id),
-		ChainId:    uint64(chainInfo.Id),
-		PlatformId: uint64(projectInfo.UserId),
-		Module:     chainInfo.Module,
-		Code:       chainInfo.Code,
-		AccessMode: projectInfo.AccessMode,
-		UserId:     uint64(projectInfo.UserId),
+		ProjectId:          uint64(projectInfo.Id),
+		ChainId:            uint64(chainInfo.Id),
+		PlatformId:         uint64(projectInfo.UserId),
+		Module:             chainInfo.Module,
+		Code:               chainInfo.Code,
+		AccessMode:         projectInfo.AccessMode,
+		UserId:             uint64(projectInfo.UserId),
+		ExistWalletService: existWalletService,
 	}
 
 	// 判断项目参数版本号
@@ -103,12 +104,6 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else if projectInfo.Version == entity.VersionStage {
 		authData.Code = constant.IritaOPB
 		authData.Module = constant.Native
-	}
-
-	// 如果项目关联钱包服务,转发到钱包微服务
-	if existWalletService {
-		authData.Code = constant.Wallet
-		authData.Module = constant.Server
 	}
 
 	authDataBytes, _ := json.Marshal(authData)
