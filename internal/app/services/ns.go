@@ -106,6 +106,7 @@ func (t *ns) Domains(ctx context.Context, params dto.Domains) (*dto.DomainsRes, 
 			Name:            item.Name,
 			Owner:           item.Owner,
 			Status:          item.Status,
+			Msg:             item.Msg,
 			Expire:          item.Expire,
 			ExpireTimestamp: item.ExpireTimestamp,
 		}
