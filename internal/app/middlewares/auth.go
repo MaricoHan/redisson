@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -153,7 +154,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if strings.ContainsAny("/ns/", r.URL.Path) {
+	if regexp.MustCompile(`/ns/`).MatchString(r.URL.Path) {
 		// 域名请求，验证权限
 		projectRepo := project.NewProjectRepo(initialize.MysqlDB)
 		auth, err := projectRepo.ExistServices(projectInfo.Id, entity.ServiceTypeNS)
