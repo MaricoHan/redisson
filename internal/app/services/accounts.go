@@ -164,6 +164,7 @@ func (a *account) GetAccounts(ctx context.Context, params dto.AccountsInfo) (*dt
 			EndDate:     params.EndDate,
 			OperationId: params.OperationId,
 			Name:        params.Name,
+			UserId:      params.UserId,
 		}
 
 		resp := &wallet.AccountShowResponse{}

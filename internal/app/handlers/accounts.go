@@ -120,6 +120,7 @@ func (h *Account) GetAccounts(ctx context.Context, _ interface{}) (interface{}, 
 		OperationId: h.OperationID(ctx),
 		Name:        h.Name(ctx),
 		AccessMode:  authData.AccessMode,
+		UserId:      h.UserId(ctx),
 	}
 
 	params.PageKey = h.PageKey(ctx)
@@ -178,4 +179,12 @@ func (h *Account) Name(ctx context.Context) string {
 		return ""
 	}
 	return name.(string)
+}
+
+func (h *Account) UserId(ctx context.Context) string {
+	accountR := ctx.Value("user_id")
+	if accountR == nil || accountR == "" {
+		return ""
+	}
+	return accountR.(string)
 }

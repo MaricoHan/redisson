@@ -43,6 +43,7 @@ type AccountsInfo struct {
 	OperationId     string `json:"operation_id"`
 	Name            string `json:"name"`
 	AccessMode      int    `json:"access_mode"`
+	UserId          string `json:"user_id"`
 }
 
 type BatchAccountRes struct {
