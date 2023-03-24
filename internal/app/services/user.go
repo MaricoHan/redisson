@@ -58,7 +58,10 @@ func (u user) CreateUsers(ctx context.Context, params dto.CreateUsers) (*dto.Cre
 	if resp == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
-	result := &dto.CreateUsersRes{}
+	result := &dto.CreateUsersRes{
+		UserId: resp.UserId,
+		Did:    resp.Did,
+	}
 	return result, nil
 }
 
