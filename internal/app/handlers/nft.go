@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	pb "gitlab.bianjie.ai/avata/chains/api/pb/v2/nft"
-
 	"gitlab.bianjie.ai/avata/utils/errors/common"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"

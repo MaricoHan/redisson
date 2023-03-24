@@ -8,4 +8,5 @@ type BatchCreateAccountRequest struct {
 type CreateAccountRequest struct {
 	OperationID string `json:"operation_id"`
 	Name        string `json:"name"`
+	UserId      string `json:"user_id,omitempty"`
 }

@@ -58,3 +58,8 @@ const (
 	Version1
 	Version2
 )
+
+type Service struct {
+	Id   uint64
+	Type uint32
+}

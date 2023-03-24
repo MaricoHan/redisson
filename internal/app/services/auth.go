@@ -7,11 +7,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"gorm.io/gorm"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
+
+	"gorm.io/gorm"
 
 	mapset "github.com/deckarep/golang-set"
 	httptransport "github.com/go-kit/kit/transport/http"
@@ -25,7 +26,7 @@ import (
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/project"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/service_redirect_url"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/user"
+	userRepo "gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/user"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
@@ -174,7 +175,7 @@ func (a *auth) getProject(projectCode string) (entity.Project, error) {
 
 // getUser 获取用户信息, id&&code
 func (a *auth) getUser(userID uint64) (entity.User, error) {
-	userRepo := user.NewUserRepo(initialize.MysqlDB)
+	userRepo := userRepo.NewUserRepo(initialize.MysqlDB)
 	user, err := userRepo.GetUser(userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

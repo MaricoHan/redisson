@@ -6,8 +6,10 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/project"
 	"io"
 	"net/http"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -46,7 +48,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	})
 
 	// 查询缓存
-	projectInfo, err := cache.NewCache().Project(appKey)
+	projectInfo, existWalletService, err := cache.NewCache().Project(appKey)
 	if err != nil {
 		log.WithError(err).Error("project from cache")
 		writeInternalResp(w)
@@ -70,6 +72,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		writeNotEnoughAmount(w)
 		return
 	}
+
 	// 查询缓存
 	chainInfo, err := cache.NewCache().Chain(projectInfo.ChainId)
 	if err != nil {
@@ -85,13 +88,14 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	authData := vo.AuthData{
-		ProjectId:  uint64(projectInfo.Id),
-		ChainId:    uint64(chainInfo.Id),
-		PlatformId: uint64(projectInfo.UserId),
-		Module:     chainInfo.Module,
-		Code:       chainInfo.Code,
-		AccessMode: projectInfo.AccessMode,
-		UserId:     uint64(projectInfo.UserId),
+		ProjectId:          uint64(projectInfo.Id),
+		ChainId:            uint64(chainInfo.Id),
+		PlatformId:         uint64(projectInfo.UserId),
+		Module:             chainInfo.Module,
+		Code:               chainInfo.Code,
+		AccessMode:         projectInfo.AccessMode,
+		UserId:             uint64(projectInfo.UserId),
+		ExistWalletService: existWalletService,
 	}
 
 	// 判断项目参数版本号
@@ -142,6 +146,23 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}...).Add(1)
 			writeForbiddenResp(w, "")
 			return
+		}
+	}
+
+	if configs.Cfg.App.Env == constant.EnvPro {
+		if regexp.MustCompile(`/ns/`).MatchString(r.URL.Path) {
+			// 域名请求，验证权限
+			projectRepo := project.NewProjectRepo(initialize.MysqlDB)
+			auth, err := projectRepo.ExistServices(projectInfo.Id, entity.ServiceTypeNS)
+			if err != nil {
+				log.WithError(err).Error("query service")
+				writeInternalResp(w)
+				return
+			}
+			if !auth {
+				writeForbiddenResp(w, constant.AuthenticationFailed)
+				return
+			}
 		}
 	}
 
