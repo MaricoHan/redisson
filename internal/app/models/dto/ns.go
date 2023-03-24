@@ -26,6 +26,7 @@ type DomainsRes struct {
 type Domain struct {
 	Name            string `json:"name"`
 	Status          uint32 `json:"status"`
+	Msg             string `json:"msg"`
 	Owner           string `json:"owner"`
 	Expire          uint32 `json:"expire"`
 	ExpireTimestamp uint64 `json:"expire_timestamp"`
