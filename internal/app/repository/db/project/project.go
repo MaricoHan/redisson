@@ -54,7 +54,7 @@ func (p *ProjectRepo) ExistServices(projectId, serviceType uint) (bool, error) {
 		return false, err
 	}
 	var services []*entity.Services
-	if err := p.db.Where("id IN ? AND type = ?", Ids, serviceType).Find(&services).Error; err != nil {
+	if err := p.db.Model(&entity.Service{}).Where("id IN ? AND type = ?", Ids, serviceType).Find(&services).Error; err != nil {
 		return false, err
 	}
 	if len(services) > 0 {

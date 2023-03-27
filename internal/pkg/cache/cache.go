@@ -32,7 +32,7 @@ func NewCache() *cache {
 // Project 返回项目信息切缓存项目
 func (c cache) Project(key string) (entity.Project, bool, error) {
 	var projectInfo entity.Project
-	var existWalletService bool
+	existWalletService := false
 	err := initialize.RedisClient.GetObject(fmt.Sprintf("%s%s", constant.KeyProjectApikey, key), &projectInfo)
 	if err != nil {
 		return projectInfo, existWalletService, errors.Wrap(err, "get project from cache")
