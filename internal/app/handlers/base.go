@@ -31,7 +31,7 @@ func (b base) AuthData(ctx context.Context) vo.AuthData {
 		log.Error("auth data Error: ", err)
 		return vo.AuthData{}
 	}
-	log.Warn("auth data test: ", authData.ExistWalletService)
+
 	log.Warn("auth data test: ===============", authData)
 	return authData
 }
