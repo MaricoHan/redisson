@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/project"
 	"io"
 	"net/http"
 	"regexp"
@@ -14,6 +13,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/project"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
@@ -86,7 +87,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		writeInternalResp(w)
 		return
 	}
-
+	log.Warnln("-----------------------", existWalletService)
 	authData := vo.AuthData{
 		ProjectId:          uint64(projectInfo.Id),
 		ChainId:            uint64(chainInfo.Id),
