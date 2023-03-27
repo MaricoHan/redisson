@@ -56,18 +56,6 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// project 关联的 serviceIds
-	var existWalletService bool
-	if regexp.MustCompile(`/users | /account | /accounts`).MatchString(r.URL.Path) {
-		projectRepo := project.NewProjectRepo(initialize.MysqlDB)
-		existWalletService, err = projectRepo.ExistServices(projectInfo.Id, entity.ServiceTypeWallet)
-		if err != nil {
-			log.WithError(err).Error("query service")
-			writeInternalResp(w)
-			return
-		}
-	}
-
 	if projectInfo.Id == 0 {
 		log.Error(constant.ErrApikey)
 		writeForbiddenResp(w, constant.ErrApikey)
@@ -100,14 +88,25 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	authData := vo.AuthData{
-		ProjectId:          uint64(projectInfo.Id),
-		ChainId:            uint64(chainInfo.Id),
-		PlatformId:         uint64(projectInfo.UserId),
-		Module:             chainInfo.Module,
-		Code:               chainInfo.Code,
-		AccessMode:         projectInfo.AccessMode,
-		UserId:             uint64(projectInfo.UserId),
-		ExistWalletService: existWalletService,
+		ProjectId:  uint64(projectInfo.Id),
+		ChainId:    uint64(chainInfo.Id),
+		PlatformId: uint64(projectInfo.UserId),
+		Module:     chainInfo.Module,
+		Code:       chainInfo.Code,
+		AccessMode: projectInfo.AccessMode,
+		UserId:     uint64(projectInfo.UserId),
+	}
+
+	if regexp.MustCompile(`/users | /accounts | /account`).MatchString(r.URL.Path) {
+		// project 关联的 serviceIds
+		projectRepo := project.NewProjectRepo(initialize.MysqlDB)
+		existWalletService, err := projectRepo.ExistServices(projectInfo.Id, entity.ServiceTypeWallet)
+		if err != nil {
+			log.WithError(err).Error("query service")
+			writeInternalResp(w)
+			return
+		}
+		authData.ExistWalletService = existWalletService
 	}
 
 	// 判断项目参数版本号
