@@ -84,7 +84,7 @@ func (h *Account) CreateAccount(ctx context.Context, request interface{}) (inter
 		return nil, errors.New(errors.ClientParams, errors.ErrOperationIDLen)
 	}
 	authData := h.AuthData(ctx)
-	if authData.ExistWalletService {
+	if authData.ExistWalletService == 2 {
 		authData.Code = constant.Wallet
 		authData.Module = constant.Server
 	}
@@ -106,7 +106,7 @@ func (h *Account) CreateAccount(ctx context.Context, request interface{}) (inter
 func (h *Account) GetAccounts(ctx context.Context, _ interface{}) (interface{}, error) {
 	// 校验参数 start
 	authData := h.AuthData(ctx)
-	if authData.ExistWalletService {
+	if authData.ExistWalletService == 2 {
 		authData.Code = constant.Wallet
 		authData.Module = constant.Server
 	}

@@ -29,9 +29,9 @@ func NewCache() *cache {
 }
 
 // Project 返回项目信息切缓存项目
-func (c cache) Project(key string) (entity.Project, bool, error) {
+func (c cache) Project(key string) (entity.Project, uint32, error) {
 	var projectInfo entity.Project
-	existWalletService := false
+	existWalletService := uint32(1)
 	err := initialize.RedisClient.GetObject(fmt.Sprintf("%s%s", constant.KeyProjectApikey, key), &projectInfo)
 	if err != nil {
 		return projectInfo, existWalletService, errors.Wrap(err, "get project from cache")
@@ -60,10 +60,12 @@ func (c cache) Project(key string) (entity.Project, bool, error) {
 		if err != nil {
 			return projectInfo, existWalletService, errors.Wrap(err, "get project services from db")
 		}
+		if exist{
+			existWalletService = 2
+		}
 		if err := initialize.RedisClient.SetObject(fmt.Sprintf("%s%s", constant.KeyExistWalletService, key), existWalletService, time.Minute*5); err != nil {
 			return projectInfo, existWalletService, errors.Wrap(err, "save project exist wallet services cache")
 		}
-		existWalletService = exist
 	}
 	return projectInfo, existWalletService, nil
 }
