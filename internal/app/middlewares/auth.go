@@ -96,8 +96,13 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		AccessMode: projectInfo.AccessMode,
 		UserId:     uint64(projectInfo.UserId),
 	}
-
-	if regexp.MustCompile(`/users | /accounts | /account`).MatchString(r.URL.Path) {
+	matched, err := regexp.MatchString("/users|/accounts|/account", r.URL.Path)
+	if err!=nil{
+		log.WithError(err).Error("match path")
+		writeInternalResp(w)
+		return
+	}
+	if matched {
 		// project 关联的 serviceIds
 		projectRepo := project.NewProjectRepo(initialize.MysqlDB)
 		existWalletService, err := projectRepo.ExistServices(projectInfo.Id, entity.ServiceTypeWallet)
