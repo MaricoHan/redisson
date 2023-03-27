@@ -1,6 +1,8 @@
 package project
 
 import (
+	"fmt"
+
 	"gorm.io/gorm"
 
 	constant "gitlab.bianjie.ai/avata/open-api/internal/app/models"
@@ -50,8 +52,12 @@ func (p *ProjectRepo) GetProjectByCode(code string) (project entity.Project, err
 
 func (p *ProjectRepo) ExistServices(projectId, serviceType uint) (bool, error) {
 	var Ids []uint64
-	if err := p.db.Debug().Model(&entity.ProjectServices{}).Select("service_id").Where("project_id = ?", projectId).Find(&Ids).Error; err != nil {
+	var projectServices []*entity.ProjectServices
+	if err := p.db.Debug().Model(&entity.ProjectServices{}).Select("service_id").Where("project_id = ?", projectId).Find(&projectServices).Error; err != nil {
 		return false, err
+	}
+	for _, v := range projectServices {
+		Ids = append(Ids, v.ServiceId)
 	}
 	var services []*entity.Services
 	if err := p.db.Debug().Model(&entity.Service{}).Where("id IN ? AND type = ?", Ids, serviceType).Find(&services).Error; err != nil {
@@ -60,5 +66,7 @@ func (p *ProjectRepo) ExistServices(projectId, serviceType uint) (bool, error) {
 	if len(services) > 0 {
 		return true, nil
 	}
+	fmt.Println("-------------------=====================",len(projectServices))
+	fmt.Println("=====================-------------------",services)
 	return false, nil
 }
