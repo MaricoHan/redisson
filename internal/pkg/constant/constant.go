@@ -49,7 +49,6 @@ const (
 	RedisPrefix           = "open-api"
 	KeyProjectApikey      = "project:apikey:"
 	KeyChain              = "chain:"
-	KeyExistWalletService = "project:wallet:"
 )
 
 var RightsMap = map[uint64]string{
