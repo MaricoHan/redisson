@@ -1,8 +1,7 @@
 package project
 
 import (
-	"fmt"
-
+	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 
 	constant "gitlab.bianjie.ai/avata/open-api/internal/app/models"
@@ -56,17 +55,18 @@ func (p *ProjectRepo) ExistServices(projectId, serviceType uint) (bool, error) {
 	if err := p.db.Debug().Model(&entity.ProjectServices{}).Select("service_id").Where("project_id = ?", projectId).Find(&projectServices).Error; err != nil {
 		return false, err
 	}
+	logrus.Warnln("- =====================",len(projectServices))
 	for _, v := range projectServices {
 		Ids = append(Ids, v.ServiceId)
 	}
+	logrus.Warnln("-- =====================",len(Ids))
 	var services []*entity.Services
 	if err := p.db.Debug().Model(&entity.Service{}).Where("id IN ? AND type = ?", Ids, serviceType).Find(&services).Error; err != nil {
 		return false, err
 	}
+	logrus.Warnln("=== -------------------",services)
 	if len(services) > 0 {
 		return true, nil
 	}
-	fmt.Println("-------------------=====================",len(projectServices))
-	fmt.Println("=====================-------------------",services)
 	return false, nil
 }
