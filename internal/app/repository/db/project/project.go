@@ -51,7 +51,7 @@ func (p *ProjectRepo) GetProjectByCode(code string) (project entity.Project, err
 func (p *ProjectRepo) ExistServices(projectId, serviceType uint) (bool, error) {
 	var Ids []uint64
 	var projectServices []*entity.ProjectServices
-	if err := p.db.Debug().Model(&entity.ProjectServices{}).Select("service_id").Where("project_id = ?", projectId).Find(&projectServices).Error; err != nil {
+	if err := p.db.Model(&entity.ProjectServices{}).Select("service_id").Where("project_id = ?", projectId).Find(&projectServices).Error; err != nil {
 		return false, err
 	}
 
@@ -60,7 +60,7 @@ func (p *ProjectRepo) ExistServices(projectId, serviceType uint) (bool, error) {
 	}
 
 	var services []*entity.Services
-	if err := p.db.Debug().Model(&entity.Service{}).Where("id IN ? AND type = ?", Ids, serviceType).Find(&services).Error; err != nil {
+	if err := p.db.Model(&entity.Service{}).Where("id IN ? AND type = ?", Ids, serviceType).Find(&services).Error; err != nil {
 		return false, err
 	}
 
