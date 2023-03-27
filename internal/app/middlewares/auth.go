@@ -49,9 +49,18 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	})
 
 	// 查询缓存
-	projectInfo, existWalletService, err := cache.NewCache().Project(appKey)
+	projectInfo, err := cache.NewCache().Project(appKey)
 	if err != nil {
 		log.WithError(err).Error("project from cache")
+		writeInternalResp(w)
+		return
+	}
+
+	// project 关联的 serviceIds
+	projectRepo := project.NewProjectRepo(initialize.MysqlDB)
+	existWalletService, err := projectRepo.ExistServices(projectInfo.Id, entity.ServiceTypeWallet)
+	if err != nil {
+		log.WithError(err).Error("query service")
 		writeInternalResp(w)
 		return
 	}

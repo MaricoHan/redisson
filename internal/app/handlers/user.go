@@ -40,7 +40,7 @@ func (u User) CreateUsers(ctx context.Context, request interface{}) (interface{}
 	email := strings.TrimSpace(req.Email)
 
 	authData := u.AuthData(ctx)
-	if authData.ExistWalletService == 2 {
+	if authData.ExistWalletService {
 		authData.Code = constant.Wallet
 		authData.Module = constant.Server
 	} else {
@@ -84,7 +84,7 @@ func (u User) UpdateUsers(ctx context.Context, request interface{}) (interface{}
 	userId := strings.TrimSpace(req.UserId)
 	phoneNum := strings.TrimSpace(req.PhoneNum)
 	authData := u.AuthData(ctx)
-	if authData.ExistWalletService == 2 {
+	if authData.ExistWalletService {
 		authData.Code = constant.Wallet
 		authData.Module = constant.Server
 	} else {
