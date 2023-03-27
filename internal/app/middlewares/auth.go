@@ -57,12 +57,15 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// project 关联的 serviceIds
-	projectRepo := project.NewProjectRepo(initialize.MysqlDB)
-	existWalletService, err := projectRepo.ExistServices(projectInfo.Id, entity.ServiceTypeWallet)
-	if err != nil {
-		log.WithError(err).Error("query service")
-		writeInternalResp(w)
-		return
+	var existWalletService bool
+	if regexp.MustCompile(`/users | /account | /accounts`).MatchString(r.URL.Path) {
+		projectRepo := project.NewProjectRepo(initialize.MysqlDB)
+		existWalletService, err = projectRepo.ExistServices(projectInfo.Id, entity.ServiceTypeWallet)
+		if err != nil {
+			log.WithError(err).Error("query service")
+			writeInternalResp(w)
+			return
+		}
 	}
 
 	if projectInfo.Id == 0 {
@@ -96,7 +99,6 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		writeInternalResp(w)
 		return
 	}
-	log.Warnln("-----------------------", existWalletService)
 	authData := vo.AuthData{
 		ProjectId:          uint64(projectInfo.Id),
 		ChainId:            uint64(chainInfo.Id),
