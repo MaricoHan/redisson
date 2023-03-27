@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/chain"
@@ -65,6 +66,7 @@ func (c cache) Project(key string) (entity.Project, bool, error) {
 			return projectInfo, existWalletService, errors.Wrap(err, "save project exist wallet services cache")
 		}
 	}
+	logrus.Warnln("====",existWalletService)
 	return projectInfo, existWalletService, nil
 }
 
