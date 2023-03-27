@@ -1,7 +1,6 @@
 package project
 
 import (
-	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 
 	constant "gitlab.bianjie.ai/avata/open-api/internal/app/models"
@@ -64,7 +63,7 @@ func (p *ProjectRepo) ExistServices(projectId, serviceType uint) (bool, error) {
 	if err := p.db.Debug().Model(&entity.Service{}).Where("id IN ? AND type = ?", Ids, serviceType).Find(&services).Error; err != nil {
 		return false, err
 	}
-	logrus.Warnln("-------------------", len(services))
+
 	if len(services) > 0 {
 		return true, nil
 	}

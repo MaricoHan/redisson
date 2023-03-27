@@ -6,8 +6,6 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/chain"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/project"
@@ -58,15 +56,15 @@ func (c cache) Project(key string) (entity.Project, bool, error) {
 		}
 
 		// project 关联的 serviceIds
-		existWalletService, err = projectRepo.ExistServices(projectInfo.Id, entity.ServiceTypeWallet)
+		exist, err := projectRepo.ExistServices(projectInfo.Id, entity.ServiceTypeWallet)
 		if err != nil {
 			return projectInfo, existWalletService, errors.Wrap(err, "get project services from db")
 		}
 		if err := initialize.RedisClient.SetObject(fmt.Sprintf("%s%s", constant.KeyExistWalletService, key), existWalletService, time.Minute*5); err != nil {
 			return projectInfo, existWalletService, errors.Wrap(err, "save project exist wallet services cache")
 		}
+		existWalletService = exist
 	}
-	logrus.Warnln("====",existWalletService)
 	return projectInfo, existWalletService, nil
 }
 
