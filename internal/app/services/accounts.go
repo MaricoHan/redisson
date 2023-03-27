@@ -73,6 +73,7 @@ func (a *account) CreateAccount(ctx context.Context, params dto.CreateAccount) (
 
 	// 非托管模式不支持
 	if params.AccessMode == entity.UNMANAGED {
+		logger.Error("project version not implemented")
 		return nil, errors2.ErrNotImplemented
 	}
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
