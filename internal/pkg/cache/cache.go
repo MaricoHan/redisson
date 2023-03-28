@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/chain"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/project"
@@ -30,42 +29,28 @@ func NewCache() *cache {
 }
 
 // Project 返回项目信息切缓存项目
-func (c cache) Project(key string) (entity.Project, bool, error) {
+func (c cache) Project(key string) (entity.Project, error) {
 	var projectInfo entity.Project
-	var existWalletService bool
 	err := initialize.RedisClient.GetObject(fmt.Sprintf("%s%s", constant.KeyProjectApikey, key), &projectInfo)
 	if err != nil {
-		return projectInfo, existWalletService, errors.Wrap(err, "get project from cache")
-	}
-	err = initialize.RedisClient.GetObject(fmt.Sprintf("%s%s", constant.KeyExistWalletService, key), &existWalletService)
-	if err != nil {
-		return projectInfo, existWalletService, errors.Wrap(err, "get project exist wallet services from cache")
+		return projectInfo, errors.Wrap(err, "get project from cache")
 	}
 	if projectInfo.Id < 1 {
 		// 查询 project 信息
 		projectRepo := project.NewProjectRepo(initialize.MysqlDB)
 		projectInfo, err = projectRepo.GetProjectByApiKey(key)
 		if err != nil {
-			return projectInfo, existWalletService, errors.Wrap(err, "get project from db")
+			return projectInfo, errors.Wrap(err, "get project from db")
 		}
 
 		if projectInfo.Id > 0 {
 			// save cache
 			if err := initialize.RedisClient.SetObject(fmt.Sprintf("%s%s", constant.KeyProjectApikey, key), projectInfo, time.Minute*5); err != nil {
-				return projectInfo, existWalletService, errors.Wrap(err, "save project cache")
+				return projectInfo, errors.Wrap(err, "save project cache")
 			}
 		}
-
-		// project 关联的 serviceIds
-		existWalletService, err = projectRepo.ExistServices(projectInfo.Id, entity.ServiceTypeWallet)
-		if err != nil {
-			return projectInfo, existWalletService, errors.Wrap(err, "get project services from db")
-		}
-		if err := initialize.RedisClient.SetObject(fmt.Sprintf("%s%s", constant.KeyExistWalletService, key), existWalletService, time.Minute*5); err != nil {
-			return projectInfo, existWalletService, errors.Wrap(err, "save project exist wallet services cache")
-		}
 	}
-	return projectInfo, existWalletService, nil
+	return projectInfo, nil
 }
 
 // Chain 返回链信息且缓存链信息
