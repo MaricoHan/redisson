@@ -18,10 +18,11 @@ import (
 	entranslations "github.com/go-playground/validator/v10/translations/en"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
-	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
+	trace_http "gitlab.bianjie.ai/avata/utils/commons/trace/http"
+	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 )
 
 type (
@@ -215,6 +216,10 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 	// copy params from Form,PostForm to Context
 	copyParams := func(ctx context.Context, request *http.Request) context.Context {
 		log.Debug("Merge request params to Context,", "method,", "serverBefore")
+
+		// set header value to grpc
+		ctx = trace_http.TraceIdToGrpc(ctx, request)
+
 		if err := request.ParseForm(); err != nil {
 			log.Error("Parse form failed", "error", err.Error())
 			return ctx

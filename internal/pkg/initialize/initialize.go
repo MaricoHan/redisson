@@ -7,7 +7,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/keepalive"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -124,7 +123,7 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 		grpc.WithInsecure(),
 		grpc.WithKeepaliveParams(kacp),
 		grpc.WithBlock(),
-		grpc.WithBalancerName(roundrobin.Name),
+		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy":"round_robin"}`),
 		grpc.WithUnaryInterceptor(middleware.NewGrpcInterceptorMiddleware().Interceptor()))
 	if err != nil {
 		logger.Fatal("get irita-opb-native grpc connect failed, err: ", err.Error())
@@ -138,7 +137,7 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 		grpc.WithInsecure(),
 		grpc.WithKeepaliveParams(kacp),
 		grpc.WithBlock(),
-		grpc.WithBalancerName(roundrobin.Name),
+		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy":"round_robin"}`),
 		grpc.WithUnaryInterceptor(middleware.NewGrpcInterceptorMiddleware().Interceptor()))
 	if err != nil {
 		logger.Fatal("get state-gateway-server grpc connect failed, err: ", err.Error())
@@ -151,7 +150,7 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 		grpc.WithInsecure(),
 		grpc.WithKeepaliveParams(kacp),
 		grpc.WithBlock(),
-		grpc.WithBalancerName(roundrobin.Name),
+		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy":"round_robin"}`),
 		grpc.WithUnaryInterceptor(middleware.NewGrpcInterceptorMiddleware().Interceptor()))
 	if err != nil {
 		logger.Fatal("get wallet-server grpc connect failed, err: ", err.Error())
