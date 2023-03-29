@@ -70,7 +70,7 @@ func (a *account) BatchCreateAccount(ctx context.Context, params dto.BatchCreate
 
 // CreateAccount 单个创建链账户
 func (a *account) CreateAccount(ctx context.Context, params dto.CreateAccount) (*dto.AccountRes, error) {
-	logger := a.logger.WithField("params", params).WithField("func", "CreateAccount").WithFields(trace_log.WithContext(ctx))
+	logger := a.logger.WithField("params", params).WithField("func", "CreateAccount").WithContext(ctx)
 	logger.Info("trace test")
 
 	// 非托管模式不支持
