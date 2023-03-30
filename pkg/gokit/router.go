@@ -217,8 +217,8 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 	copyParams := func(ctx context.Context, request *http.Request) context.Context {
 		log.Debug("Merge request params to Context,", "method,", "serverBefore")
 
-		// set header value to grpc
-		ctx = trace_http.TraceIdToGrpc(ctx, request)
+		// set header value to grpc md
+		ctx = trace_http.TraceIdToMD(ctx, request)
 
 		if err := request.ParseForm(); err != nil {
 			log.Error("Parse form failed", "error", err.Error())

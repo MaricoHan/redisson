@@ -3,7 +3,6 @@ package initialize
 import (
 	"context"
 	"fmt"
-	"gitlab.bianjie.ai/avata/utils/commons/trace"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -21,13 +20,13 @@ import (
 	pb_ns "gitlab.bianjie.ai/avata/chains/api/pb/v2/ns"
 	pb_tx "gitlab.bianjie.ai/avata/chains/api/pb/v2/tx"
 	pb_tx_queue "gitlab.bianjie.ai/avata/chains/api/pb/v2/tx_queue"
-
 	pb_wallet "gitlab.bianjie.ai/avata/chains/api/pb/v2/wallet"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/middleware"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/redis"
 	"gitlab.bianjie.ai/avata/open-api/pkg/logs"
+	trace_log "gitlab.bianjie.ai/avata/utils/commons/trace/log"
 )
 
 var RedisClient *redis.RedisClient
@@ -73,28 +72,8 @@ func Logger(cfg *configs.Config) *log.Logger {
 		log.SetLevel(log.InfoLevel)
 	}
 	Log = log.StandardLogger()
-	Log.AddHook(&MonitoringHook{})
+	Log.AddHook(&trace_log.TraceHook{})
 	return Log
-}
-
-var _ log.Hook = new(MonitoringHook)
-
-type MonitoringHook struct {
-}
-
-func (m MonitoringHook) Levels() []log.Level {
-	//TODO implement me
-	return log.AllLevels
-}
-
-func (m MonitoringHook) Fire(entry *log.Entry) error {
-	if entry.Context != nil {
-		if requestId, ok := entry.Context.Value(trace.RequestId).(string); ok {
-			entry.Data["request_id"] = requestId
-		}
-	}
-
-	return nil
 }
 
 func InitMysqlDB(cfg *configs.Config, logger *log.Logger) {

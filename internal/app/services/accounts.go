@@ -13,7 +13,6 @@ import (
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
-	trace_log "gitlab.bianjie.ai/avata/utils/commons/trace/log"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 )
 
@@ -33,7 +32,7 @@ func NewAccount(logger *log.Logger) *account {
 
 // BatchCreateAccount 批量创建链账户
 func (a *account) BatchCreateAccount(ctx context.Context, params dto.BatchCreateAccount) (*dto.BatchAccountRes, error) {
-	logger := a.logger.WithField("params", params).WithField("func", "BatchCreateAccount").WithFields(trace_log.WithContext(ctx))
+	logger := a.logger.WithField("params", params).WithField("func", "BatchCreateAccount").WithContext(ctx)
 
 	// 非托管模式不支持
 	if params.AccessMode == entity.UNMANAGED {

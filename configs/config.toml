@@ -11,10 +11,14 @@ grpc_timeout = 1000000
 http_timeout = 1000000
 
 [mysql]
-host = "192.168.150.40"
-port = 23306
+#host = "192.168.150.40"
+#port = 23306
+#username = "root"
+#password = "rootPassword"
+host = "127.0.0.1"
+port = 3306
 username = "root"
-password = "rootPassword"
+password = "12345678"
 db = "core"
 max_open_conns = 100
 max_idle_conns = 20
@@ -27,7 +31,7 @@ password = ""
 db = 11
 
 [grpc_client]
-iritaopb_native = "192.168.150.42:20000"
+iritaopb_native = "localhost:10000"
 state_gateway = "192.168.150.44:10000"
 wallet_server = "localhost:10000"
 
