@@ -31,7 +31,7 @@ func NewMsgs(logger *log.Logger) *msgs {
 }
 
 func (s *msgs) GetNFTHistory(ctx context.Context, params dto.NftOperationHistoryByNftId) (*dto.NftOperationHistoryByNftIdRes, error) {
-	logger := s.logger.WithField("params", params).WithField("func", "GetNFTHistory")
+	logger := s.logger.WithField("params", params).WithField("func", "GetNFTHistory").WithContext(ctx)
 
 	// 非托管模式不支持
 	if params.AccessMode == entity.UNMANAGED {
@@ -106,7 +106,7 @@ func (s *msgs) GetNFTHistory(ctx context.Context, params dto.NftOperationHistory
 }
 
 func (s *msgs) GetAccountHistory(ctx context.Context, params dto.AccountsInfo) (*dto.AccountOperationRecordRes, error) {
-	logger := s.logger.WithField("params", params).WithField("func", "GetAccountHistory")
+	logger := s.logger.WithField("params", params).WithField("func", "GetAccountHistory").WithContext(ctx)
 
 	// 非托管模式不支持
 	if params.AccessMode == entity.UNMANAGED {

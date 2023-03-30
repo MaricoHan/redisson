@@ -32,7 +32,7 @@ func NewNFT(logger *log.Logger) *nft {
 }
 
 func (s *nft) List(ctx context.Context, params dto.Nfts) (*dto.NftsRes, error) {
-	logger := s.logger.WithField("params", params).WithField("func", "NFTList")
+	logger := s.logger.WithContext(ctx).WithField("params", params).WithField("func", "NFTList")
 
 	// 非托管模式不支持
 	if params.AccessMode == entity.UNMANAGED {
@@ -111,7 +111,7 @@ func (s *nft) List(ctx context.Context, params dto.Nfts) (*dto.NftsRes, error) {
 }
 
 func (s *nft) Create(ctx context.Context, params dto.CreateNfts) (*dto.TxRes, error) {
-	logger := s.logger.WithField("params", params).WithField("func", "CreateNFT")
+	logger := s.logger.WithContext(ctx).WithField("params", params).WithField("func", "CreateNFT")
 
 	// 非托管模式不支持
 	if params.AccessMode == entity.UNMANAGED {
@@ -149,7 +149,7 @@ func (s *nft) Create(ctx context.Context, params dto.CreateNfts) (*dto.TxRes, er
 }
 
 func (s *nft) Show(ctx context.Context, params dto.NftByNftId) (*dto.NftRes, error) {
-	logger := s.logger.WithField("params", params).WithField("func", "ShowNFT")
+	logger := s.logger.WithContext(ctx).WithField("params", params).WithField("func", "ShowNFT")
 
 	// 非托管模式不支持
 	if params.AccessMode == entity.UNMANAGED {
@@ -197,7 +197,7 @@ func (s *nft) Show(ctx context.Context, params dto.NftByNftId) (*dto.NftRes, err
 }
 
 func (s *nft) Update(ctx context.Context, params dto.EditNftByNftId) (*dto.TxRes, error) {
-	logger := s.logger.WithField("params", params).WithField("func", "UpdateNFT")
+	logger := s.logger.WithContext(ctx).WithField("params", params).WithField("func", "UpdateNFT")
 
 	// 非托管模式不支持
 	if params.AccessMode == entity.UNMANAGED {
@@ -236,7 +236,7 @@ func (s *nft) Update(ctx context.Context, params dto.EditNftByNftId) (*dto.TxRes
 }
 
 func (s *nft) Delete(ctx context.Context, params dto.DeleteNftByNftId) (*dto.TxRes, error) {
-	logger := s.logger.WithField("params", params).WithField("func", "DeleteNFT")
+	logger := s.logger.WithContext(ctx).WithField("params", params).WithField("func", "DeleteNFT")
 
 	// 非托管模式不支持
 	if params.AccessMode == entity.UNMANAGED {

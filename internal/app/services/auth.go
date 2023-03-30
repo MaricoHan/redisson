@@ -47,7 +47,7 @@ func NewAuth(logger *log.Logger) *auth {
 }
 
 func (a *auth) Verify(ctx context.Context, params *vo.AuthVerify) (*dto.AuthVerify, error) {
-	logger := a.logger.WithField("params", params).WithField("func", "verify")
+	logger := a.logger.WithContext(ctx).WithField("params", params).WithField("func", "verify")
 	path := ctx.Value(httptransport.ContextKeyRequestPath).(string)[len(configs.Cfg.App.RouterPrefix)+1:]
 	res := &dto.AuthVerify{}
 	project, err := a.getProject(params.ProjectID)
@@ -98,7 +98,7 @@ func (a *auth) Verify(ctx context.Context, params *vo.AuthVerify) (*dto.AuthVeri
 }
 
 func (a *auth) GetUser(ctx context.Context, params *vo.AuthGetUser) ([]*dto.AuthGetUser, error) {
-	logger := a.logger.WithField("params", params).WithField("func", "get user")
+	logger := a.logger.WithContext(ctx).WithField("params", params).WithField("func", "get user")
 	path := ctx.Value(httptransport.ContextKeyRequestPath).(string)[len(configs.Cfg.App.RouterPrefix)+1:]
 	var res []*dto.AuthGetUser
 	project, err := a.getProject(params.ProjectID)
@@ -206,11 +206,11 @@ func (a *auth) getServiceRedirectUrl(projectID uint64) (entity.ServiceRedirectUr
 // 1.向上游服务方发起请求, err不等于nil说明存在异常返回服务错误
 // 2.当请求成功，返回的状态码为404时, 则返回NOT_FOUNT
 func (a *auth) request(ctx context.Context, url, apikey, hash, code, timestamp string, request map[string]interface{}) ([]byte, error) {
-	logger := a.logger.WithFields(map[string]interface{}{
+	logger := a.logger.WithContext(ctx).WithFields(map[string]interface{}{
 		"url":  url,
 		"code": code,
 		"hash": hash,
-	}).WithField("func", "request")
+	}).WithField("func", "request").WithContext(ctx)
 	logger.Info("start request")
 	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(configs.Cfg.App.HttpTimeout))
 	defer cancel()

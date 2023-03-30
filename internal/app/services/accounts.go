@@ -32,7 +32,7 @@ func NewAccount(logger *log.Logger) *account {
 
 // BatchCreateAccount 批量创建链账户
 func (a *account) BatchCreateAccount(ctx context.Context, params dto.BatchCreateAccount) (*dto.BatchAccountRes, error) {
-	logger := a.logger.WithField("params", params).WithField("func", "BatchCreateAccount").WithContext(ctx)
+	logger := a.logger.WithContext(ctx).WithField("params", params).WithField("func", "BatchCreateAccount")
 
 	// 非托管模式不支持
 	if params.AccessMode == entity.UNMANAGED {
@@ -69,7 +69,7 @@ func (a *account) BatchCreateAccount(ctx context.Context, params dto.BatchCreate
 
 // CreateAccount 单个创建链账户
 func (a *account) CreateAccount(ctx context.Context, params dto.CreateAccount) (*dto.AccountRes, error) {
-	logger := a.logger.WithField("params", params).WithField("func", "CreateAccount").WithContext(ctx)
+	logger := a.logger.WithContext(ctx).WithField("params", params).WithField("func", "CreateAccount")
 	logger.Info("trace test")
 
 	// 非托管模式不支持
@@ -138,7 +138,7 @@ func (a *account) CreateAccount(ctx context.Context, params dto.CreateAccount) (
 
 // GetAccounts 查询链账户
 func (a *account) GetAccounts(ctx context.Context, params dto.AccountsInfo) (*dto.AccountsRes, error) {
-	logger := a.logger.WithField("params", params).WithField("func", "GetAccounts")
+	logger := a.logger.WithContext(ctx).WithField("params", params).WithField("func", "GetAccounts")
 
 	// 非托管模式不支持
 	if params.AccessMode == entity.UNMANAGED {
