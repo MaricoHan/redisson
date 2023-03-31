@@ -210,7 +210,7 @@ func (a *auth) request(ctx context.Context, url, apikey, hash, code, timestamp s
 		"url":  url,
 		"code": code,
 		"hash": hash,
-	}).WithField("func", "request").WithContext(ctx)
+	}).WithField("func", "request")
 	logger.Info("start request")
 	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(configs.Cfg.App.HttpTimeout))
 	defer cancel()
