@@ -28,7 +28,7 @@ func NewUser(logger *log.Logger) *user {
 }
 
 func (u user) CreateUsers(ctx context.Context, params dto.CreateUsers) (*dto.CreateUsersRes, error) {
-	log := u.logger.WithFields(
+	log := u.logger.WithContext(ctx).WithFields(
 		map[string]interface{}{
 			"function": "CreateUsers",
 			"params":   params,
@@ -66,7 +66,7 @@ func (u user) CreateUsers(ctx context.Context, params dto.CreateUsers) (*dto.Cre
 }
 
 func (u user) UpdateUsers(ctx context.Context, params dto.UpdateUsers) (*dto.TxRes, error) {
-	log := u.logger.WithFields(
+	log := u.logger.WithContext(ctx).WithFields(
 		map[string]interface{}{
 			"function": "UpdateUsers",
 			"params":   params,

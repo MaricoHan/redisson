@@ -29,7 +29,7 @@ func NewNs(logger *log.Logger) *ns {
 }
 
 func (t *ns) CreateDomain(ctx context.Context, params dto.CreateDomain) (*dto.TxRes, error) {
-	logger := t.logger.WithField("params", params).WithField("func", "CreateDomain")
+	logger := t.logger.WithContext(ctx).WithField("params", params).WithField("func", "CreateDomain")
 	// 非托管模式不支持
 	if params.AccessMode == entity.UNMANAGED {
 		return nil, errors2.ErrNotImplemented
@@ -67,7 +67,7 @@ func (t *ns) CreateDomain(ctx context.Context, params dto.CreateDomain) (*dto.Tx
 }
 
 func (t *ns) Domains(ctx context.Context, params dto.Domains) (*dto.DomainsRes, error) {
-	logger := t.logger.WithField("params", params).WithField("func", "Domains")
+	logger := t.logger.WithContext(ctx).WithField("params", params).WithField("func", "Domains")
 	// 非托管模式不支持
 	if params.AccessMode == entity.UNMANAGED {
 		return nil, errors2.ErrNotImplemented
