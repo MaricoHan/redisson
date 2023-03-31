@@ -29,7 +29,7 @@ func NewNFTTransfer(logger *log.Logger) *nftTransfer {
 }
 
 func (s *nftTransfer) TransferNFTClass(ctx context.Context, params dto.TransferNftClassById) (*dto.TxRes, error) {
-	logger := s.logger.WithField("params", params).WithField("func", "TransferNFTClass")
+	logger := s.logger.WithContext(ctx).WithField("params", params).WithField("func", "TransferNFTClass")
 
 	// 非托管模式不支持
 	if params.AccessMode == entity.UNMANAGED {
@@ -67,7 +67,7 @@ func (s *nftTransfer) TransferNFTClass(ctx context.Context, params dto.TransferN
 }
 
 func (s *nftTransfer) TransferNFT(ctx context.Context, params dto.TransferNftByNftId) (*dto.TxRes, error) {
-	logger := s.logger.WithField("params", params).WithField("func", "TransferNFT")
+	logger := s.logger.WithContext(ctx).WithField("params", params).WithField("func", "TransferNFT")
 
 	// 非托管模式不支持
 	if params.AccessMode == entity.UNMANAGED {

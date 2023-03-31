@@ -48,7 +48,7 @@ func NewNotice(logger *log.Logger) *notice {
 
 // TransferNFTS 转让NFT通知
 func (a *notice) TransferNFTS(ctx context.Context, params *notice2.TransferNFTS) (*noticeResp.TransferNFTS, error) {
-	logger := a.logger.WithField("params", params).WithField("func", "transfer nft")
+	logger := a.logger.WithContext(ctx).WithField("params", params).WithField("func", "transfer nft")
 	path := ctx.Value(httptransport.ContextKeyRequestPath).(string)[len(configs.Cfg.App.RouterPrefix)+1:]
 	res := &noticeResp.TransferNFTS{}
 	project, err := a.getProject(params.ProjectID)
@@ -114,7 +114,7 @@ func (a *notice) TransferNFTS(ctx context.Context, params *notice2.TransferNFTS)
 
 // TransferClasses 转让Class通知
 func (a *notice) TransferClasses(ctx context.Context, params *notice2.TransferClasses) (*noticeResp.TransferClasses, error) {
-	logger := a.logger.WithField("params", params).WithField("func", "transfer class")
+	logger := a.logger.WithContext(ctx).WithField("params", params).WithField("func", "transfer class")
 	path := ctx.Value(httptransport.ContextKeyRequestPath).(string)[len(configs.Cfg.App.RouterPrefix)+1:]
 	res := &noticeResp.TransferClasses{}
 	project, err := a.getProject(params.ProjectID)

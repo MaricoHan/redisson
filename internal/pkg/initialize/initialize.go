@@ -7,7 +7,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/keepalive"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -21,13 +20,13 @@ import (
 	pb_ns "gitlab.bianjie.ai/avata/chains/api/pb/v2/ns"
 	pb_tx "gitlab.bianjie.ai/avata/chains/api/pb/v2/tx"
 	pb_tx_queue "gitlab.bianjie.ai/avata/chains/api/pb/v2/tx_queue"
-
 	pb_wallet "gitlab.bianjie.ai/avata/chains/api/pb/v2/wallet"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/middleware"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/redis"
 	"gitlab.bianjie.ai/avata/open-api/pkg/logs"
+	trace_log "gitlab.bianjie.ai/avata/utils/commons/trace/log"
 )
 
 var RedisClient *redis.RedisClient
@@ -73,6 +72,7 @@ func Logger(cfg *configs.Config) *log.Logger {
 		log.SetLevel(log.InfoLevel)
 	}
 	Log = log.StandardLogger()
+	Log.AddHook(&trace_log.TraceHook{})
 	return Log
 }
 
@@ -124,7 +124,7 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 		grpc.WithInsecure(),
 		grpc.WithKeepaliveParams(kacp),
 		grpc.WithBlock(),
-		grpc.WithBalancerName(roundrobin.Name),
+		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy":"round_robin"}`),
 		grpc.WithUnaryInterceptor(middleware.NewGrpcInterceptorMiddleware().Interceptor()))
 	if err != nil {
 		logger.Fatal("get irita-opb-native grpc connect failed, err: ", err.Error())
@@ -138,7 +138,7 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 		grpc.WithInsecure(),
 		grpc.WithKeepaliveParams(kacp),
 		grpc.WithBlock(),
-		grpc.WithBalancerName(roundrobin.Name),
+		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy":"round_robin"}`),
 		grpc.WithUnaryInterceptor(middleware.NewGrpcInterceptorMiddleware().Interceptor()))
 	if err != nil {
 		logger.Fatal("get state-gateway-server grpc connect failed, err: ", err.Error())
@@ -151,7 +151,7 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 		grpc.WithInsecure(),
 		grpc.WithKeepaliveParams(kacp),
 		grpc.WithBlock(),
-		grpc.WithBalancerName(roundrobin.Name),
+		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy":"round_robin"}`),
 		grpc.WithUnaryInterceptor(middleware.NewGrpcInterceptorMiddleware().Interceptor()))
 	if err != nil {
 		logger.Fatal("get wallet-server grpc connect failed, err: ", err.Error())
