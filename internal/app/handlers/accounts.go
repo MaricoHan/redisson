@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"strings"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
@@ -154,6 +155,13 @@ func (h *Account) GetAccounts(ctx context.Context, _ interface{}) (interface{}, 
 
 	params.SortBy = h.SortBy(ctx)
 
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors.ErrNotImplemented
+	}
+	if fmt.Sprintf("%s-%s", params.Code, params.Module) == constant.WalletServer {
+		return h.svc.GetUserAccounts(ctx, params)
+	}
 	return h.svc.GetAccounts(ctx, params)
 }
 
