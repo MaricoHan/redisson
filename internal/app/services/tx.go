@@ -8,8 +8,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/volatiletech/sqlboiler/types"
-	pb "gitlab.bianjie.ai/avata/chains/api/pb/v2/tx"
-	pb_queue "gitlab.bianjie.ai/avata/chains/api/pb/v2/tx_queue"
+	pb "gitlab.bianjie.ai/avata/chains/api/v2/pb/tx_v2"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
@@ -20,7 +19,7 @@ import (
 
 type ITx interface {
 	TxResult(ctx context.Context, params dto.TxResultByTxHash) (*dto.TxResultRes, error)
-	TxQueueInfo(ctx context.Context, params dto.TxQueueInfo) (*dto.TxQueueInfoRes, error)
+	//TxQueueInfo(ctx context.Context, params dto.TxQueueInfo) (*dto.TxQueueInfoRes, error)
 }
 
 type tx struct {
@@ -86,35 +85,35 @@ func (t *tx) TxResult(ctx context.Context, params dto.TxResultByTxHash) (*dto.Tx
 	return result, nil
 }
 
-func (t *tx) TxQueueInfo(ctx context.Context, params dto.TxQueueInfo) (*dto.TxQueueInfoRes, error) {
-	logger := t.logger.WithField("params", params).WithField("func", "TxQueueInfo")
-
-	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
-	defer cancel()
-	req := pb_queue.TxQueueShowRequest{
-		ProjectId:   params.ProjectID,
-		OperationId: params.OperationId,
-		Code:        params.Code,
-		Module:      params.Module,
-	}
-	resp := &pb_queue.TxQueueShowResponse{}
-	var err error
-	resp, err = initialize.TxQueueClient.Show(ctx, &req)
-	if err != nil {
-		logger.WithError(err).Error("request err")
-		return nil, err
-	}
-	if resp == nil {
-		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
-	}
-	result := new(dto.TxQueueInfoRes)
-	result.QueueTotal = resp.QueueTotal
-	result.QueueRequestTime = resp.QueueRequestTime
-	result.QueueCostTime = resp.QueueCostTime
-	result.TxQueuePosition = resp.TxQueuePosition
-	result.TxRequestTime = resp.TxRequestTime
-	result.TxCostTime = resp.TxCostTime
-	result.TxMessage = resp.TxMessage
-
-	return result, nil
-}
+//func (t *tx) TxQueueInfo(ctx context.Context, params dto.TxQueueInfo) (*dto.TxQueueInfoRes, error) {
+//	logger := t.logger.WithField("params", params).WithField("func", "TxQueueInfo")
+//
+//	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
+//	defer cancel()
+//	req := pb_queue.TxQueueShowRequest{
+//		ProjectId:   params.ProjectID,
+//		OperationId: params.OperationId,
+//		Code:        params.Code,
+//		Module:      params.Module,
+//	}
+//	resp := &pb_queue.TxQueueShowResponse{}
+//	var err error
+//	resp, err = initialize.TxQueueClient.Show(ctx, &req)
+//	if err != nil {
+//		logger.WithError(err).Error("request err")
+//		return nil, err
+//	}
+//	if resp == nil {
+//		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+//	}
+//	result := new(dto.TxQueueInfoRes)
+//	result.QueueTotal = resp.QueueTotal
+//	result.QueueRequestTime = resp.QueueRequestTime
+//	result.QueueCostTime = resp.QueueCostTime
+//	result.TxQueuePosition = resp.TxQueuePosition
+//	result.TxRequestTime = resp.TxRequestTime
+//	result.TxCostTime = resp.TxCostTime
+//	result.TxMessage = resp.TxMessage
+//
+//	return result, nil
+//}

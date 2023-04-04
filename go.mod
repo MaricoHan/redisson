@@ -23,7 +23,7 @@ require (
 
 require (
 	github.com/deckarep/golang-set v1.8.0
-	gitlab.bianjie.ai/avata/chains/api v0.7.2-0.20220830014600-0360685e7537
+	gitlab.bianjie.ai/avata/chains/api/v2 v2.0.2-0.20230403101833-6652eee85630
 	gitlab.bianjie.ai/avata/utils/commons v0.0.0-00010101000000-000000000000
 	gitlab.bianjie.ai/avata/utils/errors v0.0.0-00010101000000-000000000000
 	gorm.io/driver/mysql v1.3.4
@@ -73,8 +73,6 @@ require (
 )
 
 replace (
-	gitlab.bianjie.ai/avata/chains/api => gitlab.bianjie.ai/avata/chains/api.git v0.11.1-0.20230317113702-6517cba07640
-
 	gitlab.bianjie.ai/avata/utils/commons => gitlab.bianjie.ai/avata/utils/commons.git v0.2.0
 
 	gitlab.bianjie.ai/avata/utils/errors => gitlab.bianjie.ai/avata/utils/errors.git v0.1.10-0.20230317113546-816be9f332a3
