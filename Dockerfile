@@ -1,7 +1,7 @@
 FROM golang:1.17.5-alpine3.15 as builder
 # Set up dependencies
-ARG GITUSER
-ARG GITPASS
+ARG GITUSER="tianyu"
+ARG GITPASS="EguQkozyXrTieux9TxPx"
 ENV PACKAGES make git libc-dev bash gcc
 ARG GOPRIVATE=gitlab.bianjie.ai
 ARG GOPROXY=http://192.168.0.60:8081/repository/go-bianjie/,http://nexus.bianjie.ai/repository/golang-group,https://goproxy.cn,direct
@@ -17,3 +17,4 @@ RUN sed -i "s/dl-cdn.alpinelinux.org/${APKPROXY}/g" /etc/apk/repositories && \
 FROM alpine:3.15
 COPY --from=builder /go/bin/open-api /usr/local/bin/open-api
 CMD ["sh","-c","open-api start"]
+
