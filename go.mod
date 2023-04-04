@@ -24,6 +24,7 @@ require (
 require (
 	github.com/deckarep/golang-set v1.8.0
 	gitlab.bianjie.ai/avata/chains/api v0.7.2-0.20220830014600-0360685e7537
+	gitlab.bianjie.ai/avata/chains/api/v2 v2.0.2-0.20230403101833-6652eee85630
 	gitlab.bianjie.ai/avata/utils/commons v0.0.0-00010101000000-000000000000
 	gitlab.bianjie.ai/avata/utils/errors v0.0.0-00010101000000-000000000000
 	gorm.io/driver/mysql v1.3.4
@@ -62,7 +63,6 @@ require (
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/volatiletech/inflect v0.0.1 // indirect
 	github.com/volatiletech/null v8.0.0+incompatible // indirect
-	gitlab.bianjie.ai/avata/chains/api/v2 v2.0.2-0.20230403055112-95d488d711ee // indirect
 	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3 // indirect
 	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
