@@ -14,6 +14,7 @@ import (
 	"gorm.io/gorm/schema"
 
 	pb_account "gitlab.bianjie.ai/avata/chains/api/v2/pb/account_v2"
+	pb_business "gitlab.bianjie.ai/avata/chains/api/v2/pb/buy_v2"
 	pb_class "gitlab.bianjie.ai/avata/chains/api/v2/pb/class_v2"
 	pb_msgs "gitlab.bianjie.ai/avata/chains/api/v2/pb/msgs_v2"
 	pb_nft "gitlab.bianjie.ai/avata/chains/api/v2/pb/nft_v2"
@@ -36,6 +37,7 @@ var NftClientMap map[string]pb_nft.NFTClient
 var RecordClientMap map[string]pb_record.RecordClient
 var ClassClientMap map[string]pb_class.ClassClient
 var TxClientMap map[string]pb_tx.TxClient
+var BusineessClientMap map[string]pb_business.BuyClient
 
 //var MTClientMap map[string]pb_mt.MTClient
 //var MTClassClientMap map[string]pb_mt_class.MTClassClient
@@ -202,6 +204,10 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	//NoticeClientMap[constant.IritaOPBNative] = pb_notice.NewNoticeClient(GrpcConnMap[constant.IritaOPBNative])
 	//NoticeClientMap[constant.WenchangDDC] = pb_notice.NewNoticeClient(GrpcConnMap[constant.WenchangDDC])
 	//NoticeClientMap[constant.IrisHubNative] = pb_notice.NewNoticeClient(GrpcConnMap[constant.IrisHubNative])
+
+	// 初始化business grpc client
+	BusineessClientMap = make(map[string]pb_business.BuyClient)
+	BusineessClientMap[constant.IritaOPBNative] = pb_business.NewBuyClient(GrpcConnMap[constant.IritaOPBNative])
 }
 
 func InitRedisClient(cfg *configs.Config, logger *log.Logger) {
