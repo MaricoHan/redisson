@@ -107,19 +107,17 @@ func (u User) ShowUsers(ctx context.Context, request interface{}) (interface{}, 
 	}
 	authData.Code = constant.Wallet
 	authData.Module = constant.Server
-	parseUint, err := strconv.ParseUint(u.getUserType(ctx), 10, 64)
-	if err != nil {
-		return nil, errors.ErrInternal
-	}
+
 	params := dto.ShowUsers{
 		ProjectID:  authData.ProjectId,
 		ChainID:    authData.ChainId,
 		Module:     authData.Module,
 		AccessMode: authData.AccessMode,
 		Code:       authData.Code,
-		Usertype:   uint32(parseUint),
+		Usertype:   u.getUserType(ctx),
 		UserCode:   strings.TrimSpace(u.getCode(ctx)),
 	}
+
 	return u.svc.ShowUsers(ctx, params)
 }
 
@@ -131,12 +129,16 @@ func (u User) validateUsers(ctx context.Context) (vo.AuthData, error) {
 	return authData, nil
 }
 
-func (u User) getUserType(ctx context.Context) string {
+func (u User) getUserType(ctx context.Context) uint32 {
 	userType := ctx.Value("user_type")
 	if userType == nil || userType == "" {
-		return ""
+		return 0
 	}
-	return userType.(string)
+	parseUint, err := strconv.ParseUint(userType.(string), 10, 64)
+	if err != nil {
+		return 0
+	}
+	return uint32(parseUint)
 }
 
 func (u User) getCode(ctx context.Context) string {
