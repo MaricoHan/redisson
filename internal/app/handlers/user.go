@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"strconv"
 	"strings"
 
 	"gitlab.bianjie.ai/avata/chains/api/v2/pb/wallet"
@@ -100,21 +101,24 @@ func (u User) UpdateUsers(ctx context.Context, request interface{}) (interface{}
 }
 
 func (u User) ShowUsers(ctx context.Context, request interface{}) (interface{}, error) {
-	req := request.(*vo.ShowUserRequest)
 	authData, err := u.validateUsers(ctx)
 	if err != nil {
 		return nil, err
 	}
 	authData.Code = constant.Wallet
 	authData.Module = constant.Server
+	parseUint, err := strconv.ParseUint(u.getUserType(ctx), 10, 64)
+	if err != nil {
+		return nil, errors.ErrInternal
+	}
 	params := dto.ShowUsers{
 		ProjectID:  authData.ProjectId,
 		ChainID:    authData.ChainId,
 		Module:     authData.Module,
 		AccessMode: authData.AccessMode,
 		Code:       authData.Code,
-		Usertype:   req.Usertype,
-		UserCode:   strings.TrimSpace(req.Code),
+		Usertype:   uint32(parseUint),
+		UserCode:   strings.TrimSpace(u.getCode(ctx)),
 	}
 	return u.svc.ShowUsers(ctx, params)
 }
@@ -125,4 +129,20 @@ func (u User) validateUsers(ctx context.Context) (vo.AuthData, error) {
 		return vo.AuthData{}, errors.ErrNotImplemented
 	}
 	return authData, nil
+}
+
+func (u User) getUserType(ctx context.Context) string {
+	userType := ctx.Value("user_type")
+	if userType == nil || userType == "" {
+		return ""
+	}
+	return userType.(string)
+}
+
+func (u User) getCode(ctx context.Context) string {
+	code := ctx.Value("code")
+	if code == nil || code == "" {
+		return ""
+	}
+	return code.(string)
 }

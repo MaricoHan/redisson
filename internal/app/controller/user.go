@@ -33,7 +33,7 @@ func (c UserController) GetEndpoints() []kit.Endpoint {
 		kit.Endpoint{
 			URI:     "/users",
 			Method:  http.MethodGet,
-			Handler: c.makeHandler(c.handler.ShowUsers, &vo.ShowUserRequest{}),
+			Handler: c.makeHandler(c.handler.ShowUsers, nil),
 		},
 	)
 	return ends
