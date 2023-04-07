@@ -31,7 +31,7 @@ func NewBusiness(logger *log.Logger) *business {
 }
 
 func (s *business) GetOrderInfo(ctx context.Context, params dto.GetOrder) (*dto.OrderInfo, error) {
-	logger := s.logger.WithField("params", params).WithField("func", "GetOrderInfo")
+	logger := s.logger.WithContext(ctx).WithField("params", params).WithField("func", "GetOrderInfo")
 
 	req := pb.OrderShowRequest{
 		ProjectId:   params.ProjectID,
@@ -75,7 +75,7 @@ func (s *business) GetOrderInfo(ctx context.Context, params dto.GetOrder) (*dto.
 }
 
 func (s *business) GetAllOrders(ctx context.Context, params dto.GetAllOrder) (*dto.OrderOperationRes, error) {
-	logger := s.logger.WithField("params", params).WithField("func", "GetAllOrders")
+	logger := s.logger.WithContext(ctx).WithField("params", params).WithField("func", "GetAllOrders")
 	sorts := strings.Split(params.SortBy, "_")
 
 	if len(sorts) != 2 {
@@ -173,7 +173,7 @@ func (s *business) GetAllOrders(ctx context.Context, params dto.GetAllOrder) (*d
 }
 
 func (s *business) BuildOrder(ctx context.Context, params dto.BuildOrderInfo) (*dto.BuyResponse, error) {
-	logger := s.logger.WithField("params", params).WithField("func", "BuildOrder")
+	logger := s.logger.WithContext(ctx).WithField("params", params).WithField("func", "BuildOrder")
 
 	req := pb.BuyRequest{
 		ProjectId:   params.ProjectID,
@@ -219,7 +219,7 @@ func (s *business) BuildOrder(ctx context.Context, params dto.BuildOrderInfo) (*
 }
 
 func (s *business) BatchBuyGas(ctx context.Context, params dto.BatchBuyGas) (*dto.BuyResponse, error) {
-	logger := s.logger.WithFields(map[string]interface{}{
+	logger := s.logger.WithContext(ctx).WithFields(map[string]interface{}{
 		"func":   "BatchBuyGas",
 		"params": params,
 	})
