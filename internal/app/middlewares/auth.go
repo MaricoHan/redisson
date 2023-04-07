@@ -97,7 +97,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		UserId:     uint64(projectInfo.UserId),
 	}
 	matched, err := regexp.MatchString("/users|/accounts|/account", r.URL.Path)
-	if err!=nil{
+	if err != nil {
 		log.WithError(err).Error("match path")
 		writeInternalResp(w)
 		return
@@ -115,13 +115,13 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 判断项目参数版本号
-	if projectInfo.Version == entity.Version1 {
+	if projectInfo.Version == entity.VersionStage {
+		authData.Code = constant.IritaOPB
+		authData.Module = constant.Native
+	} else if projectInfo.Version != entity.Version2 {
 		log.Error("project version not implemented")
 		writeNotFoundRequestResp(w, constant.ErrUnSupported)
 		return
-	} else if projectInfo.Version == entity.VersionStage {
-		authData.Code = constant.IritaOPB
-		authData.Module = constant.Native
 	}
 
 	authDataBytes, _ := json.Marshal(authData)
