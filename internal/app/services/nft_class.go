@@ -29,7 +29,7 @@ func NewNFTClass(logger *log.Logger) *nftClass {
 }
 
 func (n *nftClass) GetAllNFTClasses(ctx context.Context, params dto.NftClasses) (*dto.NftClassesRes, error) {
-	logger := n.logger.WithField("params", params).WithField("func", "NFTClassList")
+	logger := n.logger.WithContext(ctx).WithField("params", params).WithField("func", "NFTClassList")
 
 	// 非托管模式不支持
 	if params.AccessMode == entity.UNMANAGED {
@@ -104,7 +104,7 @@ func (n *nftClass) GetAllNFTClasses(ctx context.Context, params dto.NftClasses) 
 }
 
 func (n *nftClass) GetNFTClass(ctx context.Context, params dto.NftClasses) (*dto.NftClassRes, error) {
-	logger := n.logger.WithField("params", params).WithField("func", "GetNFTClass")
+	logger := n.logger.WithContext(ctx).WithField("params", params).WithField("func", "GetNFTClass")
 
 	// 非托管模式不支持
 	if params.AccessMode == entity.UNMANAGED {
@@ -148,7 +148,7 @@ func (n *nftClass) GetNFTClass(ctx context.Context, params dto.NftClasses) (*dto
 }
 
 func (n *nftClass) CreateNFTClass(ctx context.Context, params dto.CreateNftClass) (*dto.TxRes, error) {
-	logger := n.logger.WithField("params", params).WithField("func", "CreateNFTClass")
+	logger := n.logger.WithContext(ctx).WithField("params", params).WithField("func", "CreateNFTClass")
 
 	// 非托管模式不支持
 	if params.AccessMode == entity.UNMANAGED {

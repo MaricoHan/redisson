@@ -7,11 +7,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"gorm.io/gorm"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
+
+	"gorm.io/gorm"
 
 	mapset "github.com/deckarep/golang-set"
 	httptransport "github.com/go-kit/kit/transport/http"
@@ -25,7 +26,7 @@ import (
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/project"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/service_redirect_url"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/user"
+	userRepo "gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/user"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
@@ -46,7 +47,7 @@ func NewAuth(logger *log.Logger) *auth {
 }
 
 func (a *auth) Verify(ctx context.Context, params *vo.AuthVerify) (*dto.AuthVerify, error) {
-	logger := a.logger.WithField("params", params).WithField("func", "verify")
+	logger := a.logger.WithContext(ctx).WithField("params", params).WithField("func", "verify")
 	path := ctx.Value(httptransport.ContextKeyRequestPath).(string)[len(configs.Cfg.App.RouterPrefix)+1:]
 	res := &dto.AuthVerify{}
 	project, err := a.getProject(params.ProjectID)
@@ -97,7 +98,7 @@ func (a *auth) Verify(ctx context.Context, params *vo.AuthVerify) (*dto.AuthVeri
 }
 
 func (a *auth) GetUser(ctx context.Context, params *vo.AuthGetUser) ([]*dto.AuthGetUser, error) {
-	logger := a.logger.WithField("params", params).WithField("func", "get user")
+	logger := a.logger.WithContext(ctx).WithField("params", params).WithField("func", "get user")
 	path := ctx.Value(httptransport.ContextKeyRequestPath).(string)[len(configs.Cfg.App.RouterPrefix)+1:]
 	var res []*dto.AuthGetUser
 	project, err := a.getProject(params.ProjectID)
@@ -174,7 +175,7 @@ func (a *auth) getProject(projectCode string) (entity.Project, error) {
 
 // getUser 获取用户信息, id&&code
 func (a *auth) getUser(userID uint64) (entity.User, error) {
-	userRepo := user.NewUserRepo(initialize.MysqlDB)
+	userRepo := userRepo.NewUserRepo(initialize.MysqlDB)
 	user, err := userRepo.GetUser(userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -205,7 +206,7 @@ func (a *auth) getServiceRedirectUrl(projectID uint64) (entity.ServiceRedirectUr
 // 1.向上游服务方发起请求, err不等于nil说明存在异常返回服务错误
 // 2.当请求成功，返回的状态码为404时, 则返回NOT_FOUNT
 func (a *auth) request(ctx context.Context, url, apikey, hash, code, timestamp string, request map[string]interface{}) ([]byte, error) {
-	logger := a.logger.WithFields(map[string]interface{}{
+	logger := a.logger.WithContext(ctx).WithFields(map[string]interface{}{
 		"url":  url,
 		"code": code,
 		"hash": hash,

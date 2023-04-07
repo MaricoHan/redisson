@@ -8,10 +8,13 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/project"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
@@ -70,6 +73,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		writeNotEnoughAmount(w)
 		return
 	}
+
 	// 查询缓存
 	chainInfo, err := cache.NewCache().Chain(projectInfo.ChainId)
 	if err != nil {
@@ -83,7 +87,6 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		writeInternalResp(w)
 		return
 	}
-
 	authData := vo.AuthData{
 		ProjectId:  uint64(projectInfo.Id),
 		ChainId:    uint64(chainInfo.Id),
@@ -93,15 +96,32 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		AccessMode: projectInfo.AccessMode,
 		UserId:     uint64(projectInfo.UserId),
 	}
+	matched, err := regexp.MatchString("/users|/accounts|/account", r.URL.Path)
+	if err != nil {
+		log.WithError(err).Error("match path")
+		writeInternalResp(w)
+		return
+	}
+	if matched {
+		// project 关联的 serviceIds
+		projectRepo := project.NewProjectRepo(initialize.MysqlDB)
+		existWalletService, err := projectRepo.ExistServices(projectInfo.Id, entity.ServiceTypeWallet)
+		if err != nil {
+			log.WithError(err).Error("query service")
+			writeInternalResp(w)
+			return
+		}
+		authData.ExistWalletService = existWalletService
+	}
 
 	// 判断项目参数版本号
-	if projectInfo.Version == entity.Version1 {
+	if projectInfo.Version == entity.VersionStage {
+		authData.Code = constant.IritaOPB
+		authData.Module = constant.Native
+	} else if projectInfo.Version != entity.Version2 {
 		log.Error("project version not implemented")
 		writeNotFoundRequestResp(w, constant.ErrUnSupported)
 		return
-	} else if projectInfo.Version == entity.VersionStage {
-		authData.Code = constant.IritaOPB
-		authData.Module = constant.Native
 	}
 
 	authDataBytes, _ := json.Marshal(authData)
@@ -142,6 +162,23 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}...).Add(1)
 			writeForbiddenResp(w, "")
 			return
+		}
+	}
+
+	if configs.Cfg.App.Env == constant.EnvPro {
+		if regexp.MustCompile(`/ns/`).MatchString(r.URL.Path) {
+			// 域名请求，验证权限
+			projectRepo := project.NewProjectRepo(initialize.MysqlDB)
+			auth, err := projectRepo.ExistServices(projectInfo.Id, entity.ServiceTypeNS)
+			if err != nil {
+				log.WithError(err).Error("query service")
+				writeInternalResp(w)
+				return
+			}
+			if !auth {
+				writeForbiddenResp(w, constant.AuthenticationFailed)
+				return
+			}
 		}
 	}
 

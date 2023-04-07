@@ -31,7 +31,7 @@ func NewTx(logger *log.Logger) *tx {
 }
 
 func (t *tx) TxResult(ctx context.Context, params dto.TxResultByTxHash) (*dto.TxResultRes, error) {
-	logger := t.logger.WithField("params", params).WithField("func", "TxResult")
+	logger := t.logger.WithContext(ctx).WithField("params", params).WithField("func", "TxResult")
 	// 非托管模式不支持
 	if params.AccessMode == entity.UNMANAGED {
 		return nil, errors2.ErrNotImplemented
@@ -85,11 +85,20 @@ func (t *tx) TxResult(ctx context.Context, params dto.TxResultByTxHash) (*dto.Tx
 	if resp.Detail.Record != new(pb.Record) {
 		result.Record = resp.Detail.Record
 	}
+	if resp.Detail.Ns != "" {
+		result.Ns = new(types.JSON)
+		err = json.Unmarshal([]byte(resp.Detail.Ns), &result.Ns)
+		if err != nil {
+			logger.WithError(err).Error("Unmarshal failed")
+			return nil, errors2.ErrInternal
+		}
+	}
+
 	return result, nil
 }
 
 //func (t *tx) TxQueueInfo(ctx context.Context, params dto.TxQueueInfo) (*dto.TxQueueInfoRes, error) {
-//	logger := t.logger.WithField("params", params).WithField("func", "TxQueueInfo")
+//	logger := t.logger.WithContext(ctx).WithField("params", params).WithField("func", "TxQueueInfo")
 //
 //	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 //	defer cancel()
@@ -120,3 +129,4 @@ func (t *tx) TxResult(ctx context.Context, params dto.TxResultByTxHash) (*dto.Tx
 //
 //	return result, nil
 //}
+

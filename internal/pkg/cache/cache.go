@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/chain"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/project"
@@ -37,7 +36,7 @@ func (c cache) Project(key string) (entity.Project, error) {
 		return projectInfo, errors.Wrap(err, "get project from cache")
 	}
 	if projectInfo.Id < 1 {
-		// 查询project信息
+		// 查询 project 信息
 		projectRepo := project.NewProjectRepo(initialize.MysqlDB)
 		projectInfo, err = projectRepo.GetProjectByApiKey(key)
 		if err != nil {

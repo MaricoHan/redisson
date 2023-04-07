@@ -7,7 +7,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/keepalive"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -20,11 +19,16 @@ import (
 	pb_nft "gitlab.bianjie.ai/avata/chains/api/v2/pb/nft_v2"
 	pb_record "gitlab.bianjie.ai/avata/chains/api/v2/pb/record_v2"
 	pb_tx "gitlab.bianjie.ai/avata/chains/api/v2/pb/tx_v2"
+	pb_notice "gitlab.bianjie.ai/avata/chains/api/pb/v2/notice"
+	pb_ns "gitlab.bianjie.ai/avata/chains/api/pb/v2/ns"
+	pb_tx_queue "gitlab.bianjie.ai/avata/chains/api/pb/v2/tx_queue"
+	pb_wallet "gitlab.bianjie.ai/avata/chains/api/pb/v2/wallet"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/middleware"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/redis"
 	"gitlab.bianjie.ai/avata/open-api/pkg/logs"
+	trace_log "gitlab.bianjie.ai/avata/utils/commons/trace/log"
 )
 
 var RedisClient *redis.RedisClient
@@ -48,6 +52,10 @@ var StateGatewayServer *grpc.ClientConn
 //var GrpcConnRightsMap map[string]*grpc.ClientConn
 //var RightsClientMap map[string]rights.RightsClient
 
+var WalletClientMap map[string]pb_wallet.WalletClient
+
+var NsClientMap map[string]pb_ns.NSClient
+
 var Log = new(log.Logger)
 
 func Logger(cfg *configs.Config) *log.Logger {
@@ -65,6 +73,7 @@ func Logger(cfg *configs.Config) *log.Logger {
 		log.SetLevel(log.InfoLevel)
 	}
 	Log = log.StandardLogger()
+	Log.AddHook(&trace_log.TraceHook{})
 	return Log
 }
 
@@ -108,19 +117,20 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	}
 
 	GrpcConnMap = make(map[string]*grpc.ClientConn)
-	logger.Info("connecting tianzhou-evm ...")
-	iritaOpbConn, err := grpc.DialContext(
+
+	logger.Info("connecting irita-opb-native ...")
+	iritaOpbNativeConn, err := grpc.DialContext(
 		context.Background(),
 		cfg.GrpcClient.TianZhouEVM,
 		grpc.WithInsecure(),
 		grpc.WithKeepaliveParams(kacp),
 		grpc.WithBlock(),
-		grpc.WithBalancerName(roundrobin.Name),
+		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy":"round_robin"}`),
 		grpc.WithUnaryInterceptor(middleware.NewGrpcInterceptorMiddleware().Interceptor()))
 	if err != nil {
 		logger.Fatal("get tianzhou-evm grpc connect failed, err: ", err.Error())
 	}
-	GrpcConnMap[constant.IritaOPBNative] = iritaOpbConn
+	GrpcConnMap[constant.IritaOPBNative] = iritaOpbNativeConn
 
 	logger.Info("connecting state-gateway-server ...")
 	StateGatewayServer, err = grpc.DialContext(
@@ -129,29 +139,27 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 		grpc.WithInsecure(),
 		grpc.WithKeepaliveParams(kacp),
 		grpc.WithBlock(),
-		grpc.WithBalancerName(roundrobin.Name),
+		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy":"round_robin"}`),
 		grpc.WithUnaryInterceptor(middleware.NewGrpcInterceptorMiddleware().Interceptor()))
 	if err != nil {
 		logger.Fatal("get state-gateway-server grpc connect failed, err: ", err.Error())
 	}
 
+	logger.Info("connecting wallet-server ...")
+	walletServer, err := grpc.DialContext(
+		context.Background(),
+		cfg.GrpcClient.WalletServer,
+		grpc.WithInsecure(),
+		grpc.WithKeepaliveParams(kacp),
+		grpc.WithBlock(),
+		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy":"round_robin"}`),
+		grpc.WithUnaryInterceptor(middleware.NewGrpcInterceptorMiddleware().Interceptor()))
+	if err != nil {
+		logger.Fatal("get wallet-server grpc connect failed, err: ", err.Error())
+	}
+	GrpcConnMap[constant.WalletServer] = walletServer
+
 	// 初始化Account grpc client
-	//GrpcConnRightsMap = make(map[string]*grpc.ClientConn)
-
-	//logger.Info("connecting rights_jiangsu server ...")
-	//RightsConn, err := grpc.DialContext(
-	//	context.Background(),
-	//	cfg.GrpcClient.RightsJiangSu,
-	//	grpc.WithInsecure(),
-	//	grpc.WithKeepaliveParams(kacp),
-	//	grpc.WithBlock(),
-	//	grpc.WithBalancerName(roundrobin.Name),
-	//	grpc.WithUnaryInterceptor(middleware.NewGrpcInterceptorMiddleware().Interceptor()))
-	//if err != nil {
-	//	logger.Fatal("get rights_jiangsu grpc connect failed, err: ", err.Error())
-	//}
-	//GrpcConnRightsMap[constant.JiangSu] = RightsConn
-
 	AccountClientMap = make(map[string]pb_account.AccountClient)
 	AccountClientMap[constant.IritaOPBNative] = pb_account.NewAccountClient(GrpcConnMap[constant.IritaOPBNative])
 	// 初始化msgs grpc client
@@ -185,7 +193,7 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	//MTMsgsClientMap[constant.IrisHubNative] = pb_mt_msgs.NewMTMSGSClient(GrpcConnMap[constant.IrisHubNative])
 
 	// 初始化tx_queue
-	//TxQueueClient = pb_tx_queue.NewTxQueueClient(StateGatewayServer)
+	// TxQueueClient = pb_tx_queue.NewTxQueueClient(StateGatewayServer)
 
 	// 初始化rights_jiangsu
 	//RightsClientMap = make(map[string]rights.RightsClient)
@@ -208,6 +216,15 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	// 初始化business grpc client
 	BusineessClientMap = make(map[string]pb_business.BuyClient)
 	BusineessClientMap[constant.IritaOPBNative] = pb_business.NewBuyClient(GrpcConnMap[constant.IritaOPBNative])
+
+	// 初始化wallet grpc client
+	WalletClientMap = make(map[string]pb_wallet.WalletClient)
+	WalletClientMap[constant.WalletServer] = pb_wallet.NewWalletClient(GrpcConnMap[constant.WalletServer])
+
+	// 初始化ns grpc client
+	NsClientMap = make(map[string]pb_ns.NSClient)
+	NsClientMap[constant.IritaOPBNative] = pb_ns.NewNSClient(GrpcConnMap[constant.IritaOPBNative])
+
 }
 
 func InitRedisClient(cfg *configs.Config, logger *log.Logger) {

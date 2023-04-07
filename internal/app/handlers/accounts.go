@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/utils/errors/common"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
@@ -70,7 +71,7 @@ func (h *Account) CreateAccount(ctx context.Context, request interface{}) (inter
 
 	name := strings.TrimSpace(req.Name)
 	operationId := strings.TrimSpace(req.OperationID)
-
+	userId := strings.TrimSpace(req.UserId)
 	if operationId == "" {
 		return nil, errors.New(errors.ClientParams, errors.ErrOperationID)
 	}
@@ -83,6 +84,10 @@ func (h *Account) CreateAccount(ctx context.Context, request interface{}) (inter
 		return nil, errors.New(errors.ClientParams, errors.ErrOperationIDLen)
 	}
 	authData := h.AuthData(ctx)
+	if authData.ExistWalletService {
+		authData.Code = constant.Wallet
+		authData.Module = constant.Server
+	}
 	params := dto.CreateAccount{
 		ChainID:     authData.ChainId,
 		ProjectID:   authData.ProjectId,
@@ -92,6 +97,7 @@ func (h *Account) CreateAccount(ctx context.Context, request interface{}) (inter
 		Code:        authData.Code,
 		OperationId: operationId,
 		AccessMode:  authData.AccessMode,
+		UserId:      userId,
 	}
 
 	return h.svc.CreateAccount(ctx, params)
@@ -100,6 +106,10 @@ func (h *Account) CreateAccount(ctx context.Context, request interface{}) (inter
 func (h *Account) GetAccounts(ctx context.Context, _ interface{}) (interface{}, error) {
 	// 校验参数 start
 	authData := h.AuthData(ctx)
+	if authData.ExistWalletService {
+		authData.Code = constant.Wallet
+		authData.Module = constant.Server
+	}
 	params := dto.AccountsInfo{
 		ChainID:     authData.ChainId,
 		ProjectID:   authData.ProjectId,
@@ -110,6 +120,7 @@ func (h *Account) GetAccounts(ctx context.Context, _ interface{}) (interface{}, 
 		OperationId: h.OperationID(ctx),
 		Name:        h.Name(ctx),
 		AccessMode:  authData.AccessMode,
+		UserId:      h.UserId(ctx),
 	}
 
 	params.PageKey = h.PageKey(ctx)
@@ -168,4 +179,12 @@ func (h *Account) Name(ctx context.Context) string {
 		return ""
 	}
 	return name.(string)
+}
+
+func (h *Account) UserId(ctx context.Context) string {
+	accountR := ctx.Value("user_id")
+	if accountR == nil || accountR == "" {
+		return ""
+	}
+	return accountR.(string)
 }

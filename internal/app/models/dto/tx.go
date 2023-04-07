@@ -25,6 +25,7 @@ type TxResultRes struct {
 	Timestamp   string      `json:"timestamp"`
 	Nft         *types.JSON `json:"nft"`
 	Record      *pb.Record   `json:"record"`
+	Ns          *types.JSON `json:"ns"`
 }
 
 type TxQueueInfo struct {

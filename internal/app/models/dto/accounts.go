@@ -24,6 +24,7 @@ type CreateAccount struct {
 	Module      string `json:"module"`
 	Code        string `json:"code"`
 	Name        string `json:"name"`
+	UserId      string `json:"user_id"`
 	OperationId string `json:"operation_id"`
 	AccessMode  int    `json:"access_mode"`
 }
@@ -42,6 +43,7 @@ type AccountsInfo struct {
 	OperationId     string `json:"operation_id"`
 	Name            string `json:"name"`
 	AccessMode      int    `json:"access_mode"`
+	UserId          string `json:"user_id"`
 }
 
 type BatchAccountRes struct {

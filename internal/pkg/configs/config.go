@@ -45,6 +45,7 @@ type (
 	GrpcClient struct {
 		TianZhouEVM  string `mapstructure:"tianzhou_evm"`
 		StateGateway string `mapstructure:"state_gateway"`
+		WalletServer   string `mapstructure:"wallet_server"`
 	}
 
 	Project struct {
