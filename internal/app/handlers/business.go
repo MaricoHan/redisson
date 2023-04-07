@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"gitlab.bianjie.ai/avata/chains/api/v2/pb/buy_v2"
 	"gitlab.bianjie.ai/avata/utils/errors/common"
 	"strings"
 
@@ -52,9 +53,15 @@ func (h *Business) GetAllOrders(ctx context.Context, _ interface{}) (interface{}
 		ProjectId:  authData.ProjectId,
 		Account:    h.GetAccount(ctx),
 		Code:       authData.Code,
-		Status:     h.GetStatus(ctx),
 		AccessMode: authData.AccessMode,
 	}
+
+	status := h.GetStatus(ctx)
+	if _, ok := buy_v2.Status_value[strings.ToUpper(status)]; !ok {
+		return nil, errors2.New(errors2.ClientParams, fmt.Sprintf(common.ERR_INVALID_VALUE, "status"))
+	}
+	params.Status = status
+
 	params.PageKey = h.PageKey(ctx)
 	countTotal, err := h.CountTotal(ctx)
 	if err != nil {

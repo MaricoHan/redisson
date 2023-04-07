@@ -33,7 +33,7 @@ type GetAllOrder struct {
 	EndDate     string `json:"end_date"`
 	SortBy      string `json:"sort_by"`
 	SortRule    string `json:"sort_rule"`
-	Status      string `json:"sort_rule"`
+	Status      string `json:"status"`
 	Code        string `json:"code"`
 	AccessMode  int    `json:"access_mode"`
 }
