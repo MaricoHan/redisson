@@ -20,7 +20,7 @@ import (
 	pb_record "gitlab.bianjie.ai/avata/chains/api/v2/pb/record_v2"
 	pb_tx "gitlab.bianjie.ai/avata/chains/api/v2/pb/tx_v2"
 	//pb_notice "gitlab.bianjie.ai/avata/chains/api/pb/v2/notice"
-	pb_ns "gitlab.bianjie.ai/avata/chains/api/v2/pb/ns"
+	pb_ns "gitlab.bianjie.ai/avata/chains/api/v2/pb/ns_v2"
 	//pb_tx_queue "gitlab.bianjie.ai/avata/chains/api/pb/v2/tx_queue"
 	pb_wallet "gitlab.bianjie.ai/avata/chains/api/v2/pb/wallet"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
