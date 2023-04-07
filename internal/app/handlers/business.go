@@ -3,10 +3,10 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"gitlab.bianjie.ai/avata/chains/api/v2/pb/buy_v2"
 	"gitlab.bianjie.ai/avata/utils/errors/common"
-	"regexp"
-	"strings"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
@@ -93,31 +93,16 @@ func (h *Business) BuildOrder(ctx context.Context, request interface{}) (interfa
 	if len(OrderRes.OperationId) == 0 {
 		return nil, errors2.New(errors2.ClientParams, "order_id is a required field")
 	}
-	if len(OrderRes.OrderType) == 0 {
+	if OrderRes.OrderType == 0 {
 		return nil, errors2.New(errors2.ClientParams, "order_type is a required field")
 	}
 
-	orderId := OrderRes.OperationId
-
-	if len(orderId) < 10 || len(orderId) > 36 {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrOrderIDLen)
+	operationId := strings.TrimSpace(OrderRes.OperationId)
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
 	}
-	ok, err := regexp.MatchString("^([A-Za-z0-9_]){10,36}$", orderId)
-	if !ok || err != nil {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrOrderID)
-	}
-
-	ok, err = regexp.MatchString("([A-Za-z])+", orderId)
-	if !ok || err != nil {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrOrderID)
-	}
-	ok, err = regexp.MatchString("([0-9])+", orderId)
-	if !ok || err != nil {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrOrderID)
-	}
-	ok, err = regexp.MatchString("([_])+", orderId)
-	if !ok || err != nil {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrOrderID)
+	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
 	}
 
 	if OrderRes.Amount < 100 {
@@ -153,27 +138,12 @@ func (h *Business) BatchBuyGas(ctx context.Context, request interface{}) (interf
 		return nil, errors2.New(errors2.ClientParams, "list is a required field")
 	}
 
-	orderId := OrderRes.OperationId
-
-	if len(orderId) < 10 || len(orderId) > 36 {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrOrderIDLen)
+	operationId := strings.TrimSpace(OrderRes.OperationId)
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
 	}
-	ok, err := regexp.MatchString("^([A-Za-z0-9_]){10,36}$", orderId)
-	if !ok || err != nil {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrOrderID)
-	}
-
-	ok, err = regexp.MatchString("([A-Za-z])+", orderId)
-	if !ok || err != nil {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrOrderID)
-	}
-	ok, err = regexp.MatchString("([0-9])+", orderId)
-	if !ok || err != nil {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrOrderID)
-	}
-	ok, err = regexp.MatchString("([_])+", orderId)
-	if !ok || err != nil {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrOrderID)
+	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
 	}
 
 	params := dto.BatchBuyGas{
