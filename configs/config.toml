@@ -11,14 +11,10 @@ grpc_timeout = 1000000
 http_timeout = 1000000
 
 [mysql]
-host = "192.168.0.136"
-port = 3306
+host = "192.168.150.40"
+port = 23306
 username = "root"
 password = "rootPassword"
-#host = "127.0.0.1"
-#port = 3306
-#username = "root"
-#password = "12345678"
 db = "core"
 max_open_conns = 100
 max_idle_conns = 20
@@ -26,14 +22,14 @@ max_idle_conns = 20
 max_life_time = 1
 
 [redis]
-host = "192.168.0.115:6379"
-password = "redisPassword"
-db = 7
+host = "127.0.0.1:6379"
+password = ""
+db = 11
 
 [grpc_client]
-iritaopb_native = "localhost:10000"
+tianzhou_evm = "192.168.150.42:20000"
 state_gateway = "192.168.150.44:10000"
-wallet_server = "localhost:20000"
+wallet_server = "192.168.150.40:11000"
 
 [project]
 secret_pwd = "Console_Projects_Secrets"

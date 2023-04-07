@@ -7,7 +7,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	pb "gitlab.bianjie.ai/avata/chains/api/pb/v2/account"
+	pb "gitlab.bianjie.ai/avata/chains/api/v2/pb/account_v2"
 	"gitlab.bianjie.ai/avata/chains/api/v2/pb/wallet"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
@@ -71,6 +71,7 @@ func (a *account) BatchCreateAccount(ctx context.Context, params dto.BatchCreate
 // CreateAccount 单个创建链账户
 func (a *account) CreateAccount(ctx context.Context, params dto.CreateAccount) (*dto.AccountRes, error) {
 	logger := a.logger.WithContext(ctx).WithField("params", params).WithField("func", "CreateAccount")
+	logger.Info("trace test")
 
 	// 非托管模式不支持
 	if params.AccessMode == entity.UNMANAGED {
@@ -139,6 +140,11 @@ func (a *account) CreateAccount(ctx context.Context, params dto.CreateAccount) (
 // GetAccounts 查询链账户
 func (a *account) GetAccounts(ctx context.Context, params dto.AccountsInfo) (*dto.AccountsRes, error) {
 	logger := a.logger.WithContext(ctx).WithField("params", params).WithField("func", "GetAccounts")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
 
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 

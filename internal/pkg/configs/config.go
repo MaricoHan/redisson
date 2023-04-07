@@ -43,8 +43,8 @@ type (
 	}
 
 	GrpcClient struct {
-		IritaOpbNative string `mapstructure:"iritaopb_native"`
-		StateGateway   string `mapstructure:"state_gateway"`
+		TianZhouEVM  string `mapstructure:"tianzhou_evm"`
+		StateGateway string `mapstructure:"state_gateway"`
 		WalletServer   string `mapstructure:"wallet_server"`
 	}
 

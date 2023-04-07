@@ -6,7 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	pb "gitlab.bianjie.ai/avata/chains/api/pb/v2/nft"
+	pb "gitlab.bianjie.ai/avata/chains/api/v2/pb/nft_v2"
+
 	"gitlab.bianjie.ai/avata/utils/errors/common"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
@@ -282,7 +283,7 @@ func (h *NFT) NftId(ctx context.Context) (uint64, error) {
 	}
 	res, err := strconv.ParseUint(v.(string), 10, 64)
 	if err != nil {
-		return 0, errors2.New(errors2.NotFound, fmt.Sprintf("%s, nft_id: %s not found", errors2.ErrRecordNotFound, v.(string)))
+		return 0, errors2.New(errors2.NotFound, fmt.Sprintf("%s, nft_id: %s not found", errors2.ErrResourceNotFound, v.(string)))
 	}
 
 	return res, nil
