@@ -14,6 +14,7 @@ import (
 
 type INs interface {
 	Domains(ctx context.Context, _ interface{}) (interface{}, error)
+	UserDomains(ctx context.Context, _ interface{}) (interface{}, error)
 	CreateDomain(ctx context.Context, _ interface{}) (interface{}, error)
 	TransferDomain(ctx context.Context, _ interface{}) (interface{}, error)
 }
@@ -89,6 +90,23 @@ func (h *Ns) TransferDomain(ctx context.Context, request interface{}) (interface
 func (h *Ns) Domains(ctx context.Context, request interface{}) (interface{}, error) {
 	name := strings.TrimSpace(h.Name(ctx))
 	tld := strings.TrimSpace(h.Tld(ctx))
+
+	// 校验参数 start
+	authData := h.AuthData(ctx)
+	params := dto.Domains{
+		ProjectID:  authData.ProjectId,
+		Module:     authData.Module,
+		Code:       authData.Code,
+		AccessMode: authData.AccessMode,
+		Name:       name,
+		Tld:        tld,
+	}
+	return h.svc.Domains(ctx, params)
+}
+
+func (h *Ns) UserDomains(ctx context.Context, request interface{}) (interface{}, error) {
+	name := strings.TrimSpace(h.Name(ctx))
+	tld := strings.TrimSpace(h.Tld(ctx))
 	owner := strings.TrimSpace(h.Owner(ctx))
 
 	// 校验参数 start
@@ -114,7 +132,7 @@ func (h *Ns) Domains(ctx context.Context, request interface{}) (interface{}, err
 	}
 	params.Limit = limit
 	// 校验参数 end
-	return h.svc.Domains(ctx, params)
+	return h.svc.UserDomains(ctx, params)
 }
 
 func (h *Ns) OperationId(ctx context.Context) string {
