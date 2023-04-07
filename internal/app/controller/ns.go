@@ -30,6 +30,11 @@ func (c NsController) GetEndpoints() []kit.Endpoint {
 			Method:  http.MethodPost,
 			Handler: c.makeHandler(c.handler.CreateDomain, &vo.CreateDomainRequest{}),
 		},
+		kit.Endpoint{
+			URI:     "/ns/transfers/{owner}/{name}",
+			Method:  http.MethodPost,
+			Handler: c.makeHandler(c.handler.TransferDomain, &vo.TransferDomainRequest{}),
+		},
 	)
 	return ends
 }
