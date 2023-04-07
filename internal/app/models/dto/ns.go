@@ -34,6 +34,10 @@ type Domains struct {
 }
 
 type DomainsRes struct {
+	Domains []*Domain `json:"domains"`
+}
+
+type UserDomainsRes struct {
 	PageRes
 	Domains []*Domain `json:"domains"`
 }
