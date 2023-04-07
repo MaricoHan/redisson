@@ -3,9 +3,10 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"gitlab.bianjie.ai/avata/chains/api/v2/pb/buy_v2"
 	"gitlab.bianjie.ai/avata/utils/errors/common"
-	"strings"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
