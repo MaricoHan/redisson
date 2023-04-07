@@ -6,7 +6,7 @@ type BuyRequest struct {
 	//Base
 	Amount      uint64 `json:"amount" validate:"required"`
 	Account     string `json:"account" validate:"required"`
-	OrderType   string `json:"order_type"`
+	OrderType   uint8  `json:"order_type"`
 	OperationId string `json:"operation_id"`
 }
 

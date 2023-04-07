@@ -8,7 +8,7 @@ type BuildOrderInfo struct {
 	Amount      uint64 `json:"amount"`
 	ChainId     uint64 `json:"chain_id"`
 	Module      string `json:"module"`
-	OrderType   string `json:"order_type"`
+	OrderType   uint8  `json:"order_type"`
 	OperationId string `json:"operation_id"`
 	Code        string `json:"code"`
 	AccessMode  int    `json:"access_mode"`

@@ -20,8 +20,7 @@ const (
 	Delete = "DELETE"
 
 	// orderType
-	OrderTypeGas      = "gas"
-	OrderTypeBusiness = "business"
+	OrderTypeGas = 1
 
 	// chain map
 	WenchangNative = "wenchangchain-native"
