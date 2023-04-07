@@ -3,15 +3,13 @@ package handlers
 import (
 	"context"
 	"fmt"
-	"gitlab.bianjie.ai/avata/chains/api/v2/pb/buy_v2"
-	"gitlab.bianjie.ai/avata/utils/errors/common"
-	"regexp"
-	"strings"
-
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
+	"gitlab.bianjie.ai/avata/utils/errors/common"
+	"regexp"
+	"strconv"
 )
 
 type IBusiness interface {
@@ -57,11 +55,11 @@ func (h *Business) GetAllOrders(ctx context.Context, _ interface{}) (interface{}
 		AccessMode: authData.AccessMode,
 	}
 
-	status := h.GetStatus(ctx)
-	if _, ok := buy_v2.Status_value[strings.ToUpper(status)]; !ok {
-		return nil, errors2.New(errors2.ClientParams, fmt.Sprintf(common.ERR_INVALID_VALUE, "status"))
+	status, err := h.GetStatus(ctx)
+	if err != nil {
+		return nil, err
 	}
-	params.Status = status
+	params.Status = uint32(status)
 
 	params.PageKey = h.PageKey(ctx)
 	countTotal, err := h.CountTotal(ctx)
@@ -220,10 +218,15 @@ func (h *Business) GetOperationId(ctx context.Context) string {
 	return operationId.(string)
 }
 
-func (h *Business) GetStatus(ctx context.Context) string {
-	status := ctx.Value("status")
-	if status == nil {
-		return ""
+func (h *Business) GetStatus(ctx context.Context) (int64, error) {
+	value := ctx.Value("value")
+	if value == nil {
+		return 0, nil
 	}
-	return status.(string)
+
+	status, err := strconv.ParseInt(value.(string), 10, 64)
+	if err != nil || status < 0 || status > 3 {
+		return 0, errors2.New(errors2.ClientParams, fmt.Sprintf(common.ERR_INVALID_VALUE, "status"))
+	}
+	return status, nil
 }

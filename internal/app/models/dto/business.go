@@ -33,7 +33,7 @@ type GetAllOrder struct {
 	EndDate     string `json:"end_date"`
 	SortBy      string `json:"sort_by"`
 	SortRule    string `json:"sort_rule"`
-	Status      string `json:"status"`
+	Status      uint32 `json:"status"`
 	Code        string `json:"code"`
 	AccessMode  int    `json:"access_mode"`
 }
@@ -49,14 +49,14 @@ type OrderOperationRes struct {
 
 type OrderInfo struct {
 	OperationId string `json:"operation_id"`
-	Status      string `json:"status"`
+	Status      uint32 `json:"status"`
 	Message     string `json:"message"`
 	Account     string `json:"account"`
 	Amount      string `json:"amount"`
 	Number      string `json:"number"`
 	CreateTime  string `json:"create_time"`
 	UpdateTime  string `json:"update_time"`
-	OrderType   string `json:"order_type"`
+	OrderType   uint32 `json:"order_type"`
 }
 
 type BatchBuyGas struct {

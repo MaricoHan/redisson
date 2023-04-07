@@ -61,7 +61,7 @@ func (s *business) GetOrderInfo(ctx context.Context, params dto.GetOrder) (*dto.
 	}
 	result := &dto.OrderInfo{
 		OperationId: resp.OperationId,
-		Status:      strings.ToLower(pb.Status_name[int32(resp.Status)]),
+		Status:      resp.Status,
 		Message:     resp.Message,
 		Account:     resp.Address,
 		Amount:      resp.Amount,
@@ -112,15 +112,7 @@ func (s *business) GetAllOrders(ctx context.Context, params dto.GetAllOrder) (*d
 		SortRule:    rule,
 		Address:     params.Account,
 		CountTotal:  params.CountTotal,
-		Status:      pb.Status(pb.Status_value[params.Status]),
-	}
-	if params.Status != "" {
-		status, ok := pb.Status_value[strings.ToUpper(params.Status)]
-		if !ok {
-			logger.Error(errors2.ErrStatus)
-			return nil, errors2.New(errors2.ClientParams, errors2.ErrStatus)
-		}
-		req.Status = pb.Status(status)
+		Status:      params.Status,
 	}
 
 	resp := &pb.BuyOrderListResponse{}
@@ -161,7 +153,7 @@ func (s *business) GetAllOrders(ctx context.Context, params dto.GetAllOrder) (*d
 	for _, item := range resp.Data {
 		var orderInfo = &dto.OrderInfo{
 			OperationId: item.OperationId,
-			Status:      strings.ToLower(pb.Status_name[int32(item.Status)]),
+			Status:      item.Status,
 			Message:     item.Message,
 			Account:     item.Address,
 			Amount:      item.Amount,
