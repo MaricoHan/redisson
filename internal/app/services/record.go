@@ -31,7 +31,7 @@ func (r *record) CreateRecord(ctx context.Context, params *records.RecordCreateR
 	authData := r.authData(ctx)
 	params.ProjectId = authData.ProjectId
 	mapKey := fmt.Sprintf("%s-%s", authData.Code, authData.Module)
-	logger := r.logger.WithFields(map[string]interface{}{
+	logger := r.logger.WithContext(ctx).WithFields(map[string]interface{}{
 		"server-name": mapKey,
 		"params":      params,
 		"func":        "CreateRecord",
