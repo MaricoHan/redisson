@@ -8,6 +8,18 @@ type CreateDomain struct {
 	AccessMode  int    `json:"access_mode"`
 	Name        string `json:"name"`
 	Owner       string `json:"owner"`
+	Duration    uint32 `json:"duration"`
+}
+
+type TransferDomain struct {
+	OperationId string `json:"operation_id"`
+	ProjectID   uint64 `json:"project_id"`
+	Code        string `json:"code"`
+	Module      string `json:"module"`
+	AccessMode  int    `json:"access_mode"`
+	Name        string `json:"name"`
+	Owner       string `json:"owner"`
+	Recipient   string `json:"recipient"`
 }
 
 type Domains struct {
@@ -17,9 +29,12 @@ type Domains struct {
 	AccessMode int    `json:"access_mode"`
 	Name       string `json:"name"`
 	Tld        string `json:"tld"`
+	Owner      string `json:"owner"`
+	Page
 }
 
 type DomainsRes struct {
+	PageRes
 	Domains []*Domain `json:"domains"`
 }
 
