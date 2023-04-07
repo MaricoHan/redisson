@@ -112,8 +112,7 @@ func (s *business) GetAllOrders(ctx context.Context, params dto.GetAllOrder) (*d
 		SortRule:    rule,
 		Address:     params.Account,
 		CountTotal:  params.CountTotal,
-		// Status: pb.Status(status),
-
+		Status:      pb.Status(pb.Status_value[params.Status]),
 	}
 	if params.Status != "" {
 		status, ok := pb.Status_value[strings.ToUpper(params.Status)]
@@ -152,7 +151,7 @@ func (s *business) GetAllOrders(ctx context.Context, params dto.GetAllOrder) (*d
 		PageRes: dto.PageRes{
 			PrevPageKey: resp.PrevPageKey,
 			NextPageKey: resp.NextPageKey,
-			Limit:       resp.Limit,
+			Limit:       uint32(resp.Limit),
 			TotalCount:  resp.TotalCount,
 		},
 		OrderInfos: []*dto.OrderInfo{},
