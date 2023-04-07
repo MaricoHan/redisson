@@ -1,7 +1,7 @@
 FROM golang:1.17.5-alpine3.15 as builder
 # Set up dependencies
-ARG GITUSER="tianyu"
-ARG GITPASS="EguQkozyXrTieux9TxPx"
+ARG GITUSER
+ARG GITPASS
 ENV PACKAGES make git libc-dev bash gcc
 ARG GOPRIVATE=gitlab.bianjie.ai
 ARG GOPROXY=http://192.168.0.60:8081/repository/go-bianjie/,http://nexus.bianjie.ai/repository/golang-group,https://goproxy.cn,direct
