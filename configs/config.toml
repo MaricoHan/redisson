@@ -27,9 +27,9 @@ password = ""
 db = 11
 
 [grpc_client]
-tianzhou_evm = "localhost:10000"
+tianzhou_evm = "192.168.150.42:20000"
 state_gateway = "192.168.150.44:10000"
-wallet_server = "localhost:10000"
+wallet_server = "192.168.150.40:11000"
 
 [project]
 secret_pwd = "Console_Projects_Secrets"

@@ -19,10 +19,10 @@ import (
 	pb_nft "gitlab.bianjie.ai/avata/chains/api/v2/pb/nft_v2"
 	pb_record "gitlab.bianjie.ai/avata/chains/api/v2/pb/record_v2"
 	pb_tx "gitlab.bianjie.ai/avata/chains/api/v2/pb/tx_v2"
-	pb_notice "gitlab.bianjie.ai/avata/chains/api/pb/v2/notice"
-	pb_ns "gitlab.bianjie.ai/avata/chains/api/pb/v2/ns"
-	pb_tx_queue "gitlab.bianjie.ai/avata/chains/api/pb/v2/tx_queue"
-	pb_wallet "gitlab.bianjie.ai/avata/chains/api/pb/v2/wallet"
+	//pb_notice "gitlab.bianjie.ai/avata/chains/api/pb/v2/notice"
+	pb_ns "gitlab.bianjie.ai/avata/chains/api/v2/pb/ns"
+	//pb_tx_queue "gitlab.bianjie.ai/avata/chains/api/pb/v2/tx_queue"
+	pb_wallet "gitlab.bianjie.ai/avata/chains/api/v2/pb/wallet"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/middleware"
@@ -118,7 +118,7 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 
 	GrpcConnMap = make(map[string]*grpc.ClientConn)
 
-	logger.Info("connecting irita-opb-native ...")
+	logger.Info("connecting tianzhou-evm ...")
 	iritaOpbNativeConn, err := grpc.DialContext(
 		context.Background(),
 		cfg.GrpcClient.TianZhouEVM,

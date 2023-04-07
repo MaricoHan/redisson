@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"gitlab.bianjie.ai/avata/chains/api/pb/v2/wallet"
+	"gitlab.bianjie.ai/avata/chains/api/v2/pb/wallet"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"

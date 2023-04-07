@@ -7,7 +7,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	pb "gitlab.bianjie.ai/avata/chains/api/pb/v2/ns"
+	pb "gitlab.bianjie.ai/avata/chains/api/v2/pb/ns"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"

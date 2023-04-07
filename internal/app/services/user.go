@@ -6,7 +6,7 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	"gitlab.bianjie.ai/avata/chains/api/pb/v2/wallet"
+	"gitlab.bianjie.ai/avata/chains/api/v2/pb/wallet"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
