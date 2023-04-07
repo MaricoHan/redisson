@@ -21,3 +21,10 @@ type UpdateUserRequest struct {
 	UserId   string `json:"user_id"`
 	PhoneNum string `json:"phone_num"`
 }
+
+// ShowUserRequest
+//  @Description: 查询用户
+type ShowUserRequest struct {
+	Usertype uint32 `json:"user_type"`
+	Code     string `json:"code"`
+}
