@@ -33,3 +33,29 @@ type UpdateUsers struct {
 	UserId     string `json:"user_id"`
 	PhoneNum   string `json:"phone_num"`
 }
+
+// ShowUsers
+//  @Description: 查询用户
+type ShowUsers struct {
+	ProjectID  uint64 `json:"project_id"`
+	ChainID    uint64 `json:"chain_id"`
+	Module     string `json:"module"`
+	AccessMode int    `json:"access_mode"`
+	Code       string `json:"code"`
+	Usertype   uint32 `json:"user_type"`
+	UserCode   string `json:"user_code"`
+}
+
+// ShowUsersAccountsRes
+//  @Description: 查询用户
+type ShowUsersAccountsRes struct {
+	PageRes
+	Accounts []*ShowUsersAccount `json:"accounts"`
+}
+
+// ShowUsersAccount
+//  @Description: 钱包查询用户返回
+type ShowUsersAccount struct {
+	Account
+	ReadOnly uint32 `json:"read_only"`
+}

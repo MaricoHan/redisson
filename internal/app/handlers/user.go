@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"strconv"
 	"strings"
 
 	"gitlab.bianjie.ai/avata/chains/api/v2/pb/wallet"
@@ -16,6 +17,7 @@ import (
 type IUser interface {
 	CreateUsers(ctx context.Context, request interface{}) (interface{}, error)
 	UpdateUsers(ctx context.Context, request interface{}) (interface{}, error)
+	ShowUsers(ctx context.Context, request interface{}) (interface{}, error)
 }
 
 type User struct {
@@ -30,7 +32,10 @@ func NewUser(svc services.IUser) *User {
 
 func (u User) CreateUsers(ctx context.Context, request interface{}) (interface{}, error) {
 	req := request.(*vo.CreateUserRequest)
-
+	authData, err := u.validateUsers(ctx)
+	if err != nil {
+		return nil, err
+	}
 	// 校验参数
 	name := strings.TrimSpace(req.Name)
 	certificateNum := strings.TrimSpace(req.CertificateNum)
@@ -39,13 +44,8 @@ func (u User) CreateUsers(ctx context.Context, request interface{}) (interface{}
 	businessLicense := strings.TrimSpace(req.BusinessLicense)
 	email := strings.TrimSpace(req.Email)
 
-	authData := u.AuthData(ctx)
-	if authData.ExistWalletService {
-		authData.Code = constant.Wallet
-		authData.Module = constant.Server
-	} else {
-		return nil, errors.ErrNotImplemented
-	}
+	authData.Code = constant.Wallet
+	authData.Module = constant.Server
 
 	params := dto.CreateUsers{
 		ChainID:    authData.ChainId,
@@ -79,17 +79,15 @@ func (u User) CreateUsers(ctx context.Context, request interface{}) (interface{}
 
 func (u User) UpdateUsers(ctx context.Context, request interface{}) (interface{}, error) {
 	req := request.(*vo.UpdateUserRequest)
-
+	authData, err := u.validateUsers(ctx)
+	if err != nil {
+		return nil, err
+	}
 	// 校验参数
 	userId := strings.TrimSpace(req.UserId)
 	phoneNum := strings.TrimSpace(req.PhoneNum)
-	authData := u.AuthData(ctx)
-	if authData.ExistWalletService {
-		authData.Code = constant.Wallet
-		authData.Module = constant.Server
-	} else {
-		return nil, errors.ErrNotImplemented
-	}
+	authData.Code = constant.Wallet
+	authData.Module = constant.Server
 	params := dto.UpdateUsers{
 		ChainID:    authData.ChainId,
 		ProjectID:  authData.ProjectId,
@@ -100,4 +98,53 @@ func (u User) UpdateUsers(ctx context.Context, request interface{}) (interface{}
 		PhoneNum:   phoneNum,
 	}
 	return u.svc.UpdateUsers(ctx, params)
+}
+
+func (u User) ShowUsers(ctx context.Context, request interface{}) (interface{}, error) {
+	authData, err := u.validateUsers(ctx)
+	if err != nil {
+		return nil, err
+	}
+	authData.Code = constant.Wallet
+	authData.Module = constant.Server
+
+	params := dto.ShowUsers{
+		ProjectID:  authData.ProjectId,
+		ChainID:    authData.ChainId,
+		Module:     authData.Module,
+		AccessMode: authData.AccessMode,
+		Code:       authData.Code,
+		Usertype:   u.getUserType(ctx),
+		UserCode:   strings.TrimSpace(u.getCode(ctx)),
+	}
+
+	return u.svc.ShowUsers(ctx, params)
+}
+
+func (u User) validateUsers(ctx context.Context) (vo.AuthData, error) {
+	authData := u.AuthData(ctx)
+	if !authData.ExistWalletService {
+		return vo.AuthData{}, errors.ErrNotImplemented
+	}
+	return authData, nil
+}
+
+func (u User) getUserType(ctx context.Context) uint32 {
+	userType := ctx.Value("user_type")
+	if userType == nil || userType == "" {
+		return 0
+	}
+	parseUint, err := strconv.ParseUint(userType.(string), 10, 64)
+	if err != nil {
+		return 0
+	}
+	return uint32(parseUint)
+}
+
+func (u User) getCode(ctx context.Context) string {
+	code := ctx.Value("code")
+	if code == nil || code == "" {
+		return ""
+	}
+	return code.(string)
 }

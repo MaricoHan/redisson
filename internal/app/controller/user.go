@@ -30,6 +30,11 @@ func (c UserController) GetEndpoints() []kit.Endpoint {
 			Method:  http.MethodPatch,
 			Handler: c.makeHandler(c.handler.UpdateUsers, &vo.UpdateUserRequest{}),
 		},
+		kit.Endpoint{
+			URI:     "/users",
+			Method:  http.MethodGet,
+			Handler: c.makeHandler(c.handler.ShowUsers, nil),
+		},
 	)
 	return ends
 }
