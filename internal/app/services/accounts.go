@@ -40,6 +40,11 @@ func (a *account) BatchCreateAccount(ctx context.Context, params dto.BatchCreate
 		return nil, errors2.ErrNotImplemented
 	}
 
+	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+	if mapKey == constant.WalletServer {
+		return nil, errors2.ErrNotImplemented
+	}
+
 	req := pb.AccountBatchCreateRequest{
 		ProjectId:   params.ProjectID,
 		Count:       params.Count,
@@ -47,7 +52,7 @@ func (a *account) BatchCreateAccount(ctx context.Context, params dto.BatchCreate
 	}
 	resp := &pb.AccountBatchCreateResponse{}
 	var err error
-	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+
 	grpcClient, ok := initialize.AccountClientMap[mapKey]
 	if !ok {
 		logger.Error(errors2.ErrService)
