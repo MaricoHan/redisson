@@ -211,9 +211,7 @@ func (s *business) BuildOrder(ctx context.Context, params dto.BuildOrderInfo) (*
 	if resp == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
-	result := &dto.BuyResponse{
-		OperationId: resp.OperationId,
-	}
+	result := &dto.BuyResponse{}
 	return result, nil
 
 }
@@ -251,8 +249,6 @@ func (s *business) BatchBuyGas(ctx context.Context, params dto.BatchBuyGas) (*dt
 	if resp == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
-	result := &dto.BuyResponse{
-		OperationId: resp.OperationId,
-	}
+	result := &dto.BuyResponse{}
 	return result, nil
 }
