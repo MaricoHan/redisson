@@ -191,7 +191,7 @@ func (h *Business) GetOperationId(ctx context.Context) string {
 }
 
 func (h *Business) GetStatus(ctx context.Context) (int64, error) {
-	value := ctx.Value("value")
+	value := ctx.Value("status")
 	if value == nil {
 		return 0, nil
 	}
