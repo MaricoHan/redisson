@@ -91,7 +91,7 @@ func (h *Business) BuildOrder(ctx context.Context, request interface{}) (interfa
 	authData := h.AuthData(ctx)
 
 	if len(OrderRes.OperationId) == 0 {
-		return nil, errors2.New(errors2.ClientParams, "order_id is a required field")
+		return nil, errors2.New(errors2.ClientParams, "operation_id is a required field")
 	}
 	if OrderRes.OrderType == 0 {
 		return nil, errors2.New(errors2.ClientParams, "order_type is a required field")
@@ -131,7 +131,7 @@ func (h *Business) BatchBuyGas(ctx context.Context, request interface{}) (interf
 	authData := h.AuthData(ctx)
 
 	if len(OrderRes.OperationId) == 0 {
-		return nil, errors2.New(errors2.ClientParams, "order_id is a required field")
+		return nil, errors2.New(errors2.ClientParams, "operation_id is a required field")
 	}
 
 	if len(OrderRes.List) == 0 {
@@ -191,7 +191,7 @@ func (h *Business) GetOperationId(ctx context.Context) string {
 }
 
 func (h *Business) GetStatus(ctx context.Context) (int64, error) {
-	value := ctx.Value("value")
+	value := ctx.Value("status")
 	if value == nil {
 		return 0, nil
 	}
