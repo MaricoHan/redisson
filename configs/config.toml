@@ -27,7 +27,7 @@ password = ""
 db = 11
 
 [grpc_client]
-tianzhou_evm = "192.168.150.42:20000"
+tianzhou_evm = ":10000"
 state_gateway = "192.168.150.44:10000"
 wallet_server = "192.168.150.40:11000"
 

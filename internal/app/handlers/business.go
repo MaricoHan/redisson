@@ -49,7 +49,6 @@ func (h *Business) GetAllOrders(ctx context.Context, _ interface{}) (interface{}
 	authData := h.AuthData(ctx)
 
 	params := dto.GetAllOrder{
-		Page:       dto.Page{},
 		Module:     authData.Module,
 		ProjectId:  authData.ProjectId,
 		Account:    h.GetAccount(ctx),
