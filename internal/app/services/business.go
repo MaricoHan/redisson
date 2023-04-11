@@ -85,7 +85,7 @@ func (s *business) GetAllOrders(ctx context.Context, params dto.GetAllOrder) (*d
 
 	var sort pb.Sorts
 	if sorts[0] == "DATE" {
-		sort = pb.Sorts_ID
+		sort = pb.Sorts_CREATED_AT
 	} else {
 		logger.Error(errors2.ErrSortBy)
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrSortBy)
