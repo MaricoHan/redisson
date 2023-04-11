@@ -39,7 +39,6 @@ type GetAllOrder struct {
 }
 
 type BuyResponse struct {
-	OperationId string `json:"operation_id"`
 }
 
 type OrderOperationRes struct {
