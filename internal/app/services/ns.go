@@ -59,10 +59,6 @@ func (t *ns) CreateDomain(ctx context.Context, params dto.CreateDomain) (*dto.Tx
 		logger.WithError(err).Error("request err")
 		return nil, err
 	}
-	if err != nil {
-		logger.Error("request err:", err.Error())
-		return nil, err
-	}
 	if resp == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
