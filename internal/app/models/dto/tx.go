@@ -2,7 +2,7 @@ package dto
 
 import (
 	"github.com/volatiletech/sqlboiler/types"
-	pb "gitlab.bianjie.ai/avata/chains/api/v2/pb/tx_v2"
+	pb "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/tx"
 )
 
 type TxResultByTxHash struct {

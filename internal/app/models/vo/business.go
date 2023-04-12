@@ -1,6 +1,6 @@
 package vo
 
-import pb "gitlab.bianjie.ai/avata/chains/api/v2/pb/buy_v2"
+import pb "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/buy"
 
 type BuyRequest struct {
 	//Base

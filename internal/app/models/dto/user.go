@@ -1,6 +1,6 @@
 package dto
 
-import "gitlab.bianjie.ai/avata/chains/api/v2/pb/wallet"
+import "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/wallet"
 
 // CreateUsers
 //  @Description: 创建用户

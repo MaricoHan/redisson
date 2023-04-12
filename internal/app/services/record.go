@@ -7,7 +7,7 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	records "gitlab.bianjie.ai/avata/chains/api/v2/pb/record_v2"
+	records "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/record"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"

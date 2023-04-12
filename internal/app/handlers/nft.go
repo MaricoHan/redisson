@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	pb "gitlab.bianjie.ai/avata/chains/api/v2/pb/nft_v2"
+	pb "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/nft"
 
 	"gitlab.bianjie.ai/avata/utils/errors/common"
 
