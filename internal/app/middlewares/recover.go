@@ -2,8 +2,11 @@ package middlewares
 
 import (
 	"encoding/json"
-	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
+	"fmt"
 	"net/http"
+
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
 )
 
 // RecoverMiddleware recover the panic error
@@ -18,6 +21,12 @@ type panicHandler struct {
 func (h panicHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		if e := recover(); e != nil {
+			log := initialize.Log.WithFields(map[string]interface{}{
+				"function": "ServeHTTP",
+				"method":   r.Method,
+				"url":      r.URL.Path,
+			})
+			log.WithError(fmt.Errorf("%v", e)).Errorln("global exception")
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusInternalServerError)
 			bz, _ := json.Marshal(constant.Response{
