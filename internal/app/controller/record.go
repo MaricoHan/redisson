@@ -3,7 +3,7 @@ package controller
 import (
 	"net/http"
 
-	record "gitlab.bianjie.ai/avata/chains/api/v2/pb/record_v2"
+	record "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/record"
 	kit "gitlab.bianjie.ai/avata/open-api/pkg/gokit"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"

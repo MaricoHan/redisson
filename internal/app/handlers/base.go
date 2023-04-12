@@ -12,7 +12,7 @@ import (
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 	"gitlab.bianjie.ai/avata/utils/errors/common"
 
-	nft"gitlab.bianjie.ai/avata/chains/api/v2/pb/nft_v2"
+	nft"gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/nft"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 )
 
