@@ -30,6 +30,7 @@ func GetAllControllers(logger *log.Logger) []kit.IController {
 		NewNsController(baseController, handlers.NewNs(services.NewNs(logger))),
 		NewRecordController(baseController, handlers.NewRecord(services.NewRecord(logger))),
 		NewEmptionController(baseController, handlers.NewBusiness(services.NewBusiness(logger))),
+		NewContractController(baseController, handlers.NewContract(services.NewContract(logger))),
 	}
 
 	return controllers
