@@ -7,7 +7,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	pb "gitlab.bianjie.ai/avata/chains/api/pb/v2/ns"
+	pb "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/ns"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
@@ -57,10 +57,6 @@ func (t *ns) CreateDomain(ctx context.Context, params dto.CreateDomain) (*dto.Tx
 	resp, err = grpcClient.Create(ctx, &req)
 	if err != nil {
 		logger.WithError(err).Error("request err")
-		return nil, err
-	}
-	if err != nil {
-		logger.Error("request err:", err.Error())
 		return nil, err
 	}
 	if resp == nil {

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"regexp"
 	"sort"
 	"strconv"
@@ -97,7 +98,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		UserId:     uint64(projectInfo.UserId),
 	}
 	matched, err := regexp.MatchString("/users|/accounts|/account", r.URL.Path)
-	if err!=nil{
+	if err != nil {
 		log.WithError(err).Error("match path")
 		writeInternalResp(w)
 		return
@@ -115,13 +116,13 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 判断项目参数版本号
-	if projectInfo.Version == entity.Version1 {
+	if projectInfo.Version == entity.VersionStage {
+		authData.Code = constant.IritaOPB
+		authData.Module = constant.Native
+	} else if projectInfo.Version != entity.Version2 && authData.AccessMode != entity.UNMANAGED {
 		log.Error("project version not implemented")
 		writeNotFoundRequestResp(w, constant.ErrUnSupported)
 		return
-	} else if projectInfo.Version == entity.VersionStage {
-		authData.Code = constant.IritaOPB
-		authData.Module = constant.Native
 	}
 
 	authDataBytes, _ := json.Marshal(authData)
@@ -195,7 +196,12 @@ func (h authHandler) Signature(r *http.Request, apiSecret string, timestamp stri
 	// 获取 query params
 	for k, v := range r.URL.Query() {
 		k = "query_" + k
-		params[k] = v[0]
+
+		if k == "query_page_key" { // page_key 中包含特殊字符 "+"
+			params[k], _ = url.QueryUnescape(v[0])
+		} else {
+			params[k] = v[0]
+		}
 	}
 
 	// 获取 body params

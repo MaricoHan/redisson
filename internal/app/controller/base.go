@@ -28,6 +28,8 @@ func GetAllControllers(logger *log.Logger) []kit.IController {
 		NewAuthController(baseController, handlers.NewAuth(services.NewAuth(logger))),
 		NewUserController(baseController, handlers.NewUser(services.NewUser(logger))),
 		NewNsController(baseController, handlers.NewNs(services.NewNs(logger))),
+		NewRecordController(baseController, handlers.NewRecord(services.NewRecord(logger))),
+		NewEmptionController(baseController, handlers.NewBusiness(services.NewBusiness(logger))),
 	}
 
 	return controllers

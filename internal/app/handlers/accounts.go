@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
+
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/utils/errors/common"
 
@@ -45,6 +47,10 @@ func (h *Account) BatchCreateAccount(ctx context.Context, request interface{}) (
 	}
 
 	authData := h.AuthData(ctx)
+	if authData.ExistWalletService {
+		authData.Code = constant.Wallet
+		authData.Module = constant.Server
+	}
 	params := dto.BatchCreateAccount{
 		ChainID:     authData.ChainId,
 		ProjectID:   authData.ProjectId,
@@ -154,6 +160,13 @@ func (h *Account) GetAccounts(ctx context.Context, _ interface{}) (interface{}, 
 
 	params.SortBy = h.SortBy(ctx)
 
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors.ErrNotImplemented
+	}
+	if fmt.Sprintf("%s-%s", params.Code, params.Module) == constant.WalletServer {
+		return h.svc.GetUserAccounts(ctx, params)
+	}
 	return h.svc.GetAccounts(ctx, params)
 }
 

@@ -9,7 +9,7 @@ import (
 
 type ITx interface {
 	TxResult(ctx context.Context, _ interface{}) (interface{}, error)
-	TxQueueInfo(ctx context.Context, _ interface{}) (interface{}, error)
+	//TxQueueInfo(ctx context.Context, _ interface{}) (interface{}, error)
 }
 
 type Tx struct {
@@ -38,18 +38,18 @@ func (h *Tx) TxResult(ctx context.Context, _ interface{}) (interface{}, error) {
 	return h.svc.TxResult(ctx, params)
 }
 
-func (h *Tx) TxQueueInfo(ctx context.Context, _ interface{}) (interface{}, error) {
-	// 校验参数 start
-	authData := h.AuthData(ctx)
-	params := dto.TxQueueInfo{
-		OperationId: h.OperationId(ctx),
-		ProjectID:   authData.ProjectId,
-		Module:      authData.Module,
-		Code:        authData.Code,
-	}
-	// 校验参数 end
-	return h.svc.TxQueueInfo(ctx, params)
-}
+//func (h *Tx) TxQueueInfo(ctx context.Context, _ interface{}) (interface{}, error) {
+//	// 校验参数 start
+//	authData := h.AuthData(ctx)
+//	params := dto.TxQueueInfo{
+//		OperationId: h.OperationId(ctx),
+//		ProjectID:   authData.ProjectId,
+//		Module:      authData.Module,
+//		Code:        authData.Code,
+//	}
+//	// 校验参数 end
+//	return h.svc.TxQueueInfo(ctx, params)
+//}
 
 func (h *Tx) OperationId(ctx context.Context) string {
 	operationId := ctx.Value("operation_id")

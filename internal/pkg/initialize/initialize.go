@@ -12,15 +12,17 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 
-	pb_account "gitlab.bianjie.ai/avata/chains/api/pb/v2/account"
-	pb_class "gitlab.bianjie.ai/avata/chains/api/pb/v2/class"
-	pb_msgs "gitlab.bianjie.ai/avata/chains/api/pb/v2/msgs"
-	pb_nft "gitlab.bianjie.ai/avata/chains/api/pb/v2/nft"
-	pb_notice "gitlab.bianjie.ai/avata/chains/api/pb/v2/notice"
-	pb_ns "gitlab.bianjie.ai/avata/chains/api/pb/v2/ns"
-	pb_tx "gitlab.bianjie.ai/avata/chains/api/pb/v2/tx"
-	pb_tx_queue "gitlab.bianjie.ai/avata/chains/api/pb/v2/tx_queue"
-	pb_wallet "gitlab.bianjie.ai/avata/chains/api/pb/v2/wallet"
+	pb_account "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/account"
+	pb_business "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/buy"
+	pb_class "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/class"
+	pb_msgs "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/msgs"
+	pb_nft "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/nft"
+	pb_record "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/record"
+	pb_tx "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/tx"
+	//pb_notice "gitlab.bianjie.ai/avata/chains/api/pb/v2/notice"
+	pb_ns "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/ns"
+	//pb_tx_queue "gitlab.bianjie.ai/avata/chains/api/pb/v2/tx_queue"
+	pb_wallet "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/wallet"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/middleware"
@@ -33,20 +35,19 @@ var RedisClient *redis.RedisClient
 var MysqlDB *gorm.DB
 var GrpcConnMap map[string]*grpc.ClientConn
 var AccountClientMap map[string]pb_account.AccountClient
-var NoticeClientMap map[string]pb_notice.NoticeClient
 var MsgsClientMap map[string]pb_msgs.MSGSClient
 var NftClientMap map[string]pb_nft.NFTClient
 
-// var RecordClientMap map[string]pb_record.RecordClient
+var RecordClientMap map[string]pb_record.RecordClient
 var ClassClientMap map[string]pb_class.ClassClient
 var TxClientMap map[string]pb_tx.TxClient
+var BusineessClientMap map[string]pb_business.BuyClient
 
 //var MTClientMap map[string]pb_mt.MTClient
 //var MTClassClientMap map[string]pb_mt_class.MTClassClient
 //var MTMsgsClientMap map[string]pb_mt_msgs.MTMSGSClient
 
 var StateGatewayServer *grpc.ClientConn
-var TxQueueClient pb_tx_queue.TxQueueClient
 
 //var GrpcConnRightsMap map[string]*grpc.ClientConn
 //var RightsClientMap map[string]rights.RightsClient
@@ -117,17 +118,17 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 
 	GrpcConnMap = make(map[string]*grpc.ClientConn)
 
-	logger.Info("connecting irita-opb-native ...")
+	logger.Info("connecting tianzhou-evm ...")
 	iritaOpbNativeConn, err := grpc.DialContext(
 		context.Background(),
-		cfg.GrpcClient.IritaOpbNative,
+		cfg.GrpcClient.TianZhouEVM,
 		grpc.WithInsecure(),
 		grpc.WithKeepaliveParams(kacp),
 		grpc.WithBlock(),
 		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy":"round_robin"}`),
 		grpc.WithUnaryInterceptor(middleware.NewGrpcInterceptorMiddleware().Interceptor()))
 	if err != nil {
-		logger.Fatal("get irita-opb-native grpc connect failed, err: ", err.Error())
+		logger.Fatal("get tianzhou-evm grpc connect failed, err: ", err.Error())
 	}
 	GrpcConnMap[constant.IritaOPBNative] = iritaOpbNativeConn
 
@@ -192,17 +193,17 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	//MTMsgsClientMap[constant.IrisHubNative] = pb_mt_msgs.NewMTMSGSClient(GrpcConnMap[constant.IrisHubNative])
 
 	// 初始化tx_queue
-	TxQueueClient = pb_tx_queue.NewTxQueueClient(StateGatewayServer)
+	// TxQueueClient = pb_tx_queue.NewTxQueueClient(StateGatewayServer)
 
 	// 初始化rights_jiangsu
 	//RightsClientMap = make(map[string]rights.RightsClient)
 	//RightsClientMap[constant.JiangSu] = rights.NewRightsClient(GrpcConnRightsMap[constant.JiangSu])
 
-	// 初始化record grpc client
-	//RecordClientMap = make(map[string]pb_record.RecordClient)
+	//初始化record grpc client
+	RecordClientMap = make(map[string]pb_record.RecordClient)
 	//RecordClientMap[constant.WenchangDDC] = pb_record.NewRecordClient(GrpcConnMap[constant.WenchangDDC])
 	//RecordClientMap[constant.WenchangNative] = pb_record.NewRecordClient(GrpcConnMap[constant.WenchangNative])
-	//RecordClientMap[constant.IritaOPBNative] = pb_record.NewRecordClient(GrpcConnMap[constant.IritaOPBNative])
+	RecordClientMap[constant.IritaOPBNative] = pb_record.NewRecordClient(GrpcConnMap[constant.IritaOPBNative])
 	//RecordClientMap[constant.IrisHubNative] = pb_record.NewRecordClient(GrpcConnMap[constant.IrisHubNative])
 
 	// 初始化notice
@@ -211,6 +212,10 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	//NoticeClientMap[constant.IritaOPBNative] = pb_notice.NewNoticeClient(GrpcConnMap[constant.IritaOPBNative])
 	//NoticeClientMap[constant.WenchangDDC] = pb_notice.NewNoticeClient(GrpcConnMap[constant.WenchangDDC])
 	//NoticeClientMap[constant.IrisHubNative] = pb_notice.NewNoticeClient(GrpcConnMap[constant.IrisHubNative])
+
+	// 初始化business grpc client
+	BusineessClientMap = make(map[string]pb_business.BuyClient)
+	BusineessClientMap[constant.IritaOPBNative] = pb_business.NewBuyClient(GrpcConnMap[constant.IritaOPBNative])
 
 	// 初始化wallet grpc client
 	WalletClientMap = make(map[string]pb_wallet.WalletClient)

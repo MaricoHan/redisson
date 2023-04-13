@@ -6,7 +6,7 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	"gitlab.bianjie.ai/avata/chains/api/pb/v2/wallet"
+	"gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/wallet"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
@@ -17,6 +17,7 @@ import (
 type IUser interface {
 	CreateUsers(ctx context.Context, params dto.CreateUsers) (*dto.CreateUsersRes, error)
 	UpdateUsers(ctx context.Context, params dto.UpdateUsers) (*dto.TxRes, error)
+	ShowUsers(ctx context.Context, params dto.ShowUsers) (*dto.CreateUsersRes, error)
 }
 
 type user struct {
@@ -96,5 +97,41 @@ func (u user) UpdateUsers(ctx context.Context, params dto.UpdateUsers) (*dto.TxR
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
 	result := &dto.TxRes{}
+	return result, nil
+}
+
+func (u user) ShowUsers(ctx context.Context, params dto.ShowUsers) (*dto.CreateUsersRes, error) {
+	log := u.logger.WithContext(ctx).WithFields(
+		map[string]interface{}{
+			"function": "ShowUsers",
+			"params":   params,
+		})
+	req := wallet.ShowUsersRequest{
+		ProjectId: params.ProjectID,
+		UserType:  wallet.USER_TYPE(params.Usertype),
+		Code:      params.UserCode,
+	}
+	resp := &wallet.CreateUsersResponse{}
+	var err error
+	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+	grpcClient, ok := initialize.WalletClientMap[mapKey]
+	if !ok {
+		log.Error(errors2.ErrService)
+		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
+	}
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+	resp, err = grpcClient.ShowUsers(ctx, &req)
+	if err != nil {
+		log.WithError(err).Error("request err")
+		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+	}
+	result := &dto.CreateUsersRes{
+		UserId: resp.UserId,
+		Did:    resp.Did,
+	}
 	return result, nil
 }
