@@ -118,7 +118,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if projectInfo.Version == entity.VersionStage {
 		authData.Code = constant.IritaOPB
 		authData.Module = constant.Native
-	} else if projectInfo.Version != entity.Version2 {
+	} else if projectInfo.Version != entity.Version2 && authData.AccessMode != entity.UNMANAGED {
 		log.Error("project version not implemented")
 		writeNotFoundRequestResp(w, constant.ErrUnSupported)
 		return
