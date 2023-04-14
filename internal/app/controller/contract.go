@@ -21,13 +21,13 @@ func (c ContractController) GetEndpoints() []kit.Endpoint {
 	var ends []kit.Endpoint
 	ends = append(ends,
 		kit.Endpoint{
-			URI:     "/contract/call",
+			URI:     "/contract/calls",
 			Method:  http.MethodGet,
 			Handler: c.makeHandler(c.handler.ShowCall, nil),
 		},
 
 		kit.Endpoint{
-			URI:     "/contract/call",
+			URI:     "/contract/calls",
 			Method:  http.MethodPost,
 			Handler: c.makeHandler(c.handler.CreateCall, &vo.CreateContractCallRequest{}),
 		},
