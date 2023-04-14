@@ -5,6 +5,6 @@ type CreateContractCallRequest struct {
 	From        string `json:"from" validate:"required"`
 	To          string `json:"to" validate:"required"`
 	Data        string `json:"data" validate:"required"`
-	GasLimit    uint64 `json:"gas_limit" validate:"required"`
+	GasLimit    uint64 `json:"gas_limit"`
 	Estimation  uint32 `json:"estimation"`
 }
