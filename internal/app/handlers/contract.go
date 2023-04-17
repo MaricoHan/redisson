@@ -59,7 +59,6 @@ func (h *Contract) CreateCall(ctx context.Context, request interface{}) (interfa
 }
 
 func (h *Contract) ShowCall(ctx context.Context, request interface{}) (interface{}, error) {
-	from := strings.TrimSpace(h.From(ctx))
 	to := strings.TrimSpace(h.To(ctx))
 	data := strings.TrimSpace(h.Data(ctx))
 
@@ -70,7 +69,6 @@ func (h *Contract) ShowCall(ctx context.Context, request interface{}) (interface
 		Module:     authData.Module,
 		Code:       authData.Code,
 		AccessMode: authData.AccessMode,
-		From:       from,
 		To:         to,
 		Data:       data,
 	}
@@ -78,25 +76,25 @@ func (h *Contract) ShowCall(ctx context.Context, request interface{}) (interface
 }
 
 func (h *Contract) From(ctx context.Context) string {
-	name := ctx.Value("from")
-	if name == nil {
+	from := ctx.Value("from")
+	if from == nil {
 		return ""
 	}
-	return name.(string)
+	return from.(string)
 }
 
 func (h *Contract) To(ctx context.Context) string {
-	tld := ctx.Value("to")
-	if tld == nil {
+	to := ctx.Value("to")
+	if to == nil {
 		return ""
 	}
-	return tld.(string)
+	return to.(string)
 }
 
 func (h *Contract) Data(ctx context.Context) string {
-	owner := ctx.Value("data")
-	if owner == nil {
+	data := ctx.Value("data")
+	if data == nil {
 		return ""
 	}
-	return owner.(string)
+	return data.(string)
 }
