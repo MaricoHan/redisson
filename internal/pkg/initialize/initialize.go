@@ -20,6 +20,7 @@ import (
 	pb_record "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/record"
 	pb_tx "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/tx"
 	//pb_notice "gitlab.bianjie.ai/avata/chains/api/pb/v2/notice"
+	pb_contract "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/contract"
 	pb_ns "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/ns"
 	//pb_tx_queue "gitlab.bianjie.ai/avata/chains/api/pb/v2/tx_queue"
 	pb_wallet "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/wallet"
@@ -55,6 +56,8 @@ var StateGatewayServer *grpc.ClientConn
 var WalletClientMap map[string]pb_wallet.WalletClient
 
 var NsClientMap map[string]pb_ns.NSClient
+
+var ContractClientMap map[string]pb_contract.ContractClient
 
 var Log = new(log.Logger)
 
@@ -224,6 +227,10 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	// 初始化ns grpc client
 	NsClientMap = make(map[string]pb_ns.NSClient)
 	NsClientMap[constant.IritaOPBNative] = pb_ns.NewNSClient(GrpcConnMap[constant.IritaOPBNative])
+
+	// 初始化contract grpc client
+	ContractClientMap = make(map[string]pb_contract.ContractClient)
+	ContractClientMap[constant.IritaOPBNative] = pb_contract.NewContractClient(GrpcConnMap[constant.IritaOPBNative])
 
 }
 
