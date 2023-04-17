@@ -76,7 +76,7 @@ require (
 replace (
 	gitlab.bianjie.ai/avata/chains/api/v2 => gitlab.bianjie.ai/avata/chains/api.git/v2 v2.3.0
 
-	gitlab.bianjie.ai/avata/utils/commons => gitlab.bianjie.ai/avata/utils/commons.git v0.3.8-0.20230330101959-0d9017222b53
+	gitlab.bianjie.ai/avata/utils/commons => gitlab.bianjie.ai/avata/utils/commons.git v0.3.9-0.20230413105452-ad15d8af13e5
 
 	gitlab.bianjie.ai/avata/utils/errors => gitlab.bianjie.ai/avata/utils/errors.git v0.1.10-0.20230317113546-816be9f332a3
 )
