@@ -9,6 +9,7 @@ timestamp_auth = false
 router_prefix = "v2"
 grpc_timeout = 1000000
 http_timeout = 1000000
+limit = 200 # 数据查询条数上限
 
 [mysql]
 #host = "192.168.0.136"
