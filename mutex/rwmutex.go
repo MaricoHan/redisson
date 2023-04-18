@@ -58,8 +58,9 @@ func (r RWMutex) Lock() error {
 	}
 	// 加锁成功，开个协程，定时续锁
 	go func() {
-		ticker := time.NewTicker(r.expiration / 3).C
-		for range ticker {
+		ticker := time.NewTicker(r.expiration / 3)
+		defer ticker.Stop()
+		for range ticker.C {
 			res, err := r.root.Client.Eval(context.TODO(), rwMutexScript.renewalScript, []string{r.Name}, expiration, clientID).Int64()
 			if err != nil || res == 0 {
 				return
