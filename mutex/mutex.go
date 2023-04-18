@@ -55,8 +55,9 @@ func (m Mutex) Lock() error {
 	}
 	// 加锁成功，开个协程，定时续锁
 	go func() {
-		ticker := time.NewTicker(m.expiration / 3).C
-		for range ticker {
+		ticker := time.NewTicker(m.expiration / 3)
+		defer ticker.Stop()
+		for range ticker.C {
 			res, err := m.root.Client.Eval(context.TODO(), mutexScript.renewalScript, []string{m.Name}, expiration, clientID).Int64()
 			if err != nil || res == 0 {
 				return
