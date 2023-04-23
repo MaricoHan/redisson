@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"regexp"
 	"sort"
 	"strconv"
@@ -197,11 +196,12 @@ func (h authHandler) Signature(r *http.Request, apiSecret string, timestamp stri
 	for k, v := range r.URL.Query() {
 		k = "query_" + k
 
-		if k == "query_page_key" { // page_key 中包含特殊字符 "+"
-			params[k], _ = url.QueryUnescape(v[0])
-		} else {
-			params[k] = v[0]
-		}
+		params[k] = v[0]
+		//if k == "query_page_key" { // page_key 中包含特殊字符 "+"
+		//	params[k], _ = url.QueryUnescape(v[0])
+		//} else {
+		//	params[k] = v[0]
+		//}
 	}
 
 	// 获取 body params
