@@ -2,8 +2,6 @@ package handlers
 
 import (
 	"context"
-	"fmt"
-	"strconv"
 	"strings"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
@@ -20,6 +18,7 @@ type INFTTransfer interface {
 type NFTTransfer struct {
 	base
 	pageBasic
+	NFT
 	svc services.INFTTransfer
 }
 
@@ -60,7 +59,7 @@ func (h *NFTTransfer) TransferNftClassByID(ctx context.Context, request interfac
 	return h.svc.TransferNFTClass(ctx, params)
 }
 
-// TransferNftByNftId transfer an nft class by index
+// TransferNftByNftId transfer a nft class by index
 func (h *NFTTransfer) TransferNftByNftId(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
 	req := request.(*vo.TransferNftByNftIdRequest)
@@ -92,7 +91,7 @@ func (h *NFTTransfer) TransferNftByNftId(ctx context.Context, request interface{
 		AccessMode:  authData.AccessMode,
 	}
 
-	nftId, err := h.NftId(ctx)
+	nftId, err := h.NftID(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -106,33 +105,4 @@ func (h *NFTTransfer) TransferNftByNftId(ctx context.Context, request interface{
 	}
 
 	return h.svc.TransferNFT(ctx, params)
-}
-
-func (h *NFTTransfer) ClassID(ctx context.Context) string {
-	classId := ctx.Value("class_id")
-	if classId == nil {
-		return ""
-	}
-	return classId.(string)
-}
-
-func (h *NFTTransfer) Owner(ctx context.Context) string {
-	owner := ctx.Value("owner")
-	if owner == nil {
-		return ""
-	}
-	return owner.(string)
-}
-
-func (h *NFTTransfer) NftId(ctx context.Context) (uint64, error) {
-	v := ctx.Value("nft_id")
-	if v == nil {
-		return 0, errors2.New(errors2.NotFound, "")
-	}
-	res, err := strconv.ParseUint(v.(string), 10, 64)
-	if err != nil {
-		return 0, errors2.New(errors2.NotFound, fmt.Sprintf("%s, nft_id: %s not found", errors2.ErrRecordNotFound, v.(string)))
-	}
-
-	return res, nil
 }
