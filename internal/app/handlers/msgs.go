@@ -170,7 +170,7 @@ func (h *Msgs) NftId(ctx context.Context) (uint64, error) {
 	}
 	res, err := strconv.ParseUint(v.(string), 10, 64)
 	if err != nil {
-		return 0, errors.New(errors.NotFound, fmt.Sprintf("%s, nft_id: %s not found", errors.ErrRecordNotFound, v.(string)))
+		return 0, errors.New(errors.NotFound, fmt.Sprintf("%s, nft_id: %s not found", errors.ErrResourceNotFound, v.(string)))
 	}
 
 	return res, nil
