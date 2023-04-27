@@ -15,10 +15,10 @@ http_timeout = 1000000
 #port = 3306
 #username = "root"
 #password = "rootPassword"
-host = "127.0.0.1"
+host = "192.168.0.136"
 port = 3306
 username = "root"
-password = "12345678"
+password = "rootPassword"
 db = "core"
 max_open_conns = 100
 max_idle_conns = 20
@@ -31,7 +31,7 @@ password = ""
 db = 11
 
 [grpc_client]
-tianzhou_evm = ":10000"
+tianzhou_evm = "192.168.0.157:11000"
 state_gateway = "192.168.150.44:10000"
 wallet_server = "192.168.150.40:11000"
 

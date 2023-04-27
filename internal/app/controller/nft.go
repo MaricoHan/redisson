@@ -22,6 +22,32 @@ func (c NftController) GetEndpoints() []kit.Endpoint {
 	var ends []kit.Endpoint
 	ends = append(ends,
 		kit.Endpoint{
+			URI:     "/evm/nft/nfts/{class_id}",
+			Method:  http.MethodPost,
+			Handler: c.makeHandler(c.handler.CreateNft, &vo.CreateNftsRequest{}),
+		},
+		kit.Endpoint{
+			URI:     "/evm/nft/nfts/{class_id}/{owner}/{nft_id}",
+			Method:  http.MethodPatch,
+			Handler: c.makeHandler(c.handler.EditNftByNftId, &vo.EditNftByIndexRequest{}),
+		},
+		kit.Endpoint{
+			URI:     "/evm/nft/nfts/{class_id}/{owner}/{nft_id}",
+			Method:  http.MethodDelete,
+			Handler: c.makeHandler(c.handler.DeleteNftByNftId, &vo.DeleteNftByNftIdRequest{}),
+		},
+		kit.Endpoint{
+			URI:     "/evm/nft/nfts",
+			Method:  http.MethodGet,
+			Handler: c.makeHandler(c.handler.Nfts, nil),
+		},
+		kit.Endpoint{
+			URI:     "/evm/nft/nfts/{class_id}/{nft_id}",
+			Method:  http.MethodGet,
+			Handler: c.makeHandler(c.handler.NftByNftId, nil),
+		},
+		// 兼容之前的版本
+		kit.Endpoint{
 			URI:     "/nft/nfts/{class_id}",
 			Method:  http.MethodPost,
 			Handler: c.makeHandler(c.handler.CreateNft, &vo.CreateNftsRequest{}),
