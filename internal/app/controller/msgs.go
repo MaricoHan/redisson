@@ -21,6 +21,11 @@ func (c MsgsController) GetEndpoints() []kit.Endpoint {
 	var ends []kit.Endpoint
 	ends = append(ends,
 		kit.Endpoint{
+			URI:     "/evm/nft/nfts/{class_id}/{nft_id}/history",
+			Method:  http.MethodGet,
+			Handler: c.makeHandler(c.handler.GetNFTHistory, nil),
+		},
+		kit.Endpoint{
 			URI:     "/nft/nfts/{class_id}/{nft_id}/history",
 			Method:  http.MethodGet,
 			Handler: c.makeHandler(c.handler.GetNFTHistory, nil),
