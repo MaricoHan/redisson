@@ -21,6 +21,17 @@ func (c NFTTransferController) GetEndpoints() []kit.Endpoint {
 	var ends []kit.Endpoint
 	ends = append(ends,
 		kit.Endpoint{
+			URI:     "/evm/nft/class-transfers/{class_id}/{owner}",
+			Method:  http.MethodPost,
+			Handler: c.makeHandler(c.handler.TransferNftClassByID, &vo.TransferNftClassByIDRequest{}),
+		},
+		kit.Endpoint{
+			URI:     "/evm/nft/nft-transfers/{class_id}/{owner}/{nft_id}",
+			Method:  http.MethodPost,
+			Handler: c.makeHandler(c.handler.TransferNftByNftId, &vo.TransferNftByNftIdRequest{}),
+		},
+		// 兼容之前的
+		kit.Endpoint{
 			URI:     "/nft/class-transfers/{class_id}/{owner}",
 			Method:  http.MethodPost,
 			Handler: c.makeHandler(c.handler.TransferNftClassByID, &vo.TransferNftClassByIDRequest{}),
