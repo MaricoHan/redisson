@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"strconv"
 
-	"gitlab.bianjie.ai/avata/utils/errors"
-	"gitlab.bianjie.ai/avata/utils/errors/common"
-
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
+	"gitlab.bianjie.ai/avata/utils/errors"
+	"gitlab.bianjie.ai/avata/utils/errors/common"
 )
 
 type IMsgs interface {
@@ -18,8 +17,8 @@ type IMsgs interface {
 }
 
 type Msgs struct {
-	base
-	pageBasic
+	Base
+	PageBasic
 	NFT
 	svc services.IMsgs
 }

@@ -1,13 +1,14 @@
-package handlers
+package l2
 
 import (
 	"context"
 	"fmt"
 	"strings"
 
-	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
+	dto "gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/l2"
+	vo "gitlab.bianjie.ai/avata/open-api/internal/app/models/vo/l2"
+	services "gitlab.bianjie.ai/avata/open-api/internal/app/services/l2"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 	"gitlab.bianjie.ai/avata/utils/errors/common"
 )
@@ -16,11 +17,12 @@ type INftClass interface {
 	CreateNftClass(ctx context.Context, _ interface{}) (interface{}, error)
 	Classes(ctx context.Context, _ interface{}) (interface{}, error)
 	ClassByID(ctx context.Context, _ interface{}) (interface{}, error)
+	TransferNftClassByID(ctx context.Context, request interface{}) (interface{}, error)
 }
 
 type NftClass struct {
-	Base
-	PageBasic
+	handlers.Base
+	handlers.PageBasic
 	svc services.INFTClass
 }
 
@@ -35,8 +37,12 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 	req := request.(*vo.CreateNftClassRequest)
 
 	name := strings.TrimSpace(req.Name)
+	classId := strings.TrimSpace(req.ClassId)
 	symbol := strings.TrimSpace(req.Symbol)
+	description := strings.TrimSpace(req.Description)
 	uri := strings.TrimSpace(req.Uri)
+	uriHash := strings.TrimSpace(req.UriHash)
+	data := strings.TrimSpace(req.Data)
 	owner := strings.TrimSpace(req.Owner)
 	operationId := strings.TrimSpace(req.OperationID)
 	if operationId == "" {
@@ -62,19 +68,21 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 
 	authData := h.AuthData(ctx)
 	params := dto.CreateNftClass{
-		ChainID:              authData.ChainId,
-		ProjectID:            authData.ProjectId,
-		PlatFormID:           authData.PlatformId,
-		Module:               authData.Module,
-		Name:                 name,
-		Symbol:               symbol,
-		Uri:                  uri,
-		EditableByClassOwner: req.EditableByClassOwner,
-		EditableByOwner:      req.EditableByOwner,
-		Owner:                owner,
-		Code:                 authData.Code,
-		OperationId:          operationId,
-		AccessMode:           authData.AccessMode,
+		ChainID:     authData.ChainId,
+		ProjectID:   authData.ProjectId,
+		PlatFormID:  authData.PlatformId,
+		Code:        authData.Code,
+		Module:      authData.Module,
+		AccessMode:  authData.AccessMode,
+		Name:        name,
+		ClassId:     classId,
+		Symbol:      symbol,
+		Description: description,
+		Uri:         uri,
+		UriHash:     uriHash,
+		Data:        data,
+		Owner:       owner,
+		OperationId: operationId,
 	}
 	return h.svc.CreateNFTClass(ctx, params)
 }
@@ -144,6 +152,39 @@ func (h NftClass) ClassByID(ctx context.Context, _ interface{}) (interface{}, er
 	return h.svc.GetNFTClass(ctx, params)
 }
 
+func (h *NftClass) TransferNftClassByID(ctx context.Context, request interface{}) (interface{}, error) {
+	// 校验参数 start
+	req := request.(*vo.TransferNftClassByIDRequest)
+	recipient := strings.TrimSpace(req.Recipient)
+	operationId := strings.TrimSpace(req.OperationID)
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
+	if recipient == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrRecipient)
+	}
+
+	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
+	}
+
+	// 校验参数 end
+	authData := h.AuthData(ctx)
+	params := dto.TransferNftClassById{
+		ClassID:     h.ClassID(ctx),
+		Owner:       h.Owner(ctx),
+		Recipient:   recipient,
+		ChainID:     authData.ChainId,
+		ProjectID:   authData.ProjectId,
+		PlatFormID:  authData.PlatformId,
+		Module:      authData.Module,
+		Code:        authData.Code,
+		OperationId: operationId,
+		AccessMode:  authData.AccessMode,
+	}
+	return h.svc.TransferNFTClass(ctx, params)
+}
+
 func (h NftClass) Id(ctx context.Context) string {
 	idR := ctx.Value("id")
 	if idR == nil {
@@ -174,4 +215,12 @@ func (h NftClass) TxHash(ctx context.Context) string {
 		return ""
 	}
 	return txHashR.(string)
+}
+
+func (h *NftClass) ClassID(ctx context.Context) string {
+	classID := ctx.Value("class_id")
+	if classID == nil {
+		return ""
+	}
+	return classID.(string)
 }

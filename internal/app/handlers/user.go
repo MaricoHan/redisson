@@ -21,8 +21,8 @@ type IUser interface {
 }
 
 type User struct {
-	base
-	pageBasic
+	Base
+	PageBasic
 	svc services.IUser
 }
 

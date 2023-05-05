@@ -1,19 +1,20 @@
 package controller
 
 import (
-	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
-
 	"net/http"
 
 	kit "gitlab.bianjie.ai/avata/open-api/pkg/gokit"
+
+	"gitlab.bianjie.ai/avata/open-api/internal/app/controller/base"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
 )
 
 type MsgsController struct {
-	BaseController
+	base.BaseController
 	handler handlers.IMsgs
 }
 
-func NewMsgsController(bc BaseController, handler handlers.IMsgs) kit.IController {
+func NewMsgsController(bc base.BaseController, handler handlers.IMsgs) kit.IController {
 	return MsgsController{bc, handler}
 }
 
@@ -23,17 +24,17 @@ func (c MsgsController) GetEndpoints() []kit.Endpoint {
 		kit.Endpoint{
 			URI:     "/evm/nft/nfts/{class_id}/{nft_id}/history",
 			Method:  http.MethodGet,
-			Handler: c.makeHandler(c.handler.GetNFTHistory, nil),
+			Handler: c.MakeHandler(c.handler.GetNFTHistory, nil),
 		},
 		kit.Endpoint{
 			URI:     "/nft/nfts/{class_id}/{nft_id}/history",
 			Method:  http.MethodGet,
-			Handler: c.makeHandler(c.handler.GetNFTHistory, nil),
+			Handler: c.MakeHandler(c.handler.GetNFTHistory, nil),
 		},
 		kit.Endpoint{
 			URI:     "/accounts/history",
 			Method:  http.MethodGet,
-			Handler: c.makeHandler(c.handler.GetAccountHistory, nil),
+			Handler: c.MakeHandler(c.handler.GetAccountHistory, nil),
 		},
 	)
 	return ends
