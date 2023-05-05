@@ -41,6 +41,8 @@ const (
 
 	ErrNotFound     = "not found"
 	ErrInvalidValue = "invalid %s value"
+
+	ErrValueLength = "invalid %s value, should between %d and %d"
 )
 
 var (

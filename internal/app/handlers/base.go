@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"strconv"
 	"strings"
 
@@ -12,7 +14,7 @@ import (
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 	"gitlab.bianjie.ai/avata/utils/errors/common"
 
-	nft"gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/nft"
+	nft "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/nft"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 )
 
@@ -77,8 +79,8 @@ func (p pageBasic) Limit(ctx context.Context) (uint32, error) {
 	if err != nil {
 		return 10, errors2.New(errors2.ClientParams, errors2.ErrLimitParam)
 	}
-	if limitInt < 1 || limitInt > 50 {
-		return 10, errors2.New(errors2.ClientParams, errors2.ErrLimitParamInt)
+	if limitInt < 1 || limitInt > configs.Cfg.App.Limit {
+		return 10, errors2.New(errors2.ClientParams, fmt.Sprintf(constant.ErrValueLength, "limit", 1, configs.Cfg.App.Limit))
 	}
 	return uint32(limitInt), nil
 }

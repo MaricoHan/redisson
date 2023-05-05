@@ -60,7 +60,7 @@ func (h *NFT) CreateNft(ctx context.Context, request interface{}) (interface{}, 
 		ProjectID:   authData.ProjectId,
 		PlatFormID:  authData.PlatformId,
 		Module:      authData.Module,
-		ClassId:     h.ClassId(ctx),
+		ClassId:     h.ClassID(ctx),
 		Uri:         uri,
 		UriHash:     uriHash,
 		Recipient:   recipient,
@@ -98,7 +98,7 @@ func (h *NFT) EditNftByNftId(ctx context.Context, request interface{}) (interfac
 		ChainID:     authData.ChainId,
 		ProjectID:   authData.ProjectId,
 		PlatFormID:  authData.PlatformId,
-		ClassId:     h.ClassId(ctx),
+		ClassId:     h.ClassID(ctx),
 		Sender:      h.Owner(ctx),
 		Module:      authData.Module,
 		Uri:         uri,
@@ -107,7 +107,7 @@ func (h *NFT) EditNftByNftId(ctx context.Context, request interface{}) (interfac
 		OperationId: operationId,
 		AccessMode:  authData.AccessMode,
 	}
-	nftId, err := h.NftId(ctx)
+	nftId, err := h.NftID(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -134,13 +134,13 @@ func (h *NFT) DeleteNftByNftId(ctx context.Context, request interface{}) (interf
 		ProjectID:   authData.ProjectId,
 		PlatFormID:  authData.PlatformId,
 		Module:      authData.Module,
-		ClassId:     h.ClassId(ctx),
+		ClassId:     h.ClassID(ctx),
 		Sender:      h.Owner(ctx),
 		Code:        authData.Code,
 		OperationId: operationId,
 		AccessMode:  authData.AccessMode,
 	}
-	nftId, err := h.NftId(ctx)
+	nftId, err := h.NftID(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -166,7 +166,7 @@ func (h *NFT) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 		Code:       authData.Code,
 		AccessMode: authData.AccessMode,
 
-		ClassId: h.ClassId(ctx),
+		ClassId: h.ClassID(ctx),
 		Owner:   h.Owner(ctx),
 		TxHash:  h.TxHash(ctx),
 		Status:  status,
@@ -218,11 +218,11 @@ func (h *NFT) NftByNftId(ctx context.Context, _ interface{}) (interface{}, error
 		ProjectID:  authData.ProjectId,
 		PlatFormID: authData.PlatformId,
 		Module:     authData.Module,
-		ClassId:    h.ClassId(ctx),
+		ClassId:    h.ClassID(ctx),
 		Code:       authData.Code,
 		AccessMode: authData.AccessMode,
 	}
-	nftId, err := h.NftId(ctx)
+	nftId, err := h.NftID(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -252,12 +252,12 @@ func (h *NFT) Id(ctx context.Context) (uint64, error) {
 	return res, nil
 }
 
-func (h *NFT) ClassId(ctx context.Context) string {
-	classId := ctx.Value("class_id")
-	if classId == nil {
+func (h *NFT) ClassID(ctx context.Context) string {
+	classID := ctx.Value("class_id")
+	if classID == nil {
 		return ""
 	}
-	return classId.(string)
+	return classID.(string)
 }
 
 func (h *NFT) Name(ctx context.Context) string {
@@ -276,7 +276,7 @@ func (h *NFT) Owner(ctx context.Context) string {
 	return owner.(string)
 }
 
-func (h *NFT) NftId(ctx context.Context) (uint64, error) {
+func (h *NFT) NftID(ctx context.Context) (uint64, error) {
 	v := ctx.Value("nft_id")
 	if v == nil {
 		return 0, errors2.New(errors2.NotFound, "")
