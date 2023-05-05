@@ -7,13 +7,11 @@ import (
 	"strings"
 
 	pb "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/nft"
-
-	"gitlab.bianjie.ai/avata/utils/errors/common"
-
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
+	"gitlab.bianjie.ai/avata/utils/errors/common"
 )
 
 type INft interface {
@@ -25,8 +23,8 @@ type INft interface {
 }
 
 type NFT struct {
-	base
-	pageBasic
+	Base
+	PageBasic
 	svc services.INFT
 }
 
@@ -50,7 +48,7 @@ func (h *NFT) CreateNft(ctx context.Context, request interface{}) (interface{}, 
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
 	}
 
-	if err := h.base.UriCheck(uri); err != nil {
+	if err := h.Base.UriCheck(uri); err != nil {
 		return nil, err
 	}
 
@@ -88,7 +86,7 @@ func (h *NFT) EditNftByNftId(ctx context.Context, request interface{}) (interfac
 	}
 	// check start
 
-	if err := h.base.UriCheck(uri); err != nil {
+	if err := h.Base.UriCheck(uri); err != nil {
 		return nil, err
 	}
 

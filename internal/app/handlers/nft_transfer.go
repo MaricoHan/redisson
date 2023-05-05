@@ -16,8 +16,8 @@ type INFTTransfer interface {
 }
 
 type NFTTransfer struct {
-	base
-	pageBasic
+	Base
+	PageBasic
 	NFT
 	svc services.INFTTransfer
 }

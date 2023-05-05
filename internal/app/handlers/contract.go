@@ -16,8 +16,8 @@ type IContract interface {
 }
 
 type Contract struct {
-	base
-	pageBasic
+	Base
+	PageBasic
 	svc services.IContract
 }
 

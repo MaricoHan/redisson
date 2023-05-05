@@ -47,6 +47,7 @@ type (
 		TianZhouEVM  string `mapstructure:"tianzhou_evm"`
 		StateGateway string `mapstructure:"state_gateway"`
 		WalletServer string `mapstructure:"wallet_server"`
+		IritaLayer2  string `mapstructure:"irita_layer2"`
 	}
 
 	Project struct {

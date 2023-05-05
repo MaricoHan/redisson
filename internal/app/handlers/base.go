@@ -4,24 +4,24 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
-	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"strconv"
 	"strings"
 
 	"github.com/asaskevich/govalidator"
 	log "github.com/sirupsen/logrus"
-	errors2 "gitlab.bianjie.ai/avata/utils/errors"
-	"gitlab.bianjie.ai/avata/utils/errors/common"
 
 	nft "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/nft"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
+	errors2 "gitlab.bianjie.ai/avata/utils/errors"
+	"gitlab.bianjie.ai/avata/utils/errors/common"
 )
 
-type base struct {
+type Base struct {
 }
 
-func (b base) AuthData(ctx context.Context) vo.AuthData {
+func (b Base) AuthData(ctx context.Context) vo.AuthData {
 	authDataString := ctx.Value("X-Auth-Data")
 	authDataSlice, ok := authDataString.([]string)
 	if !ok {
@@ -36,7 +36,7 @@ func (b base) AuthData(ctx context.Context) vo.AuthData {
 	return authData
 }
 
-func (b base) UriCheck(uri string) error {
+func (b Base) UriCheck(uri string) error {
 	if len([]rune(uri)) == 0 {
 		return nil
 	}
@@ -52,10 +52,10 @@ func (b base) UriCheck(uri string) error {
 	return nil
 }
 
-type pageBasic struct {
+type PageBasic struct {
 }
 
-func (p pageBasic) Offset(ctx context.Context) (int64, error) {
+func (p PageBasic) Offset(ctx context.Context) (int64, error) {
 	offset := ctx.Value("offset")
 	if offset == "" || offset == nil {
 		return 0, nil
@@ -70,7 +70,7 @@ func (p pageBasic) Offset(ctx context.Context) (int64, error) {
 	return offsetInt, nil
 }
 
-func (p pageBasic) Limit(ctx context.Context) (uint32, error) {
+func (p PageBasic) Limit(ctx context.Context) (uint32, error) {
 	limit := ctx.Value("limit")
 	if limit == "" || limit == nil {
 		return 10, nil
@@ -85,7 +85,7 @@ func (p pageBasic) Limit(ctx context.Context) (uint32, error) {
 	return uint32(limitInt), nil
 }
 
-func (p pageBasic) StartDate(ctx context.Context) string {
+func (p PageBasic) StartDate(ctx context.Context) string {
 	startDate := ctx.Value("start_date")
 	if startDate == "" || startDate == nil {
 		return ""
@@ -93,7 +93,7 @@ func (p pageBasic) StartDate(ctx context.Context) string {
 	return startDate.(string)
 }
 
-func (p pageBasic) EndDate(ctx context.Context) string {
+func (p PageBasic) EndDate(ctx context.Context) string {
 	endDate := ctx.Value("end_date")
 	if endDate == "" || endDate == nil {
 		return ""
@@ -101,7 +101,7 @@ func (p pageBasic) EndDate(ctx context.Context) string {
 	return endDate.(string)
 }
 
-func (p pageBasic) SortBy(ctx context.Context) string {
+func (p PageBasic) SortBy(ctx context.Context) string {
 	sortBy := ctx.Value("sort_by")
 	if sortBy == "" || sortBy == nil {
 		return nft.SORTS_name[0]
@@ -109,7 +109,7 @@ func (p pageBasic) SortBy(ctx context.Context) string {
 	return sortBy.(string)
 }
 
-func (p pageBasic) PageKey(ctx context.Context) string {
+func (p PageBasic) PageKey(ctx context.Context) string {
 	v := ctx.Value("page_key")
 	if v == nil {
 		return ""
@@ -118,7 +118,7 @@ func (p pageBasic) PageKey(ctx context.Context) string {
 	return strings.ReplaceAll(v.(string), " ", "+")
 }
 
-func (p pageBasic) CountTotal(ctx context.Context) (string, error) {
+func (p PageBasic) CountTotal(ctx context.Context) (string, error) {
 	CountTotal := ctx.Value("count_total")
 	if CountTotal == nil {
 		return "0", nil
@@ -130,7 +130,7 @@ func (p pageBasic) CountTotal(ctx context.Context) (string, error) {
 	return CountTotal.(string), nil
 }
 
-func (p pageBasic) StringValue(ctx context.Context, key string) string {
+func (p PageBasic) StringValue(ctx context.Context, key string) string {
 	v := ctx.Value(key)
 	if v == nil {
 		return ""

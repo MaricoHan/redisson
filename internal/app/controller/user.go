@@ -3,17 +3,19 @@ package controller
 import (
 	"net/http"
 
+	kit "gitlab.bianjie.ai/avata/open-api/pkg/gokit"
+
+	"gitlab.bianjie.ai/avata/open-api/internal/app/controller/base"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
-	kit "gitlab.bianjie.ai/avata/open-api/pkg/gokit"
 )
 
 type UserController struct {
-	BaseController
+	base.BaseController
 	handler handlers.IUser
 }
 
-func NewUserController(bc BaseController, handler handlers.IUser) kit.IController {
+func NewUserController(bc base.BaseController, handler handlers.IUser) kit.IController {
 	return UserController{bc, handler}
 }
 
@@ -23,17 +25,17 @@ func (c UserController) GetEndpoints() []kit.Endpoint {
 		kit.Endpoint{
 			URI:     "/users",
 			Method:  http.MethodPost,
-			Handler: c.makeHandler(c.handler.CreateUsers, &vo.CreateUserRequest{}),
+			Handler: c.MakeHandler(c.handler.CreateUsers, &vo.CreateUserRequest{}),
 		},
 		kit.Endpoint{
 			URI:     "/users",
 			Method:  http.MethodPatch,
-			Handler: c.makeHandler(c.handler.UpdateUsers, &vo.UpdateUserRequest{}),
+			Handler: c.MakeHandler(c.handler.UpdateUsers, &vo.UpdateUserRequest{}),
 		},
 		kit.Endpoint{
 			URI:     "/users",
 			Method:  http.MethodGet,
-			Handler: c.makeHandler(c.handler.ShowUsers, nil),
+			Handler: c.MakeHandler(c.handler.ShowUsers, nil),
 		},
 	)
 	return ends

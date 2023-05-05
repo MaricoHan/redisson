@@ -20,8 +20,8 @@ type INs interface {
 }
 
 type Ns struct {
-	base
-	pageBasic
+	Base
+	PageBasic
 	svc services.INs
 }
 

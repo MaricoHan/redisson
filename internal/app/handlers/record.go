@@ -4,10 +4,9 @@ import (
 	"context"
 	"strings"
 
-	record"gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/record"
-	errors2 "gitlab.bianjie.ai/avata/utils/errors"
-
+	record "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/record"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
+	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 )
 
 type IRecord interface {
@@ -15,8 +14,8 @@ type IRecord interface {
 }
 
 type Record struct {
-	base
-	pageBasic
+	Base
+	PageBasic
 	svc services.IRecord
 }
 
