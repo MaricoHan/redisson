@@ -1,7 +1,6 @@
 package l2
 
 import (
-	pb "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/nft"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 )
 
@@ -136,7 +135,7 @@ type NftsRes struct {
 }
 
 type NFT struct {
-	Id          uint64 `json:"id"`
+	Id          string `json:"id"`
 	ClassId     string `json:"class_id"`
 	ClassName   string `json:"class_name"`
 	ClassSymbol string `json:"class_symbol"`
@@ -149,7 +148,7 @@ type NFT struct {
 }
 
 type NftRes struct {
-	Id          uint64 `json:"id"`
+	Id          string `json:"id"`
 	ClassId     string `json:"class_id"`
 	ClassName   string `json:"class_name"`
 	ClassSymbol string `json:"class_symbol"`
@@ -163,38 +162,40 @@ type NftRes struct {
 
 type Nfts struct {
 	dto.Page
-	Id         uint64    `json:"id"`
-	ClassId    string    `json:"class_id"`
-	Owner      string    `json:"owner"`
-	TxHash     string    `json:"tx_hash"`
-	Status     pb.STATUS `json:"status"`
-	ProjectID  uint64    `json:"project_id"`
-	ChainID    uint64    `json:"chain_id"`
-	PlatFormID uint64    `json:"plat_form_id"`
-	Module     string    `json:"module"`
-	Code       string    `json:"code"`
-	AccessMode int       `json:"access_mode"`
+	Id         string `json:"id"`
+	ClassId    string `json:"class_id"`
+	Owner      string `json:"owner"`
+	TxHash     string `json:"tx_hash"`
+	Status     uint32 `json:"status"`
+	ProjectID  uint64 `json:"project_id"`
+	ChainID    uint64 `json:"chain_id"`
+	PlatFormID uint64 `json:"plat_form_id"`
+	Module     string `json:"module"`
+	Code       string `json:"code"`
+	AccessMode int    `json:"access_mode"`
 }
 
 type CreateNfts struct {
-	ProjectID   uint64 `json:"project_id"`
 	ChainID     uint64 `json:"chain_id"`
-	PlatFormID  uint64 `json:"plat_form_id"`
-	ClassId     string `json:"class_id"`
-	Uri         string `json:"uri"`
-	UriHash     string `json:"uri_hash"`
-	Recipient   string `json:"recipient"`
 	Module      string `json:"module"`
 	Code        string `json:"code"`
 	AccessMode  int    `json:"access_mode"`
 	OperationId string `json:"operation_id"`
+	ProjectID   uint64 `json:"project_id"`
+	PlatFormID  uint64 `json:"plat_form_id"`
+	ClassId     string `json:"class_id"`
+	Name        string `json:"name"`
+	Uri         string `json:"uri"`
+	UriHash     string `json:"uri_hash"`
+	Data        string `json:"data"`
+	Recipient   string `json:"recipient"`
 }
 
 type NftByNftId struct {
 	ProjectID  uint64 `json:"project_id"`
 	ChainID    uint64 `json:"chain_id"`
 	PlatFormID uint64 `json:"plat_form_id"`
-	NftId      uint64 `json:"nft_id"`
+	NftId      string `json:"nft_id"`
 	ClassId    string `json:"class_id"`
 	Module     string `json:"module"`
 	Code       string `json:"code"`
@@ -202,7 +203,7 @@ type NftByNftId struct {
 }
 
 type EditNftByNftId struct {
-	NftId       uint64 `json:"nft_id"`
+	NftId       string `json:"nft_id"`
 	Uri         string `json:"uri"`
 	UriHash     string `json:"uri_hash"`
 	Module      string `json:"module"`
@@ -222,7 +223,7 @@ type DeleteNftByNftId struct {
 	PlatFormID  uint64 `json:"plat_form_id"`
 	ClassId     string `json:"class_id"`
 	Sender      string `json:"owner"`
-	NftId       uint64 `json:"nft_id"`
+	NftId       string `json:"nft_id"`
 	Module      string `json:"module"`
 	Code        string `json:"code"`
 	AccessMode  int    `json:"access_mode"`

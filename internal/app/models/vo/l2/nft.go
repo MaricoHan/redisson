@@ -26,8 +26,10 @@ type TransferNftByNftIdRequest struct {
 
 type CreateNftsRequest struct {
 	OperationID string `json:"operation_id"`
-	Uri         string `json:"uri" validate:"required"`
+	Name        string `json:"name"`
+	Uri         string `json:"uri"`
 	UriHash     string `json:"uri_hash"`
+	Data        string `json:"data"`
 	Recipient   string `json:"recipient"`
 }
 

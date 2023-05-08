@@ -255,6 +255,10 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	L2NftClassClientMap = make(map[string]pb_l2_nft.ClassClient)
 	L2NftClassClientMap[constant.IritaOPBNative] = pb_l2_nft.NewClassClient(GrpcConnMap[constant.IritaLayer2])
 
+	// 初始化 l2 nft grpc client
+	L2NftClientMap = make(map[string]pb_l2_nft.NFTClient)
+	L2NftClientMap[constant.IritaOPBNative] = pb_l2_nft.NewNFTClient(GrpcConnMap[constant.IritaLayer2])
+
 }
 
 func InitRedisClient(cfg *configs.Config, logger *log.Logger) {
