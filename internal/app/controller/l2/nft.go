@@ -48,6 +48,11 @@ func (c NftController) GetEndpoints() []kit.Endpoint {
 			Method:  http.MethodGet,
 			Handler: c.MakeHandler(c.handler.NftByNftId, nil),
 		},
+		kit.Endpoint{
+			URI:     "/l2/nft/nft-transfers/{class_id}/{owner}/{nft_id}",
+			Method:  http.MethodPost,
+			Handler: c.MakeHandler(c.handler.TransferNftByNftId, &vo.TransferNftByNftIdRequest{}),
+		},
 	)
 	return ends
 }

@@ -84,7 +84,7 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 		Owner:       owner,
 		OperationId: operationId,
 	}
-	return h.svc.CreateNFTClass(ctx, params)
+	return h.svc.Create(ctx, params)
 }
 
 // Classes return class list
@@ -130,7 +130,7 @@ func (h NftClass) Classes(ctx context.Context, _ interface{}) (interface{}, erro
 
 	// 校验参数 end
 	// 业务数据入库的地方
-	return h.svc.GetAllNFTClasses(ctx, params)
+	return h.svc.List(ctx, params)
 }
 
 // ClassByID return class
@@ -149,7 +149,7 @@ func (h NftClass) ClassByID(ctx context.Context, _ interface{}) (interface{}, er
 
 	// 校验参数 end
 	// 业务数据入库的地方
-	return h.svc.GetNFTClass(ctx, params)
+	return h.svc.Show(ctx, params)
 }
 
 func (h *NftClass) TransferNftClassByID(ctx context.Context, request interface{}) (interface{}, error) {
@@ -182,7 +182,7 @@ func (h *NftClass) TransferNftClassByID(ctx context.Context, request interface{}
 		OperationId: operationId,
 		AccessMode:  authData.AccessMode,
 	}
-	return h.svc.TransferNFTClass(ctx, params)
+	return h.svc.Transfer(ctx, params)
 }
 
 func (h NftClass) Id(ctx context.Context) string {

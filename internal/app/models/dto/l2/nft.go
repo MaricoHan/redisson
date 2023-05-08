@@ -118,7 +118,7 @@ type TransferNftClassById struct {
 type TransferNftByNftId struct {
 	ClassID     string `json:"class_id"`
 	Sender      string `json:"owner"`
-	NftId       uint64 `json:"nft_id"`
+	NftId       string `json:"nft_id"`
 	Recipient   string `json:"recipient"`
 	ProjectID   uint64 `json:"project_id"`
 	ChainID     uint64 `json:"chain_id"`
