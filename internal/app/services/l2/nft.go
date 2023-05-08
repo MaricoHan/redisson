@@ -22,6 +22,7 @@ type INFT interface {
 	Show(ctx context.Context, params dto.NftByNftId) (*dto.NftRes, error)
 	Update(ctx context.Context, params dto.EditNftByNftId) (*dto.TxRes, error)
 	Delete(ctx context.Context, params dto.DeleteNftByNftId) (*dto.TxRes, error)
+	Transfer(ctx context.Context, params dto.TransferNftByNftId) (*dto.TxRes, error)
 }
 type nft struct {
 	logger *log.Logger
@@ -233,6 +234,43 @@ func (s *nft) Update(ctx context.Context, params dto.EditNftByNftId) (*dto.TxRes
 	}
 	if resp == nil {
 		return nil, errors.New("grpc response is nil")
+	}
+	return &dto.TxRes{}, nil
+}
+
+func (s *nft) Transfer(ctx context.Context, params dto.TransferNftByNftId) (*dto.TxRes, error) {
+	logger := s.logger.WithContext(ctx).WithField("params", params).WithField("func", "TransferNFT")
+
+	// 非托管模式不支持
+	if params.AccessMode == entity.UNMANAGED {
+		return nil, errors2.ErrNotImplemented
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
+	defer cancel()
+	req := pb.NFTTransferRequest{
+		ClassId:     params.ClassID,
+		Owner:       params.Sender,
+		NftId:       params.NftId,
+		Recipient:   params.Recipient,
+		ProjectId:   params.ProjectID,
+		OperationId: params.OperationId,
+	}
+	resp := &pb.NFTTransferResponse{}
+	var err error
+	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+	grpcClient, ok := initialize.L2NftClientMap[mapKey]
+	if !ok {
+		logger.Error(errors2.ErrService)
+		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
+	}
+	resp, err = grpcClient.Transfer(ctx, &req)
+	if err != nil {
+		logger.Error("request err:", err.Error())
+		return nil, err
+	}
+	if resp == nil {
+		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
 	return &dto.TxRes{}, nil
 }

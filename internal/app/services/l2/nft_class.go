@@ -17,10 +17,10 @@ import (
 )
 
 type INFTClass interface {
-	GetAllNFTClasses(ctx context.Context, params dto.NftClasses) (*dto.NftClassesRes, error)   // 列表
-	GetNFTClass(ctx context.Context, params dto.NftClasses) (*dto.NftClassRes, error)          // 详情
-	CreateNFTClass(ctx context.Context, params dto.CreateNftClass) (*dto.TxRes, error)         // 创建
-	TransferNFTClass(ctx context.Context, params dto.TransferNftClassById) (*dto.TxRes, error) // 转让
+	List(ctx context.Context, params dto.NftClasses) (*dto.NftClassesRes, error)       // 列表
+	Show(ctx context.Context, params dto.NftClasses) (*dto.NftClassRes, error)         // 详情
+	Create(ctx context.Context, params dto.CreateNftClass) (*dto.TxRes, error)         // 创建
+	Transfer(ctx context.Context, params dto.TransferNftClassById) (*dto.TxRes, error) // 转让
 }
 
 type nftClass struct {
@@ -31,7 +31,7 @@ func NewNFTClass(logger *log.Logger) *nftClass {
 	return &nftClass{logger: logger}
 }
 
-func (n *nftClass) GetAllNFTClasses(ctx context.Context, params dto.NftClasses) (*dto.NftClassesRes, error) {
+func (n *nftClass) List(ctx context.Context, params dto.NftClasses) (*dto.NftClassesRes, error) {
 	logger := n.logger.WithContext(ctx).WithField("params", params).WithField("func", "L2NFTClassList")
 
 	// 非托管模式不支持
@@ -106,7 +106,7 @@ func (n *nftClass) GetAllNFTClasses(ctx context.Context, params dto.NftClasses) 
 	return result, nil
 }
 
-func (n *nftClass) GetNFTClass(ctx context.Context, params dto.NftClasses) (*dto.NftClassRes, error) {
+func (n *nftClass) Show(ctx context.Context, params dto.NftClasses) (*dto.NftClassRes, error) {
 	logger := n.logger.WithContext(ctx).WithField("params", params).WithField("func", "GetL2NFTClass")
 
 	// 非托管模式不支持
@@ -151,7 +151,7 @@ func (n *nftClass) GetNFTClass(ctx context.Context, params dto.NftClasses) (*dto
 	return result, nil
 }
 
-func (n *nftClass) CreateNFTClass(ctx context.Context, params dto.CreateNftClass) (*dto.TxRes, error) {
+func (n *nftClass) Create(ctx context.Context, params dto.CreateNftClass) (*dto.TxRes, error) {
 	logger := n.logger.WithContext(ctx).WithField("params", params).WithField("func", "CreateL2NFTClass")
 
 	// 非托管模式不支持
@@ -193,7 +193,7 @@ func (n *nftClass) CreateNFTClass(ctx context.Context, params dto.CreateNftClass
 	return &dto.TxRes{}, nil
 }
 
-func (s *nftClass) TransferNFTClass(ctx context.Context, params dto.TransferNftClassById) (*dto.TxRes, error) {
+func (s *nftClass) Transfer(ctx context.Context, params dto.TransferNftClassById) (*dto.TxRes, error) {
 	logger := s.logger.WithContext(ctx).WithField("params", params).WithField("func", "TransferNFTClass")
 
 	// 非托管模式不支持
