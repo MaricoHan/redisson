@@ -31,6 +31,7 @@ func GetAllControllers(logger *log.Logger) []kit.IController {
 		NewContractController(baseController, handlers.NewContract(services.NewContract(logger))),
 		NewContractController(baseController, handlers.NewContract(services.NewContract(logger))),
 		l2_controller.NewNftClassController(baseController, l2_handlers.NewNFTClass(l2_services.NewNFTClass(logger))),
+		l2_controller.NewNftController(baseController, l2_handlers.NewNft(l2_services.NewNFT(logger))),
 	}
 
 	return controllers
