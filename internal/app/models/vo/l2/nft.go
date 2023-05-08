@@ -34,8 +34,10 @@ type CreateNftsRequest struct {
 }
 
 type EditNftByIndexRequest struct {
-	Uri         string `json:"uri" validate:"required"`
+	Name        string `json:"name"`
+	Uri         string `json:"uri"`
 	UriHash     string `json:"uri_hash"`
+	Data        string `json:"data"`
 	OperationID string `json:"operation_id"`
 }
 
