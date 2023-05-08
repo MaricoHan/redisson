@@ -75,8 +75,10 @@ func (h *NFT) CreateNft(ctx context.Context, request interface{}) (interface{}, 
 func (h *NFT) EditNftByNftId(ctx context.Context, request interface{}) (interface{}, error) {
 	req := request.(*vo.EditNftByIndexRequest)
 
+	name := strings.TrimSpace(req.Name)
 	uri := strings.TrimSpace(req.Uri)
 	uriHash := strings.TrimSpace(req.UriHash)
+	data := strings.TrimSpace(req.Data)
 	operationId := strings.TrimSpace(req.OperationID)
 	if operationId == "" {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
@@ -85,11 +87,6 @@ func (h *NFT) EditNftByNftId(ctx context.Context, request interface{}) (interfac
 	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
 	}
-	// check start
-
-	if err := h.Base.UriCheck(uri); err != nil {
-		return nil, err
-	}
 
 	// check end
 	authData := h.AuthData(ctx)
@@ -97,14 +94,16 @@ func (h *NFT) EditNftByNftId(ctx context.Context, request interface{}) (interfac
 		ChainID:     authData.ChainId,
 		ProjectID:   authData.ProjectId,
 		PlatFormID:  authData.PlatformId,
+		AccessMode:  authData.AccessMode,
+		Module:      authData.Module,
+		Code:        authData.Code,
 		ClassId:     h.ClassID(ctx),
 		Sender:      h.Owner(ctx),
-		Module:      authData.Module,
+		Name:        name,
 		Uri:         uri,
 		UriHash:     uriHash,
-		Code:        authData.Code,
+		Data:        data,
 		OperationId: operationId,
-		AccessMode:  authData.AccessMode,
 	}
 	nftId, err := h.NftID(ctx)
 	if err != nil {

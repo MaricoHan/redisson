@@ -203,17 +203,20 @@ type NftByNftId struct {
 }
 
 type EditNftByNftId struct {
-	NftId       string `json:"nft_id"`
-	Uri         string `json:"uri"`
-	UriHash     string `json:"uri_hash"`
-	Module      string `json:"module"`
-	ProjectID   uint64 `json:"project_id"`
-	ChainID     uint64 `json:"chain_id"`
-	PlatFormID  uint64 `json:"plat_form_id"`
-	ClassId     string `json:"class_id"`
-	Sender      string `json:"owner"`
-	Code        string `json:"code"`
-	AccessMode  int    `json:"access_mode"`
+	ChainID    uint64 `json:"chain_id"`
+	Module     string `json:"module"`
+	Code       string `json:"code"`
+	PlatFormID uint64 `json:"plat_form_id"`
+	AccessMode int    `json:"access_mode"`
+	ProjectID  uint64 `json:"project_id"`
+	NftId      string `json:"nft_id"`
+	Name       string `json:"name"`
+	Uri        string `json:"uri"`
+	UriHash    string `json:"uri_hash"`
+	Data       string `json:"data"`
+	ClassId    string `json:"class_id"`
+	Sender     string `json:"owner"`
+
 	OperationId string `json:"operation_id"`
 }
 
