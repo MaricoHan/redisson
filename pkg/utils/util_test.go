@@ -1,14 +1,18 @@
 package utils
 
 import (
-	"fmt"
+	"sync"
 	"testing"
 )
 
 func TestGoID(t *testing.T) {
+	w := sync.WaitGroup{}
 	for i := 0; i < 100; i++ {
+		w.Add(1)
 		go func() {
-			fmt.Println(GoID())
+			w.Done()
+			t.Log(GoID())
 		}()
 	}
+	w.Wait()
 }
