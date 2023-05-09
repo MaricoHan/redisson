@@ -2,6 +2,7 @@ package mutex
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -57,8 +58,9 @@ func (r RWMutex) Lock() error {
 	}
 	// 加锁成功，开个协程，定时续锁
 	go func() {
-		ticker := time.NewTicker(r.expiration / 3).C
-		for range ticker {
+		ticker := time.NewTicker(r.expiration / 3)
+		defer ticker.Stop()
+		for range ticker.C {
 			res, err := r.root.Client.Eval(context.TODO(), rwMutexScript.renewalScript, []string{r.Name}, expiration, clientID).Int64()
 			if err != nil || res == 0 {
 				return
@@ -120,8 +122,9 @@ func (r RWMutex) RLock() error {
 	}
 	// 加锁成功，开个协程，定时续锁
 	go func() {
-		ticker := time.NewTicker(r.expiration / 3).C
-		for range ticker {
+		ticker := time.NewTicker(r.expiration / 3)
+		defer ticker.Stop()
+		for range ticker.C {
 			res, err := r.root.Client.Eval(context.TODO(), rwMutexScript.renewalScript, []string{r.Name}, expiration, clientID).Int64()
 			if err != nil || res == 0 {
 				return
@@ -168,11 +171,19 @@ func (r RWMutex) rLockInner(clientID string, expiration int64) (int64, error) {
 
 	return pTTL.(int64), nil
 }
-func (r *RWMutex) Unlock() error {
+func (r RWMutex) Unlock() error {
 	goID := utils.GoID()
-	return r.unlockInner(goID)
+	if err := r.unlockInner(goID); err != nil {
+		return fmt.Errorf("unlock err: %w", err)
+	}
+
+	if err := r.pubSub.Unsubscribe(context.Background(), utils.ChannelName(r.Name)); err != nil {
+		return fmt.Errorf("unsub err: %w", err)
+	}
+
+	return nil
 }
-func (r *RWMutex) unlockInner(goID int64) error {
+func (r RWMutex) unlockInner(goID int64) error {
 	res, err := r.root.Client.Eval(context.TODO(), rwMutexScript.unlockScript, []string{r.Name, utils.ChannelName(r.Name)}, r.root.UUID+":"+strconv.FormatInt(goID, 10), 1).Int64()
 	if err != nil {
 		return err
