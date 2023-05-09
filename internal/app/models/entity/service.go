@@ -1,12 +1,8 @@
 package entity
 
 import (
+	. "gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"time"
-)
-
-const (
-	ServiceTypeWallet = 1 // 钱包服务
-	ServiceTypeNS     = 2 // 域名服务
 )
 
 // Services 服务类型表
@@ -17,4 +13,14 @@ type Services struct {
 	//Type      uint      `gorm:"column:type;type:tinyint(4) unsigned;default:0;comment:服务类型, 1: 钱包;NOT NULL" json:"type"`
 	CreatedAt time.Time `gorm:"column:created_at;type:datetime;default:CURRENT_TIMESTAMP;comment:创建时间;NOT NULL" json:"created_at"`
 	UpdatedAt time.Time `gorm:"column:updated_at;type:datetime;default:CURRENT_TIMESTAMP;comment:更新时间;NOT NULL" json:"updated_at"`
+}
+
+var ServiceFields = struct {
+	ID       string
+	ParentId string
+	Name     string
+}{
+	ID:       MysqlServicesTable + ".id",
+	ParentId: MysqlServicesTable + ".parent_id",
+	Name:     MysqlServicesTable + ".name",
 }

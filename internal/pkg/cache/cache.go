@@ -2,6 +2,9 @@ package cache
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/auth"
 	"sync"
 	"time"
 
@@ -28,29 +31,53 @@ func NewCache() *cache {
 	return caches
 }
 
-// Project 返回项目信息切缓存项目
-func (c cache) Project(key string) (entity.Project, error) {
+// Project 返回项目信息且缓存项目
+func (c cache) Project(key string) (authData vo.AuthData, err error) {
 	var projectInfo entity.Project
-	err := initialize.RedisClient.GetObject(fmt.Sprintf("%s%s", constant.KeyProjectApikey, key), &projectInfo)
+	//err = initialize.RedisClient.GetObject(fmt.Sprintf("%s%s", constant.KeyProjectApikey, key), &authData)
 	if err != nil {
-		return projectInfo, errors.Wrap(err, "get project from cache")
+		return authData, errors.Wrap(err, "get project from cache")
 	}
 	if projectInfo.Id < 1 {
-		// 查询 project 信息
+		// 查询项目信息
 		projectRepo := project.NewProjectRepo(initialize.MysqlDB)
 		projectInfo, err = projectRepo.GetProjectByApiKey(key)
 		if err != nil {
-			return projectInfo, errors.Wrap(err, "get project from db")
+			return authData, errors.Wrap(err, "get project from db")
 		}
 
-		if projectInfo.Id > 0 {
-			// save cache
-			if err := initialize.RedisClient.SetObject(fmt.Sprintf("%s%s", constant.KeyProjectApikey, key), projectInfo, time.Minute*5); err != nil {
-				return projectInfo, errors.Wrap(err, "save project cache")
-			}
+		// 查询链信息
+		chainInfo, err := c.Chain(projectInfo.ChainId)
+		if err != nil {
+			log.WithError(err).Error("get chain from cache")
+			return authData, errors.Wrap(err, "get project from db")
 		}
+
+		authData = vo.AuthData{
+			ProjectId:          uint64(projectInfo.Id),
+			ChainId:            uint64(chainInfo.Id),
+			PlatformId:         uint64(projectInfo.UserId),
+			Module:             chainInfo.Module,
+			Code:               chainInfo.Code,
+			AccessMode:         projectInfo.AccessMode,
+			UserId:             uint64(projectInfo.UserId),
+			ApiSecret:          projectInfo.ApiSecret,
+			ExistWalletService: false,
+		}
+
+		// 查询是否开通钱包服务
+		existWalletService, err := projectRepo.ExistServices(projectInfo.Id, constant.ServiceTypeWallet)
+		if existWalletService {
+			authData.ExistWalletService = true
+		}
+
+		// 增加缓存
+		if err := initialize.RedisClient.SetObject(fmt.Sprintf("%s%s", constant.KeyProjectApikey, key), authData, time.Minute*5); err != nil {
+			return authData, errors.Wrap(err, "save auth cache")
+		}
+
 	}
-	return projectInfo, nil
+	return authData, nil
 }
 
 // Chain 返回链信息且缓存链信息
@@ -75,4 +102,35 @@ func (c cache) Chain(chainID uint) (entity.Chain, error) {
 		}
 	}
 	return chainInfo, nil
+}
+
+//
+//  ProjectAuth
+//  @Description: 获取项目权限
+//  @param key
+//
+func (c cache) ProjectAuth(pid int) (list []entity.Permission, err error) {
+	// 查询缓存
+	key := fmt.Sprintf("%s:%s:%d", constant.RedisPrefix, constant.KeyAuth, pid)
+	err = initialize.RedisClient.GetObject(key, &list)
+	if err == nil && len(list) > 0 {
+		// 有缓存
+		return list, err
+	}
+
+	// 无缓存 查询数据库
+	projectAuthRepo := auth.NewProjectAuthRepo(initialize.MysqlDB)
+	list, err = projectAuthRepo.GetProjectPermission(pid)
+	if err != nil {
+		if err != nil {
+			return list, errors.Wrap(err, "get project auth from db")
+		}
+	}
+
+	// 增加缓存
+	if err = initialize.RedisClient.SetObject(key, list, time.Minute*5); err != nil {
+		return list, errors.Wrap(err, "save project auth cache")
+	}
+
+	return list, nil
 }
