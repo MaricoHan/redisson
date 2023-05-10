@@ -2,7 +2,7 @@ package dto
 
 import (
 	"github.com/volatiletech/sqlboiler/types"
-	pb "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/tx"
+	pb "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/evm/tx"
 )
 
 type TxResultByTxHash struct {
@@ -24,7 +24,7 @@ type TxResultRes struct {
 	BlockHeight uint64      `json:"block_height"`
 	Timestamp   string      `json:"timestamp"`
 	Nft         *types.JSON `json:"nft"`
-	Record      *pb.Record   `json:"record"`
+	Record      *pb.Record  `json:"record"`
 	Ns          *types.JSON `json:"ns"`
 }
 

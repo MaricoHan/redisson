@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/evm"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -16,7 +17,7 @@ import (
 
 type IUser interface {
 	CreateUsers(ctx context.Context, params dto.CreateUsers) (*dto.CreateUsersRes, error)
-	UpdateUsers(ctx context.Context, params dto.UpdateUsers) (*dto.TxRes, error)
+	UpdateUsers(ctx context.Context, params dto.UpdateUsers) (*evm.TxRes, error)
 	ShowUsers(ctx context.Context, params dto.ShowUsers) (*dto.CreateUsersRes, error)
 }
 
@@ -66,7 +67,7 @@ func (u user) CreateUsers(ctx context.Context, params dto.CreateUsers) (*dto.Cre
 	return result, nil
 }
 
-func (u user) UpdateUsers(ctx context.Context, params dto.UpdateUsers) (*dto.TxRes, error) {
+func (u user) UpdateUsers(ctx context.Context, params dto.UpdateUsers) (*evm.TxRes, error) {
 	log := u.logger.WithContext(ctx).WithFields(
 		map[string]interface{}{
 			"function": "UpdateUsers",
@@ -96,7 +97,7 @@ func (u user) UpdateUsers(ctx context.Context, params dto.UpdateUsers) (*dto.TxR
 	if resp == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
-	result := &dto.TxRes{}
+	result := &evm.TxRes{}
 	return result, nil
 }
 

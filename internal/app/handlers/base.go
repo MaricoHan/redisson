@@ -10,7 +10,7 @@ import (
 	"github.com/asaskevich/govalidator"
 	log "github.com/sirupsen/logrus"
 
-	nft "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/nft"
+	"gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/nft"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"

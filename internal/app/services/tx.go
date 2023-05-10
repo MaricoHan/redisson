@@ -8,7 +8,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/volatiletech/sqlboiler/types"
-	pb "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/tx"
+	pb "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/evm/tx"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
@@ -46,7 +46,7 @@ func (t *tx) TxResult(ctx context.Context, params dto.TxResultByTxHash) (*dto.Tx
 	resp := &pb.TxShowResponse{}
 	var err error
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
-	grpcClient, ok := initialize.TxClientMap[mapKey]
+	grpcClient, ok := initialize.EvmTxClientMap[mapKey]
 	if !ok {
 		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
@@ -129,4 +129,3 @@ func (t *tx) TxResult(ctx context.Context, params dto.TxResultByTxHash) (*dto.Tx
 //
 //	return result, nil
 //}
-
