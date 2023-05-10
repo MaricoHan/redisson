@@ -1,4 +1,4 @@
-package controller
+package evm
 
 import (
 	"net/http"
@@ -22,14 +22,9 @@ func (c MsgsController) GetEndpoints() []kit.Endpoint {
 	var ends []kit.Endpoint
 	ends = append(ends,
 		kit.Endpoint{
-			URI:     "/nft/nfts/{class_id}/{nft_id}/history",
+			URI:     "/evm/nft/nfts/{class_id}/{nft_id}/history",
 			Method:  http.MethodGet,
 			Handler: c.MakeHandler(c.handler.GetNFTHistory, nil),
-		},
-		kit.Endpoint{
-			URI:     "/accounts/history",
-			Method:  http.MethodGet,
-			Handler: c.MakeHandler(c.handler.GetAccountHistory, nil),
 		},
 	)
 	return ends

@@ -1,4 +1,4 @@
-package controller
+package evm
 
 import (
 	"net/http"
@@ -22,24 +22,23 @@ func NewNsController(bc base.BaseController, handler evm.INs) kit.IController {
 func (c NsController) GetEndpoints() []kit.Endpoint {
 	var ends []kit.Endpoint
 	ends = append(ends,
-		// 兼容之前的
 		kit.Endpoint{
-			URI:     "/ns/domains",
+			URI:     "/evm/ns/domains",
 			Method:  http.MethodGet,
 			Handler: c.MakeHandler(c.handler.Domains, nil),
 		},
 		kit.Endpoint{
-			URI:     "/ns/domains/{owner}",
+			URI:     "/evm/ns/domains/{owner}",
 			Method:  http.MethodGet,
 			Handler: c.MakeHandler(c.handler.UserDomains, nil),
 		},
 		kit.Endpoint{
-			URI:     "/ns/domains",
+			URI:     "/evm/ns/domains",
 			Method:  http.MethodPost,
 			Handler: c.MakeHandler(c.handler.CreateDomain, &vo.CreateDomainRequest{}),
 		},
 		kit.Endpoint{
-			URI:     "/ns/transfers/{owner}/{name}",
+			URI:     "/evm/ns/transfers/{owner}/{name}",
 			Method:  http.MethodPost,
 			Handler: c.MakeHandler(c.handler.TransferDomain, &vo.TransferDomainRequest{}),
 		},

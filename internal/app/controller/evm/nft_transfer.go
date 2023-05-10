@@ -1,4 +1,4 @@
-package controller
+package evm
 
 import (
 	"net/http"
@@ -22,14 +22,13 @@ func NewNftTransferController(bc base.BaseController, handler evm.INFTTransfer) 
 func (c NFTTransferController) GetEndpoints() []kit.Endpoint {
 	var ends []kit.Endpoint
 	ends = append(ends,
-		// 兼容之前的
 		kit.Endpoint{
-			URI:     "/nft/class-transfers/{class_id}/{owner}",
+			URI:     "/evm/nft/class-transfers/{class_id}/{owner}",
 			Method:  http.MethodPost,
 			Handler: c.MakeHandler(c.handler.TransferNftClassByID, &vo.TransferNftClassByIDRequest{}),
 		},
 		kit.Endpoint{
-			URI:     "/nft/nft-transfers/{class_id}/{owner}/{nft_id}",
+			URI:     "/evm/nft/nft-transfers/{class_id}/{owner}/{nft_id}",
 			Method:  http.MethodPost,
 			Handler: c.MakeHandler(c.handler.TransferNftByNftId, &vo.TransferNftByNftIdRequest{}),
 		},

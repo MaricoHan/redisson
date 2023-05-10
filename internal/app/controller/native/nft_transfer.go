@@ -1,4 +1,4 @@
-package controller
+package native
 
 import (
 	"net/http"
@@ -6,23 +6,22 @@ import (
 	kit "gitlab.bianjie.ai/avata/open-api/pkg/gokit"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/controller/base"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers/evm"
-	vo "gitlab.bianjie.ai/avata/open-api/internal/app/models/vo/evm"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers/native"
+	vo "gitlab.bianjie.ai/avata/open-api/internal/app/models/vo/native/nft"
 )
 
 type NFTTransferController struct {
 	base.BaseController
-	handler evm.INFTTransfer
+	handler native.INFTTransfer
 }
 
-func NewNftTransferController(bc base.BaseController, handler evm.INFTTransfer) kit.IController {
+func NewNFTTransferController(bc base.BaseController, handler native.INFTTransfer) kit.IController {
 	return NFTTransferController{bc, handler}
 }
 
 func (c NFTTransferController) GetEndpoints() []kit.Endpoint {
 	var ends []kit.Endpoint
 	ends = append(ends,
-		// 兼容之前的
 		kit.Endpoint{
 			URI:     "/nft/class-transfers/{class_id}/{owner}",
 			Method:  http.MethodPost,

@@ -1,4 +1,4 @@
-package controller
+package native
 
 import (
 	"net/http"
@@ -6,16 +6,16 @@ import (
 	kit "gitlab.bianjie.ai/avata/open-api/pkg/gokit"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/controller/base"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers/evm"
-	vo "gitlab.bianjie.ai/avata/open-api/internal/app/models/vo/evm"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers/native"
+	vo "gitlab.bianjie.ai/avata/open-api/internal/app/models/vo/native/nft"
 )
 
 type NftClassController struct {
 	base.BaseController
-	handler evm.INftClass
+	handler native.INftClass
 }
 
-func NewNftClassController(bc base.BaseController, handler evm.INftClass) kit.IController {
+func NewNftClassController(bc base.BaseController, handler native.INftClass) kit.IController {
 	return NftClassController{bc, handler}
 }
 
@@ -23,7 +23,6 @@ func NewNftClassController(bc base.BaseController, handler evm.INftClass) kit.IC
 func (c NftClassController) GetEndpoints() []kit.Endpoint {
 	var ends []kit.Endpoint
 	ends = append(ends,
-		// 兼容之前的
 		kit.Endpoint{
 			URI:     "/nft/classes",
 			Method:  http.MethodGet,
