@@ -8,7 +8,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/volatiletech/sqlboiler/types"
-	pb "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/tx"
+	pb "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/evm/tx"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"

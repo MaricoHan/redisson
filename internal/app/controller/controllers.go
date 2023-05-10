@@ -24,7 +24,7 @@ func GetAllControllers(logger *log.Logger) []kit.IController {
 		Controller: kit.NewController(),
 	}
 	controllers := []kit.IController{
-		NewAccountsController(baseController, handlers.NewAccount(services.NewAccount(logger))),
+		//NewAccountsController(baseController, handlers.NewAccount(services.NewAccount(logger))),
 		NewMsgsController(baseController, evm.NewMsgs(evm2.NewMsgs(logger))),
 		NewTxController(baseController, handlers.NewTx(services.NewTx(logger))),
 		NewNftClassController(baseController, evm.NewNFTClass(evm2.NewNFTClass(logger))),
@@ -46,7 +46,7 @@ func GetAllControllers(logger *log.Logger) []kit.IController {
 		evm_controller.NewNftTransferController(baseController, evm.NewNFTTransfer(evm2.NewNFTTransfer(logger))),
 		native_controller.NewMTClassController(baseController, native.NewMTClass(native2.NewMTClass(logger))),
 		native_controller.NewMTController(baseController, native.NewMT(native2.NewMT(logger))),
-		native_controller.NewRightsController(baseController, native.NewRights(native2.NewRights(logger))),
+		//native_controller.NewRightsController(baseController, native.NewRights(native2.NewRights(logger))),
 		native_controller.NewMsgsController(baseController, native.NewMsgs(native2.NewMsgs(logger))),
 		native_controller.NewNftController(baseController, native.NewNft(native2.NewNft(logger))),
 		native_controller.NewNftClassController(baseController, native.NewNFTClass(native2.NewNFTClass(logger))),
