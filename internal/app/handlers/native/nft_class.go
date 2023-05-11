@@ -41,15 +41,15 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 	uriHash := strings.TrimSpace(req.UriHash)
 	data := strings.TrimSpace(req.Data)
 	owner := strings.TrimSpace(req.Owner)
-	operationId := strings.TrimSpace(req.OperationID)
-	if operationId == "" {
+	operationID := strings.TrimSpace(req.OperationID)
+
+	if operationID == "" {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
 	}
-
 	if name == "" {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrName)
 	}
-	if len(operationId) == 0 || len(operationId) >= 65 {
+	if len(operationID) == 0 || len(operationID) >= 65 {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
 	}
 	if err := h.UriCheck(uri); err != nil {
@@ -78,7 +78,7 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 		Data:            data,
 		Owner:           owner,
 		Code:            authData.Code,
-		OperationId:     operationId,
+		OperationId:     operationID,
 		ClassId:         classId,
 		AccessMode:      authData.AccessMode,
 		EditableByOwner: req.EditableByOwner,
@@ -121,6 +121,11 @@ func (h NftClass) Classes(ctx context.Context, _ interface{}) (interface{}, erro
 	}
 
 	params.SortBy = h.SortBy(ctx)
+
+	params.CountTotal, err = h.CountTotal(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	// 校验参数 end
 	// 业务数据入库的地方

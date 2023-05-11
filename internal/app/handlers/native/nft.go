@@ -133,6 +133,7 @@ func (h *NFT) EditNftByNftId(ctx context.Context, request interface{}) (interfac
 
 	name := strings.TrimSpace(req.Name)
 	uri := strings.TrimSpace(req.Uri)
+	uriHash := strings.TrimSpace(req.UriHash)
 	data := strings.TrimSpace(req.Data)
 	operationId := strings.TrimSpace(req.OperationID)
 
@@ -164,6 +165,7 @@ func (h *NFT) EditNftByNftId(ctx context.Context, request interface{}) (interfac
 		Module:      authData.Module,
 		Name:        name,
 		Uri:         uri,
+		UriHash:     uriHash,
 		Data:        data,
 		Code:        authData.Code,
 		OperationId: operationId,

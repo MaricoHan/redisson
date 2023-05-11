@@ -47,17 +47,17 @@ func (n *nftClass) GetAllNFTClasses(ctx context.Context, params nft.NftClasses) 
 	}
 
 	req := pb.ClassListRequest{
-		ProjectId: params.ProjectID,
-		PageKey:   params.PageKey,
-		Limit:     params.Limit,
-		StartDate: params.StartDate,
-		EndDate:   params.EndDate,
-		SortBy:    pb.SORTS(sort),
-		Id:        params.Id,
-		Name:      params.Name,
-		Owner:     params.Owner,
-		TxHash:    params.TxHash,
-		//Status:    pb.STATUS_Active,
+		ProjectId:  params.ProjectID,
+		PageKey:    params.PageKey,
+		Limit:      params.Limit,
+		StartDate:  params.StartDate,
+		EndDate:    params.EndDate,
+		SortBy:     pb.SORTS(sort),
+		Id:         params.Id,
+		Name:       params.Name,
+		Owner:      params.Owner,
+		TxHash:     params.TxHash,
+		CountTotal: params.CountTotal,
 	}
 	resp := &pb.ClassListResponse{}
 	var err error

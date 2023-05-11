@@ -4,16 +4,16 @@ import pb "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/nft"
 
 type CreateNftClassRequest struct {
 	// Base
-	OperationID     string `json:"operation_id"`
 	Name            string `json:"name" validate:"required"`
+	ClassId         string `json:"class_id"`
 	Symbol          string `json:"symbol"`
 	Description     string `json:"description"`
 	Uri             string `json:"uri"`
 	UriHash         string `json:"uri_hash"`
 	Data            string `json:"data"`
 	Owner           string `json:"owner" validate:"required"`
-	ClassId         string `json:"class_id"`
 	EditableByOwner uint32 `json:"editable_by_owner"`
+	OperationID     string `json:"operation_id" validate:"required"`
 }
 
 type TransferNftClassByIDRequest struct {
@@ -53,6 +53,7 @@ type BatchCreateNftsRequest struct {
 type EditNftByIndexRequest struct {
 	Name        string `json:"name" validate:"required"`
 	Uri         string `json:"uri"`
+	UriHash     string `json:"uri_hash"`
 	Data        string `json:"data"`
 	OperationID string `json:"operation_id"`
 }

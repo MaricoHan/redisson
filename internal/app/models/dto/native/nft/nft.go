@@ -232,6 +232,7 @@ type EditNftByNftId struct {
 	NftId       string `json:"nft_id"`
 	Name        string `json:"name"`
 	Uri         string `json:"uri"`
+	UriHash     string `json:"uri_hash"`
 	Data        string `json:"data"`
 	Module      string `json:"module"`
 	ProjectID   uint64 `json:"project_id"`
