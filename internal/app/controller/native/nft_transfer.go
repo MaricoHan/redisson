@@ -23,12 +23,12 @@ func (c NFTTransferController) GetEndpoints() []kit.Endpoint {
 	var ends []kit.Endpoint
 	ends = append(ends,
 		kit.Endpoint{
-			URI:     "/nft/class-transfers/{class_id}/{owner}",
+			URI:     "/native/nft/class-transfers/{class_id}/{owner}",
 			Method:  http.MethodPost,
 			Handler: c.MakeHandler(c.handler.TransferNftClassByID, &vo.TransferNftClassByIDRequest{}),
 		},
 		kit.Endpoint{
-			URI:     "/nft/nft-transfers/{class_id}/{owner}/{nft_id}",
+			URI:     "/native/nft/nft-transfers/{class_id}/{owner}/{nft_id}",
 			Method:  http.MethodPost,
 			Handler: c.MakeHandler(c.handler.TransferNftByNftId, &vo.TransferNftByNftIdRequest{}),
 		},

@@ -66,21 +66,22 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 
 	authData := h.AuthData(ctx)
 	params := dto.CreateNftClass{
-		ChainID:     authData.ChainId,
-		ProjectID:   authData.ProjectId,
-		PlatFormID:  authData.PlatformId,
-		Module:      authData.Module,
-		Name:        name,
-		Symbol:      symbol,
-		Description: description,
-		Uri:         uri,
-		UriHash:     uriHash,
-		Data:        data,
-		Owner:       owner,
-		Code:        authData.Code,
-		OperationId: operationId,
-		ClassId:     classId,
-		AccessMode:  authData.AccessMode,
+		ChainID:         authData.ChainId,
+		ProjectID:       authData.ProjectId,
+		PlatFormID:      authData.PlatformId,
+		Module:          authData.Module,
+		Name:            name,
+		Symbol:          symbol,
+		Description:     description,
+		Uri:             uri,
+		UriHash:         uriHash,
+		Data:            data,
+		Owner:           owner,
+		Code:            authData.Code,
+		OperationId:     operationId,
+		ClassId:         classId,
+		AccessMode:      authData.AccessMode,
+		EditableByOwner: req.EditableByOwner,
 	}
 	return h.svc.CreateNFTClass(ctx, params)
 }
