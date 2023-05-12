@@ -16,12 +16,16 @@ import (
 	pb_business "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/buy"
 	pb_evm_class "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/evm/class"
 	pb_evm_contract "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/evm/contract"
+	pb_evm_dict "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/evm/dict"
+
 	pb_evm_msgs "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/evm/msgs"
 	pb_evm_nft "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/evm/nft"
 	pb_evm_ns "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/evm/ns"
 	pb_evm_tx "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/evm/tx"
+	pb_l2_dict "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/l2/dict"
 	pb_l2_nft "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/l2/nft"
 	pb_native_nft_class "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/class"
+	pb_native_dict "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/dict"
 	pb_native_msgs "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/msgs"
 	pb_native_mt "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/mt"
 	pb_native_mt_class "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/mt_class"
@@ -51,6 +55,7 @@ var EvmClassClientMap map[string]pb_evm_class.ClassClient
 var EvmTxClientMap map[string]pb_evm_tx.TxClient
 var EvmNsClientMap map[string]pb_evm_ns.NSClient
 var EvmContractClientMap map[string]pb_evm_contract.ContractClient
+var EvmDictClientMap map[string]pb_evm_dict.DictClient
 
 var NativeRecordClientMap map[string]pb_native_record.RecordClient
 var NativeMTClientMap map[string]pb_native_mt.MTClient
@@ -61,6 +66,7 @@ var NativeMsgClientMap map[string]pb_native_msgs.MSGSClient
 var NativeTxClientMap map[string]pb_native_tx.TxClient
 var NativeTxQueueClientMap map[string]pb_native_tx_queue.TxQueueClient
 var NativeNoticeClientMap map[string]pb_native_notice.NoticeClient
+var NativeDictClientMap map[string]pb_native_dict.DictClient
 
 var StateGatewayServer *grpc.ClientConn
 
@@ -71,6 +77,7 @@ var WalletClientMap map[string]pb_wallet.WalletClient
 
 var L2NftClientMap map[string]pb_l2_nft.NFTClient
 var L2NftClassClientMap map[string]pb_l2_nft.ClassClient
+var L2DictClientMap map[string]pb_l2_dict.DictClient
 
 var Log = new(log.Logger)
 
