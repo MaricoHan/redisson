@@ -1,4 +1,4 @@
-package handlers
+package l2
 
 import (
 	"context"
@@ -6,10 +6,11 @@ import (
 	"strconv"
 	"strings"
 
-	pb "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/nft"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
+	pb "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/l2/nft"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
+	dto "gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/l2"
+	vo "gitlab.bianjie.ai/avata/open-api/internal/app/models/vo/l2"
+	services "gitlab.bianjie.ai/avata/open-api/internal/app/services/l2"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 	"gitlab.bianjie.ai/avata/utils/errors/common"
 )
@@ -20,11 +21,12 @@ type INft interface {
 	DeleteNftByNftId(ctx context.Context, _ interface{}) (interface{}, error)
 	Nfts(ctx context.Context, _ interface{}) (interface{}, error)
 	NftByNftId(ctx context.Context, _ interface{}) (interface{}, error)
+	TransferNftByNftId(ctx context.Context, _ interface{}) (interface{}, error)
 }
 
 type NFT struct {
-	Base
-	PageBasic
+	handlers.Base
+	handlers.PageBasic
 	svc services.INFT
 }
 
@@ -36,8 +38,10 @@ func (h *NFT) CreateNft(ctx context.Context, request interface{}) (interface{}, 
 	// 校验参数 start
 	req := request.(*vo.CreateNftsRequest)
 
+	name := strings.TrimSpace(req.Name)
 	uri := strings.TrimSpace(req.Uri)
 	uriHash := strings.TrimSpace(req.UriHash)
+	data := strings.TrimSpace(req.Data)
 	recipient := strings.TrimSpace(req.Recipient)
 	operationId := strings.TrimSpace(req.OperationID)
 	if operationId == "" {
@@ -48,23 +52,21 @@ func (h *NFT) CreateNft(ctx context.Context, request interface{}) (interface{}, 
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
 	}
 
-	if err := h.Base.UriCheck(uri); err != nil {
-		return nil, err
-	}
-
 	authData := h.AuthData(ctx)
 	params := dto.CreateNfts{
 		ChainID:     authData.ChainId,
+		Code:        authData.Code,
+		OperationId: operationId,
+		AccessMode:  authData.AccessMode,
 		ProjectID:   authData.ProjectId,
 		PlatFormID:  authData.PlatformId,
 		Module:      authData.Module,
 		ClassId:     h.ClassID(ctx),
+		Name:        name,
 		Uri:         uri,
 		UriHash:     uriHash,
+		Data:        data,
 		Recipient:   recipient,
-		Code:        authData.Code,
-		OperationId: operationId,
-		AccessMode:  authData.AccessMode,
 	}
 
 	return h.svc.Create(ctx, params)
@@ -74,8 +76,10 @@ func (h *NFT) CreateNft(ctx context.Context, request interface{}) (interface{}, 
 func (h *NFT) EditNftByNftId(ctx context.Context, request interface{}) (interface{}, error) {
 	req := request.(*vo.EditNftByIndexRequest)
 
+	name := strings.TrimSpace(req.Name)
 	uri := strings.TrimSpace(req.Uri)
 	uriHash := strings.TrimSpace(req.UriHash)
+	data := strings.TrimSpace(req.Data)
 	operationId := strings.TrimSpace(req.OperationID)
 	if operationId == "" {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
@@ -84,11 +88,6 @@ func (h *NFT) EditNftByNftId(ctx context.Context, request interface{}) (interfac
 	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
 	}
-	// check start
-
-	if err := h.Base.UriCheck(uri); err != nil {
-		return nil, err
-	}
 
 	// check end
 	authData := h.AuthData(ctx)
@@ -96,14 +95,16 @@ func (h *NFT) EditNftByNftId(ctx context.Context, request interface{}) (interfac
 		ChainID:     authData.ChainId,
 		ProjectID:   authData.ProjectId,
 		PlatFormID:  authData.PlatformId,
+		AccessMode:  authData.AccessMode,
+		Module:      authData.Module,
+		Code:        authData.Code,
 		ClassId:     h.ClassID(ctx),
 		Sender:      h.Owner(ctx),
-		Module:      authData.Module,
+		Name:        name,
 		Uri:         uri,
 		UriHash:     uriHash,
-		Code:        authData.Code,
+		Data:        data,
 		OperationId: operationId,
-		AccessMode:  authData.AccessMode,
 	}
 	nftId, err := h.NftID(ctx)
 	if err != nil {
@@ -167,7 +168,7 @@ func (h *NFT) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 		ClassId: h.ClassID(ctx),
 		Owner:   h.Owner(ctx),
 		TxHash:  h.TxHash(ctx),
-		Status:  status,
+		Status:  uint32(status),
 	}
 	params.Id, err = h.Id(ctx)
 	if err != nil {
@@ -230,6 +231,54 @@ func (h *NFT) NftByNftId(ctx context.Context, _ interface{}) (interface{}, error
 	return h.svc.Show(ctx, params)
 }
 
+// TransferNftByNftId transfer a nft class by index
+func (h *NFT) TransferNftByNftId(ctx context.Context, request interface{}) (interface{}, error) {
+	// 校验参数 start
+	req := request.(*vo.TransferNftByNftIdRequest)
+	recipient := strings.TrimSpace(req.Recipient)
+	operationId := strings.TrimSpace(req.OperationID)
+	if operationId == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
+	}
+	if recipient == "" {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrRecipient)
+	}
+
+	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
+	}
+
+	// 校验参数 end
+	authData := h.AuthData(ctx)
+	params := dto.TransferNftByNftId{
+		ClassID:     h.ClassID(ctx),
+		Sender:      h.Owner(ctx),
+		Recipient:   recipient,
+		ChainID:     authData.ChainId,
+		ProjectID:   authData.ProjectId,
+		PlatFormID:  authData.PlatformId,
+		Module:      authData.Module,
+		Code:        authData.Code,
+		OperationId: operationId,
+		AccessMode:  authData.AccessMode,
+	}
+
+	nftId, err := h.NftID(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	params.NftId = nftId
+
+	// 不能自己转让给自己
+	// 400
+	if params.Recipient == params.Sender {
+		return nil, errors2.New(errors2.ClientParams, errors2.ErrSelfTransfer)
+	}
+
+	return h.svc.Transfer(ctx, params)
+}
+
 func (h *NFT) Signer(ctx context.Context) string {
 	signer := ctx.Value("signer")
 	if signer == nil || signer == "" {
@@ -238,16 +287,12 @@ func (h *NFT) Signer(ctx context.Context) string {
 	return signer.(string)
 }
 
-func (h *NFT) Id(ctx context.Context) (uint64, error) {
+func (h *NFT) Id(ctx context.Context) (string, error) {
 	s := ctx.Value("id")
 	if s == nil {
-		return 0, nil
+		return "", nil
 	}
-	res, err := strconv.ParseUint(s.(string), 10, 64)
-	if err != nil {
-		return 0, errors2.New(errors2.ClientParams, fmt.Sprintf(common.ERR_INVALID_VALUE, "id"))
-	}
-	return res, nil
+	return s.(string), nil
 }
 
 func (h *NFT) ClassID(ctx context.Context) string {
@@ -274,17 +319,13 @@ func (h *NFT) Owner(ctx context.Context) string {
 	return owner.(string)
 }
 
-func (h *NFT) NftID(ctx context.Context) (uint64, error) {
+func (h *NFT) NftID(ctx context.Context) (string, error) {
 	v := ctx.Value("nft_id")
 	if v == nil {
-		return 0, errors2.New(errors2.NotFound, "")
-	}
-	res, err := strconv.ParseUint(v.(string), 10, 64)
-	if err != nil {
-		return 0, errors2.New(errors2.NotFound, fmt.Sprintf("%s, nft_id: %s not found", errors2.ErrResourceNotFound, v.(string)))
+		return "", errors2.New(errors2.NotFound, "")
 	}
 
-	return res, nil
+	return v.(string), nil
 }
 
 func (h *NFT) TxHash(ctx context.Context) string {

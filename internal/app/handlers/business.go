@@ -6,12 +6,11 @@ import (
 	"strconv"
 	"strings"
 
-	errors2 "gitlab.bianjie.ai/avata/utils/errors"
-	"gitlab.bianjie.ai/avata/utils/errors/common"
-
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
+	errors2 "gitlab.bianjie.ai/avata/utils/errors"
+	"gitlab.bianjie.ai/avata/utils/errors/common"
 )
 
 type IBusiness interface {
@@ -22,8 +21,8 @@ type IBusiness interface {
 }
 
 type Business struct {
-	base
-	pageBasic
+	Base
+	PageBasic
 	svc services.IBusiness
 }
 

@@ -13,7 +13,7 @@ type ITx interface {
 }
 
 type Tx struct {
-	base
+	Base
 	svc services.ITx
 }
 

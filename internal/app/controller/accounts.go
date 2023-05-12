@@ -3,17 +3,19 @@ package controller
 import (
 	"net/http"
 
+	kit "gitlab.bianjie.ai/avata/open-api/pkg/gokit"
+
+	"gitlab.bianjie.ai/avata/open-api/internal/app/controller/base"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
-	kit "gitlab.bianjie.ai/avata/open-api/pkg/gokit"
 )
 
 type AccountController struct {
-	BaseController
+	base.BaseController
 	handler handlers.IAccount
 }
 
-func NewAccountsController(bc BaseController, handler handlers.IAccount) kit.IController {
+func NewAccountsController(bc base.BaseController, handler handlers.IAccount) kit.IController {
 	return AccountController{bc, handler}
 }
 
@@ -23,17 +25,17 @@ func (c AccountController) GetEndpoints() []kit.Endpoint {
 		kit.Endpoint{
 			URI:     "/accounts",
 			Method:  http.MethodPost,
-			Handler: c.makeHandler(c.handler.BatchCreateAccount, &vo.BatchCreateAccountRequest{}),
+			Handler: c.MakeHandler(c.handler.BatchCreateAccount, &vo.BatchCreateAccountRequest{}),
 		},
 		kit.Endpoint{
 			URI:     "/account",
 			Method:  http.MethodPost,
-			Handler: c.makeHandler(c.handler.CreateAccount, &vo.CreateAccountRequest{}),
+			Handler: c.MakeHandler(c.handler.CreateAccount, &vo.CreateAccountRequest{}),
 		},
 		kit.Endpoint{
 			URI:     "/accounts",
 			Method:  http.MethodGet,
-			Handler: c.makeHandler(c.handler.GetAccounts, nil),
+			Handler: c.MakeHandler(c.handler.GetAccounts, nil),
 		},
 	)
 	return ends

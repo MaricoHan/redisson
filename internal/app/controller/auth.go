@@ -5,15 +5,16 @@ import (
 
 	kit "gitlab.bianjie.ai/avata/open-api/pkg/gokit"
 
+	"gitlab.bianjie.ai/avata/open-api/internal/app/controller/base"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
 )
 
 type AuthController struct {
-	BaseController
+	base.BaseController
 	handler handlers.IAuth
 }
 
-func NewAuthController(bc BaseController, handler handlers.IAuth) kit.IController {
+func NewAuthController(bc base.BaseController, handler handlers.IAuth) kit.IController {
 	return AuthController{bc, handler}
 }
 
@@ -23,12 +24,12 @@ func (c AuthController) GetEndpoints() []kit.Endpoint {
 		kit.Endpoint{
 			URI:     "/auth/verify",
 			Method:  http.MethodGet,
-			Handler: c.makeHandler(c.handler.Verify, nil),
+			Handler: c.MakeHandler(c.handler.Verify, nil),
 		},
 		kit.Endpoint{
 			URI:     "/auth/users",
 			Method:  http.MethodGet,
-			Handler: c.makeHandler(c.handler.GetUser, nil),
+			Handler: c.MakeHandler(c.handler.GetUser, nil),
 		},
 	)
 	return ends

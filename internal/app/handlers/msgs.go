@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"strconv"
 
-	"gitlab.bianjie.ai/avata/utils/errors"
-	"gitlab.bianjie.ai/avata/utils/errors/common"
-
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
+	"gitlab.bianjie.ai/avata/utils/errors"
+	"gitlab.bianjie.ai/avata/utils/errors/common"
 )
 
 type IMsgs interface {
@@ -18,8 +17,9 @@ type IMsgs interface {
 }
 
 type Msgs struct {
-	base
-	pageBasic
+	Base
+	PageBasic
+	NFT
 	svc services.IMsgs
 }
 
@@ -30,7 +30,7 @@ func NewMsgs(svc services.IMsgs) *Msgs {
 func (h *Msgs) GetNFTHistory(ctx context.Context, _ interface{}) (interface{}, error) {
 	authData := h.AuthData(ctx)
 	params := dto.NftOperationHistoryByNftId{
-		ClassID:    h.ClassId(ctx),
+		ClassID:    h.ClassID(ctx),
 		ChainID:    authData.ChainId,
 		ProjectID:  authData.ProjectId,
 		PlatFormID: authData.PlatformId,
@@ -38,7 +38,7 @@ func (h *Msgs) GetNFTHistory(ctx context.Context, _ interface{}) (interface{}, e
 		Code:       authData.Code,
 		AccessMode: authData.AccessMode,
 	}
-	nftId, err := h.NftId(ctx)
+	nftId, err := h.NftID(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +81,7 @@ func (h *Msgs) GetNFTHistory(ctx context.Context, _ interface{}) (interface{}, e
 	if err != nil {
 		return nil, err
 	}
-	params.Operation = uint32(operation)
+	params.Operation = operation
 
 	return h.svc.GetNFTHistory(ctx, params)
 }
@@ -151,29 +151,6 @@ func (h *Msgs) MTId(ctx context.Context) string {
 		return ""
 	}
 	return nftId.(string)
-}
-
-func (h *Msgs) ClassId(ctx context.Context) string {
-	classId := ctx.Value("class_id")
-
-	if classId == nil {
-		return ""
-	}
-	return classId.(string)
-
-}
-
-func (h *Msgs) NftId(ctx context.Context) (uint64, error) {
-	v := ctx.Value("nft_id")
-	if v == nil {
-		return 0, errors.New(errors.NotFound, "")
-	}
-	res, err := strconv.ParseUint(v.(string), 10, 64)
-	if err != nil {
-		return 0, errors.New(errors.NotFound, fmt.Sprintf("%s, nft_id: %s not found", errors.ErrRecordNotFound, v.(string)))
-	}
-
-	return res, nil
 }
 
 func (h *Msgs) Signer(ctx context.Context) string {

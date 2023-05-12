@@ -1,21 +1,19 @@
 package controller
 
 import (
-	"context"
-
 	log "github.com/sirupsen/logrus"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
 	kit "gitlab.bianjie.ai/avata/open-api/pkg/gokit"
+
+	"gitlab.bianjie.ai/avata/open-api/internal/app/controller/base"
+	l2_controller "gitlab.bianjie.ai/avata/open-api/internal/app/controller/l2"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
+	l2_handlers "gitlab.bianjie.ai/avata/open-api/internal/app/handlers/l2"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
+	l2_services "gitlab.bianjie.ai/avata/open-api/internal/app/services/l2"
 )
 
-// BaseController define a base controller for all http Controller
-type BaseController struct {
-	Controller kit.Controller
-}
-
 func GetAllControllers(logger *log.Logger) []kit.IController {
-	baseController := BaseController{
+	baseController := base.BaseController{
 		Controller: kit.NewController(),
 	}
 	controllers := []kit.IController{
@@ -31,30 +29,10 @@ func GetAllControllers(logger *log.Logger) []kit.IController {
 		NewRecordController(baseController, handlers.NewRecord(services.NewRecord(logger))),
 		NewEmptionController(baseController, handlers.NewBusiness(services.NewBusiness(logger))),
 		NewContractController(baseController, handlers.NewContract(services.NewContract(logger))),
+		NewContractController(baseController, handlers.NewContract(services.NewContract(logger))),
+		l2_controller.NewNftClassController(baseController, l2_handlers.NewNFTClass(l2_services.NewNFTClass(logger))),
+		l2_controller.NewNftController(baseController, l2_handlers.NewNft(l2_services.NewNFT(logger))),
 	}
 
 	return controllers
-}
-
-// makeHandler create a http hander for request
-func (bc BaseController) makeHandler(handler kit.Handler, request interface{}) *kit.Server {
-	return bc.Controller.MakeHandler(
-		bc.wrapHandler(handler),
-		request,
-		[]kit.RequestFunc{},
-		nil,
-		[]kit.ServerResponseFunc{},
-	)
-}
-
-func (bc BaseController) wrapHandler(h kit.Handler) kit.Handler {
-	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		log.Debug("Execute handler logic ", "method", "wrapHandler", "params", request)
-		resp, err := h(ctx, request)
-		if err != nil {
-			// log.Error("Execute handler logic failed", "error", err.Error())
-			return nil, err
-		}
-		return resp, nil
-	}
 }

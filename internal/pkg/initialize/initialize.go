@@ -21,6 +21,7 @@ import (
 	pb_tx "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/tx"
 	//pb_notice "gitlab.bianjie.ai/avata/chains/api/pb/v2/notice"
 	pb_contract "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/contract"
+	pb_l2_nft "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/l2/nft"
 	pb_ns "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/ns"
 	//pb_tx_queue "gitlab.bianjie.ai/avata/chains/api/pb/v2/tx_queue"
 	pb_wallet "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/wallet"
@@ -58,6 +59,10 @@ var WalletClientMap map[string]pb_wallet.WalletClient
 var NsClientMap map[string]pb_ns.NSClient
 
 var ContractClientMap map[string]pb_contract.ContractClient
+
+var L2NftClientMap map[string]pb_l2_nft.NFTClient
+
+var L2NftClassClientMap map[string]pb_l2_nft.ClassClient
 
 var Log = new(log.Logger)
 
@@ -162,6 +167,20 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	}
 	GrpcConnMap[constant.WalletServer] = walletServer
 
+	logger.Info("connecting irita-layer2 ...")
+	iritaLayer2, err := grpc.DialContext(
+		context.Background(),
+		cfg.GrpcClient.IritaLayer2,
+		grpc.WithInsecure(),
+		grpc.WithKeepaliveParams(kacp),
+		grpc.WithBlock(),
+		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy":"round_robin"}`),
+		grpc.WithUnaryInterceptor(middleware.NewGrpcInterceptorMiddleware().Interceptor()))
+	if err != nil {
+		logger.Fatal("get irita-layer2 grpc connect failed, err: ", err.Error())
+	}
+	GrpcConnMap[constant.IritaLayer2] = iritaLayer2
+
 	// 初始化Account grpc client
 	AccountClientMap = make(map[string]pb_account.AccountClient)
 	AccountClientMap[constant.IritaOPBNative] = pb_account.NewAccountClient(GrpcConnMap[constant.IritaOPBNative])
@@ -231,6 +250,14 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	// 初始化contract grpc client
 	ContractClientMap = make(map[string]pb_contract.ContractClient)
 	ContractClientMap[constant.IritaOPBNative] = pb_contract.NewContractClient(GrpcConnMap[constant.IritaOPBNative])
+
+	// 初始化 l2 NftClass grpc client
+	L2NftClassClientMap = make(map[string]pb_l2_nft.ClassClient)
+	L2NftClassClientMap[constant.IritaOPBNative] = pb_l2_nft.NewClassClient(GrpcConnMap[constant.IritaLayer2])
+
+	// 初始化 l2 nft grpc client
+	L2NftClientMap = make(map[string]pb_l2_nft.NFTClient)
+	L2NftClientMap[constant.IritaOPBNative] = pb_l2_nft.NewNFTClient(GrpcConnMap[constant.IritaLayer2])
 
 }
 

@@ -28,6 +28,7 @@ const (
 	DatangNative   = "datangchain-native"
 	IritaOPBNative = "irita-opb-native"
 	IrisHubNative  = "irishub-native"
+	IritaLayer2    = "irita-layer2"
 
 	// wallet
 	WalletServer = "wallet-server"
@@ -45,9 +46,9 @@ const (
 
 // redis key
 const (
-	RedisPrefix           = "open-api"
-	KeyProjectApikey      = "project:apikey:"
-	KeyChain              = "chain:"
+	RedisPrefix      = "open-api"
+	KeyProjectApikey = "project:apikey:"
+	KeyChain         = "chain:"
 )
 
 var RightsMap = map[uint64]string{

@@ -23,6 +23,7 @@ type (
 		PrometheusAddr     string `mapstructure:"prometheus_addr"`
 		GprcTimeout        int    `mapstructure:"grpc_timeout"`
 		HttpTimeout        int    `mapstructure:"http_timeout"`
+		Limit              int64  `mapstructure:"limit"`
 	}
 
 	Mysql struct {
@@ -45,7 +46,8 @@ type (
 	GrpcClient struct {
 		TianZhouEVM  string `mapstructure:"tianzhou_evm"`
 		StateGateway string `mapstructure:"state_gateway"`
-		WalletServer   string `mapstructure:"wallet_server"`
+		WalletServer string `mapstructure:"wallet_server"`
+		IritaLayer2  string `mapstructure:"irita_layer2"`
 	}
 
 	Project struct {
