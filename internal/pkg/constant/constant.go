@@ -27,6 +27,7 @@ const (
 	WenchangDDC    = "wenchangchain-ddc"
 	DatangNative   = "datangchain-native"
 	IritaOPBNative = "irita-opb-native"
+	TianzhouNative = "irita-tianzhou-native"
 	IrisHubNative  = "irishub-native"
 	IritaLayer2    = "irita-layer2"
 

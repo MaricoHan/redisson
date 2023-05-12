@@ -14,16 +14,26 @@ import (
 
 	pb_account "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/account"
 	pb_business "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/buy"
-	pb_class "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/class"
-	pb_msgs "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/msgs"
-	pb_nft "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/nft"
-	pb_record "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/record"
-	pb_tx "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/tx"
-	//pb_notice "gitlab.bianjie.ai/avata/chains/api/pb/v2/notice"
-	pb_contract "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/contract"
+	pb_evm_class "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/evm/class"
+	pb_evm_contract "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/evm/contract"
+	pb_evm_dict "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/evm/dict"
+
+	pb_evm_msgs "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/evm/msgs"
+	pb_evm_nft "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/evm/nft"
+	pb_evm_ns "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/evm/ns"
+	pb_evm_tx "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/evm/tx"
+	pb_l2_dict "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/l2/dict"
 	pb_l2_nft "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/l2/nft"
-	pb_ns "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/ns"
-	//pb_tx_queue "gitlab.bianjie.ai/avata/chains/api/pb/v2/tx_queue"
+	pb_native_nft_class "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/class"
+	pb_native_dict "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/dict"
+	pb_native_msgs "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/msgs"
+	pb_native_mt "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/mt"
+	pb_native_mt_class "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/mt_class"
+	pb_native_nft "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/nft"
+	pb_native_notice "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/notice"
+	pb_native_record "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/record"
+	pb_native_tx "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/tx"
+	pb_native_tx_queue "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/tx_queue"
 	pb_wallet "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/wallet"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
@@ -36,18 +46,27 @@ import (
 var RedisClient *redis.RedisClient
 var MysqlDB *gorm.DB
 var GrpcConnMap map[string]*grpc.ClientConn
-var AccountClientMap map[string]pb_account.AccountClient
-var MsgsClientMap map[string]pb_msgs.MSGSClient
-var NftClientMap map[string]pb_nft.NFTClient
-
-var RecordClientMap map[string]pb_record.RecordClient
-var ClassClientMap map[string]pb_class.ClassClient
-var TxClientMap map[string]pb_tx.TxClient
+var SignClient pb_account.AccountClient
 var BusineessClientMap map[string]pb_business.BuyClient
 
-//var MTClientMap map[string]pb_mt.MTClient
-//var MTClassClientMap map[string]pb_mt_class.MTClassClient
-//var MTMsgsClientMap map[string]pb_mt_msgs.MTMSGSClient
+var EvmMsgsClientMap map[string]pb_evm_msgs.MSGSClient
+var EvmNftClientMap map[string]pb_evm_nft.NFTClient
+var EvmClassClientMap map[string]pb_evm_class.ClassClient
+var EvmTxClientMap map[string]pb_evm_tx.TxClient
+var EvmNsClientMap map[string]pb_evm_ns.NSClient
+var EvmContractClientMap map[string]pb_evm_contract.ContractClient
+var EvmDictClientMap map[string]pb_evm_dict.DictClient
+
+var NativeRecordClientMap map[string]pb_native_record.RecordClient
+var NativeMTClientMap map[string]pb_native_mt.MTClient
+var NativeMTClassClientMap map[string]pb_native_mt_class.MTClassClient
+var NativeNFTClientMap map[string]pb_native_nft.NFTClient
+var NativeNFTClassClientMap map[string]pb_native_nft_class.ClassClient
+var NativeMsgClientMap map[string]pb_native_msgs.MSGSClient
+var NativeTxClientMap map[string]pb_native_tx.TxClient
+var NativeTxQueueClientMap map[string]pb_native_tx_queue.TxQueueClient
+var NativeNoticeClientMap map[string]pb_native_notice.NoticeClient
+var NativeDictClientMap map[string]pb_native_dict.DictClient
 
 var StateGatewayServer *grpc.ClientConn
 
@@ -56,13 +75,9 @@ var StateGatewayServer *grpc.ClientConn
 
 var WalletClientMap map[string]pb_wallet.WalletClient
 
-var NsClientMap map[string]pb_ns.NSClient
-
-var ContractClientMap map[string]pb_contract.ContractClient
-
 var L2NftClientMap map[string]pb_l2_nft.NFTClient
-
 var L2NftClassClientMap map[string]pb_l2_nft.ClassClient
+var L2DictClientMap map[string]pb_l2_dict.DictClient
 
 var Log = new(log.Logger)
 
@@ -127,7 +142,7 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	GrpcConnMap = make(map[string]*grpc.ClientConn)
 
 	logger.Info("connecting tianzhou-evm ...")
-	iritaOpbNativeConn, err := grpc.DialContext(
+	tianzhouEvmConn, err := grpc.DialContext(
 		context.Background(),
 		cfg.GrpcClient.TianZhouEVM,
 		grpc.WithInsecure(),
@@ -138,7 +153,7 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	if err != nil {
 		logger.Fatal("get tianzhou-evm grpc connect failed, err: ", err.Error())
 	}
-	GrpcConnMap[constant.IritaOPBNative] = iritaOpbNativeConn
+	GrpcConnMap[constant.IritaOPBNative] = tianzhouEvmConn
 
 	logger.Info("connecting state-gateway-server ...")
 	StateGatewayServer, err = grpc.DialContext(
@@ -181,38 +196,53 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	}
 	GrpcConnMap[constant.IritaLayer2] = iritaLayer2
 
-	// 初始化Account grpc client
-	AccountClientMap = make(map[string]pb_account.AccountClient)
-	AccountClientMap[constant.IritaOPBNative] = pb_account.NewAccountClient(GrpcConnMap[constant.IritaOPBNative])
+	logger.Info("connecting sign-server ...")
+	signServer, err := grpc.DialContext(
+		context.Background(),
+		cfg.GrpcClient.SignServer,
+		grpc.WithInsecure(),
+		grpc.WithKeepaliveParams(kacp),
+		grpc.WithBlock(),
+		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy":"round_robin"}`),
+		grpc.WithUnaryInterceptor(middleware.NewGrpcInterceptorMiddleware().Interceptor()))
+	if err != nil {
+		logger.Fatal("get sign-server grpc connect failed, err: ", err.Error())
+	}
+
+	// 初始化sign grpc client
+	SignClient = pb_account.NewAccountClient(signServer)
 	// 初始化msgs grpc client
-	MsgsClientMap = make(map[string]pb_msgs.MSGSClient)
-	MsgsClientMap[constant.IritaOPBNative] = pb_msgs.NewMSGSClient(GrpcConnMap[constant.IritaOPBNative])
+	EvmMsgsClientMap = make(map[string]pb_evm_msgs.MSGSClient)
+	EvmMsgsClientMap[constant.IritaOPBNative] = pb_evm_msgs.NewMSGSClient(GrpcConnMap[constant.IritaOPBNative])
 	// 初始化nft grpc client
-	NftClientMap = make(map[string]pb_nft.NFTClient)
-	NftClientMap[constant.IritaOPBNative] = pb_nft.NewNFTClient(GrpcConnMap[constant.IritaOPBNative])
+	EvmNftClientMap = make(map[string]pb_evm_nft.NFTClient)
+	EvmNftClientMap[constant.IritaOPBNative] = pb_evm_nft.NewNFTClient(GrpcConnMap[constant.IritaOPBNative])
 	// 初始化nft class grpc client
-	ClassClientMap = make(map[string]pb_class.ClassClient)
-	ClassClientMap[constant.IritaOPBNative] = pb_class.NewClassClient(GrpcConnMap[constant.IritaOPBNative])
+	EvmClassClientMap = make(map[string]pb_evm_class.ClassClient)
+	EvmClassClientMap[constant.IritaOPBNative] = pb_evm_class.NewClassClient(GrpcConnMap[constant.IritaOPBNative])
 	// 初始化tx grpc client
-	TxClientMap = make(map[string]pb_tx.TxClient)
-	TxClientMap[constant.IritaOPBNative] = pb_tx.NewTxClient(GrpcConnMap[constant.IritaOPBNative])
+	EvmTxClientMap = make(map[string]pb_evm_tx.TxClient)
+	EvmTxClientMap[constant.IritaOPBNative] = pb_evm_tx.NewTxClient(GrpcConnMap[constant.IritaOPBNative])
+
+	NativeNFTClientMap = make(map[string]pb_native_nft.NFTClient)
+	NativeNFTClientMap[constant.TianzhouNative] = pb_native_nft.NewNFTClient(GrpcConnMap[constant.TianzhouNative])
+	NativeNFTClassClientMap = make(map[string]pb_native_nft_class.ClassClient)
+	NativeNFTClassClientMap[constant.TianzhouNative] = pb_native_nft_class.NewClassClient(GrpcConnMap[constant.TianzhouNative])
+	NativeTxClientMap = make(map[string]pb_native_tx.TxClient)
+	NativeTxClientMap[constant.TianzhouNative] = pb_native_tx.NewTxClient(GrpcConnMap[constant.TianzhouNative])
+	NativeTxQueueClientMap = make(map[string]pb_native_tx_queue.TxQueueClient)
+	NativeTxQueueClientMap[constant.TianzhouNative] = pb_native_tx_queue.NewTxQueueClient(StateGatewayServer)
+	NativeNoticeClientMap = make(map[string]pb_native_notice.NoticeClient)
+	NativeNoticeClientMap[constant.TianzhouNative] = pb_native_notice.NewNoticeClient(GrpcConnMap[constant.TianzhouNative])
 	// 初始化mt
-	//MTClientMap = make(map[string]pb_mt.MTClient)
-	//MTClientMap[constant.WenchangDDC] = pb_mt.NewMTClient(GrpcConnMap[constant.WenchangDDC])
-	//MTClientMap[constant.WenchangNative] = pb_mt.NewMTClient(GrpcConnMap[constant.WenchangNative])
-	//MTClientMap[constant.IritaOPBNative] = pb_mt.NewMTClient(GrpcConnMap[constant.IritaOPBNative])
-	//MTClientMap[constant.IrisHubNative] = pb_mt.NewMTClient(GrpcConnMap[constant.IrisHubNative])
+	NativeMTClientMap = make(map[string]pb_native_mt.MTClient)
+	NativeMTClientMap[constant.TianzhouNative] = pb_native_mt.NewMTClient(GrpcConnMap[constant.TianzhouNative])
 	// 初始化mt_class
-	//MTClassClientMap = make(map[string]pb_mt_class.MTClassClient)
-	//MTClassClientMap[constant.WenchangDDC] = pb_mt_class.NewMTClassClient(GrpcConnMap[constant.WenchangDDC])
-	//MTClassClientMap[constant.WenchangNative] = pb_mt_class.NewMTClassClient(GrpcConnMap[constant.WenchangNative])
-	//MTClassClientMap[constant.IritaOPBNative] = pb_mt_class.NewMTClassClient(GrpcConnMap[constant.IritaOPBNative])
-	//MTClassClientMap[constant.IrisHubNative] = pb_mt_class.NewMTClassClient(GrpcConnMap[constant.IrisHubNative])
-	// 初始化mt_msgs
-	//MTMsgsClientMap = make(map[string]pb_mt_msgs.MTMSGSClient)
-	//MTMsgsClientMap[constant.WenchangNative] = pb_mt_msgs.NewMTMSGSClient(GrpcConnMap[constant.WenchangNative])
-	//MTMsgsClientMap[constant.IritaOPBNative] = pb_mt_msgs.NewMTMSGSClient(GrpcConnMap[constant.IritaOPBNative])
-	//MTMsgsClientMap[constant.IrisHubNative] = pb_mt_msgs.NewMTMSGSClient(GrpcConnMap[constant.IrisHubNative])
+	NativeMTClassClientMap = make(map[string]pb_native_mt_class.MTClassClient)
+	NativeMTClassClientMap[constant.TianzhouNative] = pb_native_mt_class.NewMTClassClient(GrpcConnMap[constant.TianzhouNative])
+	// 初始化msgs
+	NativeMsgClientMap = make(map[string]pb_native_msgs.MSGSClient)
+	NativeMsgClientMap[constant.TianzhouNative] = pb_native_msgs.NewMSGSClient(GrpcConnMap[constant.TianzhouNative])
 
 	// 初始化tx_queue
 	// TxQueueClient = pb_tx_queue.NewTxQueueClient(StateGatewayServer)
@@ -222,11 +252,11 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	//RightsClientMap[constant.JiangSu] = rights.NewRightsClient(GrpcConnRightsMap[constant.JiangSu])
 
 	//初始化record grpc client
-	RecordClientMap = make(map[string]pb_record.RecordClient)
-	//RecordClientMap[constant.WenchangDDC] = pb_record.NewRecordClient(GrpcConnMap[constant.WenchangDDC])
-	//RecordClientMap[constant.WenchangNative] = pb_record.NewRecordClient(GrpcConnMap[constant.WenchangNative])
-	RecordClientMap[constant.IritaOPBNative] = pb_record.NewRecordClient(GrpcConnMap[constant.IritaOPBNative])
-	//RecordClientMap[constant.IrisHubNative] = pb_record.NewRecordClient(GrpcConnMap[constant.IrisHubNative])
+	NativeRecordClientMap = make(map[string]pb_native_record.RecordClient)
+	//NativeRecordClientMap[constant.WenchangDDC] = pb_native_record.NewRecordClient(GrpcConnMap[constant.WenchangDDC])
+	//NativeRecordClientMap[constant.WenchangNative] = pb_native_record.NewRecordClient(GrpcConnMap[constant.WenchangNative])
+	NativeRecordClientMap[constant.IritaOPBNative] = pb_native_record.NewRecordClient(GrpcConnMap[constant.IritaOPBNative])
+	//NativeRecordClientMap[constant.IrisHubNative] = pb_native_record.NewRecordClient(GrpcConnMap[constant.IrisHubNative])
 
 	// 初始化notice
 	//NoticeClientMap = make(map[string]pb_notice.NoticeClient)
@@ -244,12 +274,12 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	WalletClientMap[constant.WalletServer] = pb_wallet.NewWalletClient(GrpcConnMap[constant.WalletServer])
 
 	// 初始化ns grpc client
-	NsClientMap = make(map[string]pb_ns.NSClient)
-	NsClientMap[constant.IritaOPBNative] = pb_ns.NewNSClient(GrpcConnMap[constant.IritaOPBNative])
+	EvmNsClientMap = make(map[string]pb_evm_ns.NSClient)
+	EvmNsClientMap[constant.IritaOPBNative] = pb_evm_ns.NewNSClient(GrpcConnMap[constant.IritaOPBNative])
 
 	// 初始化contract grpc client
-	ContractClientMap = make(map[string]pb_contract.ContractClient)
-	ContractClientMap[constant.IritaOPBNative] = pb_contract.NewContractClient(GrpcConnMap[constant.IritaOPBNative])
+	EvmContractClientMap = make(map[string]pb_evm_contract.ContractClient)
+	EvmContractClientMap[constant.IritaOPBNative] = pb_evm_contract.NewContractClient(GrpcConnMap[constant.IritaOPBNative])
 
 	// 初始化 l2 NftClass grpc client
 	L2NftClassClientMap = make(map[string]pb_l2_nft.ClassClient)
