@@ -28,10 +28,11 @@ password = "redisPassword"
 db = 11
 
 [grpc_client]
-tianzhou_evm = ":10000"
+tianzhou_evm = "192.168.0.157:11000"
 state_gateway = "192.168.150.44:10000"
 wallet_server = "192.168.150.40:11000"
-irita_layer2 = ":10000"
+irita_layer2 = "192.168.150.45:10000"
+sign_server = "192.168.150.45:10001"
 
 [project]
 secret_pwd = "Console_Projects_Secrets"

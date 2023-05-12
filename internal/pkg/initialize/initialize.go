@@ -46,7 +46,7 @@ import (
 var RedisClient *redis.RedisClient
 var MysqlDB *gorm.DB
 var GrpcConnMap map[string]*grpc.ClientConn
-var AccountClientMap map[string]pb_account.AccountClient
+var SignClient pb_account.AccountClient
 var BusineessClientMap map[string]pb_business.BuyClient
 
 var EvmMsgsClientMap map[string]pb_evm_msgs.MSGSClient
@@ -196,9 +196,21 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	}
 	GrpcConnMap[constant.IritaLayer2] = iritaLayer2
 
-	// 初始化Account grpc client
-	AccountClientMap = make(map[string]pb_account.AccountClient)
-	AccountClientMap[constant.IritaOPBNative] = pb_account.NewAccountClient(GrpcConnMap[constant.IritaOPBNative])
+	logger.Info("connecting sign-server ...")
+	signServer, err := grpc.DialContext(
+		context.Background(),
+		cfg.GrpcClient.SignServer,
+		grpc.WithInsecure(),
+		grpc.WithKeepaliveParams(kacp),
+		grpc.WithBlock(),
+		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy":"round_robin"}`),
+		grpc.WithUnaryInterceptor(middleware.NewGrpcInterceptorMiddleware().Interceptor()))
+	if err != nil {
+		logger.Fatal("get sign-server grpc connect failed, err: ", err.Error())
+	}
+
+	// 初始化sign grpc client
+	SignClient = pb_account.NewAccountClient(signServer)
 	// 初始化msgs grpc client
 	EvmMsgsClientMap = make(map[string]pb_evm_msgs.MSGSClient)
 	EvmMsgsClientMap[constant.IritaOPBNative] = pb_evm_msgs.NewMSGSClient(GrpcConnMap[constant.IritaOPBNative])
