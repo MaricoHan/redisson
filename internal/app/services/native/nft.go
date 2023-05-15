@@ -20,7 +20,7 @@ type INFT interface {
 	List(ctx context.Context, params dto.Nfts) (*dto.NftsRes, error)
 	Create(ctx context.Context, params dto.CreateNfts) (*dto.TxRes, error)
 	//BatchCreate(ctx context.Context, params dto.BatchCreateNfts) (*dto.BatchTxRes, error)
-	Show(ctx context.Context, params dto.NftByNftId) (*dto.NftReq, error)
+	Show(ctx context.Context, params dto.NftByNftId) (*dto.NFT, error)
 	Update(ctx context.Context, params dto.EditNftByNftId) (*dto.TxRes, error)
 	Delete(ctx context.Context, params dto.DeleteNftByNftId) (*dto.TxRes, error)
 	//BatchTransfer(ctx context.Context, params *dto.BatchTransferRequest) (*dto.BatchTxRes, error)
@@ -192,7 +192,7 @@ func (s *NFT) Create(ctx context.Context, params dto.CreateNfts) (*dto.TxRes, er
 //	return &dto.BatchTxRes{}, nil
 //}
 
-func (s *NFT) Show(ctx context.Context, params dto.NftByNftId) (*dto.NftReq, error) {
+func (s *NFT) Show(ctx context.Context, params dto.NftByNftId) (*dto.NFT, error) {
 	logger := s.logger.WithField("params", params).WithField("func", "ShowNFT")
 
 	// 非托管模式不支持
@@ -223,7 +223,7 @@ func (s *NFT) Show(ctx context.Context, params dto.NftByNftId) (*dto.NftReq, err
 	if resp == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
-	result := &dto.NftReq{
+	result := &dto.NFT{
 		Id:          resp.Detail.NftId,
 		Name:        resp.Detail.Name,
 		ClassId:     resp.Detail.ClassId,
