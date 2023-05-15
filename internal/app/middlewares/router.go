@@ -33,7 +33,7 @@ func (router routerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// DDC 不支持 NFT-批量、orders-批量、MT、版权服务
-	if fmt.Sprintf("%s-%s", authData.Code, authData.Module) == constant.WenchangDDC {
+	if fmt.Sprintf("%s-%s", authData.Code, authData.Module) == constant.TianheDDC {
 		if strings.Contains(r.RequestURI, "/mt/") ||
 			strings.Contains(r.RequestURI, "/nft/batch/") ||
 			strings.Contains(r.RequestURI, "/orders/batch") ||
@@ -49,7 +49,7 @@ func (router routerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
 				return
 			}
-			if fmt.Sprintf("%s-%s", authData.Code, authData.Module) == constant.IritaOPBNative {
+			if fmt.Sprintf("%s-%s", authData.Code, authData.Module) == constant.TianzhouEVM {
 				// 文昌链-天舟除 orders 都不支持
 				if !strings.Contains(r.RequestURI, "/orders") && !strings.Contains(r.RequestURI, "/auth") {
 					writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)

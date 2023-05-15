@@ -24,17 +24,17 @@ func (c NftClassController) GetEndpoints() []kit.Endpoint {
 	var ends []kit.Endpoint
 	ends = append(ends,
 		kit.Endpoint{
-			URI:     "/nft/classes",
+			URI:     "/native/nft/classes",
 			Method:  http.MethodGet,
 			Handler: c.MakeHandler(c.handler.Classes, nil),
 		},
 		kit.Endpoint{
-			URI:     "/nft/classes",
+			URI:     "/native/nft/classes",
 			Method:  http.MethodPost,
 			Handler: c.MakeHandler(c.handler.CreateNftClass, &vo.CreateNftClassRequest{}),
 		},
 		kit.Endpoint{
-			URI:     "/nft/classes/{id}",
+			URI:     "/native/nft/classes/{id}",
 			Method:  http.MethodGet,
 			Handler: c.MakeHandler(c.handler.ClassByID, nil),
 		},

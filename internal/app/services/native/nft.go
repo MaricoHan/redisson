@@ -19,13 +19,13 @@ import (
 type INFT interface {
 	List(ctx context.Context, params dto.Nfts) (*dto.NftsRes, error)
 	Create(ctx context.Context, params dto.CreateNfts) (*dto.TxRes, error)
-	BatchCreate(ctx context.Context, params dto.BatchCreateNfts) (*dto.BatchTxRes, error)
-	Show(ctx context.Context, params dto.NftByNftId) (*dto.NftReq, error)
+	//BatchCreate(ctx context.Context, params dto.BatchCreateNfts) (*dto.BatchTxRes, error)
+	Show(ctx context.Context, params dto.NftByNftId) (*dto.NFT, error)
 	Update(ctx context.Context, params dto.EditNftByNftId) (*dto.TxRes, error)
 	Delete(ctx context.Context, params dto.DeleteNftByNftId) (*dto.TxRes, error)
-	BatchTransfer(ctx context.Context, params *dto.BatchTransferRequest) (*dto.BatchTxRes, error)
-	BatchEdit(ctx context.Context, params *dto.BatchEditRequest) (*dto.BatchTxRes, error)
-	BatchDelete(ctx context.Context, params *dto.BatchDeleteRequest) (*dto.BatchTxRes, error)
+	//BatchTransfer(ctx context.Context, params *dto.BatchTransferRequest) (*dto.BatchTxRes, error)
+	//BatchEdit(ctx context.Context, params *dto.BatchEditRequest) (*dto.BatchTxRes, error)
+	//BatchDelete(ctx context.Context, params *dto.BatchDeleteRequest) (*dto.BatchTxRes, error)
 }
 type NFT struct {
 	logger *log.Logger
@@ -153,46 +153,46 @@ func (s *NFT) Create(ctx context.Context, params dto.CreateNfts) (*dto.TxRes, er
 
 }
 
-func (s *NFT) BatchCreate(ctx context.Context, params dto.BatchCreateNfts) (*dto.BatchTxRes, error) {
-	logger := s.logger.WithField("params", params).WithField("func", "BatchCreateNFT")
+//func (s *NFT) BatchCreate(ctx context.Context, params dto.BatchCreateNfts) (*dto.BatchTxRes, error) {
+//	logger := s.logger.WithField("params", params).WithField("func", "BatchCreateNFT")
+//
+//	// 非托管模式不支持
+//	if params.AccessMode == entity.UNMANAGED {
+//		return nil, errors2.ErrNotImplemented
+//	}
+//
+//	req := pb.NFTBatchCreateRequest{
+//		ProjectId:   params.ProjectID,
+//		ClassId:     params.ClassId,
+//		Name:        params.Name,
+//		Uri:         params.Uri,
+//		UriHash:     params.UriHash,
+//		Data:        params.Data,
+//		Recipients:  params.Recipients,
+//		OperationId: params.OperationId,
+//	}
+//	resp := &pb.NFTBatchCreateResponse{}
+//	var err error
+//	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+//	grpcClient, ok := initialize.NativeNFTClientMap[mapKey]
+//	if !ok {
+//		logger.Error(errors2.ErrService)
+//		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
+//	}
+//	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
+//	defer cancel()
+//	resp, err = grpcClient.BatchCreate(ctx, &req)
+//	if err != nil {
+//		logger.Error("request err:", err.Error())
+//		return nil, err
+//	}
+//	if resp == nil {
+//		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+//	}
+//	return &dto.BatchTxRes{}, nil
+//}
 
-	// 非托管模式不支持
-	if params.AccessMode == entity.UNMANAGED {
-		return nil, errors2.ErrNotImplemented
-	}
-
-	req := pb.NFTBatchCreateRequest{
-		ProjectId:   params.ProjectID,
-		ClassId:     params.ClassId,
-		Name:        params.Name,
-		Uri:         params.Uri,
-		UriHash:     params.UriHash,
-		Data:        params.Data,
-		Recipients:  params.Recipients,
-		OperationId: params.OperationId,
-	}
-	resp := &pb.NFTBatchCreateResponse{}
-	var err error
-	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
-	grpcClient, ok := initialize.NativeNFTClientMap[mapKey]
-	if !ok {
-		logger.Error(errors2.ErrService)
-		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
-	}
-	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
-	defer cancel()
-	resp, err = grpcClient.BatchCreate(ctx, &req)
-	if err != nil {
-		logger.Error("request err:", err.Error())
-		return nil, err
-	}
-	if resp == nil {
-		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
-	}
-	return &dto.BatchTxRes{}, nil
-}
-
-func (s *NFT) Show(ctx context.Context, params dto.NftByNftId) (*dto.NftReq, error) {
+func (s *NFT) Show(ctx context.Context, params dto.NftByNftId) (*dto.NFT, error) {
 	logger := s.logger.WithField("params", params).WithField("func", "ShowNFT")
 
 	// 非托管模式不支持
@@ -223,7 +223,7 @@ func (s *NFT) Show(ctx context.Context, params dto.NftByNftId) (*dto.NftReq, err
 	if resp == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
-	result := &dto.NftReq{
+	result := &dto.NFT{
 		Id:          resp.Detail.NftId,
 		Name:        resp.Detail.Name,
 		ClassId:     resp.Detail.ClassId,
@@ -255,6 +255,7 @@ func (s *NFT) Update(ctx context.Context, params dto.EditNftByNftId) (*dto.TxRes
 		ClassId:     params.ClassId,
 		Name:        params.Name,
 		Uri:         params.Uri,
+		UriHash:     params.UriHash,
 		NftId:       params.NftId,
 		Data:        params.Data,
 		Owner:       params.Sender,
@@ -318,110 +319,110 @@ func (s *NFT) Delete(ctx context.Context, params dto.DeleteNftByNftId) (*dto.TxR
 	return &dto.TxRes{}, nil
 }
 
-func (s *NFT) BatchTransfer(ctx context.Context, params *dto.BatchTransferRequest) (*dto.BatchTxRes, error) {
-	logger := s.logger.WithField("params", params).WithField("func", "BatchTransferNFT")
-
-	// 非托管模式不支持
-	if params.AccessMode == entity.UNMANAGED {
-		return nil, errors2.ErrNotImplemented
-	}
-
-	req := pb.NFTBatchTransferRequest{
-		ProjectId:   params.ProjectID,
-		Owner:       params.Sender,
-		Data:        params.Data,
-		OperationId: params.OperationID,
-	}
-	resp := new(pb.NFTBatchTransferResponse)
-
-	var err error
-	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
-	grpcClient, ok := initialize.NativeNFTClientMap[mapKey]
-	if !ok {
-		logger.Error(errors2.ErrService)
-		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
-	}
-	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
-	defer cancel()
-	resp, err = grpcClient.BatchTransfer(ctx, &req)
-	if err != nil {
-		logger.Error("request err:", err.Error())
-		return nil, err
-	}
-	if resp == nil {
-		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
-	}
-	return &dto.BatchTxRes{}, nil
-}
-
-func (s *NFT) BatchEdit(ctx context.Context, params *dto.BatchEditRequest) (*dto.BatchTxRes, error) {
-	logger := s.logger.WithField("params", params).WithField("func", "BatchEditNFT")
-
-	// 非托管模式不支持
-	if params.AccessMode == entity.UNMANAGED {
-		return nil, errors2.ErrNotImplemented
-	}
-
-	req := pb.NFTBatchEditRequest{
-		ProjectId:   params.ProjectID,
-		Owner:       params.Sender,
-		Nfts:        params.Nfts,
-		OperationId: params.OperationID,
-	}
-	resp := new(pb.NFTBatchEditResponse)
-
-	var err error
-	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
-	grpcClient, ok := initialize.NativeNFTClientMap[mapKey]
-	if !ok {
-		logger.Error(errors2.ErrService)
-		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
-	}
-	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
-	defer cancel()
-	resp, err = grpcClient.BatchEdit(ctx, &req)
-	if err != nil {
-		logger.Error("request err:", err.Error())
-		return nil, err
-	}
-	if resp == nil {
-		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
-	}
-	return &dto.BatchTxRes{}, nil
-}
-
-func (s *NFT) BatchDelete(ctx context.Context, params *dto.BatchDeleteRequest) (*dto.BatchTxRes, error) {
-	logger := s.logger.WithField("params", params).WithField("func", "BatchDeleteNFT")
-
-	// 非托管模式不支持
-	if params.AccessMode == entity.UNMANAGED {
-		return nil, errors2.ErrNotImplemented
-	}
-
-	req := pb.NFTBatchDeleteRequest{
-		ProjectId:   params.ProjectID,
-		Owner:       params.Sender,
-		Nfts:        params.Nfts,
-		OperationId: params.OperationID,
-	}
-	resp := new(pb.NFTBatchDeleteResponse)
-
-	var err error
-	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
-	grpcClient, ok := initialize.NativeNFTClientMap[mapKey]
-	if !ok {
-		logger.Error(errors2.ErrService)
-		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
-	}
-	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
-	defer cancel()
-	resp, err = grpcClient.BatchDelete(ctx, &req)
-	if err != nil {
-		logger.Error("request err:", err.Error())
-		return nil, err
-	}
-	if resp == nil {
-		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
-	}
-	return &dto.BatchTxRes{}, nil
-}
+//func (s *NFT) BatchTransfer(ctx context.Context, params *dto.BatchTransferRequest) (*dto.BatchTxRes, error) {
+//	logger := s.logger.WithField("params", params).WithField("func", "BatchTransferNFT")
+//
+//	// 非托管模式不支持
+//	if params.AccessMode == entity.UNMANAGED {
+//		return nil, errors2.ErrNotImplemented
+//	}
+//
+//	req := pb.NFTBatchTransferRequest{
+//		ProjectId:   params.ProjectID,
+//		Owner:       params.Sender,
+//		Data:        params.Data,
+//		OperationId: params.OperationID,
+//	}
+//	resp := new(pb.NFTBatchTransferResponse)
+//
+//	var err error
+//	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+//	grpcClient, ok := initialize.NativeNFTClientMap[mapKey]
+//	if !ok {
+//		logger.Error(errors2.ErrService)
+//		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
+//	}
+//	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
+//	defer cancel()
+//	resp, err = grpcClient.BatchTransfer(ctx, &req)
+//	if err != nil {
+//		logger.Error("request err:", err.Error())
+//		return nil, err
+//	}
+//	if resp == nil {
+//		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+//	}
+//	return &dto.BatchTxRes{}, nil
+//}
+//
+//func (s *NFT) BatchEdit(ctx context.Context, params *dto.BatchEditRequest) (*dto.BatchTxRes, error) {
+//	logger := s.logger.WithField("params", params).WithField("func", "BatchEditNFT")
+//
+//	// 非托管模式不支持
+//	if params.AccessMode == entity.UNMANAGED {
+//		return nil, errors2.ErrNotImplemented
+//	}
+//
+//	req := pb.NFTBatchEditRequest{
+//		ProjectId:   params.ProjectID,
+//		Owner:       params.Sender,
+//		Nfts:        params.Nfts,
+//		OperationId: params.OperationID,
+//	}
+//	resp := new(pb.NFTBatchEditResponse)
+//
+//	var err error
+//	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+//	grpcClient, ok := initialize.NativeNFTClientMap[mapKey]
+//	if !ok {
+//		logger.Error(errors2.ErrService)
+//		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
+//	}
+//	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
+//	defer cancel()
+//	resp, err = grpcClient.BatchEdit(ctx, &req)
+//	if err != nil {
+//		logger.Error("request err:", err.Error())
+//		return nil, err
+//	}
+//	if resp == nil {
+//		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+//	}
+//	return &dto.BatchTxRes{}, nil
+//}
+//
+//func (s *NFT) BatchDelete(ctx context.Context, params *dto.BatchDeleteRequest) (*dto.BatchTxRes, error) {
+//	logger := s.logger.WithField("params", params).WithField("func", "BatchDeleteNFT")
+//
+//	// 非托管模式不支持
+//	if params.AccessMode == entity.UNMANAGED {
+//		return nil, errors2.ErrNotImplemented
+//	}
+//
+//	req := pb.NFTBatchDeleteRequest{
+//		ProjectId:   params.ProjectID,
+//		Owner:       params.Sender,
+//		Nfts:        params.Nfts,
+//		OperationId: params.OperationID,
+//	}
+//	resp := new(pb.NFTBatchDeleteResponse)
+//
+//	var err error
+//	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+//	grpcClient, ok := initialize.NativeNFTClientMap[mapKey]
+//	if !ok {
+//		logger.Error(errors2.ErrService)
+//		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
+//	}
+//	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
+//	defer cancel()
+//	resp, err = grpcClient.BatchDelete(ctx, &req)
+//	if err != nil {
+//		logger.Error("request err:", err.Error())
+//		return nil, err
+//	}
+//	if resp == nil {
+//		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
+//	}
+//	return &dto.BatchTxRes{}, nil
+//}
