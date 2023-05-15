@@ -1,6 +1,7 @@
 package kit
 
 import (
+	"compress/gzip"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -18,6 +19,7 @@ import (
 	entranslations "github.com/go-playground/validator/v10/translations/en"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
+	gzip2 "google.golang.org/grpc/encoding/gzip"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
@@ -209,7 +211,11 @@ func (c Controller) encodeResponse(ctx context.Context, w http.ResponseWriter, r
 	// uri := ctx.Value(httptransport.ContextKeyRequestURI)
 	// metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "200"}...).Add(1)
 
-	return httptransport.EncodeJSONResponse(ctx, w, response)
+	encoding := strings.Split(ctx.Value("Accept-Encoding").([]string)[0], ",")
+	if encoding[0] != gzip2.Name {
+		return httptransport.EncodeJSONResponse(ctx, w, response)
+	}
+	return gzipJSONResponse(ctx, w, response)
 }
 
 func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []httptransport.ServerOption, after []httptransport.ServerResponseFunc) []httptransport.ServerOption {
@@ -382,4 +388,25 @@ func frequencyControl(ctx context.Context) {
 	if err := initialize.RedisClient.SetObject(key, "", time.Minute*1); err != nil {
 		log.Error("redis error", "balance redis set error:", err)
 	}
+}
+
+func gzipJSONResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	// 设置响应头，表明响应数据经过gzip压缩
+	w.Header().Set("Content-Encoding", "gzip")
+	// 将响应数据转换成字节流
+	respBytes, err := json.Marshal(response)
+	if err != nil {
+		log.Infof("json marshal error: %s", err)
+		return nil
+	}
+	// 创建gzip压缩器
+	gzipWriter := gzip.NewWriter(w)
+	defer gzipWriter.Close()
+	// 使用gzip压缩器将字节流压缩后写入HTTP响应
+	_, err = gzipWriter.Write(respBytes)
+	if err != nil {
+		log.Infof("gzip write error: %s", err)
+	}
+	return nil
 }
