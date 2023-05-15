@@ -48,6 +48,7 @@ type (
 		StateGateway string `mapstructure:"state_gateway"`
 		WalletServer string `mapstructure:"wallet_server"`
 		IritaLayer2  string `mapstructure:"irita_layer2"`
+		SignServer   string `mapstructure:"sign_server"`
 	}
 
 	Project struct {
