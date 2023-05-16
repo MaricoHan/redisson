@@ -50,9 +50,43 @@ const (
 	RedisPrefix      = "open-api"
 	KeyProjectApikey = "project:apikey:"
 	KeyChain         = "chain:"
+	KeyAuth          = "auth"
 )
 
 var RightsMap = map[uint64]string{
 	1: JiangSu,
 	2: Guizhou,
 }
+
+const (
+	MysqlProjectXServicesTable   = "t_project_x_services"
+	MysqlServicesTable           = "t_services"
+	MysqlServiceXPermissoinTable = "t_service_x_permissions"
+	MysqlPermissoinTable         = "t_permissions"
+)
+
+//项目状态
+const (
+	ProjectStatusEnable  int = iota + 1 //启用
+	ProjectStatusDisable                //禁用
+	ProjectStatusCancel                 //注销
+)
+
+// 是否删除
+const (
+	// 是
+	IsDelete = 1
+	// 否
+	IsNotDelete = 2
+)
+
+// 权限操作
+const (
+	ActionAllow  = 1 // 允许
+	ActionReject = 2 // 拒绝
+)
+
+// 服务id
+const (
+	ServiceTypeWallet = 1 // 钱包服务
+)

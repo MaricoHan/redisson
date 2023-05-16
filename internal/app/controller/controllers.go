@@ -24,7 +24,7 @@ func GetAllControllers(logger *log.Logger) []kit.IController {
 		Controller: kit.NewController(),
 	}
 	controllers := []kit.IController{
-		//NewAccountsController(baseController, handlers.NewAccount(services.NewAccount(logger))),
+		NewAccountsController(baseController, handlers.NewAccount(services.NewAccount(logger))),
 		NewMsgsController(baseController, evm.NewMsgs(evm2.NewMsgs(logger))),
 		NewTxController(baseController, handlers.NewTx(services.NewTx(logger))),
 		NewNftClassController(baseController, evm.NewNFTClass(evm2.NewNFTClass(logger))),
