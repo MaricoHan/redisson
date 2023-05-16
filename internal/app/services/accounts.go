@@ -34,7 +34,6 @@ func NewAccount(logger *log.Logger) *account {
 // BatchCreateAccount 批量创建链账户
 func (a *account) BatchCreateAccount(ctx context.Context, params dto.BatchCreateAccount) (*dto.BatchAccountRes, error) {
 	logger := a.logger.WithContext(ctx).WithField("params", params).WithField("func", "BatchCreateAccount")
-
 	// 非托管模式不支持
 	if params.AccessMode == entity.UNMANAGED {
 		return nil, errors2.ErrNotImplemented

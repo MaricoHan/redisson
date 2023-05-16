@@ -2,7 +2,7 @@
 env = "dev"
 log_level = "debug"
 log_format = "text"
-addr = ":8080"
+addr = ":8096"
 prometheus_addr = "0.0.0.0:9092"
 signature_auth = false
 timestamp_auth = false
