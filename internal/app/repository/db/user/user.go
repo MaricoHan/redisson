@@ -1,9 +1,9 @@
 package user
 
 import (
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gorm.io/gorm"
 
-	constant "gitlab.bianjie.ai/avata/open-api/internal/app/models"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 )
 

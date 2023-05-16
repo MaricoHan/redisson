@@ -48,10 +48,12 @@ type AccountsInfo struct {
 }
 
 type BatchAccountRes struct {
-	Accounts []*pbaccount.AccountAddress `json:"accounts"`
+	Accounts []string                    `json:"accounts"`
+	Address  []*pbaccount.AccountAddress `json:"address"`
 }
 
 type AccountRes struct {
+	Account       string `json:"account"`
 	NativeAddress string `json:"native_address"`
 	HexAddress    string `json:"hex_address"`
 }
@@ -62,6 +64,7 @@ type AccountsRes struct {
 }
 
 type Account struct {
+	Account       string `json:"account"`
 	NativeAddress string `json:"native_address"`
 	HexAddress    string `json:"hex_address"`
 	Name          string `json:"name"`

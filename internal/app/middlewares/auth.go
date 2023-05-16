@@ -14,10 +14,6 @@ import (
 	"strings"
 	"time"
 
-	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/project"
-
-	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/cache"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
@@ -49,20 +45,20 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	})
 
 	// 查询缓存
-	projectInfo, err := cache.NewCache().Project(appKey)
+	authData, err := cache.NewCache().Project(appKey)
 	if err != nil {
 		log.WithError(err).Error("project from cache")
 		writeInternalResp(w)
 		return
 	}
 
-	if projectInfo.Id == 0 {
+	if authData.ProjectId == 0 {
 		log.Error(constant.ErrApikey)
 		writeForbiddenResp(w, constant.ErrApikey)
 		return
 	}
 
-	key := fmt.Sprintf("balance:%d", projectInfo.Id)
+	key := fmt.Sprintf("balance:%d", authData.ProjectId)
 	exists, err := initialize.RedisClient.Exists(key)
 	if err != nil {
 		log.WithError(err).Error("redis exists")
@@ -75,50 +71,54 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 查询缓存
-	chainInfo, err := cache.NewCache().Chain(projectInfo.ChainId)
-	if err != nil {
-		log.WithError(err).Error("chain from cache")
-		writeInternalResp(w)
-		return
-	}
+	//chainInfo, err := cache.NewCache().Chain(projectInfo.ChainId)
+	//if err != nil {
+	//	log.WithError(err).Error("chain from cache")
+	//	writeInternalResp(w)
+	//	return
+	//}
 
-	if chainInfo.Id == 0 {
-		log.Error("project not exist")
+	if authData.ChainId == 0 {
+		log.Error("chain not exist")
 		writeInternalResp(w)
 		return
 	}
-	authData := vo.AuthData{
-		ProjectId:  uint64(projectInfo.Id),
-		ChainId:    uint64(chainInfo.Id),
-		PlatformId: uint64(projectInfo.UserId),
-		Module:     chainInfo.Module,
-		Code:       chainInfo.Code,
-		AccessMode: projectInfo.AccessMode,
-		UserId:     uint64(projectInfo.UserId),
-	}
-	matched, err := regexp.MatchString("/users|/accounts|/account", r.URL.Path)
-	if err != nil {
-		log.WithError(err).Error("match path")
-		writeInternalResp(w)
-		return
-	}
-	if matched {
-		// project 关联的 serviceIds
-		projectRepo := project.NewProjectRepo(initialize.MysqlDB)
-		existWalletService, err := projectRepo.ExistServices(projectInfo.Id, entity.ServiceTypeWallet)
-		if err != nil {
-			log.WithError(err).Error("query service")
-			writeInternalResp(w)
-			return
-		}
-		authData.ExistWalletService = existWalletService
-	}
+	//authData := vo.AuthData{
+	//	ProjectId:  uint64(projectInfo.Id),
+	//	ChainId:    uint64(chainInfo.Id),
+	//	PlatformId: uint64(projectInfo.UserId),
+	//	Module:     chainInfo.Module,
+	//	Code:       chainInfo.Code,
+	//	AccessMode: projectInfo.AccessMode,
+	//	UserId:     uint64(projectInfo.UserId),
+	//}
+	//matched, err := regexp.MatchString("/users|/accounts|/account", r.URL.Path)
+	//if err != nil {
+	//	log.WithError(err).Error("match path")
+	//	writeInternalResp(w)
+	//	return
+	//}
+	//if matched {
+	//	// project 关联的 serviceIds
+	//	projectRepo := project.NewProjectRepo(initialize.MysqlDB)
+	//	existWalletService, err := projectRepo.ExistServices(projectInfo.Id, entity.ServiceTypeWallet)
+	//	if err != nil {
+	//		log.WithError(err).Error("query service")
+	//		writeInternalResp(w)
+	//		return
+	//	}
+	//	authData.ExistWalletService = existWalletService
+	//}
 
 	// 判断项目参数版本号
-	if projectInfo.Version == entity.VersionStage {
-		authData.Code = constant.IritaOPB
-		authData.Module = constant.Native
-	}
+	//if projectInfo.Version == entity.VersionStage {
+	//	authData.Code = constant.IritaOPB
+	//	authData.Module = constant.Native
+	//} else if projectInfo.Version != entity.Version2 && authData.AccessMode != entity.UNMANAGED {
+	//	log.Error("project version not implemented")
+	//	writeNotFoundRequestResp(w, constant.ErrUnSupported)
+	//	return
+	//}
 
 	authDataBytes, _ := json.Marshal(authData)
 	// 1. 判断时间误差
@@ -141,10 +141,10 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// 2. 验证签名
 	if configs.Cfg.App.SignatureAuth {
 		reqTimestampStr := r.Header.Get("X-Timestamp")
-		secret, err := aes.Decode(projectInfo.ApiSecret, configs.Cfg.Project.SecretPwd)
+		secret, err := aes.Decode(authData.ApiSecret, configs.Cfg.Project.SecretPwd)
 		if err != nil {
 			log.WithFields(map[string]interface{}{
-				"secret":   projectInfo.ApiSecret,
+				"secret":   authData.ApiSecret,
 				"password": configs.Cfg.Project.SecretPwd,
 			}).WithError(err).Error("decrypt api-secret failed")
 			writeInternalResp(w)
@@ -161,22 +161,70 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if configs.Cfg.App.Env == constant.EnvPro {
-		if regexp.MustCompile(`/ns/`).MatchString(r.URL.Path) {
-			// 域名请求，验证权限
-			projectRepo := project.NewProjectRepo(initialize.MysqlDB)
-			auth, err := projectRepo.ExistServices(projectInfo.Id, entity.ServiceTypeNS)
+	// 3. 验证权限
+	permissionList, err := cache.NewCache().ProjectAuth(int(authData.ProjectId))
+	if err != nil {
+		log.WithError(err).Error("permission from cache")
+		writeInternalResp(w)
+		return
+	}
+	pathCheck := false
+	methodcheck := false
+	matched := false
+	for _, item := range permissionList {
+		if item.Method != "*" {
+			method := strings.ReplaceAll(item.Method, ",", "|")
+			matched, err = regexp.MatchString(method, r.Method)
 			if err != nil {
-				log.WithError(err).Error("query service")
-				writeInternalResp(w)
-				return
+				log.WithError(err).Error("match method")
+				continue
 			}
-			if !auth {
-				writeForbiddenResp(w, constant.AuthenticationFailed)
-				return
+		}
+
+		// 请求方法匹配成功
+		if matched || item.Method == "*" {
+			if item.Path == "*" {
+				pathCheck = true
+				methodcheck = true
+				break
+			}
+			path := strings.ReplaceAll(item.Path, ",", "|")
+			matched, err = regexp.MatchString(path, r.URL.Path)
+			if err != nil {
+				log.WithError(err).Error("match path")
+				continue
+			}
+			// 请求路径匹配成功
+			if matched {
+				if item.Action == constant.ActionAllow { //允许访问
+					pathCheck = true
+					methodcheck = true
+				}
+				break //禁止访问
 			}
 		}
 	}
+	if !pathCheck || !methodcheck {
+		writeForbiddenResp(w, constant.AuthenticationFailed)
+		return
+	}
+
+	//if configs.Cfg.App.Env == constant.EnvPro {
+	//	if regexp.MustCompile(`/ns/`).MatchString(r.URL.Path) {
+	//		// 域名请求，验证权限
+	//		projectRepo := project.NewProjectRepo(initialize.MysqlDB)
+	//		auth, err := projectRepo.ExistServices(projectInfo.Id, entity.ServiceTypeNS)
+	//		if err != nil {
+	//			log.WithError(err).Error("query service")
+	//			writeInternalResp(w)
+	//			return
+	//		}
+	//		if !auth {
+	//			writeForbiddenResp(w, constant.AuthenticationFailed)
+	//			return
+	//		}
+	//	}
+	//}
 
 	r.Header.Set("X-App-Id", fmt.Sprintf("%d", authData.ProjectId))
 	r.Header.Set("X-Auth-Data", fmt.Sprintf("%s", string(authDataBytes)))
