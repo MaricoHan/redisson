@@ -153,7 +153,7 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	if err != nil {
 		logger.Fatal("get tianzhou-evm grpc connect failed, err: ", err.Error())
 	}
-	GrpcConnMap[constant.IritaOPBNative] = tianzhouEvmConn
+	GrpcConnMap[constant.TianzhouEVM] = tianzhouEvmConn
 
 	logger.Info("connecting state-gateway-server ...")
 	StateGatewayServer, err = grpc.DialContext(
@@ -209,20 +209,34 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 		logger.Fatal("get sign-server grpc connect failed, err: ", err.Error())
 	}
 
+	logger.Info("connecting irita-tianzhou-native ...")
+	tianzhouNativeConn, err := grpc.DialContext(
+		context.Background(),
+		cfg.GrpcClient.TianZhouNative,
+		grpc.WithInsecure(),
+		grpc.WithKeepaliveParams(kacp),
+		grpc.WithBlock(),
+		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy":"round_robin"}`),
+		grpc.WithUnaryInterceptor(middleware.NewGrpcInterceptorMiddleware().Interceptor()))
+	if err != nil {
+		logger.Fatal("get irita-layer2 grpc connect failed, err: ", err.Error())
+	}
+	GrpcConnMap[constant.TianzhouNative] = tianzhouNativeConn
+
 	// 初始化sign grpc client
 	SignClient = pb_account.NewAccountClient(signServer)
 	// 初始化msgs grpc client
 	EvmMsgsClientMap = make(map[string]pb_evm_msgs.MSGSClient)
-	EvmMsgsClientMap[constant.IritaOPBNative] = pb_evm_msgs.NewMSGSClient(GrpcConnMap[constant.IritaOPBNative])
+	EvmMsgsClientMap[constant.TianzhouEVM] = pb_evm_msgs.NewMSGSClient(GrpcConnMap[constant.TianzhouEVM])
 	// 初始化nft grpc client
 	EvmNftClientMap = make(map[string]pb_evm_nft.NFTClient)
-	EvmNftClientMap[constant.IritaOPBNative] = pb_evm_nft.NewNFTClient(GrpcConnMap[constant.IritaOPBNative])
+	EvmNftClientMap[constant.TianzhouEVM] = pb_evm_nft.NewNFTClient(GrpcConnMap[constant.TianzhouEVM])
 	// 初始化nft class grpc client
 	EvmClassClientMap = make(map[string]pb_evm_class.ClassClient)
-	EvmClassClientMap[constant.IritaOPBNative] = pb_evm_class.NewClassClient(GrpcConnMap[constant.IritaOPBNative])
+	EvmClassClientMap[constant.TianzhouEVM] = pb_evm_class.NewClassClient(GrpcConnMap[constant.TianzhouEVM])
 	// 初始化tx grpc client
 	EvmTxClientMap = make(map[string]pb_evm_tx.TxClient)
-	EvmTxClientMap[constant.IritaOPBNative] = pb_evm_tx.NewTxClient(GrpcConnMap[constant.IritaOPBNative])
+	EvmTxClientMap[constant.TianzhouEVM] = pb_evm_tx.NewTxClient(GrpcConnMap[constant.TianzhouEVM])
 
 	NativeNFTClientMap = make(map[string]pb_native_nft.NFTClient)
 	NativeNFTClientMap[constant.TianzhouNative] = pb_native_nft.NewNFTClient(GrpcConnMap[constant.TianzhouNative])
@@ -253,21 +267,21 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 
 	//初始化record grpc client
 	NativeRecordClientMap = make(map[string]pb_native_record.RecordClient)
-	//NativeRecordClientMap[constant.WenchangDDC] = pb_native_record.NewRecordClient(GrpcConnMap[constant.WenchangDDC])
-	//NativeRecordClientMap[constant.WenchangNative] = pb_native_record.NewRecordClient(GrpcConnMap[constant.WenchangNative])
-	NativeRecordClientMap[constant.IritaOPBNative] = pb_native_record.NewRecordClient(GrpcConnMap[constant.IritaOPBNative])
+	//NativeRecordClientMap[constant.TianheDDC] = pb_native_record.NewRecordClient(GrpcConnMap[constant.TianheDDC])
+	//NativeRecordClientMap[constant.TianheNative] = pb_native_record.NewRecordClient(GrpcConnMap[constant.TianheNative])
+	NativeRecordClientMap[constant.TianzhouEVM] = pb_native_record.NewRecordClient(GrpcConnMap[constant.TianzhouEVM])
 	//NativeRecordClientMap[constant.IrisHubNative] = pb_native_record.NewRecordClient(GrpcConnMap[constant.IrisHubNative])
 
 	// 初始化notice
 	//NoticeClientMap = make(map[string]pb_notice.NoticeClient)
-	//NoticeClientMap[constant.WenchangNative] = pb_notice.NewNoticeClient(GrpcConnMap[constant.WenchangNative])
-	//NoticeClientMap[constant.IritaOPBNative] = pb_notice.NewNoticeClient(GrpcConnMap[constant.IritaOPBNative])
-	//NoticeClientMap[constant.WenchangDDC] = pb_notice.NewNoticeClient(GrpcConnMap[constant.WenchangDDC])
+	//NoticeClientMap[constant.TianheNative] = pb_notice.NewNoticeClient(GrpcConnMap[constant.TianheNative])
+	//NoticeClientMap[constant.TianzhouEVM] = pb_notice.NewNoticeClient(GrpcConnMap[constant.TianzhouEVM])
+	//NoticeClientMap[constant.TianheDDC] = pb_notice.NewNoticeClient(GrpcConnMap[constant.TianheDDC])
 	//NoticeClientMap[constant.IrisHubNative] = pb_notice.NewNoticeClient(GrpcConnMap[constant.IrisHubNative])
 
 	// 初始化business grpc client
 	BusineessClientMap = make(map[string]pb_business.BuyClient)
-	BusineessClientMap[constant.IritaOPBNative] = pb_business.NewBuyClient(GrpcConnMap[constant.IritaOPBNative])
+	BusineessClientMap[constant.TianzhouEVM] = pb_business.NewBuyClient(GrpcConnMap[constant.TianzhouEVM])
 
 	// 初始化wallet grpc client
 	WalletClientMap = make(map[string]pb_wallet.WalletClient)
@@ -275,19 +289,19 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 
 	// 初始化ns grpc client
 	EvmNsClientMap = make(map[string]pb_evm_ns.NSClient)
-	EvmNsClientMap[constant.IritaOPBNative] = pb_evm_ns.NewNSClient(GrpcConnMap[constant.IritaOPBNative])
+	EvmNsClientMap[constant.TianzhouEVM] = pb_evm_ns.NewNSClient(GrpcConnMap[constant.TianzhouEVM])
 
 	// 初始化contract grpc client
 	EvmContractClientMap = make(map[string]pb_evm_contract.ContractClient)
-	EvmContractClientMap[constant.IritaOPBNative] = pb_evm_contract.NewContractClient(GrpcConnMap[constant.IritaOPBNative])
+	EvmContractClientMap[constant.TianzhouEVM] = pb_evm_contract.NewContractClient(GrpcConnMap[constant.TianzhouEVM])
 
 	// 初始化 l2 NftClass grpc client
 	L2NftClassClientMap = make(map[string]pb_l2_nft.ClassClient)
-	L2NftClassClientMap[constant.IritaOPBNative] = pb_l2_nft.NewClassClient(GrpcConnMap[constant.IritaLayer2])
+	L2NftClassClientMap[constant.TianzhouEVM] = pb_l2_nft.NewClassClient(GrpcConnMap[constant.IritaLayer2])
 
 	// 初始化 l2 nft grpc client
 	L2NftClientMap = make(map[string]pb_l2_nft.NFTClient)
-	L2NftClientMap[constant.IritaOPBNative] = pb_l2_nft.NewNFTClient(GrpcConnMap[constant.IritaLayer2])
+	L2NftClientMap[constant.TianzhouEVM] = pb_l2_nft.NewNFTClient(GrpcConnMap[constant.IritaLayer2])
 
 }
 

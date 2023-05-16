@@ -23,10 +23,10 @@ const (
 	OrderTypeGas = 1
 
 	// chain map
-	WenchangNative = "wenchangchain-native"
-	WenchangDDC    = "wenchangchain-ddc"
+	TianheNative   = "wenchangchain-native"
+	TianheDDC      = "wenchangchain-ddc"
 	DatangNative   = "datangchain-native"
-	IritaOPBNative = "irita-opb-native"
+	TianzhouEVM    = "irita-opb-native"
 	TianzhouNative = "irita-tianzhou-native"
 	IrisHubNative  = "irishub-native"
 	IritaLayer2    = "irita-layer2"
