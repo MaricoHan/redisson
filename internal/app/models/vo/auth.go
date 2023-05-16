@@ -11,6 +11,7 @@ type AuthData struct {
 	AccessMode         int    `json:"access_mode"`
 	UserId             uint64 `json:"user_id"`
 	ExistWalletService bool   `json:"exist_wallet_service"`
+	ApiSecret          string `json:"api_secret"`
 }
 
 // AuthVerify auth模块下验证

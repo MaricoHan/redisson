@@ -1,9 +1,9 @@
 package project
 
 import (
+	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gorm.io/gorm"
 
-	constant "gitlab.bianjie.ai/avata/open-api/internal/app/models"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 )
 
@@ -48,24 +48,27 @@ func (p *ProjectRepo) GetProjectByCode(code string) (project entity.Project, err
 	return
 }
 
-func (p *ProjectRepo) ExistServices(projectId, serviceType uint) (bool, error) {
-	var Ids []uint64
-	var projectServices []*entity.ProjectServices
-	if err := p.db.Model(&entity.ProjectServices{}).Select("service_id").Where("project_id = ?", projectId).Find(&projectServices).Error; err != nil {
-		return false, err
-	}
-
-	for _, v := range projectServices {
-		Ids = append(Ids, v.ServiceId)
-	}
-
-	var services []*entity.Services
-	if err := p.db.Model(&entity.Service{}).Where("id IN ? AND type = ?", Ids, serviceType).Find(&services).Error; err != nil {
-		return false, err
-	}
-
-	if len(services) > 0 {
-		return true, nil
-	}
-	return false, nil
+func (p *ProjectRepo) ExistServices(projectId, serviceId uint) (bool, error) {
+	//var Ids []uint
+	//var projectServices []*entity.ProjectXServices
+	//if err := p.db.Model(&entity.ProjectXServices{}).Select("service_id").Where("project_id = ?", projectId).Find(&projectServices).Error; err != nil {
+	//	return false, err
+	//}
+	//
+	//for _, v := range projectServices {
+	//	Ids = append(Ids, v.ServiceId)
+	//}
+	//
+	//var services []*entity.Services
+	//if err := p.db.Model(&entity.Service{}).Where("id IN ? AND type = ?", Ids, serviceType).Find(&services).Error; err != nil {
+	//	return false, err
+	//}
+	//
+	//if len(services) > 0 {
+	//	return true, nil
+	//}
+	//return false, nil
+	var Ids []uint
+	err := p.db.Model(&entity.ProjectXServices{}).Select(entity.ProjectXServiceFields.ServiceId).Where(entity.ProjectXServiceFields.ProjectId, projectId).Where(entity.ProjectXServiceFields.ServiceId, serviceId).Find(&Ids).Error
+	return len(Ids) > 0, err
 }
