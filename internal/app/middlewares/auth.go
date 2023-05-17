@@ -304,7 +304,7 @@ func sortMapParams(params map[string]interface{}) map[string]interface{} {
 func (h authHandler) setCodeModule(r *http.Request, authData *vo.AuthData) {
 	authData.Code = constant.Tianzhou
 	authData.Module = constant.Evm
-	if strings.Contains(r.URL.Path, "/native/") {
+	if strings.Contains(r.URL.Path, "/native/") || strings.Contains(r.URL.Path, "/orders/") || strings.Contains(r.URL.Path, "/tx/") {
 		authData.Module = constant.Native
 	}
 	if strings.Contains(r.URL.Path, "/layer2/") {
