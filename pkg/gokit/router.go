@@ -19,8 +19,6 @@ import (
 	entranslations "github.com/go-playground/validator/v10/translations/en"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
-	gzip2 "google.golang.org/grpc/encoding/gzip"
-
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
 	trace_http "gitlab.bianjie.ai/avata/utils/commons/trace/http"
@@ -211,11 +209,12 @@ func (c Controller) encodeResponse(ctx context.Context, w http.ResponseWriter, r
 	// uri := ctx.Value(httptransport.ContextKeyRequestURI)
 	// metric.NewPrometheus().ApiHttpRequestCount.With([]string{"method", method.(string), "uri", uri.(string), "code", "200"}...).Add(1)
 
-	encoding := strings.Split(ctx.Value("Accept-Encoding").([]string)[0], ",")
-	if encoding[0] != gzip2.Name {
-		return httptransport.EncodeJSONResponse(ctx, w, response)
-	}
-	return gzipJSONResponse(ctx, w, response)
+	//encoding := strings.Split(ctx.Value("Accept-Encoding").([]string)[0], ",")
+	//if encoding[0] != gzip2.Name {
+	//	return httptransport.EncodeJSONResponse(ctx, w, response)
+	//}
+	return httptransport.EncodeJSONResponse(ctx, w, response)
+	//return gzipJSONResponse(ctx, w, response)
 }
 
 func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []httptransport.ServerOption, after []httptransport.ServerResponseFunc) []httptransport.ServerOption {
@@ -276,6 +275,10 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 		urlPath := ctx.Value(httptransport.ContextKeyRequestPath)
 		url := strings.SplitN(urlPath.(string)[1:], "/", 3)
 		codeSpace := strings.ToUpper(url[1])
+
+		if codeSpace == "NATIVE" || codeSpace == "EVM" {
+			codeSpace = strings.ToUpper(url[2])
+		}
 
 		respErr := errors2.Convert(err)
 		errMesg, ok := errors2.StrToCode[respErr.Code()]
