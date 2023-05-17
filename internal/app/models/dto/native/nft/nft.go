@@ -89,17 +89,18 @@ type NftClass struct {
 	Timestamp string `json:"timestamp"`
 }
 type NftClassRes struct {
-	Id          string `json:"id"`
-	Name        string `json:"name"`
-	Owner       string `json:"owner"`
-	TxHash      string `json:"tx_hash"`
-	Symbol      string `json:"symbol"`
-	NftCount    uint64 `json:"nft_count"`
-	Uri         string `json:"uri"`
-	Timestamp   string `json:"timestamp"`
-	UriHash     string `json:"uri_hash"`
-	Data        string `json:"data"`
-	Description string `json:"description"`
+	Id              string `json:"id"`
+	Name            string `json:"name"`
+	Owner           string `json:"owner"`
+	TxHash          string `json:"tx_hash"`
+	Symbol          string `json:"symbol"`
+	NftCount        uint64 `json:"nft_count"`
+	Uri             string `json:"uri"`
+	Timestamp       string `json:"timestamp"`
+	UriHash         string `json:"uri_hash"`
+	Data            string `json:"data"`
+	Description     string `json:"description"`
+	EditableByOwner uint32 `json:"editable_by_owner"`
 }
 
 type NftCount struct {

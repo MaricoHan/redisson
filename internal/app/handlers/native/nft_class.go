@@ -2,6 +2,8 @@ package native
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"strings"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
@@ -31,7 +33,23 @@ func NewNFTClass(svc native.INFTClass) *NftClass {
 // return creation result
 func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
-	req := request.(*vo.CreateNftClassRequest)
+	m := *(request.(*map[string]interface{}))
+
+	marshal, err := json.Marshal(request)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	req := vo.CreateNftClassRequest{}
+	err = json.Unmarshal(marshal, &req)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	_, ok := m["editable_by_owner"]
+	if !ok {
+		req.EditableByOwner = 1
+	}
 
 	name := strings.TrimSpace(req.Name)
 	classId := strings.TrimSpace(req.ClassId)
