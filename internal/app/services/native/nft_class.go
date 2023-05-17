@@ -148,6 +148,7 @@ func (n *nftClass) GetNFTClass(ctx context.Context, params nft.NftClasses) (*nft
 	result.UriHash = resp.Detail.UriHash
 	result.NftCount = resp.Detail.NftCount
 	result.TxHash = resp.Detail.TxHash
+	result.EditableByOwner = resp.Detail.UpdateRestricted
 	return result, nil
 }
 
