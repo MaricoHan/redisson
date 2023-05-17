@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"io"
 	"net/http"
 	"regexp"
@@ -15,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/cache"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
