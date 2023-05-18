@@ -188,7 +188,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				methodcheck = true
 				break
 			}
-			path := strings.ReplaceAll(item.Path, ",", "|")
+			path := fmt.Sprintf("^%s", strings.ReplaceAll(item.Path, ",/", "|^/"))
 			matched, err = regexp.MatchString(path, r.URL.Path)
 			if err != nil {
 				log.WithError(err).Error("match path")
