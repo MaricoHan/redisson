@@ -52,6 +52,14 @@ func (b Base) UriCheck(uri string) error {
 	return nil
 }
 
+func (b Base) OperationId(ctx context.Context) string {
+	operationId := ctx.Value("operation_id")
+	if operationId == nil {
+		return ""
+	}
+	return operationId.(string)
+}
+
 type PageBasic struct {
 }
 

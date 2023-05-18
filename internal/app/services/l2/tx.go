@@ -1,4 +1,4 @@
-package services
+package l2
 
 import (
 	"context"
@@ -8,10 +8,10 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/volatiletech/sqlboiler/types"
-	pb "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/evm/tx"
+	pb "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/l2/tx"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 
-	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
+	dto "gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/l2"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
@@ -46,7 +46,7 @@ func (t *tx) TxResult(ctx context.Context, params dto.TxResultByTxHash) (*dto.Tx
 	resp := &pb.TxShowResponse{}
 	var err error
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
-	grpcClient, ok := initialize.EvmTxClientMap[mapKey]
+	grpcClient, ok := initialize.L2TxClientMap[mapKey]
 	if !ok {
 		logger.Error(errors2.ErrService)
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
@@ -61,8 +61,8 @@ func (t *tx) TxResult(ctx context.Context, params dto.TxResultByTxHash) (*dto.Tx
 	}
 	result := new(dto.TxResultRes)
 	status := resp.Detail.Status
-	result.Module = uint32(resp.Detail.Module)
-	result.Operation = uint32(resp.Detail.Operation)
+	result.Module = resp.Detail.Module
+	result.Operation = resp.Detail.Operation
 	result.TxHash = ""
 	result.Status = uint32(status)
 	if status == pb.STATUS_SUCCESS || status == pb.STATUS_FAILED {
@@ -77,19 +77,7 @@ func (t *tx) TxResult(ctx context.Context, params dto.TxResultByTxHash) (*dto.Tx
 		result.Nft = new(types.JSON)
 		err = json.Unmarshal([]byte(resp.Detail.Nft), &result.Nft)
 		if err != nil {
-			logger.WithError(err).Error("Unmarshal failed")
-			return nil, errors2.ErrInternal
-		}
-	}
-
-	if resp.Detail.Record != new(pb.Record) {
-		result.Record = resp.Detail.Record
-	}
-	if resp.Detail.Ns != "" {
-		result.Ns = new(types.JSON)
-		err = json.Unmarshal([]byte(resp.Detail.Ns), &result.Ns)
-		if err != nil {
-			logger.WithError(err).Error("Unmarshal failed")
+			logger.WithError(err).Error("unmarshal failed")
 			return nil, errors2.ErrInternal
 		}
 	}

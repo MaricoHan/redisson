@@ -1,10 +1,11 @@
-package handlers
+package native
 
 import (
 	"context"
 
-	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
+	dto "gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/native"
+	native_services "gitlab.bianjie.ai/avata/open-api/internal/app/services/native"
 )
 
 type ITx interface {
@@ -13,11 +14,11 @@ type ITx interface {
 }
 
 type Tx struct {
-	Base
-	svc services.ITx
+	handlers.Base
+	svc native_services.ITx
 }
 
-func NewTx(svc services.ITx) *Tx {
+func NewTx(svc native_services.ITx) *Tx {
 	return &Tx{svc: svc}
 }
 
@@ -50,11 +51,3 @@ func (h *Tx) TxResult(ctx context.Context, _ interface{}) (interface{}, error) {
 //	// 校验参数 end
 //	return h.svc.TxQueueInfo(ctx, params)
 //}
-
-func (h *Tx) OperationId(ctx context.Context) string {
-	operationId := ctx.Value("operation_id")
-	if operationId == nil {
-		return ""
-	}
-	return operationId.(string)
-}

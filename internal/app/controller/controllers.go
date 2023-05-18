@@ -24,9 +24,9 @@ func GetAllControllers(logger *log.Logger) []kit.IController {
 		Controller: kit.NewController(),
 	}
 	controllers := []kit.IController{
+		// 公共接口
 		NewAccountsController(baseController, handlers.NewAccount(services.NewAccount(logger))),
 		NewMsgsController(baseController, evm.NewMsgs(evm2.NewMsgs(logger))),
-		NewTxController(baseController, handlers.NewTx(services.NewTx(logger))),
 		NewNftClassController(baseController, evm.NewNFTClass(evm2.NewNFTClass(logger))),
 		NewNftController(baseController, evm.NewNft(evm2.NewNFT(logger))),
 		NewNftTransferController(baseController, evm.NewNFTTransfer(evm2.NewNFTTransfer(logger))),
@@ -36,9 +36,11 @@ func GetAllControllers(logger *log.Logger) []kit.IController {
 		NewEmptionController(baseController, handlers.NewBusiness(services.NewBusiness(logger))),
 		NewContractController(baseController, evm.NewContract(evm2.NewContract(logger))),
 		NewContractController(baseController, evm.NewContract(evm2.NewContract(logger))),
+		// layer接口
 		l2_controller.NewNftClassController(baseController, l2_handlers.NewNFTClass(l2_services.NewNFTClass(logger))),
 		l2_controller.NewNftController(baseController, l2_handlers.NewNft(l2_services.NewNFT(logger))),
 		l2_controller.NewDictController(baseController, l2_handlers.NewDict(l2_services.NewDict(logger))),
+		// EVM接口
 		evm_controller.NewNsController(baseController, evm.NewNs(evm2.NewNs(logger))),
 		evm_controller.NewMsgsController(baseController, evm.NewMsgs(evm2.NewMsgs(logger))),
 		evm_controller.NewNftClassController(baseController, evm.NewNFTClass(evm2.NewNFTClass(logger))),
@@ -46,6 +48,9 @@ func GetAllControllers(logger *log.Logger) []kit.IController {
 		evm_controller.NewContractController(baseController, evm.NewContract(evm2.NewContract(logger))),
 		evm_controller.NewNftTransferController(baseController, evm.NewNFTTransfer(evm2.NewNFTTransfer(logger))),
 		evm_controller.NewDictController(baseController, evm.NewDict(evm2.NewDict(logger))),
+		evm_controller.NewTxController(baseController, evm.NewTx(evm2.NewTx(logger))),
+
+		// native接口
 		native_controller.NewMTClassController(baseController, native.NewMTClass(native2.NewMTClass(logger))),
 		native_controller.NewMTController(baseController, native.NewMT(native2.NewMT(logger))),
 		//native_controller.NewRightsController(baseController, native.NewRights(native2.NewRights(logger))),
