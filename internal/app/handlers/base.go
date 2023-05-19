@@ -60,6 +60,35 @@ func (b Base) OperationId(ctx context.Context) string {
 	return operationId.(string)
 }
 
+func (b Base) OperationModule(ctx context.Context) (uint32, error) {
+	v := ctx.Value("module")
+	if v == nil {
+		return 0, nil
+	}
+	m := v.(string)
+
+	res, err := strconv.ParseUint(m, 10, 64)
+	if err != nil {
+		return 0, errors2.ErrModules
+	}
+
+	return uint32(res), nil
+}
+
+func (b Base) Operation(ctx context.Context) (uint32, error) {
+	v := ctx.Value("operation")
+	if v == nil {
+		return 0, nil
+	}
+
+	res, err := strconv.ParseUint(v.(string), 10, 64)
+	if err != nil {
+		return 0, errors2.New(errors2.ClientParams, errors2.ErrOperation)
+	}
+
+	return uint32(res), nil
+}
+
 type PageBasic struct {
 }
 

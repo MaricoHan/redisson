@@ -14,7 +14,7 @@ type NftOperationHistoryByNftId struct {
 	NftId           string `json:"nft_id"`
 	Signer          string `json:"signer"`
 	Txhash          string `json:"tx_hash"`
-	Operation       string `json:"operation"`
+	Operation       uint32 `json:"operation"`
 	ProjectID       uint64 `json:"project_id"`
 	ChainID         uint64 `json:"chain_id"`
 	PlatFormID      uint64 `json:"plat_form_id"`
@@ -31,7 +31,7 @@ type NftOperationHistoryByNftIdRes struct {
 
 type OperationRecord struct {
 	Txhash    string `json:"tx_hash"`
-	Operation string `json:"operation"`
+	Operation uint32 `json:"operation"`
 	Signer    string `json:"signer"`
 	Recipient string `json:"recipient"`
 	Timestamp string `json:"timestamp"`

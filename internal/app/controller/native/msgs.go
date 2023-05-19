@@ -22,17 +22,17 @@ func (c MsgsController) GetEndpoints() []kit.Endpoint {
 	var ends []kit.Endpoint
 	ends = append(ends,
 		kit.Endpoint{
-			URI:     "/nft/nfts/{class_id}/{nft_id}/history",
+			URI:     "/native/nft/nfts/{class_id}/{nft_id}/history",
 			Method:  http.MethodGet,
 			Handler: c.MakeHandler(c.handler.GetNFTHistory, nil),
 		},
 		kit.Endpoint{
-			URI:     "/accounts/history",
+			URI:     "/native/accounts/history",
 			Method:  http.MethodGet,
 			Handler: c.MakeHandler(c.handler.GetAccountHistory, nil),
 		},
 		kit.Endpoint{
-			URI:     "/mt/mts/{class_id}/{mt_id}/history",
+			URI:     "/native/mt/mts/{class_id}/{mt_id}/history",
 			Method:  http.MethodGet,
 			Handler: c.MakeHandler(c.handler.GetMTHistory, nil),
 		},

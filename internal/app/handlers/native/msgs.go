@@ -65,7 +65,11 @@ func (h *Msgs) GetNFTHistory(ctx context.Context, _ interface{}) (interface{}, e
 	params.Signer = h.Signer(ctx)
 	params.Txhash = h.Txhash(ctx)
 
-	params.Operation = h.Operation(ctx)
+	operation, err := h.Operation(ctx)
+	if err != nil {
+		return nil, err
+	}
+	params.Operation = operation
 
 	return h.svc.GetNFTHistory(ctx, params)
 }
@@ -74,15 +78,20 @@ func (h *Msgs) GetAccountHistory(ctx context.Context, _ interface{}) (interface{
 	// 校验参数 start
 	authData := h.AuthData(ctx)
 	params := dto.AccountsInfo{
-		ChainID:         authData.ChainId,
-		ProjectID:       authData.ProjectId,
-		PlatFormID:      authData.PlatformId,
-		Account:         h.Account(ctx),
-		Module:          authData.Module,
-		Code:            authData.Code,
-		OperationModule: h.operationModule(ctx),
-		AccessMode:      authData.AccessMode,
+		ChainID:    authData.ChainId,
+		ProjectID:  authData.ProjectId,
+		PlatFormID: authData.PlatformId,
+		Account:    h.Account(ctx),
+		Module:     authData.Module,
+		Code:       authData.Code,
+		AccessMode: authData.AccessMode,
 	}
+
+	module, err := h.OperationModule(ctx)
+	if err != nil {
+		return nil, err
+	}
+	params.OperationModule = module
 
 	params.PageKey = h.PageKey(ctx)
 	limit, err := h.Limit(ctx)
@@ -107,9 +116,16 @@ func (h *Msgs) GetAccountHistory(ctx context.Context, _ interface{}) (interface{
 	}
 
 	params.SortBy = h.SortBy(ctx)
-	params.Operation = h.operation(ctx)
+
 	params.TxHash = h.Txhash(ctx)
 
+	operation, err := h.Operation(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if params.OperationModule > 0 {
+		params.Operation = operation
+	}
 	return h.svc.GetAccountHistory(ctx, params)
 }
 
@@ -150,7 +166,11 @@ func (h *Msgs) GetMTHistory(ctx context.Context, _ interface{}) (interface{}, er
 	params.SortBy = h.SortBy(ctx)
 	params.Signer = h.Signer(ctx)
 	params.Txhash = h.Txhash(ctx)
-	params.Operation = h.Operation(ctx)
+	operation, err := h.Operation(ctx)
+	if err != nil {
+		return nil, err
+	}
+	params.Operation = operation
 
 	return h.svc.GetMTHistory(ctx, params)
 }
@@ -189,14 +209,6 @@ func (h *Msgs) Signer(ctx context.Context) string {
 	return signer.(string)
 }
 
-func (h *Msgs) Operation(ctx context.Context) string {
-	operation := ctx.Value("operation")
-	if operation == nil || operation == "" {
-		return ""
-	}
-	return operation.(string)
-}
-
 func (h *Msgs) Txhash(ctx context.Context) string {
 	txhash := ctx.Value("tx_hash")
 	if txhash == nil || txhash == "" {
@@ -211,14 +223,4 @@ func (h *Msgs) Account(ctx context.Context) string {
 		return ""
 	}
 	return accountR.(string)
-}
-
-func (h *Msgs) operationModule(ctx context.Context) uint32 {
-	module := ctx.Value("module")
-	return module.(uint32)
-}
-
-func (h *Msgs) operation(ctx context.Context) uint32 {
-	operation := ctx.Value("operation")
-	return operation.(uint32)
 }

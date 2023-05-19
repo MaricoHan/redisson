@@ -1,4 +1,4 @@
-package native
+package services
 
 import (
 	"bytes"
@@ -23,7 +23,7 @@ import (
 	vo "gitlab.bianjie.ai/avata/open-api/internal/app/models/vo/native/notice"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/project"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/service_redirect_url"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/user"
+	user2 "gitlab.bianjie.ai/avata/open-api/internal/app/repository/db/user"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
@@ -189,7 +189,7 @@ func (a *notice) getProject(projectCode string) (entity.Project, error) {
 
 // getUser 获取用户信息, id&&code
 func (a *notice) getUser(userID uint64) (entity.User, error) {
-	userRepo := user.NewUserRepo(initialize.MysqlDB)
+	userRepo := user2.NewUserRepo(initialize.MysqlDB)
 	user, err := userRepo.GetUser(userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

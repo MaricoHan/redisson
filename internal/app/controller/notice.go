@@ -1,4 +1,4 @@
-package native
+package controller
 
 import (
 	"net/http"
@@ -6,16 +6,16 @@ import (
 	kit "gitlab.bianjie.ai/avata/open-api/pkg/gokit"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/controller/base"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers/native"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
 	vo "gitlab.bianjie.ai/avata/open-api/internal/app/models/vo/native/notice"
 )
 
 type NoticeController struct {
 	base.BaseController
-	handler native.INotice
+	handler handlers.INotice
 }
 
-func NewNoticeController(bc base.BaseController, handler native.INotice) kit.IController {
+func NewNoticeController(bc base.BaseController, handler handlers.INotice) kit.IController {
 	return NoticeController{bc, handler}
 }
 
