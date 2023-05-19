@@ -7,7 +7,6 @@ import (
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/controller/base"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers/evm"
-	vo "gitlab.bianjie.ai/avata/open-api/internal/app/models/vo/evm"
 )
 
 type NftClassController struct {
@@ -31,7 +30,7 @@ func (c NftClassController) GetEndpoints() []kit.Endpoint {
 		kit.Endpoint{
 			URI:     "/evm/nft/classes",
 			Method:  http.MethodPost,
-			Handler: c.MakeHandler(c.handler.CreateNftClass, &vo.CreateNftClassRequest{}),
+			Handler: c.MakeHandler(c.handler.CreateNftClass, &map[string]interface{}{}),
 		},
 		kit.Endpoint{
 			URI:     "/evm/nft/classes/{id}",

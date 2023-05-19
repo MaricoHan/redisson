@@ -2,6 +2,7 @@ package evm
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -33,7 +34,28 @@ func NewNFTClass(svc evm.INFTClass) *NftClass {
 // return creation result
 func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (interface{}, error) {
 	// 校验参数 start
-	req := request.(*vo.CreateNftClassRequest)
+	m := *(request.(*map[string]interface{}))
+
+	marshal, err := json.Marshal(request)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	req := vo.CreateNftClassRequest{}
+	err = json.Unmarshal(marshal, &req)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	_, ok := m["editable_by_owner"]
+	if !ok {
+		req.EditableByOwner = 1
+	}
+
+	_, ok = m["editable_by_class_owner"]
+	if !ok {
+		req.EditableByClassOwner = 1
+	}
 
 	name := strings.TrimSpace(req.Name)
 	symbol := strings.TrimSpace(req.Symbol)
