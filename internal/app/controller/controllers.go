@@ -34,7 +34,6 @@ func GetAllControllers(logger *log.Logger) []kit.IController {
 		NewNsController(baseController, evm.NewNs(evm2.NewNs(logger))),
 		NewEmptionController(baseController, handlers.NewBusiness(services.NewBusiness(logger))),
 		NewContractController(baseController, evm.NewContract(evm2.NewContract(logger))),
-		NewContractController(baseController, evm.NewContract(evm2.NewContract(logger))),
 		NewNoticeController(baseController, handlers.NewNotice(services.NewNotice(logger))),
 		NewRecordController(baseController, handlers.NewRecord(services.NewRecord(logger))),
 		// layer接口
@@ -60,6 +59,7 @@ func GetAllControllers(logger *log.Logger) []kit.IController {
 		native_controller.NewNftClassController(baseController, native.NewNFTClass(native2.NewNFTClass(logger))),
 		native_controller.NewNFTTransferController(baseController, native.NewNFTTransfer(native2.NewNFTTransfer(logger))),
 		native_controller.NewDictController(baseController, native.NewDict(native2.NewDict(logger))),
+		native_controller.NewTxController(baseController, native.NewTx(native2.NewTx(logger))),
 	}
 
 	return controllers
