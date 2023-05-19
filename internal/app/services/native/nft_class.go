@@ -118,7 +118,6 @@ func (n *nftClass) GetNFTClass(ctx context.Context, params nft.NftClasses) (*nft
 	req := pb.ClassShowRequest{
 		ProjectId: params.ProjectID,
 		Id:        params.Id,
-		//Status:    pb.STATUS_Active, // todo
 	}
 	resp := &pb.ClassShowResponse{}
 	var err error
