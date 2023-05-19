@@ -271,7 +271,7 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	NativeRecordClientMap = make(map[string]pb_native_record.RecordClient)
 	//NativeRecordClientMap[constant.TianheDDC] = pb_native_record.NewRecordClient(GrpcConnMap[constant.TianheDDC])
 	//NativeRecordClientMap[constant.TianheNative] = pb_native_record.NewRecordClient(GrpcConnMap[constant.TianheNative])
-	NativeRecordClientMap[constant.TianzhouEVM] = pb_native_record.NewRecordClient(GrpcConnMap[constant.TianzhouEVM])
+	NativeRecordClientMap[constant.TianzhouNative] = pb_native_record.NewRecordClient(GrpcConnMap[constant.TianzhouNative])
 	//NativeRecordClientMap[constant.IrisHubNative] = pb_native_record.NewRecordClient(GrpcConnMap[constant.IrisHubNative])
 
 	// 初始化notice
@@ -283,7 +283,7 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 
 	// 初始化business grpc client
 	BusineessClientMap = make(map[string]pb_business.BuyClient)
-	BusineessClientMap[constant.TianzhouEVM] = pb_business.NewBuyClient(GrpcConnMap[constant.TianzhouEVM])
+	BusineessClientMap[constant.TianzhouNative] = pb_business.NewBuyClient(GrpcConnMap[constant.TianzhouNative])
 
 	// 初始化wallet grpc client
 	WalletClientMap = make(map[string]pb_wallet.WalletClient)
@@ -307,7 +307,7 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 
 	// 初始化 l2 tx grpc client
 	L2TxClientMap = make(map[string]pb_l2_tx.TxClient)
-	L2TxClientMap[constant.TianzhouEVM] = pb_l2_tx.NewTxClient(GrpcConnMap[constant.IritaLayer2])
+	L2TxClientMap[constant.IritaLayer2] = pb_l2_tx.NewTxClient(GrpcConnMap[constant.IritaLayer2])
 }
 
 func InitRedisClient(cfg *configs.Config, logger *log.Logger) {
