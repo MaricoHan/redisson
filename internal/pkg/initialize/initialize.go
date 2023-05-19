@@ -24,6 +24,7 @@ import (
 	pb_evm_tx "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/evm/tx"
 	pb_l2_dict "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/l2/dict"
 	pb_l2_nft "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/l2/nft"
+	pb_l2_tx "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/l2/tx"
 	pb_native_nft_class "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/class"
 	pb_native_dict "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/dict"
 	pb_native_msgs "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/msgs"
@@ -78,6 +79,7 @@ var WalletClientMap map[string]pb_wallet.WalletClient
 var L2NftClientMap map[string]pb_l2_nft.NFTClient
 var L2NftClassClientMap map[string]pb_l2_nft.ClassClient
 var L2DictClientMap map[string]pb_l2_dict.DictClient
+var L2TxClientMap map[string]pb_l2_tx.TxClient
 
 var Log = new(log.Logger)
 
@@ -303,6 +305,9 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	L2NftClientMap = make(map[string]pb_l2_nft.NFTClient)
 	L2NftClientMap[constant.TianzhouEVM] = pb_l2_nft.NewNFTClient(GrpcConnMap[constant.IritaLayer2])
 
+	// 初始化 l2 tx grpc client
+	L2TxClientMap = make(map[string]pb_l2_tx.TxClient)
+	L2TxClientMap[constant.TianzhouEVM] = pb_l2_tx.NewTxClient(GrpcConnMap[constant.IritaLayer2])
 }
 
 func InitRedisClient(cfg *configs.Config, logger *log.Logger) {

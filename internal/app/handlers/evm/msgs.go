@@ -3,8 +3,6 @@ package evm
 import (
 	"context"
 	"fmt"
-	"strconv"
-
 	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	evm2 "gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/evm"
@@ -79,7 +77,7 @@ func (h *Msgs) GetNFTHistory(ctx context.Context, _ interface{}) (interface{}, e
 	params.Signer = h.Signer(ctx)
 	params.TxHash = h.Txhash(ctx)
 
-	operation, err := h.operation(ctx)
+	operation, err := h.Operation(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +99,7 @@ func (h *Msgs) GetAccountHistory(ctx context.Context, _ interface{}) (interface{
 		AccessMode: authData.AccessMode,
 	}
 
-	module, err := h.operationModule(ctx)
+	module, err := h.OperationModule(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +133,7 @@ func (h *Msgs) GetAccountHistory(ctx context.Context, _ interface{}) (interface{
 	}
 
 	params.SortBy = h.SortBy(ctx)
-	operation, err := h.operation(ctx)
+	operation, err := h.Operation(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -177,33 +175,4 @@ func (h *Msgs) Account(ctx context.Context) string {
 		return ""
 	}
 	return accountR.(string)
-}
-
-func (h *Msgs) operationModule(ctx context.Context) (uint32, error) {
-	v := ctx.Value("module")
-	if v == nil {
-		return 0, nil
-	}
-	m := v.(string)
-
-	res, err := strconv.ParseUint(m, 10, 64)
-	if err != nil {
-		return 0, errors.ErrModules
-	}
-
-	return uint32(res), nil
-}
-
-func (h *Msgs) operation(ctx context.Context) (uint32, error) {
-	v := ctx.Value("operation")
-	if v == nil {
-		return 0, nil
-	}
-
-	res, err := strconv.ParseUint(v.(string), 10, 64)
-	if err != nil {
-		return 0, errors.New(errors.ClientParams, errors.ErrOperation)
-	}
-
-	return uint32(res), nil
 }

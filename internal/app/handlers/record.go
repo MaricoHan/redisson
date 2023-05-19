@@ -1,14 +1,13 @@
-package native
+package handlers
 
 import (
 	"context"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
 	"strings"
 
 	"gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/record"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 
-	"gitlab.bianjie.ai/avata/open-api/internal/app/services/native"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
 )
 
 type IRecord interface {
@@ -16,12 +15,12 @@ type IRecord interface {
 }
 
 type Record struct {
-	handlers.Base
-	handlers.PageBasic
-	svc native.IRecord
+	Base
+	PageBasic
+	svc services.IRecord
 }
 
-func NewRecord(svc native.IRecord) *Record {
+func NewRecord(svc services.IRecord) *Record {
 	return &Record{svc: svc}
 }
 

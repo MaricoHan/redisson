@@ -23,22 +23,22 @@ func (m MTClassController) GetEndpoints() []kit.Endpoint {
 	var ends []kit.Endpoint
 	ends = append(ends,
 		kit.Endpoint{
-			URI:     "/mt/classes",
+			URI:     "/native/mt/classes",
 			Method:  http.MethodGet,
 			Handler: m.MakeHandler(m.handler.List, nil),
 		},
 		kit.Endpoint{
-			URI:     "/mt/classes",
+			URI:     "/native/mt/classes",
 			Method:  http.MethodPost,
 			Handler: m.MakeHandler(m.handler.CreateMTClass, &vo.CreateMTClassRequest{}),
 		},
 		kit.Endpoint{
-			URI:     "/mt/classes/{id}",
+			URI:     "/native/mt/classes/{id}",
 			Method:  http.MethodGet,
 			Handler: m.MakeHandler(m.handler.Show, nil),
 		},
 		kit.Endpoint{
-			URI:     "/mt/class-transfers/{id}/{owner}",
+			URI:     "/native/mt/class-transfers/{id}/{owner}",
 			Method:  http.MethodPost,
 			Handler: m.MakeHandler(m.handler.TransferMTClass, &vo.TransferMTClassRequest{}),
 		},

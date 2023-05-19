@@ -177,7 +177,7 @@ type MTOperationHistoryByMTId struct {
 	MTId       string `json:"mt_id"`
 	Signer     string `json:"signer"`
 	Txhash     string `json:"tx_hash"`
-	Operation  string `json:"operation"`
+	Operation  uint32 `json:"operation"`
 	ProjectID  uint64 `json:"project_id"`
 	ChainID    uint64 `json:"chain_id"`
 	PlatFormID uint64 `json:"plat_form_id"`
@@ -193,7 +193,7 @@ type MTOperationHistoryByMTIdRes struct {
 
 type MTOperationRecord struct {
 	Txhash    string `json:"tx_hash"`
-	Operation string `json:"operation"`
+	Operation uint32 `json:"operation"`
 	Signer    string `json:"signer"`
 	Recipient string `json:"recipient"`
 	Amount    uint64 `json:"amount"`

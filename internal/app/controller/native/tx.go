@@ -1,4 +1,4 @@
-package controller
+package native
 
 import (
 	"net/http"
@@ -6,15 +6,15 @@ import (
 	kit "gitlab.bianjie.ai/avata/open-api/pkg/gokit"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/controller/base"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
+	native_handlers "gitlab.bianjie.ai/avata/open-api/internal/app/handlers/native"
 )
 
 type TxController struct {
 	base.BaseController
-	handler handlers.ITx
+	handler native_handlers.ITx
 }
 
-func NewTxController(bc base.BaseController, handler handlers.ITx) kit.IController {
+func NewTxController(bc base.BaseController, handler native_handlers.ITx) kit.IController {
 	return TxController{bc, handler}
 }
 
@@ -22,7 +22,7 @@ func (c TxController) GetEndpoints() []kit.Endpoint {
 	var ends []kit.Endpoint
 	ends = append(ends,
 		kit.Endpoint{
-			URI:     "/tx/{operation_id}",
+			URI:     "/native/tx/{operation_id}",
 			Method:  http.MethodGet,
 			Handler: c.MakeHandler(c.handler.TxResult, nil),
 		},

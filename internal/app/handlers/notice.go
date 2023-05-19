@@ -1,13 +1,14 @@
-package native
+package handlers
 
 import (
 	"context"
 	"fmt"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo/native/notice"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/services/native"
-	"gitlab.bianjie.ai/avata/utils/errors"
 	"strings"
+
+	"gitlab.bianjie.ai/avata/utils/errors"
+
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo/native/notice"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
 )
 
 type INotice interface {
@@ -16,12 +17,12 @@ type INotice interface {
 }
 
 type Notice struct {
-	handlers.Base
-	handlers.PageBasic
-	svc native.INotice
+	Base
+	PageBasic
+	svc services.INotice
 }
 
-func NewNotice(svc native.INotice) *Notice {
+func NewNotice(svc services.INotice) *Notice {
 	return &Notice{svc: svc}
 }
 

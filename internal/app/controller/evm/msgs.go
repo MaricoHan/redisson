@@ -26,6 +26,11 @@ func (c MsgsController) GetEndpoints() []kit.Endpoint {
 			Method:  http.MethodGet,
 			Handler: c.MakeHandler(c.handler.GetNFTHistory, nil),
 		},
+		kit.Endpoint{
+			URI:     "/evm/accounts/history",
+			Method:  http.MethodGet,
+			Handler: c.MakeHandler(c.handler.GetAccountHistory, nil),
+		},
 	)
 	return ends
 }
