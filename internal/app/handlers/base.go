@@ -92,21 +92,6 @@ func (b Base) Operation(ctx context.Context) (uint32, error) {
 type PageBasic struct {
 }
 
-func (p PageBasic) Offset(ctx context.Context) (int64, error) {
-	offset := ctx.Value("offset")
-	if offset == "" || offset == nil {
-		return 0, nil
-	}
-	offsetInt, err := strconv.ParseInt(offset.(string), 10, 64)
-	if err != nil {
-		return 0, errors2.New(errors2.ClientParams, errors2.ErrOffset)
-	}
-	if offsetInt < 0 {
-		return 0, errors2.New(errors2.ClientParams, errors2.ErrOffsetInt)
-	}
-	return offsetInt, nil
-}
-
 func (p PageBasic) Limit(ctx context.Context) (uint32, error) {
 	limit := ctx.Value("limit")
 	if limit == "" || limit == nil {
