@@ -2,6 +2,7 @@ package native
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
@@ -52,7 +53,7 @@ func (h *NFT) CreateNft(ctx context.Context, request interface{}) (interface{}, 
 	}
 
 	if len([]rune(name)) >= 65 {
-		return nil, errors2.New(errors2.ClientParams, "name length err todo")
+		return nil, errors2.New(errors2.ClientParams, fmt.Sprintf(errors2.ErrNameLen, 0, 64))
 	}
 
 	if err := h.UriCheck(uri); err != nil {
@@ -146,7 +147,7 @@ func (h *NFT) EditNftByNftId(ctx context.Context, request interface{}) (interfac
 	}
 	// check start
 	if len([]rune(name)) >= 65 {
-		return nil, errors2.New(errors2.ClientParams, "name length err todo")
+		return nil, errors2.New(errors2.ClientParams, fmt.Sprintf(errors2.ErrNameLen, 0, 64))
 	}
 
 	if err := h.UriCheck(uri); err != nil {
