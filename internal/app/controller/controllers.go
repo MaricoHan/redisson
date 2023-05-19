@@ -53,7 +53,6 @@ func GetAllControllers(logger *log.Logger) []kit.IController {
 		// native接口
 		native_controller.NewMTClassController(baseController, native.NewMTClass(native2.NewMTClass(logger))),
 		native_controller.NewMTController(baseController, native.NewMT(native2.NewMT(logger))),
-		//native_controller.NewRightsController(baseController, native.NewRights(native2.NewRights(logger))),
 		native_controller.NewMsgsController(baseController, native.NewMsgs(native2.NewMsgs(logger))),
 		native_controller.NewNftController(baseController, native.NewNft(native2.NewNft(logger))),
 		native_controller.NewNftClassController(baseController, native.NewNFTClass(native2.NewNFTClass(logger))),
