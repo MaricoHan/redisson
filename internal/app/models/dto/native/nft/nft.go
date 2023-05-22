@@ -84,7 +84,6 @@ type NftClass struct {
 	Owner     string `json:"owner"`
 	TxHash    string `json:"tx_hash"`
 	Symbol    string `json:"symbol"`
-	NftCount  uint64 `json:"nft_count"`
 	Uri       string `json:"uri"`
 	Timestamp string `json:"timestamp"`
 }
