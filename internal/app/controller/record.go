@@ -2,10 +2,10 @@ package controller
 
 import (
 	"net/http"
-	
+
 	kit "gitlab.bianjie.ai/avata/open-api/pkg/gokit"
 
-	record "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/record"
+	vo "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/record"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/controller/base"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
 )
@@ -26,7 +26,7 @@ func (c RecordController) GetEndpoints() []kit.Endpoint {
 		kit.Endpoint{
 			URI:     "/record/records",
 			Method:  http.MethodPost,
-			Handler: c.MakeHandler(c.handler.CreateRecord, &record.RecordCreateRequest{}),
+			Handler: c.MakeHandler(c.handler.CreateRecord, &vo.RecordCreateRequest{}),
 		},
 	)
 	return ends

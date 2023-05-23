@@ -2,6 +2,7 @@ package dto
 
 import (
 	"github.com/volatiletech/sqlboiler/types"
+	pbaccount "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/account"
 )
 
 // BatchCreateAccount 批量创建链账户
@@ -47,11 +48,14 @@ type AccountsInfo struct {
 }
 
 type BatchAccountRes struct {
-	Accounts []string `json:"accounts"`
+	Accounts []string                    `json:"accounts"`
+	Address  []*pbaccount.AccountAddress `json:"address"`
 }
 
 type AccountRes struct {
-	Account string `json:"account"`
+	Account       string `json:"account"`
+	NativeAddress string `json:"native_address"`
+	HexAddress    string `json:"hex_address"`
 }
 
 type AccountsRes struct {
@@ -60,9 +64,11 @@ type AccountsRes struct {
 }
 
 type Account struct {
-	Account     string `json:"account"`
-	Name        string `json:"name"`
-	OperationId string `json:"operation_id"`
+	Account       string `json:"account"`
+	NativeAddress string `json:"native_address"`
+	HexAddress    string `json:"hex_address"`
+	Name          string `json:"name"`
+	OperationId   string `json:"operation_id"`
 }
 
 type AccountOperationRecordRes struct {
@@ -77,4 +83,5 @@ type AccountOperationRecords struct {
 	Signer    string      `json:"signer"`
 	Timestamp string      `json:"timestamp"`
 	NftMsg    *types.JSON `json:"nft_msg"`
+	MtMsg     *types.JSON `json:"mt_msg"`
 }

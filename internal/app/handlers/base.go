@@ -10,7 +10,7 @@ import (
 	"github.com/asaskevich/govalidator"
 	log "github.com/sirupsen/logrus"
 
-	nft "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/nft"
+	"gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/nft"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
@@ -52,22 +52,44 @@ func (b Base) UriCheck(uri string) error {
 	return nil
 }
 
-type PageBasic struct {
+func (b Base) OperationId(ctx context.Context) string {
+	operationId := ctx.Value("operation_id")
+	if operationId == nil {
+		return ""
+	}
+	return operationId.(string)
 }
 
-func (p PageBasic) Offset(ctx context.Context) (int64, error) {
-	offset := ctx.Value("offset")
-	if offset == "" || offset == nil {
+func (b Base) OperationModule(ctx context.Context) (uint32, error) {
+	v := ctx.Value("module")
+	if v == nil {
 		return 0, nil
 	}
-	offsetInt, err := strconv.ParseInt(offset.(string), 10, 64)
+	m := v.(string)
+
+	res, err := strconv.ParseUint(m, 10, 64)
 	if err != nil {
-		return 0, errors2.New(errors2.ClientParams, errors2.ErrOffset)
+		return 0, errors2.ErrModules
 	}
-	if offsetInt < 0 {
-		return 0, errors2.New(errors2.ClientParams, errors2.ErrOffsetInt)
+
+	return uint32(res), nil
+}
+
+func (b Base) Operation(ctx context.Context) (uint32, error) {
+	v := ctx.Value("operation")
+	if v == nil {
+		return 0, nil
 	}
-	return offsetInt, nil
+
+	res, err := strconv.ParseUint(v.(string), 10, 64)
+	if err != nil {
+		return 0, errors2.New(errors2.ClientParams, errors2.ErrOperation)
+	}
+
+	return uint32(res), nil
+}
+
+type PageBasic struct {
 }
 
 func (p PageBasic) Limit(ctx context.Context) (uint32, error) {

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	records "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/record"
+	records "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/record"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
@@ -31,12 +31,12 @@ func (r *record) CreateRecord(ctx context.Context, params *records.RecordCreateR
 	authData := r.authData(ctx)
 	params.ProjectId = authData.ProjectId
 	mapKey := fmt.Sprintf("%s-%s", authData.Code, authData.Module)
-	logger := r.logger.WithContext(ctx).WithFields(map[string]interface{}{
+	logger := r.logger.WithFields(map[string]interface{}{
 		"server-name": mapKey,
 		"params":      params,
 		"func":        "CreateRecord",
 	})
-	grpcClient, ok := initialize.RecordClientMap[mapKey]
+	grpcClient, ok := initialize.NativeRecordClientMap[mapKey]
 	if !ok {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
 	}

@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/cache"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/configs"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
@@ -57,6 +58,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		writeForbiddenResp(w, constant.ErrApikey)
 		return
 	}
+	h.setCodeModule(r, &authData)
 
 	key := fmt.Sprintf("balance:%d", authData.ProjectId)
 	exists, err := initialize.RedisClient.Exists(key)
@@ -297,4 +299,15 @@ func sortMapParams(params map[string]interface{}) map[string]interface{} {
 		sortMap[k] = params[k]
 	}
 	return sortMap
+}
+
+func (h authHandler) setCodeModule(r *http.Request, authData *vo.AuthData) {
+	authData.Code = constant.Tianzhou
+	authData.Module = constant.Evm
+	if strings.Contains(r.URL.Path, "/native/") || strings.Contains(r.URL.Path, "/orders/") || strings.Contains(r.URL.Path, "/tx/") {
+		authData.Module = constant.Native
+	}
+	if strings.Contains(r.URL.Path, "/layer2/") {
+		authData.Module = constant.Layer2
+	}
 }

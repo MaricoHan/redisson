@@ -2,7 +2,7 @@
 env = "dev"
 log_level = "debug"
 log_format = "text"
-addr = ":8080"
+addr = ":8096"
 prometheus_addr = "0.0.0.0:9092"
 signature_auth = false
 timestamp_auth = false
@@ -12,14 +12,10 @@ http_timeout = 1000000
 limit = 200 # 数据查询条数上限
 
 [mysql]
-#host = "192.168.0.136"
-#port = 3306
-#username = "root"
-#password = "rootPassword"
-host = "127.0.0.1"
-port = 3306
+host = "192.168.150.40"
+port = 23306
 username = "root"
-password = "12345678"
+password = "rootPassword"
 db = "core"
 max_open_conns = 100
 max_idle_conns = 20
@@ -27,15 +23,17 @@ max_idle_conns = 20
 max_life_time = 1
 
 [redis]
-host = "127.0.0.1:6379"
-password = ""
+host = "192.168.150.40:6379"
+password = "redisPassword"
 db = 11
 
 [grpc_client]
-tianzhou_evm = ":10000"
+tianzhou_evm = "192.168.0.157:11000"
 state_gateway = "192.168.150.44:10000"
 wallet_server = "192.168.150.40:11000"
-irita_layer2 = ":10000"
+irita_layer2 = "192.168.150.45:10000"
+sign_server = "192.168.150.45:10001"
+tianzhou_native = ":10000"
 
 [project]
 secret_pwd = "Console_Projects_Secrets"

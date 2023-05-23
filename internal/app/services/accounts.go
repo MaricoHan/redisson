@@ -34,7 +34,6 @@ func NewAccount(logger *log.Logger) *account {
 // BatchCreateAccount 批量创建链账户
 func (a *account) BatchCreateAccount(ctx context.Context, params dto.BatchCreateAccount) (*dto.BatchAccountRes, error) {
 	logger := a.logger.WithContext(ctx).WithField("params", params).WithField("func", "BatchCreateAccount")
-
 	// 非托管模式不支持
 	if params.AccessMode == entity.UNMANAGED {
 		return nil, errors2.ErrNotImplemented
@@ -53,11 +52,7 @@ func (a *account) BatchCreateAccount(ctx context.Context, params dto.BatchCreate
 	resp := &pb.AccountBatchCreateResponse{}
 	var err error
 
-	grpcClient, ok := initialize.AccountClientMap[mapKey]
-	if !ok {
-		logger.Error(errors2.ErrService)
-		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
-	}
+	grpcClient := initialize.SignClient
 	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.BatchCreate(ctx, &req)
@@ -69,7 +64,10 @@ func (a *account) BatchCreateAccount(ctx context.Context, params dto.BatchCreate
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
 	result := &dto.BatchAccountRes{}
-	result.Accounts = resp.Accounts
+	for i := 0; i < len(resp.Accounts); i++ {
+		result.Accounts = append(result.Accounts, resp.Accounts[i].HexAddress)
+	}
+	result.Address = resp.Accounts
 	return result, nil
 }
 
@@ -109,8 +107,11 @@ func (a *account) CreateAccount(ctx context.Context, params dto.CreateAccount) (
 		if resp == nil {
 			return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 		}
-		result := &dto.AccountRes{}
-		result.Account = resp.Account
+		result := &dto.AccountRes{
+			Account:       resp.HexAddress,
+			NativeAddress: resp.NativeAddress,
+			HexAddress:    resp.HexAddress,
+		}
 		return result, nil
 	}
 
@@ -122,11 +123,7 @@ func (a *account) CreateAccount(ctx context.Context, params dto.CreateAccount) (
 	resp := &pb.AccountCreateResponse{}
 	var err error
 
-	grpcClient, ok := initialize.AccountClientMap[mapKey]
-	if !ok {
-		logger.Error(errors2.ErrService)
-		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
-	}
+	grpcClient := initialize.SignClient
 	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	resp, err = grpcClient.Create(ctx, &req)
@@ -137,8 +134,11 @@ func (a *account) CreateAccount(ctx context.Context, params dto.CreateAccount) (
 	if resp == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
-	result := &dto.AccountRes{}
-	result.Account = resp.Account
+	result := &dto.AccountRes{
+		Account:       resp.HexAddress,
+		NativeAddress: resp.NativeAddress,
+		HexAddress:    resp.HexAddress,
+	}
 	return result, nil
 }
 
@@ -151,7 +151,7 @@ func (a *account) GetAccounts(ctx context.Context, params dto.AccountsInfo) (*dt
 		return nil, errors2.ErrNotImplemented
 	}
 
-	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+	//mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 
 	sort, ok := pb.SORT_value[params.SortBy]
 	if !ok {
@@ -159,7 +159,7 @@ func (a *account) GetAccounts(ctx context.Context, params dto.AccountsInfo) (*dt
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrSortBy)
 	}
 
-	req := pb.AccountShowRequest{
+	req := pb.AccountListRequest{
 		ProjectId:   params.ProjectID,
 		PageKey:     params.PageKey,
 		CountTotal:  params.CountTotal,
@@ -172,17 +172,13 @@ func (a *account) GetAccounts(ctx context.Context, params dto.AccountsInfo) (*dt
 		Name:        params.Name,
 	}
 
-	resp := &pb.AccountShowResponse{}
+	resp := &pb.AccountListResponse{}
 	var err error
 
-	grpcClient, ok := initialize.AccountClientMap[mapKey]
-	if !ok {
-		logger.Error(errors2.ErrService)
-		return nil, errors2.New(errors2.InternalError, errors2.ErrService)
-	}
+	grpcClient := initialize.SignClient
 	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
-	resp, err = grpcClient.Show(ctx, &req)
+	resp, err = grpcClient.List(ctx, &req)
 	if err != nil {
 		logger.Error("request err:", err.Error())
 		return nil, err
@@ -202,9 +198,11 @@ func (a *account) GetAccounts(ctx context.Context, params dto.AccountsInfo) (*dt
 	var accounts []*dto.Account
 	for _, result := range resp.Data {
 		account := &dto.Account{
-			Account:     result.Address,
-			Name:        result.Name,
-			OperationId: result.OperationId,
+			Account:       result.HexAddress,
+			NativeAddress: result.NativeAddress,
+			HexAddress:    result.HexAddress,
+			Name:          result.Name,
+			OperationId:   result.OperationId,
 		}
 		accounts = append(accounts, account)
 	}
@@ -277,9 +275,10 @@ func (a *account) GetUserAccounts(ctx context.Context, params dto.AccountsInfo) 
 	for _, v := range resp.Data {
 		account := &dto.ShowUsersAccount{
 			Account: dto.Account{
-				Account:     v.Address,
-				Name:        v.Name,
-				OperationId: v.OperationId,
+				NativeAddress: v.NativeAddress,
+				HexAddress:    v.HexAddress,
+				Name:          v.Name,
+				OperationId:   v.OperationId,
 			},
 			ReadOnly: uint32(v.ReadOnly),
 		}

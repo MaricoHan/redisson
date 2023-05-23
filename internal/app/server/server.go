@@ -59,8 +59,8 @@ func NewApplication(logger *log.Logger) kit.Application {
 func (s *Application) GetEndpoints() []kit.Endpoint {
 	var rs []kit.Endpoint
 
-	ctls := controller.GetAllControllers(s.logger)
-	for _, c := range ctls {
+	ctrls := controller.GetAllControllers(s.logger)
+	for _, c := range ctrls {
 		rs = append(rs, c.GetEndpoints()...)
 	}
 	return rs

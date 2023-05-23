@@ -23,12 +23,12 @@ const (
 	OrderTypeGas = 1
 
 	// chain map
-	WenchangNative = "wenchangchain-native"
-	WenchangDDC    = "wenchangchain-ddc"
-	DatangNative   = "datangchain-native"
-	IritaOPBNative = "irita-opb-native"
-	IrisHubNative  = "irishub-native"
-	IritaLayer2    = "irita-layer2"
+	TianheNative = "wenchangchain-native"
+	TianheDDC    = "wenchangchain-ddc"
+
+	TianzhouEVM    = "irita-tianzhou-evm"
+	TianzhouNative = "irita-tianzhou-native"
+	IritaLayer2    = "irita-tianzhou-layer2"
 
 	// wallet
 	WalletServer = "wallet-server"
@@ -36,8 +36,11 @@ const (
 	Server       = "server"
 
 	// stage
+	Tianzhou = "irita-tianzhou"
 	IritaOPB = "irita-opb"
 	Native   = "native"
+	Evm      = "evm"
+	Layer2   = "layer2"
 
 	// rights map
 	JiangSu = "jiangsu"

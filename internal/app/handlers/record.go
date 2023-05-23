@@ -4,9 +4,10 @@ import (
 	"context"
 	"strings"
 
-	record "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/record"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
+	"gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/record"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
+
+	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
 )
 
 type IRecord interface {
