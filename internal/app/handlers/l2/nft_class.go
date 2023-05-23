@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers/base"
 	dto "gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/l2"
 	vo "gitlab.bianjie.ai/avata/open-api/internal/app/models/vo/l2"
 	services "gitlab.bianjie.ai/avata/open-api/internal/app/services/l2"
@@ -21,8 +21,8 @@ type INftClass interface {
 }
 
 type NftClass struct {
-	handlers.Base
-	handlers.PageBasic
+	base.Base
+	base.PageBasic
 	svc services.INFTClass
 }
 

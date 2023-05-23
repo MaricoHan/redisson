@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers/base"
 	dto "gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/native/nft"
 	vo "gitlab.bianjie.ai/avata/open-api/internal/app/models/vo/native/nft"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services/native"
@@ -17,8 +17,8 @@ type INFTTransfer interface {
 }
 
 type NFTTransfer struct {
-	handlers.Base
-	handlers.PageBasic
+	base.Base
+	base.PageBasic
 	svc native.INFTTransfer
 }
 

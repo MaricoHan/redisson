@@ -3,7 +3,7 @@ package l2
 import (
 	"context"
 
-	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers/base"
 	dto "gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/l2"
 	l2_services "gitlab.bianjie.ai/avata/open-api/internal/app/services/l2"
 )
@@ -14,7 +14,7 @@ type ITx interface {
 }
 
 type Tx struct {
-	handlers.Base
+	base.Base
 	svc l2_services.ITx
 }
 

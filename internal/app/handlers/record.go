@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/record"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers/base"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
@@ -15,8 +16,8 @@ type IRecord interface {
 }
 
 type Record struct {
-	Base
-	PageBasic
+	base.Base
+	base.PageBasic
 	svc services.IRecord
 }
 

@@ -3,7 +3,7 @@ package l2
 import (
 	"context"
 
-	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers/base"
 	dto "gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/l2"
 	service "gitlab.bianjie.ai/avata/open-api/internal/app/services/l2"
 )
@@ -13,7 +13,7 @@ type IDict interface {
 }
 
 type Dict struct {
-	handlers.Base
+	base.Base
 	svc service.IDict
 }
 
