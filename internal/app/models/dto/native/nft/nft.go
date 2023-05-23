@@ -175,7 +175,7 @@ type Nfts struct {
 	ClassId    string `json:"class_id"`
 	Owner      string `json:"owner"`
 	TxHash     string `json:"tx_hash"`
-	Status     string `json:"status"`
+	Status     uint32 `json:"status"`
 	ProjectID  uint64 `json:"project_id"`
 	ChainID    uint64 `json:"chain_id"`
 	PlatFormID uint64 `json:"plat_form_id"`

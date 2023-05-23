@@ -2,7 +2,9 @@ package native
 
 import (
 	"context"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
+
+	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers/base"
+
 	"strings"
 
 	dto "gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/native/mt"
@@ -19,8 +21,8 @@ type IMTClass interface {
 }
 
 type MTClass struct {
-	handlers.Base
-	handlers.PageBasic
+	base.Base
+	base.PageBasic
 	svc native.IMTClass
 }
 

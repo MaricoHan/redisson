@@ -28,7 +28,7 @@ func (bc BaseController) wrapHandler(h kit.Handler) kit.Handler {
 		log.Debug("Execute handler logic ", "method", "wrapHandler", "params", request)
 		resp, err := h(ctx, request)
 		if err != nil {
-			// log.Error("Execute handler logic failed", "error", err.Error())
+			log.Error("Execute handler logic failed", "error", err.Error())
 			return nil, err
 		}
 		return resp, nil

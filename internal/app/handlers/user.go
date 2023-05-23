@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/wallet"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers/base"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
@@ -21,8 +22,8 @@ type IUser interface {
 }
 
 type User struct {
-	Base
-	PageBasic
+	base.Base
+	base.PageBasic
 	svc services.IUser
 }
 

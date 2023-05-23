@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	pb "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/l2/nft"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers/base"
 	dto "gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/l2"
 	vo "gitlab.bianjie.ai/avata/open-api/internal/app/models/vo/l2"
 	services "gitlab.bianjie.ai/avata/open-api/internal/app/services/l2"
@@ -25,8 +25,8 @@ type INft interface {
 }
 
 type NFT struct {
-	handlers.Base
-	handlers.PageBasic
+	base.Base
+	base.PageBasic
 	svc services.INFT
 }
 

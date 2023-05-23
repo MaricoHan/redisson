@@ -3,7 +3,7 @@ package evm
 import (
 	"context"
 
-	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers/base"
 	dto "gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/evm"
 	service "gitlab.bianjie.ai/avata/open-api/internal/app/services/evm"
 )
@@ -13,7 +13,7 @@ type IDict interface {
 }
 
 type Dict struct {
-	handlers.Base
+	base.Base
 	svc service.IDict
 }
 

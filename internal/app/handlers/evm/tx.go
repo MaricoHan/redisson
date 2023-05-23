@@ -3,7 +3,7 @@ package evm
 import (
 	"context"
 
-	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers/base"
 	dto "gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/evm"
 	evm_services "gitlab.bianjie.ai/avata/open-api/internal/app/services/evm"
 )
@@ -14,7 +14,7 @@ type ITx interface {
 }
 
 type Tx struct {
-	handlers.Base
+	base.Base
 	svc evm_services.ITx
 }
 

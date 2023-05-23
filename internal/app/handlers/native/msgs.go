@@ -3,7 +3,7 @@ package native
 import (
 	"context"
 
-	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers/base"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/native/mt"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/native/nft"
@@ -17,8 +17,8 @@ type IMsgs interface {
 }
 
 type Msgs struct {
-	handlers.Base
-	handlers.PageBasic
+	base.Base
+	base.PageBasic
 	svc native.IMsgs
 }
 

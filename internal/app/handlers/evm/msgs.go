@@ -3,7 +3,8 @@ package evm
 import (
 	"context"
 	"fmt"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
+
+	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers/base"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	evm2 "gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/evm"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services/evm"
@@ -17,8 +18,8 @@ type IMsgs interface {
 }
 
 type Msgs struct {
-	handlers.Base
-	handlers.PageBasic
+	base.Base
+	base.PageBasic
 	NFT
 	svc evm.IMsgs
 }
