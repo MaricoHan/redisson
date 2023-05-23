@@ -272,7 +272,7 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	//NativeRecordClientMap[constant.TianheDDC] = pb_native_record.NewRecordClient(GrpcConnMap[constant.TianheDDC])
 	//NativeRecordClientMap[constant.TianheNative] = pb_native_record.NewRecordClient(GrpcConnMap[constant.TianheNative])
 	NativeRecordClientMap[constant.TianzhouNative] = pb_native_record.NewRecordClient(GrpcConnMap[constant.TianzhouNative])
-	//NativeRecordClientMap[constant.IrisHubNative] = pb_native_record.NewRecordClient(GrpcConnMap[constant.IrisHubNative])
+	NativeRecordClientMap[constant.TianzhouEVM] = pb_native_record.NewRecordClient(GrpcConnMap[constant.TianzhouNative])
 
 	// 初始化notice
 	//NoticeClientMap = make(map[string]pb_notice.NoticeClient)
