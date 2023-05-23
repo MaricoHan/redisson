@@ -111,7 +111,7 @@ func (c cache) Chain(chainID uint) (entity.Chain, error) {
 //
 func (c cache) ProjectAuth(pid int) (list []entity.Permission, err error) {
 	// 查询缓存
-	key := fmt.Sprintf("%s:%s:%d", constant.RedisPrefix, constant.KeyAuth, pid)
+	key := fmt.Sprintf("%s:%d", constant.KeyAuth, pid)
 	err = initialize.RedisClient.GetObject(key, &list)
 	if err == nil && len(list) > 0 {
 		// 有缓存

@@ -112,7 +112,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//	authData.ExistWalletService = existWalletService
 	//}
 
-	// 判断项目参数版本号
+	//判断项目参数版本号
 	//if projectInfo.Version == entity.VersionStage {
 	//	authData.Code = constant.IritaOPB
 	//	authData.Module = constant.Native
@@ -170,8 +170,15 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		writeInternalResp(w)
 		return
 	}
+	// 判断是否包含路由前缀
+	prefix := fmt.Sprintf("/%s", configs.Cfg.App.RouterPrefix)
+	if ok := strings.HasPrefix(r.URL.Path, prefix); ok {
+		// 包含前缀 去除
+		r.URL.Path = strings.TrimPrefix(r.URL.Path, prefix)
+	}
+
 	pathCheck := false
-	methodcheck := false
+	methodCheck := false
 	matched := false
 	for _, item := range permissionList {
 		if item.Method != "*" {
@@ -187,7 +194,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if matched || item.Method == "*" {
 			if item.Path == "*" {
 				pathCheck = true
-				methodcheck = true
+				methodCheck = true
 				break
 			}
 			path := fmt.Sprintf("^%s", strings.ReplaceAll(item.Path, ",/", "|^/"))
@@ -200,13 +207,13 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			if matched {
 				if item.Action == constant.ActionAllow { //允许访问
 					pathCheck = true
-					methodcheck = true
+					methodCheck = true
 				}
 				break //禁止访问
 			}
 		}
 	}
-	if !pathCheck || !methodcheck {
+	if !pathCheck || !methodCheck {
 		writeForbiddenResp(w, constant.AuthenticationFailed)
 		return
 	}
