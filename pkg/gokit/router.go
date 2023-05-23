@@ -273,11 +273,12 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 		}
 		// uri := ctx.Value(httptransport.ContextKeyRequestURI)
 		urlPath := ctx.Value(httptransport.ContextKeyRequestPath)
+
 		url := strings.SplitN(urlPath.(string)[1:], "/", 3)
-		codeSpace := strings.ToUpper(url[1])
+		codeSpace := strings.ToUpper(url[0])
 
 		if codeSpace == "NATIVE" || codeSpace == "EVM" {
-			codeSpace = strings.ToUpper(url[2])
+			codeSpace = strings.ToUpper(url[1])
 		}
 
 		respErr := errors2.Convert(err)
