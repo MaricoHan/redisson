@@ -71,6 +71,20 @@ type Account struct {
 	OperationId   string `json:"operation_id"`
 }
 
+type AccountOperationEVMRecordRes struct {
+	PageRes
+	OperationRecords []*AccountOperationEVMRecords `json:"operation_records"`
+}
+
+type AccountOperationEVMRecords struct {
+	TxHash    string      `json:"tx_hash"`
+	Module    uint32      `json:"module"`
+	Operation uint32      `json:"operation"`
+	Signer    string      `json:"signer"`
+	Timestamp string      `json:"timestamp"`
+	NftMsg    *types.JSON `json:"nft_msg"`
+}
+
 type AccountOperationRecordRes struct {
 	PageRes
 	OperationRecords []*AccountOperationRecords `json:"operation_records"`
