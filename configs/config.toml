@@ -33,8 +33,8 @@ state_gateway = "192.168.150.44:10000"
 wallet_server = "192.168.150.40:11000"
 irita_layer2 = "192.168.150.45:10000"
 sign_server = "192.168.150.45:10001"
-tianzhou_native = "192.168.150.42:20000"
-
+#tianzhou_native = "192.168.0.157:10002"
+tianzhou_native =":10000"
 [project]
 secret_pwd = "Console_Projects_Secrets"
 
