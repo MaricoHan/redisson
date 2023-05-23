@@ -4,8 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/evm"
 	"time"
+
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/evm"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/volatiletech/sqlboiler/types"
@@ -19,7 +20,7 @@ import (
 
 type IMsgs interface {
 	GetNFTHistory(ctx context.Context, params evm.NftOperationHistoryByNftId) (*evm.NftOperationHistoryByNftIdRes, error)
-	GetAccountHistory(ctx context.Context, params dto.AccountsInfo) (*dto.AccountOperationRecordRes, error)
+	GetAccountHistory(ctx context.Context, params dto.AccountsInfo) (*dto.AccountOperationEVMRecordRes, error)
 }
 
 type msgs struct {
@@ -106,7 +107,7 @@ func (s *msgs) GetNFTHistory(ctx context.Context, params evm.NftOperationHistory
 	return result, nil
 }
 
-func (s *msgs) GetAccountHistory(ctx context.Context, params dto.AccountsInfo) (*dto.AccountOperationRecordRes, error) {
+func (s *msgs) GetAccountHistory(ctx context.Context, params dto.AccountsInfo) (*dto.AccountOperationEVMRecordRes, error) {
 	logger := s.logger.WithContext(ctx).WithField("params", params).WithField("func", "GetAccountHistory")
 
 	// 非托管模式不支持
@@ -153,18 +154,18 @@ func (s *msgs) GetAccountHistory(ctx context.Context, params dto.AccountsInfo) (
 	if resp == nil {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
-	result := &dto.AccountOperationRecordRes{
+	result := &dto.AccountOperationEVMRecordRes{
 		PageRes: dto.PageRes{
 			PrevPageKey: resp.PrevPageKey,
 			NextPageKey: resp.NextPageKey,
 			Limit:       resp.Limit,
 			TotalCount:  resp.TotalCount,
 		},
-		OperationRecords: []*dto.AccountOperationRecords{},
+		OperationRecords: []*dto.AccountOperationEVMRecords{},
 	}
-	var accountOperationRecords []*dto.AccountOperationRecords
+	var accountOperationRecords []*dto.AccountOperationEVMRecords
 	for _, item := range resp.Data {
-		accountOperationRecord := &dto.AccountOperationRecords{
+		accountOperationRecord := &dto.AccountOperationEVMRecords{
 			TxHash:    item.TxHash,
 			Module:    item.Module,
 			Operation: item.Operation,
