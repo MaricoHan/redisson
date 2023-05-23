@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers/base"
 	dto "gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/evm"
 	vo "gitlab.bianjie.ai/avata/open-api/internal/app/models/vo/evm"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services/evm"
@@ -21,8 +21,8 @@ type INs interface {
 }
 
 type Ns struct {
-	handlers.Base
-	handlers.PageBasic
+	base.Base
+	base.PageBasic
 	svc evm.INs
 }
 

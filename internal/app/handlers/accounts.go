@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers/base"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
@@ -21,8 +22,8 @@ type IAccount interface {
 }
 
 type Account struct {
-	Base
-	PageBasic
+	base.Base
+	base.PageBasic
 	svc services.IAccount
 }
 

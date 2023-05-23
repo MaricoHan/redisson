@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers/base"
 
-	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
 	dto "gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/native/mt"
 	vo "gitlab.bianjie.ai/avata/open-api/internal/app/models/vo/native/mt"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services/native"
@@ -27,8 +27,8 @@ type IMT interface {
 	Balances(ctx context.Context, request interface{}) (response interface{}, err error)
 }
 type MT struct {
-	handlers.Base
-	handlers.PageBasic
+	base.Base
+	base.PageBasic
 	svc native.IMT
 }
 

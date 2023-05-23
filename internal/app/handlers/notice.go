@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers/base"
 	"gitlab.bianjie.ai/avata/utils/errors"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo/native/notice"
@@ -17,8 +18,8 @@ type INotice interface {
 }
 
 type Notice struct {
-	Base
-	PageBasic
+	base.Base
+	base.PageBasic
 	svc services.INotice
 }
 

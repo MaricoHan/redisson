@@ -3,9 +3,11 @@ package native
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 
-	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers"
+	pb "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/nft"
+	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers/base"
 	dto "gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/native/nft"
 	vo "gitlab.bianjie.ai/avata/open-api/internal/app/models/vo/native/nft"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services/native"
@@ -25,8 +27,8 @@ type INft interface {
 }
 
 type NFT struct {
-	handlers.Base
-	handlers.PageBasic
+	base.Base
+	base.PageBasic
 	svc native.INFT
 }
 
@@ -426,13 +428,16 @@ func (h *NFT) TxHash(ctx context.Context) string {
 
 	return txHash.(string)
 }
-func (h *NFT) Status(ctx context.Context) (string, error) {
-	status := ctx.Value("status")
-	//if status == nil || status == "" {
-	//	return constant.NFTSStatusActive, nil
-	//}
-	//if status != constant.NFTSStatusActive && status != constant.NFTSStatusBurned {
-	//	return "", errors2.New(errors2.ClientParams, errors2.ErrStatus)
-	//}
-	return status.(string), nil
+func (h *NFT) Status(ctx context.Context) (uint32, error) {
+	v := ctx.Value("status")
+	if v == nil {
+		return uint32(pb.STATUS_ACTIVE), nil
+	}
+	s := v.(string)
+	status, err := strconv.ParseInt(s, 10, 32)
+	if err != nil {
+		return 0, errors2.New(errors2.ClientParams, errors2.ErrStatus)
+	}
+
+	return uint32(pb.STATUS(status)), nil
 }
