@@ -2,8 +2,8 @@
 env = "dev"
 log_level = "debug"
 log_format = "text"
-addr = ":8090"
-prometheus_addr = "0.0.0.0:9093"
+addr = ":8096"
+prometheus_addr = "0.0.0.0:9092"
 signature_auth = false
 timestamp_auth = false
 router_prefix = "v2"
@@ -12,8 +12,8 @@ http_timeout = 1000000
 limit = 200 # 数据查询条数上限
 
 [mysql]
-host = "192.168.0.136"
-port = 3306
+host = "192.168.150.40"
+port = 23306
 username = "root"
 password = "rootPassword"
 db = "core"
@@ -33,7 +33,7 @@ state_gateway = "192.168.150.44:10000"
 wallet_server = "192.168.150.40:11000"
 irita_layer2 = "192.168.150.45:10000"
 sign_server = "192.168.150.45:10001"
-tianzhou_native = "192.168.150.43:10000"
+tianzhou_native = ":10000"
 
 [project]
 secret_pwd = "Console_Projects_Secrets"
