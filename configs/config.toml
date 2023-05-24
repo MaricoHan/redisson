@@ -12,11 +12,11 @@ http_timeout = 1000000
 limit = 200 # 数据查询条数上限
 
 [mysql]
-host = "192.168.0.136"
-port = 3306
+#host = "192.168.0.136"
+#port = 3306
 
-#host = "192.168.150.40"
-#port = 23306
+host = "192.168.150.40"
+port = 23306
 username = "root"
 password = "rootPassword"
 db = "core"

@@ -125,16 +125,17 @@ func (s *msgs) GetAccountHistory(ctx context.Context, params dto.AccountsInfo) (
 	}
 
 	req := pb.AccountHistoryRequest{
-		ProjectId: params.ProjectID,
-		PageKey:   params.PageKey,
-		Limit:     params.Limit,
-		StartDate: params.StartDate,
-		EndDate:   params.EndDate,
-		SortBy:    pb.SORTS(sort),
-		Address:   params.Account,
-		Module:    params.OperationModule,
-		Operation: params.Operation,
-		TxHash:    params.TxHash,
+		ProjectId:  params.ProjectID,
+		PageKey:    params.PageKey,
+		Limit:      params.Limit,
+		StartDate:  params.StartDate,
+		EndDate:    params.EndDate,
+		SortBy:     pb.SORTS(sort),
+		Address:    params.Account,
+		Module:     params.OperationModule,
+		Operation:  params.Operation,
+		TxHash:     params.TxHash,
+		CountTotal: params.CountTotal,
 	}
 
 	resp := &pb.AccountHistoryResponse{}

@@ -149,7 +149,7 @@ type NFT struct {
 	UriHash     string `json:"uri_hash"`
 	Data        string `json:"data"`
 	Owner       string `json:"owner"`
-	Status      string `json:"status"`
+	Status      uint32 `json:"status"`
 	TxHash      string `json:"tx_hash"`
 	Timestamp   string `json:"timestamp"`
 }
