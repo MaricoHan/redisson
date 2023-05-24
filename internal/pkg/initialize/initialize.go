@@ -284,6 +284,7 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	// 初始化business grpc client
 	BusineessClientMap = make(map[string]pb_business.BuyClient)
 	BusineessClientMap[constant.TianzhouNative] = pb_business.NewBuyClient(GrpcConnMap[constant.TianzhouNative])
+	BusineessClientMap[constant.TianzhouEVM] = pb_business.NewBuyClient(GrpcConnMap[constant.TianzhouNative])
 
 	// 初始化wallet grpc client
 	WalletClientMap = make(map[string]pb_wallet.WalletClient)

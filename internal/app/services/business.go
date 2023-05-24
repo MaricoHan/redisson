@@ -120,7 +120,7 @@ func (s *business) GetAllOrders(ctx context.Context, params dto.GetAllOrder) (*d
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
 
 	// 非托管模式仅支持文昌链-天舟；托管模式仅支持文昌链-DDC
-	if (params.AccessMode != entity.UNMANAGED || mapKey != constant.TianzhouEVM) && (params.AccessMode != entity.MANAGED || mapKey != constant.TianheDDC) {
+	if (params.AccessMode != entity.UNMANAGED || params.Code != constant.Tianzhou) && (params.AccessMode != entity.MANAGED || mapKey != constant.TianheDDC) {
 		return nil, errors2.ErrNotImplemented
 	}
 
