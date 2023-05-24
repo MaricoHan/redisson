@@ -239,6 +239,7 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	// 初始化tx grpc client
 	EvmTxClientMap = make(map[string]pb_evm_tx.TxClient)
 	EvmTxClientMap[constant.TianzhouEVM] = pb_evm_tx.NewTxClient(GrpcConnMap[constant.TianzhouEVM])
+	EvmTxClientMap[constant.TianzhouNative] = pb_evm_tx.NewTxClient(GrpcConnMap[constant.TianzhouEVM])
 
 	NativeNFTClientMap = make(map[string]pb_native_nft.NFTClient)
 	NativeNFTClientMap[constant.TianzhouNative] = pb_native_nft.NewNFTClient(GrpcConnMap[constant.TianzhouNative])
