@@ -83,15 +83,15 @@ func (s *NFT) List(ctx context.Context, params dto.Nfts) (*dto.NftsRes, error) {
 		return nil, errors2.New(errors2.InternalError, errors2.ErrGrpc)
 	}
 	result := &dto.NftsRes{
-		Nfts: []*dto.NFT{},
+		Nfts: []*dto.NFTList{},
 	}
 	result.Limit = resp.Limit
 	result.PrevPageKey = resp.PrevPageKey
 	result.NextPageKey = resp.NextPageKey
 	result.TotalCount = resp.TotalCount
-	var nfts []*dto.NFT
+	var nfts []*dto.NFTList
 	for _, item := range resp.Data {
-		nft := &dto.NFT{
+		nft := &dto.NFTList{
 			Id:          item.NftId,
 			Name:        item.Name,
 			ClassId:     item.ClassId,
