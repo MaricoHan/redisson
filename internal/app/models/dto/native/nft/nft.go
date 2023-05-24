@@ -136,7 +136,20 @@ type TransferNftByNftId struct {
 
 type NftsRes struct {
 	dto.PageRes
-	Nfts []*NFT `json:"nfts"`
+	Nfts []*NFTList `json:"nfts"`
+}
+
+type NFTList struct {
+	Id          string `json:"id"`
+	Name        string `json:"name"`
+	ClassId     string `json:"class_id"`
+	ClassName   string `json:"class_name"`
+	ClassSymbol string `json:"class_symbol"`
+	Uri         string `json:"uri"`
+	Owner       string `json:"owner"`
+	Status      uint32 `json:"status"`
+	TxHash      string `json:"tx_hash"`
+	Timestamp   string `json:"timestamp"`
 }
 
 type NFT struct {
