@@ -2,12 +2,15 @@ package native
 
 import (
 	"context"
+	"fmt"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers/base"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/native/mt"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/native/nft"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services/native"
+	"gitlab.bianjie.ai/avata/utils/errors"
+	"gitlab.bianjie.ai/avata/utils/errors/common"
 )
 
 type IMsgs interface {
@@ -94,6 +97,11 @@ func (h *Msgs) GetAccountHistory(ctx context.Context, _ interface{}) (interface{
 	params.OperationModule = module
 
 	params.PageKey = h.PageKey(ctx)
+	countTotal, err := h.CountTotal(ctx)
+	if err != nil {
+		return nil, errors.New(errors.ClientParams, fmt.Sprintf(common.ERR_INVALID_VALUE, "count_total"))
+	}
+	params.CountTotal = countTotal
 	limit, err := h.Limit(ctx)
 	if err != nil {
 		return nil, err
