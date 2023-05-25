@@ -10,7 +10,7 @@ import (
 	dto "gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/native/mt"
 	vo "gitlab.bianjie.ai/avata/open-api/internal/app/models/vo/native/mt"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services/native"
-	errors2 "gitlab.bianjie.ai/avata/utils/errors"
+	errors2 "gitlab.bianjie.ai/avata/utils/errors/v2"
 )
 
 type IMT interface {

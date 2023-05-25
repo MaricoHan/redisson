@@ -9,8 +9,8 @@ import (
 	dto "gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/l2"
 	vo "gitlab.bianjie.ai/avata/open-api/internal/app/models/vo/l2"
 	services "gitlab.bianjie.ai/avata/open-api/internal/app/services/l2"
-	errors2 "gitlab.bianjie.ai/avata/utils/errors"
-	"gitlab.bianjie.ai/avata/utils/errors/common"
+	errors2 "gitlab.bianjie.ai/avata/utils/errors/v2"
+	"gitlab.bianjie.ai/avata/utils/errors/v2/common"
 )
 
 type INftClass interface {

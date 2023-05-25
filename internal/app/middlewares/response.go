@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	errors2 "gitlab.bianjie.ai/avata/utils/errors"
+	errors2 "gitlab.bianjie.ai/avata/utils/errors/v2"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 )

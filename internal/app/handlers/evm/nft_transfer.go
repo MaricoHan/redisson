@@ -8,7 +8,7 @@ import (
 	dto "gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/evm"
 	vo "gitlab.bianjie.ai/avata/open-api/internal/app/models/vo/evm"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services/evm"
-	errors2 "gitlab.bianjie.ai/avata/utils/errors"
+	errors2 "gitlab.bianjie.ai/avata/utils/errors/v2"
 )
 
 type INFTTransfer interface {

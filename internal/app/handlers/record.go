@@ -6,7 +6,7 @@ import (
 
 	"gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/record"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers/base"
-	errors2 "gitlab.bianjie.ai/avata/utils/errors"
+	errors2 "gitlab.bianjie.ai/avata/utils/errors/v2"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
 )

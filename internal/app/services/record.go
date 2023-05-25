@@ -8,7 +8,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	records "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/record"
-	errors2 "gitlab.bianjie.ai/avata/utils/errors"
+	errors2 "gitlab.bianjie.ai/avata/utils/errors/v2"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"

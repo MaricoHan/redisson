@@ -18,8 +18,8 @@ import (
 	httptransport "github.com/go-kit/kit/transport/http"
 	log "github.com/sirupsen/logrus"
 	"gitlab.bianjie.ai/avata/utils/commons/aes"
-	"gitlab.bianjie.ai/avata/utils/errors"
-	authErr "gitlab.bianjie.ai/avata/utils/errors/auth"
+	"gitlab.bianjie.ai/avata/utils/errors/v2"
+	authErr "gitlab.bianjie.ai/avata/utils/errors/v2/auth"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"

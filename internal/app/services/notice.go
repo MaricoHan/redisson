@@ -16,7 +16,7 @@ import (
 	httptransport "github.com/go-kit/kit/transport/http"
 	log "github.com/sirupsen/logrus"
 	pb_notice "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/native/notice"
-	authErr "gitlab.bianjie.ai/avata/utils/errors/auth"
+	authErr "gitlab.bianjie.ai/avata/utils/errors/v2/auth"
 
 	dto "gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/native/notice"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
@@ -29,7 +29,7 @@ import (
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
 	"gitlab.bianjie.ai/avata/open-api/utils"
 	"gitlab.bianjie.ai/avata/utils/commons/aes"
-	"gitlab.bianjie.ai/avata/utils/errors"
+	"gitlab.bianjie.ai/avata/utils/errors/v2"
 )
 
 type INotice interface {
