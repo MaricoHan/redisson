@@ -75,10 +75,6 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 		return nil, err
 	}
 
-	if owner == "" {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrOwner)
-	}
-
 	if len([]rune(owner)) > 128 {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOwnerLen)
 	}
