@@ -359,7 +359,7 @@ func (c Controller) serverOptions(before []httptransport.RequestFunc, mid []http
 				Message:   appErr.Error(),
 			}}
 		}
-		if response.ErrorResp.Message == errors2.ErrNotEnoughAmount {
+		if method != http.MethodGet && response.ErrorResp.Message == errors2.ErrNotEnoughAmount {
 			frequencyControl(ctx)
 		}
 		bz, _ := json.Marshal(response)
