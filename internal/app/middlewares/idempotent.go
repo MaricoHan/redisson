@@ -44,7 +44,7 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 	req := &vo.Base{}
 	err := json.Unmarshal(bodyBytes, req)
 	if err != nil {
-		log.Error("server http", "params error:", err)
+		log.Error("server http params error:", err)
 		writeBadRequestResp(w, constant.ErrParams)
 		return
 	}
@@ -53,7 +53,7 @@ func (h idempotentMiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		order := &vo.Order{}
 		err = json.Unmarshal(bodyBytes, order)
 		if err != nil {
-			log.Error("server http", "params error:", err)
+			log.Error("server http params error:", err)
 			writeBadRequestResp(w, constant.ErrParams)
 			return
 		}
