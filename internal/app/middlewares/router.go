@@ -49,18 +49,10 @@ func (router routerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
 				return
 			}
-			if fmt.Sprintf("%s-%s", authData.Code, authData.Module) == constant.TianzhouEVM {
-				// 文昌链-天舟除 orders 都不支持
-				if !strings.Contains(r.RequestURI, "/orders") && !strings.Contains(r.RequestURI, "/auth") {
-					writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
-					return
-				}
-			} else if !strings.Contains(r.RequestURI, "/auth") {
-				// 文昌链-天和都不支持
+			if strings.Contains(r.RequestURI, "/notice/") {
 				writeNotFoundRequestResp(w, constant.ErrUnmanagedUnSupported)
 				return
 			}
-
 		} else {
 			// 托管不支持 orders
 			if strings.Contains(r.RequestURI, "/orders") {

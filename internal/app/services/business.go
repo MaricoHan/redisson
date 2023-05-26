@@ -40,8 +40,11 @@ func (s *business) GetOrderInfo(ctx context.Context, params dto.GetOrder) (*dto.
 	resp := &pb.BuyOrderShowResponse{}
 	var err error
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+	if mapKey == constant.TianzhouEVM {
+		mapKey = constant.TianzhouNative
+	}
 	// 非托管模式仅支持文昌链-天舟；托管模式仅支持文昌链-DDC
-	if (params.AccessMode != entity.UNMANAGED || mapKey != constant.TianzhouEVM) && (params.AccessMode != entity.MANAGED || mapKey != constant.TianheDDC) {
+	if (params.AccessMode != entity.UNMANAGED || mapKey != constant.TianzhouNative) && (params.AccessMode != entity.MANAGED || mapKey != constant.TianheDDC) {
 		return nil, errors2.ErrNotImplemented
 	}
 	grpcClient, ok := initialize.BusineessClientMap[mapKey]
@@ -118,9 +121,11 @@ func (s *business) GetAllOrders(ctx context.Context, params dto.GetAllOrder) (*d
 	resp := &pb.BuyOrderListResponse{}
 	var err error
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
-
+	if mapKey == constant.TianzhouEVM {
+		mapKey = constant.TianzhouNative
+	}
 	// 非托管模式仅支持文昌链-天舟；托管模式仅支持文昌链-DDC
-	if (params.AccessMode != entity.UNMANAGED || params.Code != constant.Tianzhou) && (params.AccessMode != entity.MANAGED || mapKey != constant.TianheDDC) {
+	if (params.AccessMode != entity.UNMANAGED || params.Code != constant.TianzhouNative) && (params.AccessMode != entity.MANAGED || mapKey != constant.TianheDDC) {
 		return nil, errors2.ErrNotImplemented
 	}
 
@@ -191,6 +196,9 @@ func (s *business) BuildOrder(ctx context.Context, params dto.BuildOrderInfo) (*
 		}
 		return nil, errors2.ErrNotImplemented
 	}
+	if mapKey == constant.TianzhouEVM {
+		mapKey = constant.TianzhouNative
+	}
 	grpcClient, ok := initialize.BusineessClientMap[mapKey]
 	if !ok {
 		logger.Error(errors2.ErrService)
@@ -221,7 +229,6 @@ func (s *business) BatchBuyGas(ctx context.Context, params dto.BatchBuyGas) (*dt
 		"func":   "BatchBuyGas",
 		"params": params,
 	})
-
 	req := pb.BatchBuyRequest{
 		ProjectId:   params.ProjectID,
 		List:        params.List,
@@ -230,8 +237,11 @@ func (s *business) BatchBuyGas(ctx context.Context, params dto.BatchBuyGas) (*dt
 	resp := &pb.BatchBuyResponse{}
 	var err error
 	mapKey := fmt.Sprintf("%s-%s", params.Code, params.Module)
+	if mapKey == constant.TianzhouEVM {
+		mapKey = constant.TianzhouNative
+	}
 	// 非托管模式仅支持文昌链-天舟；
-	if params.AccessMode != entity.UNMANAGED || mapKey != constant.TianzhouEVM {
+	if params.AccessMode != entity.UNMANAGED || mapKey != constant.TianzhouNative {
 		return nil, errors2.ErrNotImplemented
 	}
 	grpcClient, ok := initialize.BusineessClientMap[mapKey]

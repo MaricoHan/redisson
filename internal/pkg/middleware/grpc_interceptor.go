@@ -46,6 +46,7 @@ func (g *grpcInterceptorMiddleware) Interceptor() grpc.UnaryClientInterceptor {
 		status := "200"
 		err = invoker(ctx, method, req, reply, cc, opts...)
 		if err != nil {
+			log.WithError(err).Errorln("grpc error")
 			status = g.handleErrorCodeToString(err)
 		}
 		metric.NewPrometheus().ApiServiceRequests.With([]string{
@@ -76,6 +77,9 @@ func (g *grpcInterceptorMiddleware) authData(ctx context.Context) (vo.AuthData, 
 func (g *grpcInterceptorMiddleware) handleErrorCodeToString(err error) string {
 	respErr := errors2.Convert(err)
 	code := "500"
+	if respErr.Code().String() == "Unknown" {
+		return code
+	}
 	if utils.IsNumeric(respErr.Code().String()[5:8]) {
 		code = respErr.Code().String()[5:8]
 	}

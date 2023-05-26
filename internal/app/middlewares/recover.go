@@ -21,7 +21,7 @@ type panicHandler struct {
 func (h panicHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		if e := recover(); e != nil {
- 			log := initialize.Log.WithFields(map[string]interface{}{
+			log := initialize.Log.WithFields(map[string]interface{}{
 				"function": "ServeHTTP",
 				"method":   r.Method,
 				"url":      r.URL.Path,
