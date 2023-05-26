@@ -67,7 +67,7 @@ func (h authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		writeInternalResp(w)
 		return
 	}
-	if exists {
+	if r.Method != http.MethodGet && exists {
 		writeNotEnoughAmount(w)
 		return
 	}
