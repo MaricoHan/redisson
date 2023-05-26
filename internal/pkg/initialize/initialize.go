@@ -260,6 +260,12 @@ func InitGrpcClient(cfg *configs.Config, logger *log.Logger) {
 	// 初始化msgs
 	NativeMsgClientMap = make(map[string]pb_native_msgs.MSGSClient)
 	NativeMsgClientMap[constant.TianzhouNative] = pb_native_msgs.NewMSGSClient(GrpcConnMap[constant.TianzhouNative])
+	// 初始化dict
+	NativeDictClientMap = make(map[string]pb_native_dict.DictClient)
+	NativeDictClientMap[constant.TianzhouNative] = pb_native_dict.NewDictClient(GrpcConnMap[constant.TianzhouNative])
+	// 初始化evm dict
+	EvmDictClientMap = make(map[string]pb_evm_dict.DictClient)
+	EvmDictClientMap[constant.TianzhouEVM] = pb_evm_dict.NewDictClient(GrpcConnMap[constant.TianzhouEVM])
 
 	// 初始化tx_queue
 	// TxQueueClient = pb_tx_queue.NewTxQueueClient(StateGatewayServer)
