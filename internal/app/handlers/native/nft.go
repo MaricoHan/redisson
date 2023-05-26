@@ -2,7 +2,6 @@ package native
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -52,10 +51,6 @@ func (h *NFT) CreateNft(ctx context.Context, request interface{}) (interface{}, 
 
 	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
-	}
-
-	if len([]rune(name)) >= 65 {
-		return nil, errors2.New(errors2.ClientParams, fmt.Sprintf(errors2.ErrMaxLen, "name", 64))
 	}
 
 	if err := h.UriCheck(uri); err != nil {
@@ -146,10 +141,6 @@ func (h *NFT) EditNftByNftId(ctx context.Context, request interface{}) (interfac
 
 	if len([]rune(operationId)) == 0 || len([]rune(operationId)) >= 65 {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
-	}
-	// check start
-	if len([]rune(name)) >= 65 {
-		return nil, errors2.New(errors2.ClientParams, fmt.Sprintf(errors2.ErrNameLen, 0, 64))
 	}
 
 	if err := h.UriCheck(uri); err != nil {
