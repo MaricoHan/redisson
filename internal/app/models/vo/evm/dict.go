@@ -1,11 +1,11 @@
 package evm
 
 type TxType struct {
-	Module      uint32 `json:"module,omitempty"`
-	Operation   uint32 `json:"operation,omitempty"`
-	Code        string `json:"code,omitempty"`
-	Name        string `json:"name,omitempty"`
-	Description string `json:"description,omitempty"`
+	Module      uint32 `json:"module"`
+	Operation   uint32 `json:"operation"`
+	Code        string `json:"code"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 type TxTypesRes struct {
