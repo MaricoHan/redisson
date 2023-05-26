@@ -64,18 +64,12 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 	if operationID == "" {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationID)
 	}
-	if name == "" {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrName)
-	}
+
 	if len(operationID) == 0 || len(operationID) >= 65 {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOperationIDLen)
 	}
 	if err := h.UriCheck(uri); err != nil {
 		return nil, err
-	}
-
-	if owner == "" {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrOwner)
 	}
 
 	if len([]rune(owner)) > 128 {
