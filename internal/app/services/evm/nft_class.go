@@ -12,7 +12,7 @@ import (
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
-	errors2 "gitlab.bianjie.ai/avata/utils/errors"
+	errors2 "gitlab.bianjie.ai/avata/utils/errors/v2"
 )
 
 type INFTClass interface {

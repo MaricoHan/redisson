@@ -13,7 +13,7 @@ import (
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/entity"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
-	errors2 "gitlab.bianjie.ai/avata/utils/errors"
+	errors2 "gitlab.bianjie.ai/avata/utils/errors/v2"
 )
 
 type INFTClass interface {
@@ -145,7 +145,6 @@ func (n *nftClass) GetNFTClass(ctx context.Context, params nft.NftClasses) (*nft
 	result.Data = resp.Detail.Metadata
 	result.Description = resp.Detail.Description
 	result.UriHash = resp.Detail.UriHash
-	result.NftCount = resp.Detail.NftCount
 	result.TxHash = resp.Detail.TxHash
 	result.EditableByOwner = resp.Detail.UpdateRestricted
 	return result, nil

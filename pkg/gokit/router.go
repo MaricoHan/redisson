@@ -22,7 +22,7 @@ import (
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/constant"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/initialize"
 	trace_http "gitlab.bianjie.ai/avata/utils/commons/trace/http"
-	errors2 "gitlab.bianjie.ai/avata/utils/errors"
+	errors2 "gitlab.bianjie.ai/avata/utils/errors/v2"
 )
 
 type (

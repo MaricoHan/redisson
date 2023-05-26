@@ -10,8 +10,8 @@ import (
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
-	errors2 "gitlab.bianjie.ai/avata/utils/errors"
-	"gitlab.bianjie.ai/avata/utils/errors/common"
+	errors2 "gitlab.bianjie.ai/avata/utils/errors/v2"
+	"gitlab.bianjie.ai/avata/utils/errors/v2/common"
 )
 
 type IBusiness interface {

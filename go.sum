@@ -904,8 +904,8 @@ gitlab.bianjie.ai/avata/chains/api.git/v2 v2.3.1-0.20230522063932-9e4272c388cb h
 gitlab.bianjie.ai/avata/chains/api.git/v2 v2.3.1-0.20230522063932-9e4272c388cb/go.mod h1:y4qUmhne0SdAdxOUVkG9vsTgWyxv8Ew8vFSinZbFCWY=
 gitlab.bianjie.ai/avata/utils/commons.git v0.3.9-0.20230413105452-ad15d8af13e5 h1:ZxNIGx0ryOUGH/t5T0cgn18eyi7SKgfbZa1sqDUJmnI=
 gitlab.bianjie.ai/avata/utils/commons.git v0.3.9-0.20230413105452-ad15d8af13e5/go.mod h1:C8vQKM8trOo5t9yaG4U9uI5cA4J9WRrtGwLBtBLJQ4U=
-gitlab.bianjie.ai/avata/utils/errors.git v0.1.10-0.20230317113546-816be9f332a3 h1:uuZceVp5caeXYEdtCKBD8tjdAYYrVctU5L8ugdEKhMg=
-gitlab.bianjie.ai/avata/utils/errors.git v0.1.10-0.20230317113546-816be9f332a3/go.mod h1:1chu2UMM8wN2FrwYs3s497llCUqXil7IKDSKtVtkXss=
+gitlab.bianjie.ai/avata/utils/errors.git/v2 v2.0.2-0.20230525022013-1e5579d57023 h1:ulHI1qaS5gNmMZoYrGoPqgZNrjT6h9BL/uF+zP8uiDY=
+gitlab.bianjie.ai/avata/utils/errors.git/v2 v2.0.2-0.20230525022013-1e5579d57023/go.mod h1:TkP+7U7EdiPOh+XlmF3ltT0h7YpyhSncdPTPL84J9xY=
 go.etcd.io/etcd/api/v3 v3.5.0/go.mod h1:cbVKeC6lCfl7j/8jBhAK6aIYO9XOjdptoxU/nLQcPvs=
 go.etcd.io/etcd/api/v3 v3.5.1/go.mod h1:cbVKeC6lCfl7j/8jBhAK6aIYO9XOjdptoxU/nLQcPvs=
 go.etcd.io/etcd/client/pkg/v3 v3.5.0/go.mod h1:IJHfcCEKxYu1Os13ZdwCwIUTUVGYTSAM3YSwc9/Ac1g=

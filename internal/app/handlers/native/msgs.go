@@ -9,8 +9,8 @@ import (
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/native/mt"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/native/nft"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services/native"
-	"gitlab.bianjie.ai/avata/utils/errors"
-	"gitlab.bianjie.ai/avata/utils/errors/common"
+	"gitlab.bianjie.ai/avata/utils/errors/v2"
+	"gitlab.bianjie.ai/avata/utils/errors/v2/common"
 )
 
 type IMsgs interface {

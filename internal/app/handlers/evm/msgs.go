@@ -8,8 +8,8 @@ import (
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto"
 	evm2 "gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/evm"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services/evm"
-	"gitlab.bianjie.ai/avata/utils/errors"
-	"gitlab.bianjie.ai/avata/utils/errors/common"
+	"gitlab.bianjie.ai/avata/utils/errors/v2"
+	"gitlab.bianjie.ai/avata/utils/errors/v2/common"
 )
 
 type IMsgs interface {

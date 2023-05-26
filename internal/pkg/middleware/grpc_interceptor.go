@@ -12,7 +12,7 @@ import (
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo"
 	"gitlab.bianjie.ai/avata/open-api/internal/pkg/metric"
 	"gitlab.bianjie.ai/avata/open-api/utils"
-	errors2 "gitlab.bianjie.ai/avata/utils/errors"
+	errors2 "gitlab.bianjie.ai/avata/utils/errors/v2"
 )
 
 type grpcInterceptorMiddleware struct {

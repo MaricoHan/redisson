@@ -11,7 +11,7 @@ import (
 	dto "gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/native/nft"
 	vo "gitlab.bianjie.ai/avata/open-api/internal/app/models/vo/native/nft"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services/native"
-	errors2 "gitlab.bianjie.ai/avata/utils/errors"
+	errors2 "gitlab.bianjie.ai/avata/utils/errors/v2"
 )
 
 type INft interface {
@@ -55,7 +55,7 @@ func (h *NFT) CreateNft(ctx context.Context, request interface{}) (interface{}, 
 	}
 
 	if len([]rune(name)) >= 65 {
-		return nil, errors2.New(errors2.ClientParams, fmt.Sprintf(errors2.ErrNameLen, 0, 64))
+		return nil, errors2.New(errors2.ClientParams, fmt.Sprintf(errors2.ErrMaxLen, "name", 64))
 	}
 
 	if err := h.UriCheck(uri); err != nil {

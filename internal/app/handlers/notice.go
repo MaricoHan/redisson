@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers/base"
-	"gitlab.bianjie.ai/avata/utils/errors"
+	"gitlab.bianjie.ai/avata/utils/errors/v2"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/vo/native/notice"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services"
