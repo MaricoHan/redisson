@@ -43,7 +43,7 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 	req := vo.CreateNftClassRequest{}
 	err = json.Unmarshal(marshal, &req)
 	if err != nil {
-		fmt.Println(err)
+		return nil, errors2.ErrParams
 	}
 
 	_, ok := m["editable_by_owner"]
