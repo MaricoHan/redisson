@@ -3,8 +3,9 @@ package evm
 import (
 	"context"
 	"fmt"
-	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/evm"
 	"time"
+
+	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/evm"
 
 	log "github.com/sirupsen/logrus"
 	pb "gitlab.bianjie.ai/avata/chains/api/v2/pb/v2/evm/class"
