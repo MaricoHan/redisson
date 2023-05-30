@@ -15,8 +15,8 @@ limit = 200 # 数据查询条数上限
 #host = "192.168.0.136"
 #port = 3306
 
-host = "192.168.150.40"
-port = 23306
+host = "192.168.0.136"
+port = 3306
 username = "root"
 password = "rootPassword"
 db = "core"
@@ -26,8 +26,8 @@ max_idle_conns = 20
 max_life_time = 1
 
 [redis]
-host = "192.168.150.40:6379"
-password = "redisPassword"
+host = ":6379"
+password = ""
 db = 11
 
 [grpc_client]
