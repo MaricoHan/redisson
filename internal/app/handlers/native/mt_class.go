@@ -2,6 +2,8 @@ package native
 
 import (
 	"context"
+	"fmt"
+	"gitlab.bianjie.ai/avata/utils/errors/v2/common"
 
 	"gitlab.bianjie.ai/avata/open-api/internal/app/handlers/base"
 
@@ -135,8 +137,12 @@ func (h MTClass) List(ctx context.Context, _ interface{}) (interface{}, error) {
 
 	params.SortBy = h.SortBy(ctx)
 
-	// 校验参数 end
-	// 业务数据入库的地方
+	countTotal, err := h.CountTotal(ctx)
+	if err != nil {
+		return nil, errors2.New(errors2.ClientParams, fmt.Sprintf(common.ERR_INVALID_VALUE, "count_total"))
+	}
+	params.CountTotal = countTotal
+
 	return h.svc.List(ctx, &params)
 }
 

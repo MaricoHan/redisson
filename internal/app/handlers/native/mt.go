@@ -2,6 +2,7 @@ package native
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -11,6 +12,7 @@ import (
 	vo "gitlab.bianjie.ai/avata/open-api/internal/app/models/vo/native/mt"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services/native"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors/v2"
+	"gitlab.bianjie.ai/avata/utils/errors/v2/common"
 )
 
 type IMT interface {
@@ -287,11 +289,17 @@ func (h MT) List(ctx context.Context, request interface{}) (response interface{}
 
 	endDateR := h.EndDate(ctx)
 	if endDateR != "" {
-
 		params.EndDate = endDateR
 	}
 
 	params.SortBy = h.SortBy(ctx)
+
+	countTotal, err := h.CountTotal(ctx)
+	if err != nil {
+		return nil, errors2.New(errors2.ClientParams, fmt.Sprintf(common.ERR_INVALID_VALUE, "count_total"))
+	}
+	params.CountTotal = countTotal
+
 	return h.svc.List(ctx, &params)
 }
 
@@ -318,6 +326,12 @@ func (h MT) Balances(ctx context.Context, request interface{}) (response interfa
 	if params.Limit == 0 {
 		params.Limit = 10
 	}
+
+	countTotal, err := h.CountTotal(ctx)
+	if err != nil {
+		return nil, errors2.New(errors2.ClientParams, fmt.Sprintf(common.ERR_INVALID_VALUE, "count_total"))
+	}
+	params.CountTotal = countTotal
 
 	return h.svc.Balances(ctx, &params)
 }
