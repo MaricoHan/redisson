@@ -107,9 +107,6 @@ func (h *Business) BuildOrder(ctx context.Context, request interface{}) (interfa
 	if OrderRes.Amount < 100 {
 		return nil, errors2.New(errors2.ClientParams, errors2.ErrOrderAmount)
 	}
-	if OrderRes.Amount%100 != 0 {
-		return nil, errors2.New(errors2.ClientParams, errors2.ErrAmountFormat)
-	}
 
 	params := dto.BuildOrderInfo{
 		ProjectID:   authData.ProjectId,
