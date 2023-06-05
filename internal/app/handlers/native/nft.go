@@ -2,6 +2,7 @@ package native
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -11,6 +12,7 @@ import (
 	vo "gitlab.bianjie.ai/avata/open-api/internal/app/models/vo/native/nft"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services/native"
 	errors2 "gitlab.bianjie.ai/avata/utils/errors/v2"
+	"gitlab.bianjie.ai/avata/utils/errors/v2/common"
 )
 
 type INft interface {
@@ -237,13 +239,16 @@ func (h *NFT) Nfts(ctx context.Context, _ interface{}) (interface{}, error) {
 
 	endDateR := h.EndDate(ctx)
 	if endDateR != "" {
-
 		params.EndDate = endDateR
 	}
 
 	params.SortBy = h.SortBy(ctx)
-	// 校验参数 end
-	// 业务数据入库的地方
+
+	countTotal, err := h.CountTotal(ctx)
+	if err != nil {
+		return nil, errors2.New(errors2.ClientParams, fmt.Sprintf(common.ERR_INVALID_VALUE, "count_total"))
+	}
+	params.CountTotal = countTotal
 
 	return h.svc.List(ctx, params)
 }

@@ -10,6 +10,7 @@ import (
 	"gitlab.bianjie.ai/avata/open-api/internal/app/models/dto/native/nft"
 	"gitlab.bianjie.ai/avata/open-api/internal/app/services/native"
 	"gitlab.bianjie.ai/avata/utils/errors/v2"
+	errors2 "gitlab.bianjie.ai/avata/utils/errors/v2"
 	"gitlab.bianjie.ai/avata/utils/errors/v2/common"
 )
 
@@ -64,6 +65,12 @@ func (h *Msgs) GetNFTHistory(ctx context.Context, _ interface{}) (interface{}, e
 	}
 
 	params.SortBy = h.SortBy(ctx)
+
+	countTotal, err := h.CountTotal(ctx)
+	if err != nil {
+		return nil, errors2.New(errors2.ClientParams, fmt.Sprintf(common.ERR_INVALID_VALUE, "count_total"))
+	}
+	params.CountTotal = countTotal
 
 	params.Signer = h.Signer(ctx)
 	params.Txhash = h.Txhash(ctx)
@@ -170,6 +177,12 @@ func (h *Msgs) GetMTHistory(ctx context.Context, _ interface{}) (interface{}, er
 	if endDateR != "" {
 		params.EndDate = endDateR
 	}
+
+	countTotal, err := h.CountTotal(ctx)
+	if err != nil {
+		return nil, errors2.New(errors2.ClientParams, fmt.Sprintf(common.ERR_INVALID_VALUE, "count_total"))
+	}
+	params.CountTotal = countTotal
 
 	params.SortBy = h.SortBy(ctx)
 	params.Signer = h.Signer(ctx)
