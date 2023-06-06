@@ -47,8 +47,7 @@ func (h NftClass) CreateNftClass(ctx context.Context, request interface{}) (inte
 		return nil, errors2.ErrParams
 	}
 
-	_, ok := m["editable_by_owner"]
-	if !ok {
+	if _, ok := m["editable_by_owner"]; !ok {
 		req.EditableByOwner = 1
 	}
 
