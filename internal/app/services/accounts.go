@@ -275,6 +275,7 @@ func (a *account) GetUserAccounts(ctx context.Context, params dto.AccountsInfo) 
 	for _, v := range resp.Data {
 		account := &dto.ShowUsersAccount{
 			Account: dto.Account{
+				Account:       v.HexAddress,
 				NativeAddress: v.NativeAddress,
 				HexAddress:    v.HexAddress,
 				Name:          v.Name,
