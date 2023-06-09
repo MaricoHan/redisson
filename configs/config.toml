@@ -12,11 +12,11 @@ http_timeout = 1000000
 limit = 200 # 数据查询条数上限
 
 [mysql]
-#host = "192.168.0.136"
-#port = 3306
+host = "192.168.150.40"
+port = 23306
 
-host = "192.168.0.136"
-port = 3306
+# host = "192.168.0.136"
+# port = 3306
 username = "root"
 password = "rootPassword"
 db = "core"
@@ -26,19 +26,19 @@ max_idle_conns = 20
 max_life_time = 1
 
 [redis]
-host = ":6379"
-password = ""
-db = 11
+host = "192.168.150.40:6379"
+db = 0
+password = "redisPassword"
 
 [grpc_client]
 #tianzhou_evm = "192.168.0.157:11000"
-tianzhou_evm =":11000"
+tianzhou_evm ="192.168.150.45:10001"
 state_gateway = "192.168.150.44:10000"
 wallet_server = "192.168.150.40:11000"
 #wallet_server = ":20000"
 irita_layer2 = "192.168.150.45:10000"
 sign_server = "192.168.150.45:10001"
-tianzhou_native = "192.168.0.157:10002"
+tianzhou_native = ":10000"
 #sign_server = ":10001"
 #tianzhou_native =":10000"
 
