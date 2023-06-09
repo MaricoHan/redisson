@@ -131,16 +131,17 @@ func (m *mtClass) List(ctx context.Context, params *dto.MTClassListRequest) (*dt
 	}
 
 	req := pb.MTClassListRequest{
-		ProjectId: params.ProjectID,
-		PageKey:   params.PageKey,
-		Limit:     params.Limit,
-		StartDate: params.StartDate,
-		EndDate:   params.EndDate,
-		SortBy:    pb.SORTS(sort),
-		ClassId:   params.ClassId,
-		ClassName: params.ClassName,
-		Owner:     params.Owner,
-		TxHash:    params.TxHash,
+		ProjectId:  params.ProjectID,
+		PageKey:    params.PageKey,
+		Limit:      params.Limit,
+		StartDate:  params.StartDate,
+		EndDate:    params.EndDate,
+		SortBy:     pb.SORTS(sort),
+		ClassId:    params.ClassId,
+		ClassName:  params.ClassName,
+		Owner:      params.Owner,
+		TxHash:     params.TxHash,
+		CountTotal: params.CountTotal,
 		//Status:    pb.STATUS(pb.STATUS_value[params.Status]),
 	}
 

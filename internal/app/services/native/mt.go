@@ -421,16 +421,17 @@ func (m MT) List(ctx context.Context, params *dto.MTListRequest) (*dto.MTListRes
 	}
 
 	req := pb.MTListRequest{
-		ProjectId: params.ProjectID,
-		PageKey:   params.PageKey,
-		Limit:     params.Limit,
-		StartDate: params.StartDate,
-		EndDate:   params.EndDate,
-		SortBy:    pb.SORTS(sort),
-		MtId:      params.MtId,
-		ClassId:   params.ClassId,
-		Issuer:    params.Issuer,
-		TxHash:    params.TxHash,
+		ProjectId:  params.ProjectID,
+		PageKey:    params.PageKey,
+		Limit:      params.Limit,
+		StartDate:  params.StartDate,
+		EndDate:    params.EndDate,
+		SortBy:     pb.SORTS(sort),
+		MtId:       params.MtId,
+		ClassId:    params.ClassId,
+		Issuer:     params.Issuer,
+		TxHash:     params.TxHash,
+		CountTotal: params.CountTotal,
 	}
 
 	resp := &pb.MTListResponse{}
@@ -487,12 +488,13 @@ func (m MT) Balances(ctx context.Context, params *dto.MTBalancesRequest) (*dto.M
 	}
 
 	req := pb.MTBalancesRequest{
-		ProjectId: params.ProjectID,
-		PageKey:   params.PageKey,
-		Limit:     params.Limit,
-		ClassId:   params.ClassId,
-		Account:   params.Account,
-		MtId:      params.MtId,
+		ProjectId:  params.ProjectID,
+		PageKey:    params.PageKey,
+		Limit:      params.Limit,
+		ClassId:    params.ClassId,
+		Account:    params.Account,
+		MtId:       params.MtId,
+		CountTotal: params.CountTotal,
 	}
 
 	resp := &pb.MTBalancesResponse{}
