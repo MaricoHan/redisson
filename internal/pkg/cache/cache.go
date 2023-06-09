@@ -112,11 +112,11 @@ func (c cache) Chain(chainID uint) (entity.Chain, error) {
 func (c cache) ProjectAuth(pid int) (list []entity.Permission, err error) {
 	// 查询缓存
 	key := fmt.Sprintf("%s:%d", constant.KeyAuth, pid)
-	//err = initialize.RedisClient.GetObject(key, &list)
-	//if err == nil && len(list) > 0 {
-	//	// 有缓存
-	//	return list, err
-	//}
+	err = initialize.RedisClient.GetObject(key, &list)
+	if err == nil && len(list) > 0 {
+		// 有缓存
+		return list, err
+	}
 
 	// 无缓存 查询数据库
 	projectAuthRepo := auth.NewProjectAuthRepo(initialize.MysqlDB)
