@@ -51,17 +51,18 @@ func (s *msgs) GetNFTHistory(ctx context.Context, params nft.NftOperationHistory
 	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(constant.GrpcTimeout))
 	defer cancel()
 	req := pb.NFTHistoryRequest{
-		ProjectId: params.ProjectID,
-		NftId:     params.NftId,
-		Signer:    params.Signer,
-		TxHash:    params.Txhash,
-		PageKey:   params.PageKey,
-		Limit:     params.Limit,
-		StartDate: params.StartDate,
-		EndDate:   params.EndDate,
-		ClassId:   params.ClassID,
-		SortBy:    pb.SORTS(sort),
-		Operation: params.Operation,
+		ProjectId:  params.ProjectID,
+		NftId:      params.NftId,
+		Signer:     params.Signer,
+		TxHash:     params.Txhash,
+		PageKey:    params.PageKey,
+		Limit:      params.Limit,
+		StartDate:  params.StartDate,
+		EndDate:    params.EndDate,
+		ClassId:    params.ClassID,
+		SortBy:     pb.SORTS(sort),
+		Operation:  params.Operation,
+		CountTotal: params.CountTotal,
 	}
 	resp := &pb.NFTHistoryResponse{}
 
