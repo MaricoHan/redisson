@@ -165,11 +165,6 @@ func (s *msgs) GetAccountHistory(ctx context.Context, params dto.AccountsInfo) (
 	}
 	var accountOperationRecords []*dto.AccountOperationRecords
 	for _, item := range resp.Data {
-		typeJson := types.JSON{}
-		err := json.Unmarshal([]byte(item.Message), &typeJson)
-		if err != nil {
-			return nil, err
-		}
 		accountOperationRecord := &dto.AccountOperationRecords{
 			TxHash:    item.TxHash,
 			Module:    item.Module,
