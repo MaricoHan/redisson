@@ -1,6 +1,7 @@
 package mutex
 
 import (
+	"github.com/MaricoHan/redisson/pkg/utils/pubsub"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -9,13 +10,15 @@ import (
 type Root struct {
 	Client *redis.Client
 	UUID   string // 自定义用于区分不同客户端的唯一标识
+
+	RedisChannelName string // redis 专用的 pubsub 频道名
 }
 
 type baseMutex struct {
 	Name        string
 	expiration  time.Duration
 	waitTimeout time.Duration
-	pubSub      *redis.PubSub
+	pubSub      *pubsub.PubSub
 }
 
 func (b *baseMutex) checkAndInit() {
