@@ -28,6 +28,7 @@ func NewMutex(root *Root, name string, opts ...Option) *Mutex {
 	base := &baseMutex{
 		Name:    name,
 		pubSub:  pubsub.Subscribe(utils.ChannelName(name)),
+		release: make(chan struct{}),
 		options: &options{},
 	}
 	for i := range opts {
@@ -58,10 +59,16 @@ func (m Mutex) Lock(ctx context.Context) error {
 	go func() {
 		ticker := time.NewTicker(m.options.expiration / 3)
 		defer ticker.Stop()
-		for range ticker.C {
-			res, err := m.root.Client.Eval(context.TODO(), mutexScript.renewalScript, []string{m.Name}, expiration, clientID).Int64()
-			if err != nil || res == 0 {
+
+		for {
+			select {
+			case <-m.release:
 				return
+			case <-ticker.C:
+				res, err := m.root.Client.Eval(context.TODO(), mutexScript.renewalScript, []string{m.Name}, expiration, clientID).Int64()
+				if err != nil || res == 0 {
+					return
+				}
 			}
 		}
 	}()
@@ -112,7 +119,6 @@ func (m Mutex) Unlock(ctx context.Context) error {
 		return fmt.Errorf("unlock err: %w", err)
 	}
 
-	m.pubSub.Close()
 	return nil
 }
 
@@ -130,6 +136,10 @@ func (m Mutex) unlockInner(ctx context.Context, goID int64) error {
 	if res == 0 {
 		return types.ErrMismatch
 	}
+
+	// 释放资源
+	m.pubSub.Close()
+	close(m.release) // 通知续锁协程退出
 
 	return nil
 }

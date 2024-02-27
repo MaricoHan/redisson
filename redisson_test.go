@@ -20,7 +20,7 @@ func TestMutex(t *testing.T) {
 	redissonClient := redisson.New(context.Background(), client)
 
 	options := []mutex.Option{
-		mutex.WithExpireDuration(30 * time.Millisecond),
+		mutex.WithExpireDuration(30000 * time.Millisecond),
 	}
 	mutex1 := redissonClient.NewMutex("redisson_mutex", options...)
 
