@@ -42,11 +42,11 @@ func NewMutex(root *Root, name string, options ...Option) *Mutex {
 	}
 }
 
-func (m Mutex) Lock() error {
+func (m Mutex) Lock(ctx context.Context) error {
 	// 单位：ms
 	expiration := int64(m.expiration / time.Millisecond)
 
-	ctx, cancel := context.WithTimeout(context.Background(), m.waitTimeout)
+	ctx, cancel := context.WithTimeout(ctx, m.waitTimeout)
 	defer cancel()
 
 	clientID := m.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
@@ -71,7 +71,7 @@ func (m Mutex) Lock() error {
 
 func (m Mutex) tryLock(ctx context.Context, clientID string, expiration int64) error {
 	// 尝试加锁
-	pTTL, err := m.lockInner(clientID, expiration)
+	pTTL, err := m.lockInner(ctx, clientID, expiration)
 	if err != nil {
 		return err
 	}
@@ -92,8 +92,8 @@ func (m Mutex) tryLock(ctx context.Context, clientID string, expiration int64) e
 	}
 }
 
-func (m Mutex) lockInner(clientID string, expiration int64) (int64, error) {
-	pTTL, err := m.root.Client.Eval(context.TODO(), mutexScript.lockScript, []string{m.Name}, clientID, expiration).Result()
+func (m Mutex) lockInner(ctx context.Context, clientID string, expiration int64) (int64, error) {
+	pTTL, err := m.root.Client.Eval(ctx, mutexScript.lockScript, []string{m.Name}, clientID, expiration).Result()
 	if err == redis.Nil {
 		return 0, nil
 	}
@@ -105,10 +105,10 @@ func (m Mutex) lockInner(clientID string, expiration int64) (int64, error) {
 	return pTTL.(int64), nil
 }
 
-func (m Mutex) Unlock() error {
+func (m Mutex) Unlock(ctx context.Context) error {
 	goID := utils.GoID()
 
-	if err := m.unlockInner(goID); err != nil {
+	if err := m.unlockInner(ctx, goID); err != nil {
 		return fmt.Errorf("unlock err: %w", err)
 	}
 
@@ -116,9 +116,9 @@ func (m Mutex) Unlock() error {
 	return nil
 }
 
-func (m Mutex) unlockInner(goID int64) error {
+func (m Mutex) unlockInner(ctx context.Context, goID int64) error {
 	res, err := m.root.Client.Eval(
-		context.TODO(),
+		ctx,
 		mutexScript.unlockScript,
 		[]string{m.Name, m.root.RedisChannelName},
 		m.root.UUID+":"+strconv.FormatInt(goID, 10),
