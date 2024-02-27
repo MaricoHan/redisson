@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -14,12 +15,14 @@ import (
 )
 
 var mutexScript = struct {
-	lockScript       string
-	lockScriptSha    string
+	lockScript    string
+	lockScriptSha string
+
 	renewalScript    string
 	renewalScriptSha string
-	unlockScript     string
-	unlockScriptSha  string
+
+	unlockScript    string
+	unlockScriptSha string
 }{}
 
 type Mutex struct {
@@ -30,7 +33,6 @@ type Mutex struct {
 func NewMutex(root *Root, name string, opts ...Option) *Mutex {
 	base := &baseMutex{
 		Name:    name,
-		pubSub:  pubsub.Subscribe(utils.ChannelName(name)),
 		release: make(chan struct{}),
 		options: &options{},
 	}
@@ -46,20 +48,31 @@ func NewMutex(root *Root, name string, opts ...Option) *Mutex {
 	}
 }
 
-func (m Mutex) Lock(ctx context.Context) error {
+func (m *Mutex) Lock(ctx context.Context) error {
 	// 单位：ms
 	pExpireNum := int64(m.options.expiration / time.Millisecond)
 
 	ctx, cancel := context.WithTimeout(ctx, m.options.waitTimeout)
 	defer cancel()
 
+	var err error
+	// 先订阅，再申请锁
+	if m.pubSub == nil {
+		m.pubSub = pubsub.Subscribe(utils.ChannelName(m.Name))
+	}
+
+	// 申请锁
 	clientID := m.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
-	err := m.tryLock(ctx, clientID, pExpireNum)
-	if err != nil {
+	if err = m.tryLock(ctx, clientID, pExpireNum); err != nil {
 		return err
 	}
+
 	// 加锁成功，开个协程，定时续锁
+	wg := sync.WaitGroup{}
+	wg.Add(1)
 	go func() {
+		wg.Done()
+
 		ticker := time.NewTicker(m.options.expiration / 3)
 		defer ticker.Stop()
 
@@ -83,11 +96,12 @@ func (m Mutex) Lock(ctx context.Context) error {
 			}
 		}
 	}()
+	wg.Wait() // 等待协程启动成功
 
 	return nil
 }
 
-func (m Mutex) tryLock(ctx context.Context, clientID string, pExpireNum int64) error {
+func (m *Mutex) tryLock(ctx context.Context, clientID string, pExpireNum int64) error {
 	// 尝试加锁
 	pTTL, err := m.lockInner(ctx, clientID, pExpireNum)
 	if err != nil {
@@ -110,7 +124,7 @@ func (m Mutex) tryLock(ctx context.Context, clientID string, pExpireNum int64) e
 	}
 }
 
-func (m Mutex) lockInner(ctx context.Context, clientID string, pExpireNum int64) (int64, error) {
+func (m *Mutex) lockInner(ctx context.Context, clientID string, pExpireNum int64) (int64, error) {
 	// 上传脚本
 	if mutexScript.lockScriptSha == "" {
 		var err error
@@ -132,7 +146,7 @@ func (m Mutex) lockInner(ctx context.Context, clientID string, pExpireNum int64)
 	return pTTL.(int64), nil
 }
 
-func (m Mutex) Unlock(ctx context.Context) error {
+func (m *Mutex) Unlock(ctx context.Context) error {
 	goID := utils.GoID()
 
 	if err := m.unlockInner(ctx, goID); err != nil {
@@ -142,7 +156,7 @@ func (m Mutex) Unlock(ctx context.Context) error {
 	return nil
 }
 
-func (m Mutex) unlockInner(ctx context.Context, goID int64) error {
+func (m *Mutex) unlockInner(ctx context.Context, goID int64) error {
 	// 上传脚本
 	if mutexScript.unlockScriptSha == "" {
 		var err error

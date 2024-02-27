@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -37,7 +38,6 @@ type RWMutex struct {
 func NewRWMutex(r *Root, name string, opts ...Option) *RWMutex {
 	base := &baseMutex{
 		Name:    name,
-		pubSub:  pubsub.Subscribe(utils.ChannelName(name)),
 		release: make(chan struct{}),
 		options: &options{},
 	}
@@ -53,20 +53,30 @@ func NewRWMutex(r *Root, name string, opts ...Option) *RWMutex {
 	}
 }
 
-func (r RWMutex) Lock(ctx context.Context) error {
+func (r *RWMutex) Lock(ctx context.Context) error {
 	// 单位：ms
 	expiration := int64(r.options.expiration / time.Millisecond)
 
 	ctx, cancel := context.WithTimeout(ctx, r.options.waitTimeout)
 	defer cancel()
 
+	var err error
+	// 先订阅，再申请锁
+	if r.pubSub == nil {
+		r.pubSub = pubsub.Subscribe(utils.ChannelName(r.Name))
+	}
+
 	clientID := r.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
-	err := r.tryLock(ctx, clientID, expiration)
-	if err != nil {
+	if err = r.tryLock(ctx, clientID, expiration); err != nil {
 		return err
 	}
+
 	// 加锁成功，开个协程，定时续锁
+	wg := sync.WaitGroup{}
+	wg.Add(1)
 	go func() {
+		wg.Done()
+
 		ticker := time.NewTicker(r.options.expiration / 3)
 		defer ticker.Stop()
 
@@ -90,12 +100,13 @@ func (r RWMutex) Lock(ctx context.Context) error {
 			}
 		}
 	}()
+	wg.Wait() // 等待协程启动成功
 
 	return nil
 
 }
 
-func (r RWMutex) tryLock(ctx context.Context, clientID string, expiration int64) error {
+func (r *RWMutex) tryLock(ctx context.Context, clientID string, expiration int64) error {
 	pTTL, err := r.lockInner(ctx, clientID, expiration)
 	if err != nil {
 		return err
@@ -118,7 +129,7 @@ func (r RWMutex) tryLock(ctx context.Context, clientID string, expiration int64)
 
 }
 
-func (r RWMutex) lockInner(ctx context.Context, clientID string, expiration int64) (int64, error) {
+func (r *RWMutex) lockInner(ctx context.Context, clientID string, expiration int64) (int64, error) {
 	// 上传脚本
 	if rwMutexScript.lockScriptSha == "" {
 		var err error
@@ -140,20 +151,29 @@ func (r RWMutex) lockInner(ctx context.Context, clientID string, expiration int6
 	return pTTL.(int64), nil
 }
 
-func (r RWMutex) RLock(ctx context.Context) error {
+func (r *RWMutex) RLock(ctx context.Context) error {
 	// 单位：ms
 	pExpireNum := int64(r.options.expiration / time.Millisecond)
 
 	ctx, cancel := context.WithTimeout(ctx, r.options.waitTimeout)
 	defer cancel()
 
+	var err error
+	// 先订阅，再申请锁
+	if r.pubSub == nil {
+		r.pubSub = pubsub.Subscribe(utils.ChannelName(r.Name))
+	}
+
 	clientID := r.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
-	err := r.tryRLock(ctx, clientID, pExpireNum)
-	if err != nil {
+	if err = r.tryRLock(ctx, clientID, pExpireNum); err != nil {
 		return err
 	}
 	// 加锁成功，开个协程，定时续锁
+	wg := sync.WaitGroup{}
+	wg.Add(1)
 	go func() {
+		wg.Done()
+
 		ticker := time.NewTicker(r.options.expiration / 3)
 		defer ticker.Stop()
 
@@ -177,12 +197,13 @@ func (r RWMutex) RLock(ctx context.Context) error {
 			}
 		}
 	}()
+	wg.Wait() // 等待协程启动成功
 
 	return nil
 
 }
 
-func (r RWMutex) tryRLock(ctx context.Context, clientID string, pExpireNum int64) error {
+func (r *RWMutex) tryRLock(ctx context.Context, clientID string, pExpireNum int64) error {
 	pTTL, err := r.rLockInner(ctx, clientID, pExpireNum)
 	if err != nil {
 		return err
@@ -205,7 +226,7 @@ func (r RWMutex) tryRLock(ctx context.Context, clientID string, pExpireNum int64
 
 }
 
-func (r RWMutex) rLockInner(ctx context.Context, clientID string, pExpireNum int64) (int64, error) {
+func (r *RWMutex) rLockInner(ctx context.Context, clientID string, pExpireNum int64) (int64, error) {
 	// 上传脚本
 	if rwMutexScript.rLockScriptSha == "" {
 		var err error
@@ -226,7 +247,7 @@ func (r RWMutex) rLockInner(ctx context.Context, clientID string, pExpireNum int
 
 	return pTTL.(int64), nil
 }
-func (r RWMutex) Unlock(ctx context.Context) error {
+func (r *RWMutex) Unlock(ctx context.Context) error {
 	goID := utils.GoID()
 	if err := r.unlockInner(ctx, goID); err != nil {
 		return fmt.Errorf("unlock err: %w", err)
@@ -234,7 +255,7 @@ func (r RWMutex) Unlock(ctx context.Context) error {
 
 	return nil
 }
-func (r RWMutex) unlockInner(ctx context.Context, goID int64) error {
+func (r *RWMutex) unlockInner(ctx context.Context, goID int64) error {
 	// 上传脚本
 	if rwMutexScript.unlockScriptSha == "" {
 		var err error
