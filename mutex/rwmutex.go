@@ -10,6 +10,7 @@ import (
 
 	"github.com/MaricoHan/redisson/pkg/types"
 	"github.com/MaricoHan/redisson/pkg/utils"
+	"github.com/MaricoHan/redisson/pkg/utils/pubsub"
 )
 
 var (
@@ -23,20 +24,20 @@ var (
 
 type RWMutex struct {
 	root *Root
-	baseMutex
+	*baseMutex
 }
 
 func NewRWMutex(r *Root, name string, options ...Option) *RWMutex {
-	base := baseMutex{
+	base := &baseMutex{
 		Name:   name,
-		pubSub: r.Client.Subscribe(context.Background(), utils.ChannelName(name)),
+		pubSub: pubsub.Subscribe(utils.ChannelName(name)),
 	}
 
 	for i := range options {
-		options[i].Apply(&base)
+		options[i].Apply(base)
 	}
 
-	(&base).checkAndInit()
+	base.checkAndInit()
 
 	return &RWMutex{
 		root:      r,
@@ -177,14 +178,18 @@ func (r RWMutex) Unlock() error {
 		return fmt.Errorf("unlock err: %w", err)
 	}
 
-	if err := r.pubSub.Unsubscribe(context.Background(), utils.ChannelName(r.Name)); err != nil {
-		return fmt.Errorf("unsub err: %w", err)
-	}
+	r.pubSub.Close()
 
 	return nil
 }
 func (r RWMutex) unlockInner(goID int64) error {
-	res, err := r.root.Client.Eval(context.TODO(), rwMutexScript.unlockScript, []string{r.Name, utils.ChannelName(r.Name)}, r.root.UUID+":"+strconv.FormatInt(goID, 10), 1).Int64()
+	res, err := r.root.Client.Eval(
+		context.TODO(),
+		rwMutexScript.unlockScript,
+		[]string{r.Name, r.root.RedisChannelName},
+		r.root.UUID+":"+strconv.FormatInt(goID, 10),
+		r.Name+":unlock",
+	).Int64()
 	if err != nil {
 		return err
 	}

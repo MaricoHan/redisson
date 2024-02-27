@@ -10,6 +10,7 @@ import (
 
 	"github.com/MaricoHan/redisson/pkg/types"
 	"github.com/MaricoHan/redisson/pkg/utils"
+	"github.com/MaricoHan/redisson/pkg/utils/pubsub"
 )
 
 var mutexScript = struct {
@@ -20,20 +21,20 @@ var mutexScript = struct {
 
 type Mutex struct {
 	root *Root
-	baseMutex
+	*baseMutex
 }
 
 func NewMutex(root *Root, name string, options ...Option) *Mutex {
-	base := baseMutex{
+	base := &baseMutex{
 		Name:   name,
-		pubSub: root.Client.Subscribe(context.Background(), utils.ChannelName(name)),
+		pubSub: pubsub.Subscribe(utils.ChannelName(name)),
 	}
 
 	for i := range options {
-		options[i].Apply(&base)
+		options[i].Apply(base)
 	}
 
-	(&base).checkAndInit()
+	base.checkAndInit()
 
 	return &Mutex{
 		root:      root,
@@ -111,15 +112,18 @@ func (m Mutex) Unlock() error {
 		return fmt.Errorf("unlock err: %w", err)
 	}
 
-	if err := m.pubSub.Unsubscribe(context.Background(), utils.ChannelName(m.Name)); err != nil {
-		return fmt.Errorf("unsub err: %w", err)
-	}
-
+	m.pubSub.Close()
 	return nil
 }
 
 func (m Mutex) unlockInner(goID int64) error {
-	res, err := m.root.Client.Eval(context.TODO(), mutexScript.unlockScript, []string{m.Name, utils.ChannelName(m.Name)}, m.root.UUID+":"+strconv.FormatInt(goID, 10), 1).Int64()
+	res, err := m.root.Client.Eval(
+		context.TODO(),
+		mutexScript.unlockScript,
+		[]string{m.Name, m.root.RedisChannelName},
+		m.root.UUID+":"+strconv.FormatInt(goID, 10),
+		m.Name+":unlock",
+	).Int64()
 	if err != nil {
 		return err
 	}

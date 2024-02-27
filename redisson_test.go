@@ -1,6 +1,7 @@
 package redisson_test
 
 import (
+	"context"
 	"sync"
 	"testing"
 	"time"
@@ -16,7 +17,7 @@ func TestMutex(t *testing.T) {
 		Addr: "localhost:6379",
 		DB:   0,
 	})
-	redissonClient := redisson.New(client)
+	redissonClient := redisson.New(context.Background(), client)
 
 	options := []mutex.Option{
 		mutex.WithExpireDuration(30 * time.Millisecond),
@@ -61,7 +62,7 @@ func TestRWMutex(t *testing.T) {
 		Addr: "localhost:6379",
 		DB:   0,
 	})
-	redissonClient := redisson.New(client)
+	redissonClient := redisson.New(context.Background(), client)
 
 	options := []mutex.Option{
 		mutex.WithExpireDuration(30 * time.Millisecond),
