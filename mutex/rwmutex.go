@@ -27,17 +27,17 @@ type RWMutex struct {
 	*baseMutex
 }
 
-func NewRWMutex(r *Root, name string, options ...Option) *RWMutex {
+func NewRWMutex(r *Root, name string, opts ...Option) *RWMutex {
 	base := &baseMutex{
-		Name:   name,
-		pubSub: pubsub.Subscribe(utils.ChannelName(name)),
+		Name:    name,
+		pubSub:  pubsub.Subscribe(utils.ChannelName(name)),
+		options: &options{},
+	}
+	for i := range opts {
+		opts[i](base.options)
 	}
 
-	for i := range options {
-		options[i].Apply(base)
-	}
-
-	base.checkAndInit()
+	base.options.checkAndInit()
 
 	return &RWMutex{
 		root:      r,
@@ -47,9 +47,9 @@ func NewRWMutex(r *Root, name string, options ...Option) *RWMutex {
 
 func (r RWMutex) Lock(ctx context.Context) error {
 	// 单位：ms
-	expiration := int64(r.expiration / time.Millisecond)
+	expiration := int64(r.options.expiration / time.Millisecond)
 
-	ctx, cancel := context.WithTimeout(ctx, r.waitTimeout)
+	ctx, cancel := context.WithTimeout(ctx, r.options.waitTimeout)
 	defer cancel()
 
 	clientID := r.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
@@ -59,7 +59,7 @@ func (r RWMutex) Lock(ctx context.Context) error {
 	}
 	// 加锁成功，开个协程，定时续锁
 	go func() {
-		ticker := time.NewTicker(r.expiration / 3)
+		ticker := time.NewTicker(r.options.expiration / 3)
 		defer ticker.Stop()
 		for range ticker.C {
 			res, err := r.root.Client.Eval(context.TODO(), rwMutexScript.renewalScript, []string{r.Name}, expiration, clientID).Int64()
@@ -111,9 +111,9 @@ func (r RWMutex) lockInner(ctx context.Context, clientID string, expiration int6
 
 func (r RWMutex) RLock(ctx context.Context) error {
 	// 单位：ms
-	expiration := int64(r.expiration / time.Millisecond)
+	expiration := int64(r.options.expiration / time.Millisecond)
 
-	ctx, cancel := context.WithTimeout(ctx, r.waitTimeout)
+	ctx, cancel := context.WithTimeout(ctx, r.options.waitTimeout)
 	defer cancel()
 
 	clientID := r.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
@@ -123,7 +123,7 @@ func (r RWMutex) RLock(ctx context.Context) error {
 	}
 	// 加锁成功，开个协程，定时续锁
 	go func() {
-		ticker := time.NewTicker(r.expiration / 3)
+		ticker := time.NewTicker(r.options.expiration / 3)
 		defer ticker.Stop()
 		for range ticker.C {
 			res, err := r.root.Client.Eval(context.TODO(), rwMutexScript.renewalScript, []string{r.Name}, expiration, clientID).Int64()
