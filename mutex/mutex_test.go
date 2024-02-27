@@ -25,7 +25,7 @@ var (
 
 func TestMutex_lockInner(t *testing.T) {
 	clientID := mutex.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
-	acquire, err := mutex.lockInner(clientID, int64(mutex.expiration/time.Millisecond))
+	acquire, err := mutex.lockInner(context.Background(), clientID, int64(mutex.expiration/time.Millisecond))
 	if err != nil {
 		t.Error(err)
 		return
@@ -47,7 +47,7 @@ func TestMutex_unlockInner_ExpiredMutex(t *testing.T) {
 	goID := utils.GoID()
 
 	// 测试：可以解锁过期的锁
-	err := mutex.unlockInner(goID)
+	err := mutex.unlockInner(context.Background(), goID)
 	if err != nil {
 		t.Error(err)
 		return
@@ -64,7 +64,7 @@ func TestMutex_unlockInner_ExpiredMutex(t *testing.T) {
 func TestMutex_unlockInner(t *testing.T) {
 	clientID := mutex.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
 
-	_, err := mutex.lockInner(clientID, int64(mutex.expiration/time.Millisecond))
+	_, err := mutex.lockInner(context.Background(), clientID, int64(mutex.expiration/time.Millisecond))
 	if err != nil {
 		t.Error(err)
 		return
@@ -78,7 +78,7 @@ func TestMutex_unlockInner(t *testing.T) {
 		defer func() {
 			waitGroup.Done()
 		}()
-		err = mutex.unlockInner(utils.GoID())
+		err = mutex.unlockInner(context.Background(), utils.GoID())
 		if err != nil {
 			t.Error(err) // mismatch identification
 			return
@@ -88,7 +88,7 @@ func TestMutex_unlockInner(t *testing.T) {
 	waitGroup.Wait()
 
 	// 测试：加锁的协程可以顺利解锁
-	err = mutex.unlockInner(utils.GoID())
+	err = mutex.unlockInner(context.Background(), utils.GoID())
 	if err != nil {
 		t.Error(err)
 		return
@@ -132,7 +132,7 @@ func TestMutex_Unlock(t *testing.T) {
 	// 10s 后解锁
 	timer := time.NewTimer(10 * time.Second)
 	<-timer.C
-	err = mutex.Unlock()
+	err = mutex.Unlock(context.Background())
 	if err != nil {
 		t.Error(err)
 		return
@@ -143,7 +143,7 @@ func TestMutex_Unlock(t *testing.T) {
 }
 
 func TestMutex_Renewal(t *testing.T) {
-	err := mutex.Lock()
+	err := mutex.Lock(context.Background())
 	if err != nil {
 		t.Error(err)
 		return

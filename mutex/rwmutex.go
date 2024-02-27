@@ -45,11 +45,11 @@ func NewRWMutex(r *Root, name string, options ...Option) *RWMutex {
 	}
 }
 
-func (r RWMutex) Lock() error {
+func (r RWMutex) Lock(ctx context.Context) error {
 	// 单位：ms
 	expiration := int64(r.expiration / time.Millisecond)
 
-	ctx, cancel := context.WithTimeout(context.Background(), r.waitTimeout)
+	ctx, cancel := context.WithTimeout(ctx, r.waitTimeout)
 	defer cancel()
 
 	clientID := r.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
@@ -74,7 +74,7 @@ func (r RWMutex) Lock() error {
 }
 
 func (r RWMutex) tryLock(ctx context.Context, clientID string, expiration int64) error {
-	pTTL, err := r.lockInner(clientID, expiration)
+	pTTL, err := r.lockInner(ctx, clientID, expiration)
 	if err != nil {
 		return err
 	}
@@ -96,8 +96,8 @@ func (r RWMutex) tryLock(ctx context.Context, clientID string, expiration int64)
 
 }
 
-func (r RWMutex) lockInner(clientID string, expiration int64) (int64, error) {
-	pTTL, err := r.root.Client.Eval(context.Background(), rwMutexScript.lockScript, []string{r.Name}, clientID, expiration).Result()
+func (r RWMutex) lockInner(ctx context.Context, clientID string, expiration int64) (int64, error) {
+	pTTL, err := r.root.Client.Eval(ctx, rwMutexScript.lockScript, []string{r.Name}, clientID, expiration).Result()
 	if err == redis.Nil {
 		return 0, nil
 	}
@@ -109,11 +109,11 @@ func (r RWMutex) lockInner(clientID string, expiration int64) (int64, error) {
 	return pTTL.(int64), nil
 }
 
-func (r RWMutex) RLock() error {
+func (r RWMutex) RLock(ctx context.Context) error {
 	// 单位：ms
 	expiration := int64(r.expiration / time.Millisecond)
 
-	ctx, cancel := context.WithTimeout(context.Background(), r.waitTimeout)
+	ctx, cancel := context.WithTimeout(ctx, r.waitTimeout)
 	defer cancel()
 
 	clientID := r.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
@@ -138,7 +138,7 @@ func (r RWMutex) RLock() error {
 }
 
 func (r RWMutex) tryRLock(ctx context.Context, clientID string, expiration int64) error {
-	pTTL, err := r.rLockInner(clientID, expiration)
+	pTTL, err := r.rLockInner(ctx, clientID, expiration)
 	if err != nil {
 		return err
 	}
@@ -160,8 +160,8 @@ func (r RWMutex) tryRLock(ctx context.Context, clientID string, expiration int64
 
 }
 
-func (r RWMutex) rLockInner(clientID string, expiration int64) (int64, error) {
-	pTTL, err := r.root.Client.Eval(context.Background(), rwMutexScript.rLockScript, []string{r.Name}, clientID, expiration).Result()
+func (r RWMutex) rLockInner(ctx context.Context, clientID string, expiration int64) (int64, error) {
+	pTTL, err := r.root.Client.Eval(ctx, rwMutexScript.rLockScript, []string{r.Name}, clientID, expiration).Result()
 	if err == redis.Nil {
 		return 0, nil
 	}
@@ -172,9 +172,9 @@ func (r RWMutex) rLockInner(clientID string, expiration int64) (int64, error) {
 
 	return pTTL.(int64), nil
 }
-func (r RWMutex) Unlock() error {
+func (r RWMutex) Unlock(ctx context.Context) error {
 	goID := utils.GoID()
-	if err := r.unlockInner(goID); err != nil {
+	if err := r.unlockInner(ctx, goID); err != nil {
 		return fmt.Errorf("unlock err: %w", err)
 	}
 
@@ -182,9 +182,9 @@ func (r RWMutex) Unlock() error {
 
 	return nil
 }
-func (r RWMutex) unlockInner(goID int64) error {
+func (r RWMutex) unlockInner(ctx context.Context, goID int64) error {
 	res, err := r.root.Client.Eval(
-		context.TODO(),
+		ctx,
 		rwMutexScript.unlockScript,
 		[]string{r.Name, r.root.RedisChannelName},
 		r.root.UUID+":"+strconv.FormatInt(goID, 10),

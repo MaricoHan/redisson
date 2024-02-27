@@ -24,7 +24,7 @@ func TestMutex(t *testing.T) {
 	}
 	mutex1 := redissonClient.NewMutex("redisson_mutex", options...)
 
-	err := mutex1.Lock()
+	err := mutex1.Lock(context.Background())
 	if err != nil {
 		t.Error(err)
 		return
@@ -39,7 +39,7 @@ func TestMutex(t *testing.T) {
 			waitGroup.Done()
 		}()
 		var mutex2 = redissonClient.NewMutex("redisson_mutex")
-		err = mutex2.Unlock()
+		err = mutex2.Unlock(context.Background())
 		if err != nil {
 			t.Error(err)
 			return
@@ -49,7 +49,7 @@ func TestMutex(t *testing.T) {
 	waitGroup.Wait()
 
 	// 测试：加锁的协程可以顺利解锁
-	err = mutex1.Unlock()
+	err = mutex1.Unlock(context.Background())
 	if err != nil {
 		t.Error(err)
 		return
@@ -69,7 +69,7 @@ func TestRWMutex(t *testing.T) {
 	}
 	mutex1 := redissonClient.NewRWMutex("redisson_mutex", options...)
 
-	err := mutex1.Lock()
+	err := mutex1.Lock(context.Background())
 	if err != nil {
 		t.Error(err)
 		return
@@ -84,7 +84,7 @@ func TestRWMutex(t *testing.T) {
 			waitGroup.Done()
 		}()
 		var mutex2 = redissonClient.NewMutex("redisson_mutex")
-		err = mutex2.Unlock()
+		err = mutex2.Unlock(context.Background())
 		if err != nil {
 			t.Error(err)
 			return
@@ -94,7 +94,7 @@ func TestRWMutex(t *testing.T) {
 	waitGroup.Wait()
 
 	// 测试：加锁的协程可以顺利解锁
-	err = mutex1.Unlock()
+	err = mutex1.Unlock(context.Background())
 	if err != nil {
 		t.Error(err)
 		return
