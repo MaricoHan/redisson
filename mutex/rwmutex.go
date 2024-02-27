@@ -16,9 +16,16 @@ import (
 var (
 	rwMutexScript = struct {
 		lockScript    string
-		rLockScript   string
-		renewalScript string
-		unlockScript  string
+		lockScriptSha string
+
+		rLockScript    string
+		rLockScriptSha string
+
+		renewalScript    string
+		renewalScriptSha string
+
+		unlockScript    string
+		unlockScriptSha string
 	}{}
 )
 
@@ -62,12 +69,21 @@ func (r RWMutex) Lock(ctx context.Context) error {
 	go func() {
 		ticker := time.NewTicker(r.options.expiration / 3)
 		defer ticker.Stop()
+
+		// 上传脚本
+		if rwMutexScript.renewalScriptSha == "" {
+			rwMutexScript.renewalScriptSha, err = r.root.Client.ScriptLoad(ctx, rwMutexScript.renewalScript).Result()
+			if err != nil {
+				return
+			}
+		}
+
 		for {
 			select {
 			case <-r.release:
 				return
 			case <-ticker.C:
-				res, err := r.root.Client.Eval(context.TODO(), rwMutexScript.renewalScript, []string{r.Name}, expiration, clientID).Int64()
+				res, err := r.root.Client.EvalSha(context.TODO(), rwMutexScript.renewalScriptSha, []string{r.Name}, expiration, clientID).Int64()
 				if err != nil || res == 0 {
 					return
 				}
@@ -103,7 +119,16 @@ func (r RWMutex) tryLock(ctx context.Context, clientID string, expiration int64)
 }
 
 func (r RWMutex) lockInner(ctx context.Context, clientID string, expiration int64) (int64, error) {
-	pTTL, err := r.root.Client.Eval(ctx, rwMutexScript.lockScript, []string{r.Name}, clientID, expiration).Result()
+	// 上传脚本
+	if rwMutexScript.lockScriptSha == "" {
+		var err error
+		rwMutexScript.lockScriptSha, err = r.root.Client.ScriptLoad(ctx, rwMutexScript.lockScript).Result()
+		if err != nil {
+			return 0, fmt.Errorf("script load err: %w", err)
+		}
+	}
+
+	pTTL, err := r.root.Client.EvalSha(ctx, rwMutexScript.lockScriptSha, []string{r.Name}, clientID, expiration).Result()
 	if err == redis.Nil {
 		return 0, nil
 	}
@@ -132,12 +157,20 @@ func (r RWMutex) RLock(ctx context.Context) error {
 		ticker := time.NewTicker(r.options.expiration / 3)
 		defer ticker.Stop()
 
+		// 上传脚本
+		if rwMutexScript.renewalScriptSha == "" {
+			rwMutexScript.renewalScriptSha, err = r.root.Client.ScriptLoad(ctx, rwMutexScript.renewalScript).Result()
+			if err != nil {
+				return
+			}
+		}
+
 		for {
 			select {
 			case <-r.release:
 				return
 			case <-ticker.C:
-				res, err := r.root.Client.Eval(context.TODO(), rwMutexScript.renewalScript, []string{r.Name}, pExpireNum, clientID).Int64()
+				res, err := r.root.Client.EvalSha(context.TODO(), rwMutexScript.renewalScriptSha, []string{r.Name}, pExpireNum, clientID).Int64()
 				if err != nil || res == 0 {
 					return
 				}
@@ -173,7 +206,16 @@ func (r RWMutex) tryRLock(ctx context.Context, clientID string, pExpireNum int64
 }
 
 func (r RWMutex) rLockInner(ctx context.Context, clientID string, pExpireNum int64) (int64, error) {
-	pTTL, err := r.root.Client.Eval(ctx, rwMutexScript.rLockScript, []string{r.Name}, clientID, pExpireNum).Result()
+	// 上传脚本
+	if rwMutexScript.rLockScriptSha == "" {
+		var err error
+		rwMutexScript.rLockScriptSha, err = r.root.Client.ScriptLoad(ctx, rwMutexScript.rLockScript).Result()
+		if err != nil {
+			return 0, fmt.Errorf("script load err: %w", err)
+		}
+	}
+
+	pTTL, err := r.root.Client.EvalSha(ctx, rwMutexScript.rLockScriptSha, []string{r.Name}, clientID, pExpireNum).Result()
 	if err == redis.Nil {
 		return 0, nil
 	}
@@ -193,9 +235,18 @@ func (r RWMutex) Unlock(ctx context.Context) error {
 	return nil
 }
 func (r RWMutex) unlockInner(ctx context.Context, goID int64) error {
-	res, err := r.root.Client.Eval(
+	// 上传脚本
+	if rwMutexScript.unlockScriptSha == "" {
+		var err error
+		rwMutexScript.unlockScriptSha, err = r.root.Client.ScriptLoad(ctx, rwMutexScript.unlockScript).Result()
+		if err != nil {
+			return fmt.Errorf("script load err: %w", err)
+		}
+	}
+
+	res, err := r.root.Client.EvalSha(
 		ctx,
-		rwMutexScript.unlockScript,
+		rwMutexScript.unlockScriptSha,
 		[]string{r.Name, r.root.RedisChannelName},
 		r.root.UUID+":"+strconv.FormatInt(goID, 10),
 		r.Name+":unlock",
