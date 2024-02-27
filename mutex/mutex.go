@@ -24,17 +24,17 @@ type Mutex struct {
 	*baseMutex
 }
 
-func NewMutex(root *Root, name string, options ...Option) *Mutex {
+func NewMutex(root *Root, name string, opts ...Option) *Mutex {
 	base := &baseMutex{
-		Name:   name,
-		pubSub: pubsub.Subscribe(utils.ChannelName(name)),
+		Name:    name,
+		pubSub:  pubsub.Subscribe(utils.ChannelName(name)),
+		options: &options{},
+	}
+	for i := range opts {
+		opts[i](base.options)
 	}
 
-	for i := range options {
-		options[i].Apply(base)
-	}
-
-	base.checkAndInit()
+	base.options.checkAndInit()
 
 	return &Mutex{
 		root:      root,
@@ -44,9 +44,9 @@ func NewMutex(root *Root, name string, options ...Option) *Mutex {
 
 func (m Mutex) Lock(ctx context.Context) error {
 	// 单位：ms
-	expiration := int64(m.expiration / time.Millisecond)
+	expiration := int64(m.options.expiration / time.Millisecond)
 
-	ctx, cancel := context.WithTimeout(ctx, m.waitTimeout)
+	ctx, cancel := context.WithTimeout(ctx, m.options.waitTimeout)
 	defer cancel()
 
 	clientID := m.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
@@ -56,7 +56,7 @@ func (m Mutex) Lock(ctx context.Context) error {
 	}
 	// 加锁成功，开个协程，定时续锁
 	go func() {
-		ticker := time.NewTicker(m.expiration / 3)
+		ticker := time.NewTicker(m.options.expiration / 3)
 		defer ticker.Stop()
 		for range ticker.C {
 			res, err := m.root.Client.Eval(context.TODO(), mutexScript.renewalScript, []string{m.Name}, expiration, clientID).Int64()
