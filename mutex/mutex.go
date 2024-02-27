@@ -14,9 +14,12 @@ import (
 )
 
 var mutexScript = struct {
-	lockScript    string
-	renewalScript string
-	unlockScript  string
+	lockScript       string
+	lockScriptSha    string
+	renewalScript    string
+	renewalScriptSha string
+	unlockScript     string
+	unlockScriptSha  string
 }{}
 
 type Mutex struct {
@@ -60,12 +63,20 @@ func (m Mutex) Lock(ctx context.Context) error {
 		ticker := time.NewTicker(m.options.expiration / 3)
 		defer ticker.Stop()
 
+		// 上传脚本
+		if mutexScript.renewalScriptSha == "" {
+			mutexScript.renewalScriptSha, err = m.root.Client.ScriptLoad(ctx, mutexScript.renewalScript).Result()
+			if err != nil {
+				return
+			}
+		}
+
 		for {
 			select {
 			case <-m.release:
 				return
 			case <-ticker.C:
-				res, err := m.root.Client.Eval(context.TODO(), mutexScript.renewalScript, []string{m.Name}, pExpireNum, clientID).Int64()
+				res, err := m.root.Client.EvalSha(context.TODO(), mutexScript.renewalScriptSha, []string{m.Name}, pExpireNum, clientID).Int64()
 				if err != nil || res == 0 {
 					return
 				}
@@ -100,7 +111,16 @@ func (m Mutex) tryLock(ctx context.Context, clientID string, pExpireNum int64) e
 }
 
 func (m Mutex) lockInner(ctx context.Context, clientID string, pExpireNum int64) (int64, error) {
-	pTTL, err := m.root.Client.Eval(ctx, mutexScript.lockScript, []string{m.Name}, clientID, pExpireNum).Result()
+	// 上传脚本
+	if mutexScript.lockScriptSha == "" {
+		var err error
+		mutexScript.lockScriptSha, err = m.root.Client.ScriptLoad(ctx, mutexScript.lockScript).Result()
+		if err != nil {
+			return 0, fmt.Errorf("load lock script err: %w", err)
+		}
+	}
+
+	pTTL, err := m.root.Client.EvalSha(ctx, mutexScript.lockScriptSha, []string{m.Name}, clientID, pExpireNum).Result()
 	if err == redis.Nil {
 		return 0, nil
 	}
@@ -123,9 +143,18 @@ func (m Mutex) Unlock(ctx context.Context) error {
 }
 
 func (m Mutex) unlockInner(ctx context.Context, goID int64) error {
-	res, err := m.root.Client.Eval(
+	// 上传脚本
+	if mutexScript.unlockScriptSha == "" {
+		var err error
+		mutexScript.unlockScriptSha, err = m.root.Client.ScriptLoad(ctx, mutexScript.unlockScript).Result()
+		if err != nil {
+			return fmt.Errorf("load unlock script err: %w", err)
+		}
+	}
+
+	res, err := m.root.Client.EvalSha(
 		ctx,
-		mutexScript.unlockScript,
+		mutexScript.unlockScriptSha,
 		[]string{m.Name, m.root.RedisChannelName},
 		m.root.UUID+":"+strconv.FormatInt(goID, 10),
 		m.Name+":unlock",
