@@ -31,6 +31,7 @@ func NewRWMutex(r *Root, name string, opts ...Option) *RWMutex {
 	base := &baseMutex{
 		Name:    name,
 		pubSub:  pubsub.Subscribe(utils.ChannelName(name)),
+		release: make(chan struct{}),
 		options: &options{},
 	}
 	for i := range opts {
@@ -61,10 +62,15 @@ func (r RWMutex) Lock(ctx context.Context) error {
 	go func() {
 		ticker := time.NewTicker(r.options.expiration / 3)
 		defer ticker.Stop()
-		for range ticker.C {
-			res, err := r.root.Client.Eval(context.TODO(), rwMutexScript.renewalScript, []string{r.Name}, expiration, clientID).Int64()
-			if err != nil || res == 0 {
+		for {
+			select {
+			case <-r.release:
 				return
+			case <-ticker.C:
+				res, err := r.root.Client.Eval(context.TODO(), rwMutexScript.renewalScript, []string{r.Name}, expiration, clientID).Int64()
+				if err != nil || res == 0 {
+					return
+				}
 			}
 		}
 	}()
@@ -125,10 +131,16 @@ func (r RWMutex) RLock(ctx context.Context) error {
 	go func() {
 		ticker := time.NewTicker(r.options.expiration / 3)
 		defer ticker.Stop()
-		for range ticker.C {
-			res, err := r.root.Client.Eval(context.TODO(), rwMutexScript.renewalScript, []string{r.Name}, expiration, clientID).Int64()
-			if err != nil || res == 0 {
+
+		for {
+			select {
+			case <-r.release:
 				return
+			case <-ticker.C:
+				res, err := r.root.Client.Eval(context.TODO(), rwMutexScript.renewalScript, []string{r.Name}, expiration, clientID).Int64()
+				if err != nil || res == 0 {
+					return
+				}
 			}
 		}
 	}()
@@ -178,8 +190,6 @@ func (r RWMutex) Unlock(ctx context.Context) error {
 		return fmt.Errorf("unlock err: %w", err)
 	}
 
-	r.pubSub.Close()
-
 	return nil
 }
 func (r RWMutex) unlockInner(ctx context.Context, goID int64) error {
@@ -195,6 +205,12 @@ func (r RWMutex) unlockInner(ctx context.Context, goID int64) error {
 	}
 	if res == 0 {
 		return types.ErrMismatch
+	}
+
+	// redis 中锁已经被删除，释放资源
+	if res == 1 {
+		r.pubSub.Close()
+		close(r.release)
 	}
 
 	return nil
@@ -251,12 +267,13 @@ func init() {
 	-- KEYS[2] 发布订阅的channel
 	-- ARGV[1] 协程唯一标识：客户端标识+协程ID
 	-- ARGV[2] 解锁时发布的消息
+	-- 返回值：0-未解锁 1-解锁且整个rw锁已被删除 2-解锁且还有其他r锁存在
 	local t = redis.call('type',KEYS[1])["ok"]
 	if  t == "hash" then
 		if redis.call('hexists',KEYS[1],ARGV[1]) == 0 then
 			return 0
 		end
-		if redis.call('hincrby',KEYS[1],ARGV[1],-1) == 0 then
+		if redis.call('hincrby',KEYS[1],ARGV[1],-1) <= 0 then
 			redis.call('hdel',KEYS[1],ARGV[1])
 			if (redis.call('hlen',KEYS[1]) > 0 )then
 				return 2
@@ -265,7 +282,7 @@ func init() {
 			redis.call('publish',KEYS[2],ARGV[2])
 			return 1
 		else
-			return 1
+			return 2
 		end
 	elseif t == "none" then
 			redis.call('publish',KEYS[2],ARGV[2])

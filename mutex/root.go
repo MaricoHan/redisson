@@ -15,8 +15,9 @@ type Root struct {
 }
 
 type baseMutex struct {
-	Name   string
-	pubSub *pubsub.PubSub
+	Name    string
+	pubSub  *pubsub.PubSub
+	release chan struct{}
 
 	options *options
 }
