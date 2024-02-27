@@ -26,7 +26,7 @@ var (
 func TestRWMutex_lockInner(t *testing.T) {
 	clientID := rwMutex.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
 
-	pTTL, err := rwMutex.lockInner(context.Background(), clientID, int64(rwMutex.expiration/time.Millisecond))
+	pTTL, err := rwMutex.lockInner(context.Background(), clientID, int64(rwMutex.options.expiration/time.Millisecond))
 	if err != nil {
 		t.Error(err)
 		return
@@ -59,12 +59,12 @@ func TestRWMutex_Unlock(t *testing.T) {
 }
 
 func TestRWMutex_tryLock(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), rwMutex.waitTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), rwMutex.options.waitTimeout)
 	defer cancel()
 
 	clientID := rwMutex.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
 
-	err := rwMutex.tryLock(ctx, clientID, int64(rwMutex.expiration/time.Millisecond))
+	err := rwMutex.tryLock(ctx, clientID, int64(rwMutex.options.expiration/time.Millisecond))
 	if err != nil {
 		t.Error(err)
 		return
@@ -84,7 +84,7 @@ func TestRWMutex_Lock(t *testing.T) {
 func TestRWMutex_rLockInner(t *testing.T) {
 	clientID := rwMutex.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
 
-	pTTL, err := rwMutex.rLockInner(context.Background(), clientID, int64(rwMutex.expiration/time.Millisecond))
+	pTTL, err := rwMutex.rLockInner(context.Background(), clientID, int64(rwMutex.options.expiration/time.Millisecond))
 	if err != nil {
 		t.Error(err)
 		return
@@ -93,12 +93,12 @@ func TestRWMutex_rLockInner(t *testing.T) {
 }
 
 func TestRWMutex_tryRLock(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), rwMutex.waitTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), rwMutex.options.waitTimeout)
 	defer cancel()
 
 	clientID := rwMutex.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
 
-	err := rwMutex.tryRLock(ctx, clientID, int64(rwMutex.expiration/time.Millisecond))
+	err := rwMutex.tryRLock(ctx, clientID, int64(rwMutex.options.expiration/time.Millisecond))
 	if err != nil {
 		t.Error(err)
 		return

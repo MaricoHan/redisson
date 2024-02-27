@@ -117,13 +117,13 @@ func (r RWMutex) lockInner(ctx context.Context, clientID string, expiration int6
 
 func (r RWMutex) RLock(ctx context.Context) error {
 	// 单位：ms
-	expiration := int64(r.options.expiration / time.Millisecond)
+	pExpireNum := int64(r.options.expiration / time.Millisecond)
 
 	ctx, cancel := context.WithTimeout(ctx, r.options.waitTimeout)
 	defer cancel()
 
 	clientID := r.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
-	err := r.tryRLock(ctx, clientID, expiration)
+	err := r.tryRLock(ctx, clientID, pExpireNum)
 	if err != nil {
 		return err
 	}
@@ -137,7 +137,7 @@ func (r RWMutex) RLock(ctx context.Context) error {
 			case <-r.release:
 				return
 			case <-ticker.C:
-				res, err := r.root.Client.Eval(context.TODO(), rwMutexScript.renewalScript, []string{r.Name}, expiration, clientID).Int64()
+				res, err := r.root.Client.Eval(context.TODO(), rwMutexScript.renewalScript, []string{r.Name}, pExpireNum, clientID).Int64()
 				if err != nil || res == 0 {
 					return
 				}
@@ -149,8 +149,8 @@ func (r RWMutex) RLock(ctx context.Context) error {
 
 }
 
-func (r RWMutex) tryRLock(ctx context.Context, clientID string, expiration int64) error {
-	pTTL, err := r.rLockInner(ctx, clientID, expiration)
+func (r RWMutex) tryRLock(ctx context.Context, clientID string, pExpireNum int64) error {
+	pTTL, err := r.rLockInner(ctx, clientID, pExpireNum)
 	if err != nil {
 		return err
 	}
@@ -164,16 +164,16 @@ func (r RWMutex) tryRLock(ctx context.Context, clientID string, expiration int64
 		return types.ErrWaitTimeout
 	case <-time.After(time.Duration(pTTL) * time.Millisecond):
 		// 针对“redis 中存在未维护的锁”，即当锁自然过期后，并不会发布通知的锁
-		return r.tryRLock(ctx, clientID, expiration)
+		return r.tryRLock(ctx, clientID, pExpireNum)
 	case <-r.pubSub.Channel():
 		// 收到解锁通知，则尝试抢锁
-		return r.tryRLock(ctx, clientID, expiration)
+		return r.tryRLock(ctx, clientID, pExpireNum)
 	}
 
 }
 
-func (r RWMutex) rLockInner(ctx context.Context, clientID string, expiration int64) (int64, error) {
-	pTTL, err := r.root.Client.Eval(ctx, rwMutexScript.rLockScript, []string{r.Name}, clientID, expiration).Result()
+func (r RWMutex) rLockInner(ctx context.Context, clientID string, pExpireNum int64) (int64, error) {
+	pTTL, err := r.root.Client.Eval(ctx, rwMutexScript.rLockScript, []string{r.Name}, clientID, pExpireNum).Result()
 	if err == redis.Nil {
 		return 0, nil
 	}
