@@ -4,36 +4,43 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/go-redis/redis/v8"
 
 	"github.com/MaricoHan/redisson/pkg/types"
 	"github.com/MaricoHan/redisson/pkg/utils"
+	"github.com/MaricoHan/redisson/pkg/utils/pubsub"
 )
 
 var mutexScript = struct {
 	lockScript    string
-	renewalScript string
-	unlockScript  string
+	lockScriptSha string
+
+	renewalScript    string
+	renewalScriptSha string
+
+	unlockScript    string
+	unlockScriptSha string
 }{}
 
 type Mutex struct {
 	root *Root
-	baseMutex
+	*baseMutex
 }
 
-func NewMutex(root *Root, name string, options ...Option) *Mutex {
-	base := baseMutex{
-		Name:   name,
-		pubSub: root.Client.Subscribe(context.Background(), utils.ChannelName(name)),
+func NewMutex(root *Root, name string, opts ...Option) *Mutex {
+	base := &baseMutex{
+		Name:    name,
+		release: make(chan struct{}),
+		options: &options{},
+	}
+	for i := range opts {
+		opts[i](base.options)
 	}
 
-	for i := range options {
-		options[i].Apply(&base)
-	}
-
-	(&base).checkAndInit()
+	base.options.checkAndInit()
 
 	return &Mutex{
 		root:      root,
@@ -41,36 +48,62 @@ func NewMutex(root *Root, name string, options ...Option) *Mutex {
 	}
 }
 
-func (m Mutex) Lock() error {
+func (m *Mutex) Lock(ctx context.Context) error {
 	// 单位：ms
-	expiration := int64(m.expiration / time.Millisecond)
+	pExpireNum := int64(m.options.expiration / time.Millisecond)
 
-	ctx, cancel := context.WithTimeout(context.Background(), m.waitTimeout)
+	ctx, cancel := context.WithTimeout(ctx, m.options.waitTimeout)
 	defer cancel()
 
+	var err error
+	// 先订阅，再申请锁
+	if m.pubSub == nil {
+		m.pubSub = pubsub.Subscribe(utils.ChannelName(m.Name))
+	}
+
+	// 申请锁
 	clientID := m.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
-	err := m.tryLock(ctx, clientID, expiration)
-	if err != nil {
+	if err = m.tryLock(ctx, clientID, pExpireNum); err != nil {
 		return err
 	}
+
 	// 加锁成功，开个协程，定时续锁
+	wg := sync.WaitGroup{}
+	wg.Add(1)
 	go func() {
-		ticker := time.NewTicker(m.expiration / 3)
+		wg.Done()
+
+		ticker := time.NewTicker(m.options.expiration / 3)
 		defer ticker.Stop()
-		for range ticker.C {
-			res, err := m.root.Client.Eval(context.TODO(), mutexScript.renewalScript, []string{m.Name}, expiration, clientID).Int64()
-			if err != nil || res == 0 {
+
+		// 上传脚本
+		if mutexScript.renewalScriptSha == "" {
+			mutexScript.renewalScriptSha, err = m.root.Client.ScriptLoad(ctx, mutexScript.renewalScript).Result()
+			if err != nil {
 				return
 			}
 		}
+
+		for {
+			select {
+			case <-m.release:
+				return
+			case <-ticker.C:
+				res, err := m.root.Client.EvalSha(context.TODO(), mutexScript.renewalScriptSha, []string{m.Name}, pExpireNum, clientID).Int64()
+				if err != nil || res == 0 {
+					return
+				}
+			}
+		}
 	}()
+	wg.Wait() // 等待协程启动成功
 
 	return nil
 }
 
-func (m Mutex) tryLock(ctx context.Context, clientID string, expiration int64) error {
+func (m *Mutex) tryLock(ctx context.Context, clientID string, pExpireNum int64) error {
 	// 尝试加锁
-	pTTL, err := m.lockInner(clientID, expiration)
+	pTTL, err := m.lockInner(ctx, clientID, pExpireNum)
 	if err != nil {
 		return err
 	}
@@ -84,15 +117,24 @@ func (m Mutex) tryLock(ctx context.Context, clientID string, expiration int64) e
 		return types.ErrWaitTimeout
 	case <-time.After(time.Duration(pTTL) * time.Millisecond):
 		// 针对“redis 中存在未维护的锁”，即当锁自然过期后，并不会发布通知的锁
-		return m.tryLock(ctx, clientID, expiration)
+		return m.tryLock(ctx, clientID, pExpireNum)
 	case <-m.pubSub.Channel():
 		// 收到解锁通知，则尝试抢锁
-		return m.tryLock(ctx, clientID, expiration)
+		return m.tryLock(ctx, clientID, pExpireNum)
 	}
 }
 
-func (m Mutex) lockInner(clientID string, expiration int64) (int64, error) {
-	pTTL, err := m.root.Client.Eval(context.TODO(), mutexScript.lockScript, []string{m.Name}, clientID, expiration).Result()
+func (m *Mutex) lockInner(ctx context.Context, clientID string, pExpireNum int64) (int64, error) {
+	// 上传脚本
+	if mutexScript.lockScriptSha == "" {
+		var err error
+		mutexScript.lockScriptSha, err = m.root.Client.ScriptLoad(ctx, mutexScript.lockScript).Result()
+		if err != nil {
+			return 0, fmt.Errorf("load lock script err: %w", err)
+		}
+	}
+
+	pTTL, err := m.root.Client.EvalSha(ctx, mutexScript.lockScriptSha, []string{m.Name}, clientID, pExpireNum).Result()
 	if err == redis.Nil {
 		return 0, nil
 	}
@@ -104,28 +146,43 @@ func (m Mutex) lockInner(clientID string, expiration int64) (int64, error) {
 	return pTTL.(int64), nil
 }
 
-func (m Mutex) Unlock() error {
+func (m *Mutex) Unlock(ctx context.Context) error {
 	goID := utils.GoID()
 
-	if err := m.unlockInner(goID); err != nil {
+	if err := m.unlockInner(ctx, goID); err != nil {
 		return fmt.Errorf("unlock err: %w", err)
-	}
-
-	if err := m.pubSub.Unsubscribe(context.Background(), utils.ChannelName(m.Name)); err != nil {
-		return fmt.Errorf("unsub err: %w", err)
 	}
 
 	return nil
 }
 
-func (m Mutex) unlockInner(goID int64) error {
-	res, err := m.root.Client.Eval(context.TODO(), mutexScript.unlockScript, []string{m.Name, utils.ChannelName(m.Name)}, m.root.UUID+":"+strconv.FormatInt(goID, 10), 1).Int64()
+func (m *Mutex) unlockInner(ctx context.Context, goID int64) error {
+	// 上传脚本
+	if mutexScript.unlockScriptSha == "" {
+		var err error
+		mutexScript.unlockScriptSha, err = m.root.Client.ScriptLoad(ctx, mutexScript.unlockScript).Result()
+		if err != nil {
+			return fmt.Errorf("load unlock script err: %w", err)
+		}
+	}
+
+	res, err := m.root.Client.EvalSha(
+		ctx,
+		mutexScript.unlockScriptSha,
+		[]string{m.Name, m.root.RedisChannelName},
+		m.root.UUID+":"+strconv.FormatInt(goID, 10),
+		m.Name+":unlock",
+	).Int64()
 	if err != nil {
 		return err
 	}
 	if res == 0 {
 		return types.ErrMismatch
 	}
+
+	// 释放资源
+	m.pubSub.Close()
+	close(m.release) // 通知续锁协程退出
 
 	return nil
 }

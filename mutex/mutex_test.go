@@ -25,7 +25,7 @@ var (
 
 func TestMutex_lockInner(t *testing.T) {
 	clientID := mutex.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
-	acquire, err := mutex.lockInner(clientID, int64(mutex.expiration/time.Millisecond))
+	acquire, err := mutex.lockInner(context.Background(), clientID, int64(mutex.options.expiration/time.Millisecond))
 	if err != nil {
 		t.Error(err)
 		return
@@ -34,12 +34,12 @@ func TestMutex_lockInner(t *testing.T) {
 }
 
 func TestMutex_tryLock(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), mutex.waitTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), mutex.options.waitTimeout)
 	defer cancel()
 
 	clientID := mutex.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
 
-	err := mutex.tryLock(ctx, clientID, int64(mutex.expiration/time.Millisecond))
+	err := mutex.tryLock(ctx, clientID, int64(mutex.options.expiration/time.Millisecond))
 	t.Log(err)
 }
 
@@ -47,7 +47,7 @@ func TestMutex_unlockInner_ExpiredMutex(t *testing.T) {
 	goID := utils.GoID()
 
 	// 测试：可以解锁过期的锁
-	err := mutex.unlockInner(goID)
+	err := mutex.unlockInner(context.Background(), goID)
 	if err != nil {
 		t.Error(err)
 		return
@@ -64,7 +64,7 @@ func TestMutex_unlockInner_ExpiredMutex(t *testing.T) {
 func TestMutex_unlockInner(t *testing.T) {
 	clientID := mutex.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
 
-	_, err := mutex.lockInner(clientID, int64(mutex.expiration/time.Millisecond))
+	_, err := mutex.lockInner(context.Background(), clientID, int64(mutex.options.expiration/time.Millisecond))
 	if err != nil {
 		t.Error(err)
 		return
@@ -78,7 +78,7 @@ func TestMutex_unlockInner(t *testing.T) {
 		defer func() {
 			waitGroup.Done()
 		}()
-		err = mutex.unlockInner(utils.GoID())
+		err = mutex.unlockInner(context.Background(), utils.GoID())
 		if err != nil {
 			t.Error(err) // mismatch identification
 			return
@@ -88,7 +88,7 @@ func TestMutex_unlockInner(t *testing.T) {
 	waitGroup.Wait()
 
 	// 测试：加锁的协程可以顺利解锁
-	err = mutex.unlockInner(utils.GoID())
+	err = mutex.unlockInner(context.Background(), utils.GoID())
 	if err != nil {
 		t.Error(err)
 		return
@@ -97,13 +97,13 @@ func TestMutex_unlockInner(t *testing.T) {
 }
 
 func TestMutex_Unlock(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), mutex.waitTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), mutex.options.waitTimeout)
 	defer cancel()
 
 	clientID := mutex.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
 
 	// 第一次上锁
-	err := mutex.tryLock(ctx, clientID, int64(mutex.expiration/time.Millisecond))
+	err := mutex.tryLock(ctx, clientID, int64(mutex.options.expiration/time.Millisecond))
 	if err != nil {
 		t.Error(err)
 		return
@@ -113,14 +113,14 @@ func TestMutex_Unlock(t *testing.T) {
 	waitGroup := sync.WaitGroup{}
 	waitGroup.Add(1)
 	go func() {
-		ctx, cancel := context.WithTimeout(context.Background(), mutex.waitTimeout)
+		ctx, cancel := context.WithTimeout(context.Background(), mutex.options.waitTimeout)
 		defer func() {
 			cancel()
 			waitGroup.Done()
 		}()
 		// 不解锁，第二次上锁，会阻塞 10s，然后加锁成功
 		t.Log("try lock ...")
-		err = mutex.tryLock(ctx, clientID, int64(mutex.expiration/time.Millisecond))
+		err = mutex.tryLock(ctx, clientID, int64(mutex.options.expiration/time.Millisecond))
 		cancel()
 		if err != nil {
 			t.Error(err)
@@ -132,7 +132,7 @@ func TestMutex_Unlock(t *testing.T) {
 	// 10s 后解锁
 	timer := time.NewTimer(10 * time.Second)
 	<-timer.C
-	err = mutex.Unlock()
+	err = mutex.Unlock(context.Background())
 	if err != nil {
 		t.Error(err)
 		return
@@ -143,7 +143,7 @@ func TestMutex_Unlock(t *testing.T) {
 }
 
 func TestMutex_Renewal(t *testing.T) {
-	err := mutex.Lock()
+	err := mutex.Lock(context.Background())
 	if err != nil {
 		t.Error(err)
 		return

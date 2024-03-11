@@ -35,6 +35,7 @@ go get github.com/MaricoHan/redisson
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/MaricoHan/redisson"
@@ -46,13 +47,13 @@ func main() {
 	client := redis.NewClient(&redis.Options{Addr: ":6379"})
 
 	// 2.基于该连接，初始化一个 redisson
-	r := redisson.New(client)
+	r := redisson.New(context.Background(), client)
 
 	// 3.初始化一把锁
 	mutex := r.NewMutex("mutexKey")
 
 	// 4.上锁
-	err := mutex.Lock()
+	err := mutex.Lock(context.Background())
 	if err != nil {
 		log.Panic(err)
 		return
@@ -63,7 +64,7 @@ func main() {
 	// ...
 
 	// 6.解锁
-	err = mutex.Unlock()
+	err = mutex.Unlock(context.Background())
 	if err != nil {
 		log.Panic(err)
 		return
@@ -80,6 +81,7 @@ func main() {
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/MaricoHan/redisson"
@@ -91,13 +93,13 @@ func main() {
 	client := redis.NewClient(&redis.Options{Addr: ":6379"})
 
 	// 2.基于该连接，初始化一个 redisson
-	r := redisson.New(client)
+	r := redisson.New(context.Background(), client)
 
 	// 3.初始化一把锁
 	mutex := r.NewRWMutex("rwMutexKey")
 
 	// 4.上写锁
-	err := mutex.Lock()
+	err := mutex.Lock(context.Background())
 	if err != nil {
 		log.Panic(err)
 		return
@@ -108,7 +110,7 @@ func main() {
 	// ...
 
 	// 6.解锁
-	err = mutex.Unlock()
+	err = mutex.Unlock(context.Background())
 	if err != nil {
 		log.Panic(err)
 		return
@@ -123,6 +125,7 @@ func main() {
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/MaricoHan/redisson"
@@ -134,13 +137,13 @@ func main() {
 	client := redis.NewClient(&redis.Options{Addr: ":6379"})
 
 	// 2.基于该连接，初始化一个 redisson
-	r := redisson.New(client)
+	r := redisson.New(context.Background(),client)
 
 	// 3.初始化一把锁
 	rwMutex := r.NewRWMutex("rwMutexKey")
 
 	// 4.上读锁
-	err := rwMutex.RLock()
+	err := rwMutex.RLock(context.Background())
 	if err != nil {
 		log.Panic(err)
 		return
@@ -151,7 +154,7 @@ func main() {
 	// ...
 
 	// 6.解锁
-	err = rwMutex.Unlock()
+	err = rwMutex.Unlock(context.Background())
 	if err != nil {
 		log.Panic(err)
 		return

@@ -26,7 +26,7 @@ var (
 func TestRWMutex_lockInner(t *testing.T) {
 	clientID := rwMutex.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
 
-	pTTL, err := rwMutex.lockInner(clientID, int64(rwMutex.expiration/time.Millisecond))
+	pTTL, err := rwMutex.lockInner(context.Background(), clientID, int64(rwMutex.options.expiration/time.Millisecond))
 	if err != nil {
 		t.Error(err)
 		return
@@ -38,7 +38,7 @@ func TestRWMutex_unlockInner_ExpiredMutex(t *testing.T) {
 	goID := utils.GoID()
 
 	// 测试：可以解锁过期的锁
-	err := rwMutex.unlockInner(goID)
+	err := rwMutex.unlockInner(context.Background(), goID)
 	if err != nil {
 		t.Error(err)
 		return
@@ -50,7 +50,7 @@ func TestRWMutex_unlockInner_ExpiredMutex(t *testing.T) {
 }
 
 func TestRWMutex_Unlock(t *testing.T) {
-	err := rwMutex.Unlock()
+	err := rwMutex.Unlock(context.Background())
 	if err != nil {
 		t.Error(err)
 		return
@@ -59,12 +59,12 @@ func TestRWMutex_Unlock(t *testing.T) {
 }
 
 func TestRWMutex_tryLock(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), rwMutex.waitTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), rwMutex.options.waitTimeout)
 	defer cancel()
 
 	clientID := rwMutex.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
 
-	err := rwMutex.tryLock(ctx, clientID, int64(rwMutex.expiration/time.Millisecond))
+	err := rwMutex.tryLock(ctx, clientID, int64(rwMutex.options.expiration/time.Millisecond))
 	if err != nil {
 		t.Error(err)
 		return
@@ -73,7 +73,7 @@ func TestRWMutex_tryLock(t *testing.T) {
 }
 
 func TestRWMutex_Lock(t *testing.T) {
-	err := rwMutex.Lock()
+	err := rwMutex.Lock(context.Background())
 	if err != nil {
 		t.Error(err)
 		return
@@ -84,7 +84,7 @@ func TestRWMutex_Lock(t *testing.T) {
 func TestRWMutex_rLockInner(t *testing.T) {
 	clientID := rwMutex.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
 
-	pTTL, err := rwMutex.rLockInner(clientID, int64(rwMutex.expiration/time.Millisecond))
+	pTTL, err := rwMutex.rLockInner(context.Background(), clientID, int64(rwMutex.options.expiration/time.Millisecond))
 	if err != nil {
 		t.Error(err)
 		return
@@ -93,12 +93,12 @@ func TestRWMutex_rLockInner(t *testing.T) {
 }
 
 func TestRWMutex_tryRLock(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), rwMutex.waitTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), rwMutex.options.waitTimeout)
 	defer cancel()
 
 	clientID := rwMutex.root.UUID + ":" + strconv.FormatInt(utils.GoID(), 10)
 
-	err := rwMutex.tryRLock(ctx, clientID, int64(rwMutex.expiration/time.Millisecond))
+	err := rwMutex.tryRLock(ctx, clientID, int64(rwMutex.options.expiration/time.Millisecond))
 	if err != nil {
 		t.Error(err)
 		return
@@ -107,7 +107,7 @@ func TestRWMutex_tryRLock(t *testing.T) {
 }
 
 func TestRWMutex_RLock(t *testing.T) {
-	err := rwMutex.RLock()
+	err := rwMutex.RLock(context.Background())
 	if err != nil {
 		t.Error(err)
 		return
@@ -131,7 +131,7 @@ func TestRWMutex_Lock_RLock(t *testing.T) {
 }
 
 func TestMutex_Lock_Renewal(t *testing.T) {
-	err := rwMutex.Lock()
+	err := rwMutex.Lock(context.Background())
 	if err != nil {
 		t.Error(err)
 		return
@@ -148,7 +148,7 @@ func TestMutex_Lock_Renewal(t *testing.T) {
 }
 
 func TestMutex_RLock_Renewal(t *testing.T) {
-	err := rwMutex.RLock()
+	err := rwMutex.RLock(context.Background())
 	if err != nil {
 		t.Error(err)
 		return

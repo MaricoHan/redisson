@@ -1,6 +1,7 @@
 package redisson_test
 
 import (
+	"context"
 	"sync"
 	"testing"
 	"time"
@@ -16,14 +17,14 @@ func TestMutex(t *testing.T) {
 		Addr: "localhost:6379",
 		DB:   0,
 	})
-	redissonClient := redisson.New(client)
+	redissonClient := redisson.New(context.Background(), client)
 
 	options := []mutex.Option{
-		mutex.WithExpireDuration(30 * time.Millisecond),
+		mutex.WithExpireDuration(30000 * time.Millisecond),
 	}
 	mutex1 := redissonClient.NewMutex("redisson_mutex", options...)
 
-	err := mutex1.Lock()
+	err := mutex1.Lock(context.Background())
 	if err != nil {
 		t.Error(err)
 		return
@@ -38,7 +39,7 @@ func TestMutex(t *testing.T) {
 			waitGroup.Done()
 		}()
 		var mutex2 = redissonClient.NewMutex("redisson_mutex")
-		err = mutex2.Unlock()
+		err = mutex2.Unlock(context.Background())
 		if err != nil {
 			t.Error(err)
 			return
@@ -48,7 +49,7 @@ func TestMutex(t *testing.T) {
 	waitGroup.Wait()
 
 	// 测试：加锁的协程可以顺利解锁
-	err = mutex1.Unlock()
+	err = mutex1.Unlock(context.Background())
 	if err != nil {
 		t.Error(err)
 		return
@@ -61,14 +62,14 @@ func TestRWMutex(t *testing.T) {
 		Addr: "localhost:6379",
 		DB:   0,
 	})
-	redissonClient := redisson.New(client)
+	redissonClient := redisson.New(context.Background(), client)
 
 	options := []mutex.Option{
 		mutex.WithExpireDuration(30 * time.Millisecond),
 	}
 	mutex1 := redissonClient.NewRWMutex("redisson_mutex", options...)
 
-	err := mutex1.Lock()
+	err := mutex1.Lock(context.Background())
 	if err != nil {
 		t.Error(err)
 		return
@@ -83,7 +84,7 @@ func TestRWMutex(t *testing.T) {
 			waitGroup.Done()
 		}()
 		var mutex2 = redissonClient.NewMutex("redisson_mutex")
-		err = mutex2.Unlock()
+		err = mutex2.Unlock(context.Background())
 		if err != nil {
 			t.Error(err)
 			return
@@ -93,7 +94,7 @@ func TestRWMutex(t *testing.T) {
 	waitGroup.Wait()
 
 	// 测试：加锁的协程可以顺利解锁
-	err = mutex1.Unlock()
+	err = mutex1.Unlock(context.Background())
 	if err != nil {
 		t.Error(err)
 		return
