@@ -1,17 +1,20 @@
 package mutex
 
 import (
-	"github.com/MaricoHan/redisson/pkg/utils/pubsub"
 	"time"
 
 	"github.com/go-redis/redis/v8"
+
+	"github.com/MaricoHan/redisson/pkg/loggers"
+	"github.com/MaricoHan/redisson/pkg/utils/pubsub"
 )
 
 type Root struct {
 	Client *redis.Client
 	UUID   string // 自定义用于区分不同客户端的唯一标识
 
-	RedisChannelName string // redis 专用的 pubsub 频道名
+	RedisChannelName string           // redis 专用的 pubsub 频道名
+	Logger           loggers.Advanced // 日志接口
 }
 
 type baseMutex struct {
