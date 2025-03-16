@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/segmentio/ksuid"
+	"github.com/google/uuid"
 
 	"github.com/MaricoHan/redisson/mutex"
 	"github.com/MaricoHan/redisson/pkg/loggers"
@@ -45,7 +45,7 @@ func NewWithConfig(ctx context.Context, client *redis.Client, config *Config) *R
 	redisson := &Redisson{
 		root: &mutex.Root{
 			Client:           client,
-			UUID:             ksuid.New().String(),
+			UUID:             uuid.New().String(),
 			RedisChannelName: utils.ChannelName("redisson_pubsub"),
 			Logger:           config.Logger,
 		},

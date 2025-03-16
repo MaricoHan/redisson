@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/go-redis/redis/v8 v8.11.5
-	github.com/segmentio/ksuid v1.0.4
+	github.com/google/uuid v1.3.0
 	github.com/sirupsen/logrus v1.9.3
 )
 
